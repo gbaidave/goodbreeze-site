@@ -191,11 +191,11 @@ export default function SalesAnalyzer() {
             <label className="block text-sm font-medium mb-2">Report Type *</label>
             <select
               {...register("reportType")}
-              className="w-full px-4 py-3 bg-dark rounded-lg border border-gray-700 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+              className="w-full px-4 py-3 bg-dark text-white rounded-lg border border-gray-700 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
             >
-              <option value="Head to Head">Head to Head (Compare 1-on-1)</option>
-              <option value="Top 3 Competitors">Top 3 Competitors</option>
-              <option value="Competitive Position">Competitive Position (Market Overview)</option>
+              <option value="Head to Head" className="bg-dark text-white">Head to Head (Compare 1-on-1)</option>
+              <option value="Top 3 Competitors" className="bg-dark text-white">Top 3 Competitors</option>
+              <option value="Competitive Position" className="bg-dark text-white">Competitive Position (Market Overview)</option>
             </select>
           </div>
 
