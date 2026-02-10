@@ -1,27 +1,28 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { AutomationIcon, AIIcon, AnalyticsIcon, OptimizeIcon } from "../ui/Icons";
 
 const services = [
   {
     title: "Workflow Automation",
     description: "Eliminate repetitive tasks with custom n8n workflows that run 24/7",
-    icon: "🔄",
+    Icon: AutomationIcon,
   },
   {
     title: "AI Agent Implementation",
     description: "Deploy chatbots and AI assistants that actually understand your business",
-    icon: "🤖",
+    Icon: AIIcon,
   },
   {
     title: "Competitive Intelligence",
     description: "Automated market analysis and competitor monitoring that never sleeps",
-    icon: "📊",
+    Icon: AnalyticsIcon,
   },
   {
     title: "Process Optimization",
     description: "Audit, redesign, and automate your operations from end-to-end",
-    icon: "⚡",
+    Icon: OptimizeIcon,
   },
 ];
 
@@ -52,9 +53,11 @@ export default function Services() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: index * 0.1 }}
-              className="p-6 rounded-2xl bg-dark-700 border border-primary/20 hover:border-primary/50 hover:bg-dark-800 transition-all duration-300"
+              className="p-6 rounded-2xl bg-dark-700 border border-primary/20 hover:border-primary/50 hover:bg-dark-800 transition-all duration-300 group"
             >
-              <div className="text-4xl mb-4">{service.icon}</div>
+              <div className="mb-6 transform group-hover:scale-110 transition-transform duration-300">
+                <service.Icon className="w-16 h-16" />
+              </div>
               <h3 className="text-xl font-semibold mb-3">{service.title}</h3>
               <p className="text-gray-400">{service.description}</p>
             </motion.div>

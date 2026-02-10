@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { FloatingCircles, GridPattern } from "../ui/AbstractShapes";
 
 export default function Hero() {
   return (
@@ -10,31 +11,11 @@ export default function Hero() {
       <div className="absolute inset-0 bg-gradient-to-br from-primary via-accent-blue to-accent-purple opacity-20" />
       <div className="absolute inset-0 bg-dark/90" />
 
+      {/* Grid pattern */}
+      <GridPattern />
+
       {/* Floating gradient blobs */}
-      <motion.div
-        className="absolute top-20 left-10 w-72 h-72 bg-primary rounded-full blur-3xl opacity-20"
-        animate={{
-          y: [0, 30, 0],
-          scale: [1, 1.1, 1],
-        }}
-        transition={{
-          duration: 8,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
-      />
-      <motion.div
-        className="absolute bottom-20 right-10 w-96 h-96 bg-accent-purple rounded-full blur-3xl opacity-20"
-        animate={{
-          y: [0, -40, 0],
-          scale: [1, 1.2, 1],
-        }}
-        transition={{
-          duration: 10,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
-      />
+      <FloatingCircles />
 
       {/* Content */}
       <div className="relative z-10 max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 text-center">
