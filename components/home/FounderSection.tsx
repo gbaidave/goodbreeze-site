@@ -71,7 +71,7 @@ export default function FounderSection() {
 
             <div className="space-y-4 text-gray-300 mb-8">
               <p>
-                With certifications in product management (CPM, CSPO, CSM) and a track record of starting, scaling, and exiting multiple businesses, David brings a unique perspective to AI automation.
+                With a track record of starting, scaling, and exiting multiple businesses, David brings a unique perspective to AI automation.
               </p>
               <p>
                 He's not a developer who learned business—he's a business operator who mastered technology. This means every automation solution is built with ROI, scalability, and real-world business challenges in mind.
@@ -79,19 +79,6 @@ export default function FounderSection() {
               <p>
                 David has worked across gaming, ecommerce, web development, and multiple other industries, giving him insight into the common bottlenecks that hold SMBs back from scaling.
               </p>
-            </div>
-
-            {/* Certifications */}
-            <div className="flex flex-wrap gap-3 mb-8">
-              <div className="px-4 py-2 bg-primary/10 border border-primary/30 rounded-lg text-primary font-semibold">
-                CPM Certified
-              </div>
-              <div className="px-4 py-2 bg-accent-blue/10 border border-accent-blue/30 rounded-lg text-accent-blue font-semibold">
-                CSPO Certified
-              </div>
-              <div className="px-4 py-2 bg-accent-purple/10 border border-accent-purple/30 rounded-lg text-accent-purple font-semibold">
-                CSM Certified
-              </div>
             </div>
 
             {/* Quote */}

@@ -56,21 +56,18 @@ export default function Contact() {
           </div>
 
           <div className="bg-dark rounded-xl border border-primary/20 p-6 mb-8">
-            <h3 className="text-xl font-semibold mb-4">What Makes You a Good Fit?</h3>
+            <h3 className="text-xl font-semibold mb-4">What to Expect</h3>
             <div className="space-y-3 text-gray-300">
               <p>
-                <strong className="text-primary">✓ Project Budget:</strong> $5,000 - $50,000
+                This is a no-pressure conversation. We'll listen to what you're dealing with and see if automation can help.
               </p>
               <p>
-                <strong className="text-primary">✓ Annual Revenue:</strong> $250,000+
+                Whether you're just exploring AI for the first time or you've tried tools that didn't work, we'll meet you where you are and give you honest guidance—even if that means we're not the right fit right now.
               </p>
               <p>
-                <strong className="text-primary">✓ Decision Maker:</strong> You can make purchasing decisions or have direct access to who can
+                We work with businesses at different stages, from startups looking to automate a single process to established companies ready for full-scale transformation.
               </p>
             </div>
-            <p className="text-sm text-gray-400 mt-4">
-              If you're outside these ranges, no worries! Try our free tools first and we can talk when timing is right.
-            </p>
           </div>
 
           <div className="text-center">
