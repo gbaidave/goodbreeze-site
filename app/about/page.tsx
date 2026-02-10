@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function About() {
   return (
@@ -38,48 +39,106 @@ export default function About() {
 
           <section className="bg-dark-700 rounded-2xl border border-primary/20 p-8">
             <h2 className="text-3xl font-bold mb-6">Meet David Silverstein</h2>
-            <div className="space-y-4 text-gray-300 leading-relaxed text-lg">
-              <p>
-                <strong className="text-white">Founder & CEO</strong> of Good Breeze AI
-              </p>
-              <p>
-                David isn't your typical tech founder. He's a <strong className="text-primary">Certified Product Manager (CPM)</strong>, <strong className="text-primary">Certified Scrum Product Owner (CSPO)</strong>, and <strong className="text-primary">Certified ScrumMaster (CSM)</strong> who's built, scaled, and exited multiple businesses across gaming, ecommerce, and web development.
-              </p>
-              <p>
-                He's not someone who learned business after learning code—he's a <strong className="text-primary">business operator who happens to be technical</strong>. That's the difference. He speaks your language, understands your problems, and knows how to translate AI/automation into actual ROI.
-              </p>
-              <p>
-                David's written extensively on product management, scaling teams, and leveraging AI for real business outcomes. He's not here to sell you buzzwords—he's here to help you grow without the growing pains.
-              </p>
+            <div className="grid md:grid-cols-3 gap-8 items-start">
+              <div className="md:col-span-1">
+                <div className="relative w-full aspect-square rounded-2xl overflow-hidden border-2 border-primary/30">
+                  <Image
+                    src="/images/dave-profile.jpg"
+                    alt="David Silverstein - Founder & CEO"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              </div>
+              <div className="md:col-span-2 space-y-4 text-gray-300 leading-relaxed text-lg">
+                <p>
+                  <strong className="text-white">Founder & CEO</strong> of Good Breeze AI
+                </p>
+                <p>
+                  David isn't your typical tech founder. He's built, scaled, and exited multiple businesses across gaming, ecommerce, and web development. His expertise spans product management, team scaling, and translating complex technology into measurable business outcomes.
+                </p>
+                <p>
+                  He's not someone who learned business after learning code—he's a <strong className="text-primary">business operator who happens to be technical</strong>. That's the difference. He speaks your language, understands your problems, and knows how to translate AI/automation into actual ROI.
+                </p>
+                <p>
+                  David's written extensively on product management, scaling teams, and leveraging AI for real business outcomes. He's not here to sell you buzzwords—he's here to help you grow without the growing pains.
+                </p>
+              </div>
             </div>
+          </section>
+
+          <section className="bg-gradient-to-br from-primary/10 to-accent-purple/10 rounded-2xl border border-primary/30 p-8">
+            <h2 className="text-3xl font-bold mb-4">A Growing Team of Automation Experts</h2>
+            <p className="text-gray-300 leading-relaxed text-lg mb-4">
+              While David leads strategy and client relationships, Good Breeze AI is supported by a network of specialized automation engineers, AI developers, and business analysts. Our team approach ensures you get expert-level support across every aspect of your automation journey.
+            </p>
+            <p className="text-gray-300 leading-relaxed text-lg">
+              We're not a giant agency—we're a focused team that treats your business like our own. When you work with us, you get the attention and care of a small team with the expertise and capabilities of a much larger one.
+            </p>
           </section>
 
           <section>
             <h2 className="text-3xl font-bold mb-4">Why We're Different</h2>
             <div className="grid md:grid-cols-2 gap-6">
-              <div className="p-6 bg-dark-700 rounded-xl border border-primary/20">
-                <h3 className="text-xl font-semibold mb-3 text-primary">Try Before You Buy</h3>
-                <p className="text-gray-300">
-                  Our freemium tools let you see the value instantly. No sales calls, no demos—just real results.
-                </p>
+              <div className="p-6 bg-dark-700 rounded-xl border border-primary/20 hover:border-primary/50 transition-all duration-300">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary to-accent-blue flex items-center justify-center flex-shrink-0">
+                    <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold mb-3 text-primary">Try Before You Buy</h3>
+                    <p className="text-gray-300">
+                      Our freemium tools let you see the value instantly. No sales calls, no demos—just real results.
+                    </p>
+                  </div>
+                </div>
               </div>
-              <div className="p-6 bg-dark-700 rounded-xl border border-primary/20">
-                <h3 className="text-xl font-semibold mb-3 text-primary">Plain English</h3>
-                <p className="text-gray-300">
-                  We don't assume you know AI. We explain everything like you're a business owner (because you are).
-                </p>
+              <div className="p-6 bg-dark-700 rounded-xl border border-primary/20 hover:border-primary/50 transition-all duration-300">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-accent-blue to-accent-purple flex items-center justify-center flex-shrink-0">
+                    <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold mb-3 text-primary">Plain English</h3>
+                    <p className="text-gray-300">
+                      We don't assume you know AI. We explain everything like you're a business owner (because you are).
+                    </p>
+                  </div>
+                </div>
               </div>
-              <div className="p-6 bg-dark-700 rounded-xl border border-primary/20">
-                <h3 className="text-xl font-semibold mb-3 text-primary">Business-First</h3>
-                <p className="text-gray-300">
-                  We measure success by hours saved and revenue grown—not by how "cool" the tech is.
-                </p>
+              <div className="p-6 bg-dark-700 rounded-xl border border-primary/20 hover:border-primary/50 transition-all duration-300">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-accent-purple to-primary flex items-center justify-center flex-shrink-0">
+                    <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold mb-3 text-primary">Business-First</h3>
+                    <p className="text-gray-300">
+                      We measure success by hours saved and revenue grown—not by how "cool" the tech is.
+                    </p>
+                  </div>
+                </div>
               </div>
-              <div className="p-6 bg-dark-700 rounded-xl border border-primary/20">
-                <h3 className="text-xl font-semibold mb-3 text-primary">We Use Our Own Stack</h3>
-                <p className="text-gray-300">
-                  Everything we build for clients, we use ourselves. If it doesn't work for us, we won't sell it to you.
-                </p>
+              <div className="p-6 bg-dark-700 rounded-xl border border-primary/20 hover:border-primary/50 transition-all duration-300">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary via-accent-blue to-accent-purple flex items-center justify-center flex-shrink-0">
+                    <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold mb-3 text-primary">We Use Our Own Stack</h3>
+                    <p className="text-gray-300">
+                      Everything we build for clients, we use ourselves. If it doesn't work for us, we won't sell it to you.
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </section>
