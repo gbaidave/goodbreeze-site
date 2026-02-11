@@ -10,28 +10,28 @@ const testimonials = [
     role: "Consultant",
     quote: "Call Dave at Good Breeze AI. He built us a simple flow that handles intake, auto-fills proposals, and keeps follow-ups on track so nothing slips.",
     result: "Streamlined intake & proposals",
-    avatar: "/images/avatars/avatar-as.svg"
+    avatar: "/images/avatars/alana-shaw.png"
   },
   {
     name: "Julia Lawson",
     role: "Attorney",
     quote: "Good Breeze AI fixed our intake and follow-up mess overnight. Their system books consults, tracks next steps, and even handles after-hours calls so we don't lose leads.",
     result: "Zero missed leads",
-    avatar: "/images/avatars/avatar-jl.svg"
+    avatar: "/images/avatars/julia-lawson.png"
   },
   {
     name: "Rafael Moreno",
     role: "CPA",
     quote: "I'd recommend Dave in a heartbeat. His automations collect client documents, remind people nicely, and flag exceptions so month-end actually ends.",
     result: "Month-end close in half the time",
-    avatar: "/images/avatars/avatar-rm.svg"
+    avatar: "/images/avatars/rafael-moreno.png"
   },
   {
     name: "Marcus Chen",
     role: "Real Estate Broker",
     quote: "Good Breeze AI transformed how we handle leads. Automated follow-ups, instant property alerts, and seamless CRM updates mean we close more deals with less manual work.",
     result: "30% increase in closed deals",
-    avatar: "/images/avatars/avatar-mc.svg"
+    avatar: "/images/avatars/marcus-chen.png"
   },
 ];
 
