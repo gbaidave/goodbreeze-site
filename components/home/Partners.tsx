@@ -1,61 +1,62 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 const partners = [
   {
     name: "OpenAI / ChatGPT",
     description: "Advanced Language Models",
     category: "AI Services",
-    initials: "OAI"
+    logo: "/images/logos/openai.svg"
   },
   {
     name: "Anthropic Claude",
     description: "Enterprise AI Assistant",
     category: "AI Services",
-    initials: "AC"
+    logo: "/images/logos/anthropic.svg"
   },
   {
     name: "Microsoft",
     description: "Enterprise Cloud & Productivity",
     category: "Infrastructure",
-    initials: "MS"
+    logo: "/images/logos/microsoft.svg"
   },
   {
     name: "n8n",
     description: "Workflow Automation Platform",
     category: "Core Infrastructure",
-    initials: "n8n"
+    logo: "/images/logos/n8n.svg"
   },
   {
     name: "OpenRouter",
     description: "AI Model Gateway",
     category: "AI Services",
-    initials: "OR"
+    logo: "/images/logos/openrouter.svg"
   },
   {
     name: "Supabase",
     description: "Backend & Database",
     category: "Infrastructure",
-    initials: "SB"
+    logo: "/images/logos/supabase.svg"
   },
   {
     name: "Vercel",
     description: "Deployment & Hosting",
     category: "Infrastructure",
-    initials: "V"
+    logo: "/images/logos/vercel.svg"
   },
   {
     name: "Google Drive",
     description: "Document Management",
     category: "Integrations",
-    initials: "GD"
+    logo: "/images/logos/google-drive.svg"
   },
   {
     name: "1,000+ Integrations",
     description: "Slack, Salesforce, QuickBooks, Airtable & more",
     category: "Ecosystem",
-    isSpecial: true
+    logo: "/images/logos/integrations.svg"
   },
 ];
 
@@ -96,14 +97,14 @@ export default function Partners() {
 
               <div className="relative z-10">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/20 to-accent-blue/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                    {partner.initials ? (
-                      <span className="text-primary font-bold text-xs">{partner.initials}</span>
-                    ) : (
-                      <svg className="w-5 h-5 text-primary" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                      </svg>
-                    )}
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/20 to-accent-blue/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 p-2">
+                    <Image
+                      src={partner.logo}
+                      alt={partner.name + " logo"}
+                      width={32}
+                      height={32}
+                      className="w-full h-full object-contain text-primary"
+                    />
                   </div>
                   <div className="flex-1">
                     <h3 className="text-lg font-bold text-white group-hover:text-primary transition-colors">

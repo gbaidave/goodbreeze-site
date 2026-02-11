@@ -53,7 +53,7 @@ export default function Header() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
                     transition={{ duration: 0.2 }}
-                    className="absolute top-full left-0 mt-2 w-64 bg-gradient-to-br from-primary/90 via-accent-blue/80 to-dark-700 backdrop-blur-xl border-2 border-primary/50 rounded-lg shadow-2xl shadow-primary/30 overflow-hidden"
+                    className="absolute top-full left-0 mt-2 w-64 bg-dark-700 border-2 border-primary/50 rounded-lg shadow-2xl shadow-primary/30 overflow-hidden"
                   >
                     {services.map((service, index) => (
                       <Link
