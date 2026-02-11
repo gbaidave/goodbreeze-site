@@ -7,12 +7,34 @@ import { GridPattern } from "../ui/AbstractShapes";
 
 export default function Hero() {
   return (
-    <section className="relative pt-32 pb-20 overflow-hidden">
-      {/* Animated gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-accent-blue/10 to-accent-purple/20" />
+    <section className="relative pt-32 pb-20 overflow-hidden bg-dark">
+      {/* Custom algorithmic flows background */}
+      <div className="absolute inset-0">
+        <Image
+          src="/images/hero-bg.png"
+          alt=""
+          fill
+          className="object-cover opacity-70"
+          priority
+          quality={100}
+        />
+        {/* Subtle overlay for depth */}
+        <div className="absolute inset-0 bg-gradient-to-br from-dark/50 via-transparent to-dark/70" />
 
-      {/* Grid pattern */}
-      <GridPattern />
+        {/* Additional animated subtle glow */}
+        <motion.div
+          className="absolute top-1/3 left-1/3 w-96 h-96 bg-primary/10 rounded-full blur-3xl"
+          animate={{
+            scale: [1, 1.15, 1],
+            opacity: [0.3, 0.5, 0.3],
+          }}
+          transition={{
+            duration: 12,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+      </div>
 
       {/* Content */}
       <div className="relative z-10 max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
@@ -91,39 +113,58 @@ export default function Hero() {
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="relative"
+            className="relative group"
           >
-            <div className="relative rounded-2xl overflow-hidden border-2 border-primary/30 shadow-2xl shadow-primary/20">
+            {/* Animated glow effect behind image */}
+            <motion.div
+              className="absolute -inset-4 bg-gradient-to-r from-primary via-accent-blue to-accent-purple rounded-2xl blur-2xl opacity-20 group-hover:opacity-30 transition-opacity duration-500"
+              animate={{
+                scale: [1, 1.05, 1],
+              }}
+              transition={{
+                duration: 8,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            />
+
+            <div className="relative rounded-2xl overflow-hidden border-2 border-primary/30 shadow-2xl shadow-primary/20 group-hover:border-primary/50 transition-all duration-500">
               <Image
                 src="/images/hero-image.jpg"
                 alt="Business owner overwhelmed with manual work"
                 width={800}
                 height={600}
-                className="w-full h-auto"
+                className="w-full h-auto transform group-hover:scale-105 transition-transform duration-700"
                 priority
               />
-              <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 to-accent-purple/10" />
+              <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 to-accent-purple/10 group-hover:from-primary/20 group-hover:to-accent-purple/20 transition-all duration-500" />
             </div>
 
-            {/* Results cards */}
+            {/* Results cards with animated glow */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.6 }}
-              className="absolute -bottom-4 -left-4 bg-dark-700/95 backdrop-blur-lg border border-primary/30 rounded-xl p-5 shadow-lg"
+              className="absolute -bottom-4 -left-4 bg-dark-700/95 backdrop-blur-lg border border-primary/30 rounded-xl p-5 shadow-lg hover:shadow-primary/50 hover:scale-110 transition-all duration-300 cursor-pointer group/card"
             >
-              <div className="text-3xl font-bold text-primary mb-1">20+ hrs</div>
-              <div className="text-sm text-gray-300">Reclaimed per week</div>
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/0 to-primary/0 group-hover/card:from-primary/10 group-hover/card:to-transparent rounded-xl transition-all duration-300" />
+              <div className="relative z-10">
+                <div className="text-3xl font-bold text-primary mb-1">20+ hrs</div>
+                <div className="text-sm text-gray-300">Reclaimed per week</div>
+              </div>
             </motion.div>
 
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.8 }}
-              className="absolute -top-4 -right-4 bg-dark-700/95 backdrop-blur-lg border border-accent-blue/30 rounded-xl p-5 shadow-lg"
+              className="absolute -top-4 -right-4 bg-dark-700/95 backdrop-blur-lg border border-accent-blue/30 rounded-xl p-5 shadow-lg hover:shadow-accent-blue/50 hover:scale-110 transition-all duration-300 cursor-pointer group/card"
             >
-              <div className="text-3xl font-bold text-accent-blue mb-1">$0</div>
-              <div className="text-sm text-gray-300">New hires needed</div>
+              <div className="absolute inset-0 bg-gradient-to-br from-accent-blue/0 to-accent-blue/0 group-hover/card:from-accent-blue/10 group-hover/card:to-transparent rounded-xl transition-all duration-300" />
+              <div className="relative z-10">
+                <div className="text-3xl font-bold text-accent-blue mb-1">$0</div>
+                <div className="text-sm text-gray-300">New hires needed</div>
+              </div>
             </motion.div>
           </motion.div>
         </div>
