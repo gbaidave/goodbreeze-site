@@ -83,3 +83,43 @@ export function GearIcon({ className = "w-20 h-20" }: { className?: string }) {
     </svg>
   );
 }
+
+export function ContentIcon({ className = "w-20 h-20" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="grad5" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#3b82f6" />
+          <stop offset="100%" stopColor="#00adb5" />
+        </linearGradient>
+      </defs>
+      {/* Calendar/Schedule icon */}
+      <rect x="30" y="25" width="60" height="65" rx="8" stroke="url(#grad5)" strokeWidth="4" fill="none"/>
+      <rect x="30" y="25" width="60" height="15" rx="8" fill="url(#grad5)" opacity="0.8"/>
+      <circle cx="45" cy="20" r="3" fill="url(#grad5)"/>
+      <circle cx="60" cy="20" r="3" fill="url(#grad5)"/>
+      <circle cx="75" cy="20" r="3" fill="url(#grad5)"/>
+      {/* Content lines */}
+      <rect x="40" y="50" width="40" height="4" rx="2" fill="url(#grad5)" opacity="0.6"/>
+      <rect x="40" y="60" width="30" height="4" rx="2" fill="url(#grad5)" opacity="0.6"/>
+      <rect x="40" y="70" width="35" height="4" rx="2" fill="url(#grad5)" opacity="0.6"/>
+      <rect x="40" y="80" width="25" height="4" rx="2" fill="url(#grad5)" opacity="0.6"/>
+    </svg>
+  );
+}
+
+export function CustomIcon({ className = "w-20 h-20" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="grad6" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#a855f7" />
+          <stop offset="100%" stopColor="#3b82f6" />
+        </linearGradient>
+      </defs>
+      {/* Puzzle piece icon */}
+      <path d="M30 30 L30 50 Q30 55 35 55 L45 55 Q50 55 50 60 Q50 65 45 65 L35 65 Q30 65 30 70 L30 90 L50 90 L50 80 Q50 75 55 75 Q60 75 60 80 L60 90 L90 90 L90 70 Q90 65 85 65 L75 65 Q70 65 70 60 Q70 55 75 55 L85 55 Q90 55 90 50 L90 30 Z" fill="url(#grad6)" opacity="0.8"/>
+      <circle cx="60" cy="60" r="8" fill="url(#grad6)"/>
+    </svg>
+  );
+}

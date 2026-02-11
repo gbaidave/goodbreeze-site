@@ -61,7 +61,7 @@ export default function AIAgentServices() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-white mb-1">Knowledge Base Integration</h3>
-                <p className="text-gray-300">We train your AI agent on your documentation, FAQs, and internal knowledge so it provides accurate, on-brand responses.</p>
+                <p className="text-gray-300">We train your AI agent on your documentation, FAQs, and internal knowledge so it provides accurate, on brand responses.</p>
               </div>
             </div>
 
@@ -95,24 +95,24 @@ export default function AIAgentServices() {
         <div className="mb-12">
           <h2 className="text-2xl font-bold text-white mb-6">Common AI Agent Use Cases</h2>
           <div className="grid md:grid-cols-2 gap-6">
-            <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
-              <h3 className="text-lg font-semibold text-primary mb-2">Customer Support</h3>
-              <p className="text-gray-300">Answer common questions instantly, escalate complex issues to humans, and provide 24/7 support without staffing overnight shifts.</p>
+            <div className="bg-gradient-to-br from-[#3b82f6] via-[#a855f7] to-[#00adb5] rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-white mb-2">Customer Support</h3>
+              <p className="text-white/90">Answer common questions instantly, escalate complex issues to humans, and provide 24/7 support without staffing overnight shifts.</p>
             </div>
 
-            <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
-              <h3 className="text-lg font-semibold text-primary mb-2">Lead Qualification</h3>
-              <p className="text-gray-300">Engage website visitors, ask qualifying questions, and route high-value leads to your sales team automatically.</p>
+            <div className="bg-gradient-to-br from-[#3b82f6] via-[#a855f7] to-[#3b82f6] rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-white mb-2">Lead Qualification</h3>
+              <p className="text-white/90">Engage website visitors, ask qualifying questions, and route high-value leads to your sales team automatically.</p>
             </div>
 
-            <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
-              <h3 className="text-lg font-semibold text-primary mb-2">Internal Knowledge Assistant</h3>
-              <p className="text-gray-300">Help employees find answers in company docs, policies, and procedures without digging through folders or asking managers.</p>
+            <div className="bg-gradient-to-br from-[#a855f7] via-[#00adb5] to-[#a855f7] rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-white mb-2">Internal Knowledge Assistant</h3>
+              <p className="text-white/90">Help employees find answers in company docs, policies, and procedures without digging through folders or asking managers.</p>
             </div>
 
-            <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
-              <h3 className="text-lg font-semibold text-primary mb-2">Appointment Scheduling</h3>
-              <p className="text-gray-300">Let AI agents handle booking, rescheduling, and calendar management so your team never misses a meeting.</p>
+            <div className="bg-gradient-to-br from-[#00adb5] via-[#3b82f6] to-[#a855f7] rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-white mb-2">Appointment Scheduling</h3>
+              <p className="text-white/90">Let AI agents handle booking, rescheduling, and calendar management so your team never misses a meeting.</p>
             </div>
           </div>
         </div>
@@ -121,7 +121,7 @@ export default function AIAgentServices() {
         <div className="bg-gradient-to-br from-primary/10 to-accent-purple/10 rounded-2xl border border-primary/30 p-8 mb-12">
           <h2 className="text-2xl font-bold text-white mb-4">Why AI Agents Make Sense</h2>
           <p className="text-gray-300 mb-6">
-            Hiring a full-time support rep costs $40K-$60K annually. An AI agent handles the same volume of inquiries for a fraction of the cost—and never takes a day off.
+            Hiring a full time support rep costs $40K-$60K annually. An AI agent handles the same volume of inquiries for a fraction of the cost—and never takes a day off.
           </p>
           <p className="text-gray-300">
             Most businesses see response times drop from hours to seconds, customer satisfaction improve, and support costs decrease by 40-60% within the first quarter.

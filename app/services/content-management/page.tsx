@@ -1,13 +1,13 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { GearIcon } from "@/components/ui/ModernIcons";
+import { ContentIcon } from "@/components/ui/ModernIcons";
 
 export const metadata: Metadata = {
-  title: "Process Optimization Services | Good Breeze AI",
-  description: "Identify bottlenecks and streamline operations with process optimization services that redesign workflows for speed, accuracy, and scalability.",
+  title: "Content Management & Delivery Services | Good Breeze AI",
+  description: "Automate your social media content creation and delivery with custom workflows that plan, create, and schedule content across all platforms—freeing you from the content treadmill.",
 };
 
-export default function ProcessOptimizationServices() {
+export default function ContentManagementServices() {
   return (
     <div className="min-h-screen bg-dark py-24 px-6">
       <div className="max-w-4xl mx-auto">
@@ -21,20 +21,20 @@ export default function ProcessOptimizationServices() {
             Services
           </Link>
           <span className="text-gray-600 mx-2">/</span>
-          <span className="text-gray-300">Process Optimization</span>
+          <span className="text-gray-300">Content Management & Delivery</span>
         </div>
 
         {/* H1 with target keyword */}
         <div className="flex items-center gap-4 mb-6">
-          <GearIcon className="w-16 h-16" />
+          <ContentIcon className="w-16 h-16" />
           <h1 className="text-4xl sm:text-5xl font-bold text-white">
-            Process Optimization Services
+            Content Management & Delivery Services
           </h1>
         </div>
 
         {/* First sentence with target keyword */}
         <p className="text-xl text-gray-300 mb-8 leading-relaxed">
-          <strong>Process optimization services</strong> help businesses identify inefficiencies, eliminate bottlenecks, and redesign workflows for maximum speed and accuracy—often cutting operational costs by 30-50% while improving output quality.
+          <strong>Content management and delivery services</strong> help businesses automate the entire content lifecycle—from planning and creation to scheduling and publishing across multiple platforms—so you can maintain consistent social media presence without the daily grind.
         </p>
 
         {/* What you get section */}
@@ -48,8 +48,8 @@ export default function ProcessOptimizationServices() {
                 </svg>
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-white mb-1">Process Audit</h3>
-                <p className="text-gray-300">We map your current workflows end-to-end, identifying bottlenecks, redundancies, and opportunities for improvement.</p>
+                <h3 className="text-lg font-semibold text-white mb-1">Automated Content Planning</h3>
+                <p className="text-gray-300">We set up systems that help you plan content themes, topics, and publishing schedules weeks or months in advance.</p>
               </div>
             </div>
 
@@ -60,8 +60,8 @@ export default function ProcessOptimizationServices() {
                 </svg>
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-white mb-1">Optimized Workflow Design</h3>
-                <p className="text-gray-300">We redesign processes to eliminate waste, reduce handoffs, and improve throughput—often cutting time-to-completion in half.</p>
+                <h3 className="text-lg font-semibold text-white mb-1">Multi Platform Distribution</h3>
+                <p className="text-gray-300">Automatically format and publish content to LinkedIn, Twitter, Instagram, Facebook, and other platforms from a single source.</p>
               </div>
             </div>
 
@@ -72,8 +72,8 @@ export default function ProcessOptimizationServices() {
                 </svg>
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-white mb-1">Automation Roadmap</h3>
-                <p className="text-gray-300">We prioritize which processes to automate first based on ROI, complexity, and business impact.</p>
+                <h3 className="text-lg font-semibold text-white mb-1">Content Repurposing Workflows</h3>
+                <p className="text-gray-300">Turn long form content into bite sized social posts, email newsletters, and other formats automatically.</p>
               </div>
             </div>
 
@@ -84,8 +84,8 @@ export default function ProcessOptimizationServices() {
                 </svg>
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-white mb-1">Implementation Support</h3>
-                <p className="text-gray-300">We help you roll out optimized processes, train your team, and measure improvement over time.</p>
+                <h3 className="text-lg font-semibold text-white mb-1">Performance Tracking & Optimization</h3>
+                <p className="text-gray-300">Monitor engagement metrics across platforms and get automated reports on what content performs best.</p>
               </div>
             </div>
           </div>
@@ -93,53 +93,53 @@ export default function ProcessOptimizationServices() {
 
         {/* Common use cases */}
         <div className="mb-12">
-          <h2 className="text-2xl font-bold text-white mb-6">Common Process Optimization Areas</h2>
+          <h2 className="text-2xl font-bold text-white mb-6">Common Content Automation Use Cases</h2>
           <div className="grid md:grid-cols-2 gap-6">
-            <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
-              <h3 className="text-lg font-semibold text-primary mb-2">Sales to Fulfillment</h3>
-              <p className="text-gray-300">Streamline the handoff from closed deal to project kickoff—eliminate delays and reduce errors.</p>
+            <div className="bg-gradient-to-br from-[#3b82f6] via-[#a855f7] to-[#00adb5] rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-white mb-2">Social Media Scheduling</h3>
+              <p className="text-white/90">Plan and schedule weeks of social media content in one sitting, then let automation handle the posting.</p>
             </div>
 
-            <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
-              <h3 className="text-lg font-semibold text-primary mb-2">Client Onboarding</h3>
-              <p className="text-gray-300">Reduce onboarding time from weeks to days by eliminating unnecessary steps and automating what remains.</p>
+            <div className="bg-gradient-to-br from-[#3b82f6] via-[#a855f7] to-[#3b82f6] rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-white mb-2">Blog to Social Distribution</h3>
+              <p className="text-white/90">Automatically turn new blog posts into social media threads, LinkedIn articles, and email newsletter content.</p>
             </div>
 
-            <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
-              <h3 className="text-lg font-semibold text-primary mb-2">Financial Close</h3>
-              <p className="text-gray-300">Cut month-end close time in half by automating reconciliations, approvals, and report generation.</p>
+            <div className="bg-gradient-to-br from-[#a855f7] via-[#00adb5] to-[#a855f7] rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-white mb-2">Engagement Monitoring</h3>
+              <p className="text-white/90">Track mentions, comments, and engagement across platforms in a unified dashboard without switching tabs.</p>
             </div>
 
-            <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
-              <h3 className="text-lg font-semibold text-primary mb-2">Customer Support Triage</h3>
-              <p className="text-gray-300">Route support tickets faster and more accurately—reduce response times and improve customer satisfaction.</p>
+            <div className="bg-gradient-to-br from-[#00adb5] via-[#3b82f6] to-[#a855f7] rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-white mb-2">Content Calendar Management</h3>
+              <p className="text-white/90">Centralize your content calendar with approval workflows, deadlines, and automated reminders for your team.</p>
             </div>
           </div>
         </div>
 
         {/* ROI section */}
         <div className="bg-gradient-to-br from-primary/10 to-accent-purple/10 rounded-2xl border border-primary/30 p-8 mb-12">
-          <h2 className="text-2xl font-bold text-white mb-4">The Cost of Inefficiency</h2>
+          <h2 className="text-2xl font-bold text-white mb-4">Stop Trading Time for Content</h2>
           <p className="text-gray-300 mb-6">
-            Most businesses lose 20-30% of their operational capacity to inefficient processes—handoffs that shouldn't exist, approvals that slow everything down, and manual steps that could be automated.
+            Most businesses spend 10-15 hours per week on social media management—creating posts, scheduling content, monitoring engagement, and reporting on performance. That's nearly half a full time position dedicated just to content logistics.
           </p>
           <p className="text-gray-300">
-            Process optimization typically recovers 10-15 hours per employee per week. For a 10-person team, that's 100+ hours reclaimed monthly—equivalent to hiring 2-3 full time employees without the overhead.
+            Automated content management systems reclaim 70-80% of that time, letting you focus on strategy and creativity while automation handles the repetitive scheduling, formatting, and distribution tasks.
           </p>
         </div>
 
         {/* CTA */}
         <div className="text-center bg-dark-700 rounded-2xl border border-primary/20 p-12">
-          <h2 className="text-3xl font-bold text-white mb-4">Ready to Optimize Your Operations?</h2>
+          <h2 className="text-3xl font-bold text-white mb-4">Ready to Automate Your Content Pipeline?</h2>
           <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-            Book a 30-minute process audit and we'll show you exactly where you're losing time and money.
+            Let's build a content management system that keeps you consistent without burning out your team.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/contact"
               className="px-8 py-4 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full hover:shadow-lg hover:shadow-primary/50 transition-all duration-300 transform hover:scale-105"
             >
-              Schedule Process Audit
+              Schedule Strategy Call
             </Link>
             <Link
               href="/tools"

@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { WorkflowIcon, BotIcon, ChartIcon, GearIcon } from "../ui/ModernIcons";
+import { WorkflowIcon, BotIcon, ChartIcon, GearIcon, ContentIcon, CustomIcon } from "../ui/ModernIcons";
 
 const services = [
   {
@@ -29,6 +29,18 @@ const services = [
     Icon: GearIcon,
     href: "/services/process-optimization"
   },
+  {
+    title: "Content Management & Delivery",
+    description: "Automate your social media content creation and delivery pipeline",
+    Icon: ContentIcon,
+    href: "/services/content-management"
+  },
+  {
+    title: "Custom Solutions",
+    description: "Need something unique? We build bespoke automation tailored to your needs",
+    Icon: CustomIcon,
+    href: "/services/custom-solutions"
+  },
 ];
 
 export default function Services() {
@@ -53,7 +65,7 @@ export default function Services() {
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {services.map((service, index) => (
             <Link key={index} href={service.href}>
               <motion.div

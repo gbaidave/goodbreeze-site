@@ -95,24 +95,24 @@ export default function CompetitiveIntelligenceServices() {
         <div className="mb-12">
           <h2 className="text-2xl font-bold text-white mb-6">What We Monitor</h2>
           <div className="grid md:grid-cols-2 gap-6">
-            <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
-              <h3 className="text-lg font-semibold text-primary mb-2">Pricing Changes</h3>
-              <p className="text-gray-300">Track competitor pricing updates so you can adjust your strategy before losing deals.</p>
+            <div className="bg-gradient-to-br from-[#3b82f6] via-[#a855f7] to-[#00adb5] rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-white mb-2">Pricing Changes</h3>
+              <p className="text-white/90">Track competitor pricing updates so you can adjust your strategy before losing deals.</p>
             </div>
 
-            <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
-              <h3 className="text-lg font-semibold text-primary mb-2">Product Launches</h3>
-              <p className="text-gray-300">Know when competitors release new features or products—and how they position them.</p>
+            <div className="bg-gradient-to-br from-[#3b82f6] via-[#a855f7] to-[#3b82f6] rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-white mb-2">Product Launches</h3>
+              <p className="text-white/90">Know when competitors release new features or products—and how they position them.</p>
             </div>
 
-            <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
-              <h3 className="text-lg font-semibold text-primary mb-2">Messaging & Positioning</h3>
-              <p className="text-gray-300">Analyze how competitors talk about themselves and identify opportunities to differentiate.</p>
+            <div className="bg-gradient-to-br from-[#a855f7] via-[#00adb5] to-[#a855f7] rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-white mb-2">Messaging & Positioning</h3>
+              <p className="text-white/90">Analyze how competitors talk about themselves and identify opportunities to differentiate.</p>
             </div>
 
-            <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
-              <h3 className="text-lg font-semibold text-primary mb-2">Market Trends</h3>
-              <p className="text-gray-300">Spot emerging trends in your industry before they become mainstream.</p>
+            <div className="bg-gradient-to-br from-[#00adb5] via-[#3b82f6] to-[#a855f7] rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-white mb-2">Market Trends</h3>
+              <p className="text-white/90">Spot emerging trends in your industry before they become mainstream.</p>
             </div>
           </div>
         </div>
@@ -132,7 +132,7 @@ export default function CompetitiveIntelligenceServices() {
         <div className="text-center bg-dark-700 rounded-2xl border border-primary/20 p-12">
           <h2 className="text-3xl font-bold text-white mb-4">Stop Guessing What Competitors Are Doing</h2>
           <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-            Get real-time competitive intelligence delivered to your inbox—or try our free Sales Analyzer tool to see how you stack up right now.
+            Get real time competitive intelligence delivered to your inbox—or try our free Sales Analyzer tool to see how you stack up right now.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
