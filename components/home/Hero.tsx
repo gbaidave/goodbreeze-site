@@ -3,103 +3,143 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+
+interface Particle {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  size: number;
+}
 
 export default function Hero() {
-  const [mousePosition, setMousePosition] = useState({ x: 50, y: 50 });
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const particlesRef = useRef<Particle[]>([]);
+  const animationFrameRef = useRef<number | null>(null);
 
   useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    // Set canvas size
+    const resizeCanvas = () => {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    };
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
+
+    // Create particles
+    const particleCount = 100;
+    particlesRef.current = Array.from({ length: particleCount }, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      vx: (Math.random() - 0.5) * 0.5,
+      vy: (Math.random() - 0.5) * 0.5,
+      size: Math.random() * 2 + 1,
+    }));
+
+    // Mouse move handler
     const handleMouseMove = (e: MouseEvent) => {
+      const rect = canvas.getBoundingClientRect();
       setMousePosition({
-        x: (e.clientX / window.innerWidth) * 100,
-        y: (e.clientY / window.innerHeight) * 100,
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
       });
     };
+    canvas.addEventListener("mousemove", handleMouseMove);
 
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
+    // Animation loop
+    const animate = () => {
+      if (!ctx || !canvas) return;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Update and draw particles
+      particlesRef.current.forEach((particle, i) => {
+        // Move particle
+        particle.x += particle.vx;
+        particle.y += particle.vy;
+
+        // Bounce off edges
+        if (particle.x < 0 || particle.x > canvas.width) particle.vx *= -1;
+        if (particle.y < 0 || particle.y > canvas.height) particle.vy *= -1;
+
+        // Mouse interaction - particles move away from cursor
+        const dx = mousePosition.x - particle.x;
+        const dy = mousePosition.y - particle.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        const maxDistance = 150;
+
+        if (distance < maxDistance) {
+          const force = (maxDistance - distance) / maxDistance;
+          particle.x -= (dx / distance) * force * 2;
+          particle.y -= (dy / distance) * force * 2;
+        }
+
+        // Draw particle with glow
+        const gradient = ctx.createRadialGradient(
+          particle.x,
+          particle.y,
+          0,
+          particle.x,
+          particle.y,
+          particle.size * 3
+        );
+        gradient.addColorStop(0, "rgba(0, 173, 181, 0.8)");
+        gradient.addColorStop(1, "rgba(0, 173, 181, 0)");
+
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(particle.x, particle.y, particle.size * 3, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Draw connections between nearby particles
+        particlesRef.current.slice(i + 1).forEach((otherParticle) => {
+          const dx = particle.x - otherParticle.x;
+          const dy = particle.y - otherParticle.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          const maxLineDistance = 120;
+
+          if (distance < maxLineDistance) {
+            const opacity = (1 - distance / maxLineDistance) * 0.3;
+            ctx.strokeStyle = `rgba(0, 173, 181, ${opacity})`;
+            ctx.lineWidth = 0.5;
+            ctx.beginPath();
+            ctx.moveTo(particle.x, particle.y);
+            ctx.lineTo(otherParticle.x, otherParticle.y);
+            ctx.stroke();
+          }
+        });
+      });
+
+      animationFrameRef.current = requestAnimationFrame(animate);
+    };
+
+    animate();
+
+    return () => {
+      window.removeEventListener("resize", resizeCanvas);
+      canvas.removeEventListener("mousemove", handleMouseMove);
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, [mousePosition.x, mousePosition.y]);
 
   return (
     <section className="relative pt-32 pb-20 overflow-hidden bg-dark">
-      {/* Interactive animated gradient mesh background */}
-      <div className="absolute inset-0 overflow-hidden">
-        <motion.div
-          className="absolute inset-0"
-          style={{
-            background: `
-              radial-gradient(
-                circle at ${mousePosition.x}% ${mousePosition.y}%,
-                rgba(0, 173, 181, 0.25) 0%,
-                transparent 50%
-              ),
-              radial-gradient(
-                circle at ${100 - mousePosition.x}% ${100 - mousePosition.y}%,
-                rgba(102, 126, 234, 0.18) 0%,
-                transparent 50%
-              ),
-              radial-gradient(
-                circle at 50% 50%,
-                rgba(139, 92, 246, 0.15) 0%,
-                transparent 70%
-              )
-            `,
-          }}
-          transition={{ duration: 0.3 }}
-        />
-
-        {/* Animated gradient orbs */}
-        <motion.div
-          className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/30 rounded-full blur-3xl"
-          animate={{
-            x: [0, 30, 0],
-            y: [0, -20, 0],
-            scale: [1, 1.1, 1],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
-        <motion.div
-          className="absolute top-1/2 right-1/4 w-80 h-80 bg-accent-blue/25 rounded-full blur-3xl"
-          animate={{
-            x: [0, -20, 0],
-            y: [0, 25, 0],
-            scale: [1, 1.15, 1],
-          }}
-          transition={{
-            duration: 10,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
-        <motion.div
-          className="absolute bottom-1/4 left-1/2 w-72 h-72 bg-accent-purple/20 rounded-full blur-3xl"
-          animate={{
-            x: [0, 15, 0],
-            y: [0, -15, 0],
-            scale: [1, 1.08, 1],
-          }}
-          transition={{
-            duration: 12,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
-
-        {/* Tech grid overlay */}
-        <div className="absolute inset-0 opacity-[0.05]"
-          style={{
-            backgroundImage: `
-              linear-gradient(rgba(0, 173, 181, 0.5) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(0, 173, 181, 0.5) 1px, transparent 1px)
-            `,
-            backgroundSize: '50px 50px',
-          }}
-        />
-      </div>
+      {/* Animated particle network background */}
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 w-full h-full"
+        style={{ background: "linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)" }}
+      />
 
       {/* Content */}
       <div className="relative z-10 max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
@@ -151,21 +191,44 @@ export default function Hero() {
               </div>
             </div>
 
-            {/* Enhanced CTAs with hover effects */}
+            {/* Super prominent CTAs */}
             <div className="flex flex-col sm:flex-row gap-4 mb-8">
-              <Link
-                href="/tools"
-                className="group relative px-8 py-4 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full overflow-hidden transition-all duration-300 transform hover:scale-105 text-center shadow-lg shadow-primary/30 hover:shadow-primary/60"
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.98 }}
               >
-                <span className="relative z-10">Try Free Tools</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-accent-blue to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              </Link>
-              <Link
-                href="/contact"
-                className="group relative px-8 py-4 border-2 border-primary text-primary font-semibold rounded-full hover:bg-primary transition-all duration-300 text-center overflow-hidden"
+                <Link
+                  href="/tools"
+                  className="group relative block px-10 py-5 bg-gradient-to-r from-primary via-accent-blue to-primary text-white text-lg font-bold rounded-full overflow-hidden text-center shadow-2xl shadow-primary/50"
+                  style={{ backgroundSize: "200% 100%" }}
+                >
+                  <span className="relative z-10 flex items-center justify-center gap-2">
+                    <span>Try Free Tools</span>
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </span>
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-accent-blue via-primary to-accent-blue"
+                    initial={{ x: "-100%" }}
+                    whileHover={{ x: "100%" }}
+                    transition={{ duration: 0.6 }}
+                    style={{ backgroundSize: "200% 100%" }}
+                  />
+                </Link>
+              </motion.div>
+
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.98 }}
               >
-                <span className="relative z-10 group-hover:text-white transition-colors">Talk to a Human</span>
-              </Link>
+                <Link
+                  href="/contact"
+                  className="block px-10 py-5 border-4 border-primary text-primary text-lg font-bold rounded-full hover:bg-primary hover:text-white transition-all duration-300 text-center shadow-xl shadow-primary/30"
+                >
+                  Talk to a Human
+                </Link>
+              </motion.div>
             </div>
 
             {/* Trust indicator */}
