@@ -1,6 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 
 const testimonials = [
@@ -25,6 +26,13 @@ const testimonials = [
     result: "Month-end close in half the time",
     image: "https://goodbreeze.ai/wp-content/uploads/2026/01/Rafael-Moreno.jpg"
   },
+  {
+    name: "Marcus Chen",
+    role: "Real Estate Broker",
+    quote: "Good Breeze AI transformed how we handle leads. Automated follow-ups, instant property alerts, and seamless CRM updates mean we close more deals with less manual work.",
+    result: "30% increase in closed deals",
+    image: "https://goodbreeze.ai/wp-content/uploads/2026/01/Marcus-Chen.jpg"
+  },
 ];
 
 const StarRating = () => (
@@ -38,6 +46,20 @@ const StarRating = () => (
 );
 
 export default function SocialProof() {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentIndex((prevIndex) => (prevIndex + 1) % testimonials.length);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const goToSlide = (index: number) => {
+    setCurrentIndex(index);
+  };
+
   return (
     <section className="py-24 px-6 sm:px-8 lg:px-12 bg-dark-800">
       <div className="max-w-7xl mx-auto">
@@ -56,57 +78,74 @@ export default function SocialProof() {
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-3 gap-8">
-          {testimonials.map((testimonial, index) => (
+        {/* Carousel Container */}
+        <div className="relative max-w-4xl mx-auto mb-12">
+          <AnimatePresence mode="wait">
             <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-              className="relative bg-dark-700 rounded-2xl border border-primary/20 p-8 hover:border-primary/50 transition-all duration-300 group"
+              key={currentIndex}
+              initial={{ opacity: 0, x: 100 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -100 }}
+              transition={{ duration: 0.5 }}
+              className="relative bg-dark-700 rounded-2xl border border-primary/20 p-12 hover:border-primary/50 transition-all duration-300 group"
             >
               {/* Quote icon */}
-              <div className="absolute top-6 right-6 opacity-10 group-hover:opacity-20 transition-opacity">
-                <svg className="w-12 h-12 text-primary" fill="currentColor" viewBox="0 0 24 24">
+              <div className="absolute top-8 right-8 opacity-10 group-hover:opacity-20 transition-opacity">
+                <svg className="w-16 h-16 text-primary" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
                 </svg>
               </div>
 
               {/* Star Rating */}
-              <div className="relative z-10 mb-4">
+              <div className="relative z-10 mb-6">
                 <StarRating />
               </div>
 
               {/* Quote */}
-              <div className="relative z-10 mb-6">
-                <p className="text-gray-300 leading-relaxed italic">
-                  "{testimonial.quote}"
+              <div className="relative z-10 mb-8">
+                <p className="text-gray-300 leading-relaxed italic text-xl">
+                  "{testimonials[currentIndex].quote}"
                 </p>
               </div>
 
               {/* Result badge */}
-              <div className="mb-6 px-4 py-2 bg-primary/10 border border-primary/30 rounded-lg inline-block">
-                <span className="text-sm font-semibold text-primary">{testimonial.result}</span>
+              <div className="mb-8 px-6 py-3 bg-primary/10 border border-primary/30 rounded-lg inline-block">
+                <span className="text-base font-semibold text-primary">{testimonials[currentIndex].result}</span>
               </div>
 
               {/* Author with photo */}
               <div className="relative z-10 flex items-center gap-4">
-                <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-primary/30">
+                <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-primary/30">
                   <Image
-                    src={testimonial.image}
-                    alt={testimonial.name}
+                    src={testimonials[currentIndex].image}
+                    alt={testimonials[currentIndex].name}
                     fill
                     className="object-cover"
                   />
                 </div>
                 <div>
-                  <p className="font-semibold text-white">{testimonial.name}</p>
-                  <p className="text-sm text-gray-400">{testimonial.role}</p>
+                  <p className="font-semibold text-white text-lg">{testimonials[currentIndex].name}</p>
+                  <p className="text-base text-gray-400">{testimonials[currentIndex].role}</p>
                 </div>
               </div>
             </motion.div>
-          ))}
+          </AnimatePresence>
+
+          {/* Navigation Dots */}
+          <div className="flex justify-center gap-3 mt-8">
+            {testimonials.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => goToSlide(index)}
+                className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                  index === currentIndex
+                    ? "bg-primary w-8"
+                    : "bg-gray-600 hover:bg-gray-500"
+                }`}
+                aria-label={`Go to testimonial ${index + 1}`}
+              />
+            ))}
+          </div>
         </div>
 
         {/* CTA - Made more prominent */}
