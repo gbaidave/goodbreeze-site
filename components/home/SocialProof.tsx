@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import Image from "next/image";
 
 const testimonials = [
   {
@@ -10,28 +9,28 @@ const testimonials = [
     role: "Consultant",
     quote: "Call Dave at Good Breeze AI. He built us a simple flow that handles intake, auto-fills proposals, and keeps follow-ups on track so nothing slips.",
     result: "Streamlined intake & proposals",
-    image: "https://goodbreeze.ai/wp-content/uploads/2025/11/Alana-Shaw.jpg"
+    initials: "AS"
   },
   {
     name: "Julia Lawson",
     role: "Attorney",
     quote: "Good Breeze AI fixed our intake and follow-up mess overnight. Their system books consults, tracks next steps, and even handles after-hours calls so we don't lose leads.",
     result: "Zero missed leads",
-    image: "https://goodbreeze.ai/wp-content/uploads/2026/01/Julia-Lawson.jpg"
+    initials: "JL"
   },
   {
     name: "Rafael Moreno",
     role: "CPA",
     quote: "I'd recommend Dave in a heartbeat. His automations collect client documents, remind people nicely, and flag exceptions so month-end actually ends.",
     result: "Month-end close in half the time",
-    image: "https://goodbreeze.ai/wp-content/uploads/2026/01/Rafael-Moreno.jpg"
+    initials: "RM"
   },
   {
     name: "Marcus Chen",
     role: "Real Estate Broker",
     quote: "Good Breeze AI transformed how we handle leads. Automated follow-ups, instant property alerts, and seamless CRM updates mean we close more deals with less manual work.",
     result: "30% increase in closed deals",
-    image: "https://goodbreeze.ai/wp-content/uploads/2026/01/Marcus-Chen.jpg"
+    initials: "MC"
   },
 ];
 
@@ -72,20 +71,10 @@ const TestimonialCard = ({ testimonial }: { testimonial: typeof testimonials[0] 
       <span className="text-sm font-semibold text-primary">{testimonial.result}</span>
     </div>
 
-    {/* Author with photo */}
+    {/* Author with initials avatar */}
     <div className="relative z-10 flex items-center gap-3">
-      <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-primary/30">
-        <Image
-          src={testimonial.image}
-          alt={testimonial.name}
-          width={48}
-          height={48}
-          className="object-cover"
-          onError={(e) => {
-            // Fallback to placeholder if image fails to load
-            e.currentTarget.src = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Crect fill='%2300adb5' width='48' height='48'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-size='20' font-family='sans-serif'%3E${testimonial.name[0]}%3C/text%3E%3C/svg%3E`;
-          }}
-        />
+      <div className="relative w-12 h-12 rounded-full bg-gradient-to-br from-primary to-accent-blue border-2 border-primary/30 flex items-center justify-center">
+        <span className="text-white font-bold text-lg">{testimonial.initials}</span>
       </div>
       <div>
         <p className="font-semibold text-white text-base">{testimonial.name}</p>
