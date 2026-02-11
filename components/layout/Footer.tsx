@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Footer() {
   return (
@@ -6,10 +7,50 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto">
         <div className="grid md:grid-cols-4 gap-8 mb-8">
           <div>
-            <h3 className="text-xl font-bold text-primary mb-4">Good Breeze AI</h3>
-            <p className="text-gray-400 text-sm">
+            <Link href="/" className="inline-block mb-4">
+              <Image
+                src="/gbai-logo.png"
+                alt="Good Breeze AI"
+                width={150}
+                height={50}
+                className="h-10 w-auto"
+              />
+            </Link>
+            <p className="text-gray-400 text-sm mb-3">
               AI Operations That Scale Your Business
             </p>
+            <Link
+              href="/contact"
+              className="inline-block text-primary hover:text-accent-blue transition-colors text-sm font-semibold"
+            >
+              Book a Strategy Call →
+            </Link>
+          </div>
+
+          <div>
+            <h4 className="font-semibold mb-4">Services</h4>
+            <ul className="space-y-2 text-gray-400 text-sm">
+              <li>
+                <Link href="/services/workflow-automation" className="hover:text-primary transition-colors">
+                  Workflow Automation
+                </Link>
+              </li>
+              <li>
+                <Link href="/services/ai-agents" className="hover:text-primary transition-colors">
+                  AI Agent Implementation
+                </Link>
+              </li>
+              <li>
+                <Link href="/services/competitive-intelligence" className="hover:text-primary transition-colors">
+                  Competitive Intelligence
+                </Link>
+              </li>
+              <li>
+                <Link href="/services/process-optimization" className="hover:text-primary transition-colors">
+                  Process Optimization
+                </Link>
+              </li>
+            </ul>
           </div>
 
           <div>
