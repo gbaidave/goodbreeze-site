@@ -98,12 +98,28 @@ export default function TechStack() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.4 }}
-          className="mt-16 bg-gradient-to-br from-primary/10 to-accent-purple/10 rounded-2xl border border-primary/30 p-8"
+          className="mt-16 relative group cursor-default"
         >
-          <h3 className="text-2xl font-bold text-white mb-4 text-center">Why This Matters</h3>
-          <p className="text-gray-300 text-center max-w-3xl mx-auto">
-            We don't lock you into proprietary systems. Everything we build uses open standards and best-in-class tools—so you own your automation, not the other way around.
-          </p>
+          {/* Animated background glow */}
+          <motion.div
+            className="absolute -inset-2 bg-gradient-to-r from-primary via-accent-blue to-accent-purple rounded-3xl blur-xl opacity-30 group-hover:opacity-50 transition-opacity duration-500"
+            animate={{
+              scale: [1, 1.02, 1],
+            }}
+            transition={{
+              duration: 4,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
+          <div className="relative bg-gradient-to-br from-primary/10 via-accent-blue/10 to-accent-purple/10 rounded-2xl border-2 border-primary/50 p-8 backdrop-blur-sm group-hover:border-primary group-hover:shadow-2xl group-hover:shadow-primary/30 transition-all duration-300">
+            <h3 className="text-2xl font-bold mb-4 text-center bg-gradient-to-r from-primary via-accent-blue to-accent-purple bg-clip-text text-transparent">
+              Why This Matters
+            </h3>
+            <p className="text-gray-200 text-center max-w-3xl mx-auto leading-relaxed">
+              We don't lock you into proprietary systems. Everything we build uses open standards and best-in-class tools—so you own your automation, not the other way around.
+            </p>
+          </div>
         </motion.div>
       </div>
     </section>

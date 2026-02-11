@@ -43,6 +43,12 @@ const partners = [
     description: "Document Management",
     category: "Integrations"
   },
+  {
+    name: "1,000+ Integrations",
+    description: "Slack, Salesforce, QuickBooks, Airtable & more",
+    category: "Ecosystem",
+    isSpecial: true
+  },
 ];
 
 export default function Partners() {
@@ -103,19 +109,6 @@ export default function Partners() {
             </motion.div>
           ))}
         </div>
-
-        {/* Note about integrations */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className="mt-12 text-center"
-        >
-          <p className="text-gray-400">
-            Plus integrations with 1,000+ apps and services including Slack, Salesforce, QuickBooks, Airtable, and more
-          </p>
-        </motion.div>
       </div>
     </section>
   );

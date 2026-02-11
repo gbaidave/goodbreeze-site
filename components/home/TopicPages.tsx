@@ -53,30 +53,22 @@ export default function TopicPages() {
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl mx-auto">
           {topics.map((topic, index) => (
             <Link key={index} href={topic.href}>
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 10 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                className="group p-8 rounded-2xl bg-dark-700 border border-primary/20 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/20 transition-all duration-300 cursor-pointer"
+                transition={{ duration: 0.4, delay: index * 0.03 }}
+                className="group flex items-center gap-2 p-4 rounded-lg bg-dark-700/50 border border-primary/10 hover:border-primary/40 hover:bg-dark-700 transition-all duration-200"
               >
-                <div className="flex items-start justify-between mb-4">
-                  <span className="px-3 py-1 bg-primary/10 border border-primary/30 rounded-full text-xs text-primary font-semibold">
-                    {topic.category}
-                  </span>
-                  <svg className="w-6 h-6 text-primary transform group-hover:translate-x-1 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                  </svg>
-                </div>
-                <h3 className="text-2xl font-bold mb-3 group-hover:text-primary transition-colors duration-300">
+                <svg className="w-4 h-4 text-primary flex-shrink-0 transform group-hover:translate-x-0.5 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+                <span className="text-gray-300 group-hover:text-primary transition-colors duration-200 text-sm">
                   {topic.title}
-                </h3>
-                <p className="text-gray-400 leading-relaxed">
-                  {topic.description}
-                </p>
+                </span>
               </motion.div>
             </Link>
           ))}
