@@ -177,7 +177,7 @@ export default function SocialProof() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.4 }}
-          className="relative mt-20 text-center bg-gradient-to-br from-accent-blue/70 via-accent-purple/60 to-primary/70 rounded-3xl p-12 overflow-hidden"
+          className="relative mt-20 text-center bg-gradient-to-br from-[#3b82f6] via-[#a855f7] to-[#00adb5] rounded-3xl p-12 overflow-hidden"
         >
           {/* Animated gradient blobs */}
           <motion.div
@@ -216,8 +216,7 @@ export default function SocialProof() {
               href="/contact"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.98 }}
-              className="inline-block px-12 py-6 bg-gradient-to-r from-primary via-accent-blue to-primary text-white text-xl font-bold rounded-full shadow-2xl shadow-primary/60 hover:shadow-primary/80 transition-all duration-300"
-              style={{ backgroundSize: "200% 100%" }}
+              className="inline-block px-12 py-6 border-4 border-white text-white text-xl font-bold rounded-full shadow-2xl shadow-white/40 hover:bg-white hover:text-dark transition-all duration-300"
             >
               Book Your Strategy Call
             </motion.a>

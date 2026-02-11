@@ -50,7 +50,7 @@ export default function FinalCTA() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="relative bg-gradient-to-br from-accent-blue/70 via-accent-purple/60 to-primary/70 backdrop-blur-xl rounded-3xl p-12 shadow-2xl overflow-hidden"
+          className="relative bg-gradient-to-br from-[#3b82f6] via-[#a855f7] to-[#00adb5] backdrop-blur-xl rounded-3xl p-12 shadow-2xl overflow-hidden"
         >
           <div className="relative z-10">
             <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 text-center bg-gradient-to-r from-primary via-accent-blue to-accent-purple bg-clip-text text-transparent">
