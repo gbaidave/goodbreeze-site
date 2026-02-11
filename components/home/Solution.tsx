@@ -34,7 +34,7 @@ export default function Solution() {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
             whileHover={{ scale: 1.05 }}
-            className="relative p-8 rounded-2xl bg-gradient-to-br from-primary via-accent-blue to-primary group hover:shadow-lg hover:shadow-primary/30 transition-all duration-300 overflow-hidden"
+            className="relative p-8 rounded-2xl bg-gradient-to-br from-accent-blue/70 via-accent-purple/60 to-primary/70 group hover:shadow-lg hover:shadow-primary/30 transition-all duration-300 overflow-hidden"
           >
             <div className="absolute top-6 left-6 w-16 h-16 rounded-full bg-gradient-to-br from-primary to-accent-blue flex items-center justify-center text-white font-bold text-3xl z-10">
               1
@@ -56,7 +56,7 @@ export default function Solution() {
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.1 }}
             whileHover={{ scale: 1.05 }}
-            className="relative p-8 rounded-2xl bg-gradient-to-br from-accent-blue via-accent-purple to-accent-blue group hover:shadow-lg hover:shadow-accent-blue/30 transition-all duration-300 overflow-hidden"
+            className="relative p-8 rounded-2xl bg-gradient-to-br from-accent-blue/70 via-accent-purple/60 to-accent-blue/70 group hover:shadow-lg hover:shadow-accent-blue/30 transition-all duration-300 overflow-hidden"
           >
             <div className="absolute top-6 left-6 w-16 h-16 rounded-full bg-gradient-to-br from-accent-blue to-accent-purple flex items-center justify-center text-white font-bold text-3xl z-10">
               2
@@ -78,7 +78,7 @@ export default function Solution() {
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.2 }}
             whileHover={{ scale: 1.05 }}
-            className="relative p-8 rounded-2xl bg-gradient-to-br from-accent-purple via-primary to-accent-purple group hover:shadow-lg hover:shadow-accent-purple/30 transition-all duration-300 overflow-hidden"
+            className="relative p-8 rounded-2xl bg-gradient-to-br from-accent-purple/70 via-primary/60 to-accent-purple/70 group hover:shadow-lg hover:shadow-accent-purple/30 transition-all duration-300 overflow-hidden"
           >
             <div className="absolute top-6 left-6 w-16 h-16 rounded-full bg-gradient-to-br from-accent-purple to-primary flex items-center justify-center text-white font-bold text-3xl z-10">
               3
@@ -100,7 +100,7 @@ export default function Solution() {
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.3 }}
             whileHover={{ scale: 1.05 }}
-            className="relative p-8 rounded-2xl bg-gradient-to-br from-primary via-accent-blue to-accent-purple group hover:shadow-lg hover:shadow-primary/30 transition-all duration-300 overflow-hidden"
+            className="relative p-8 rounded-2xl bg-gradient-to-br from-primary/70 via-accent-blue/60 to-accent-purple/70 group hover:shadow-lg hover:shadow-primary/30 transition-all duration-300 overflow-hidden"
           >
             <div className="absolute top-6 left-6 w-16 h-16 rounded-full bg-gradient-to-br from-primary via-accent-blue to-accent-purple flex items-center justify-center text-white font-bold text-3xl z-10">
               4

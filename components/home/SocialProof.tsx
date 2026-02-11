@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 
 const testimonials = [
@@ -45,19 +45,80 @@ const StarRating = () => (
   </div>
 );
 
+// Single testimonial card component
+const TestimonialCard = ({ testimonial }: { testimonial: typeof testimonials[0] }) => (
+  <div className="relative bg-dark-700 rounded-2xl border border-primary/20 p-8 hover:border-primary/50 transition-all duration-300 group h-full">
+    {/* Quote icon */}
+    <div className="absolute top-4 right-4 opacity-10 group-hover:opacity-20 transition-opacity">
+      <svg className="w-12 h-12 text-primary" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
+      </svg>
+    </div>
+
+    {/* Star Rating */}
+    <div className="relative z-10 mb-4">
+      <StarRating />
+    </div>
+
+    {/* Quote */}
+    <div className="relative z-10 mb-6">
+      <p className="text-gray-300 leading-relaxed italic text-base">
+        "{testimonial.quote}"
+      </p>
+    </div>
+
+    {/* Result badge */}
+    <div className="mb-6 px-4 py-2 bg-primary/10 border border-primary/30 rounded-lg inline-block">
+      <span className="text-sm font-semibold text-primary">{testimonial.result}</span>
+    </div>
+
+    {/* Author with photo */}
+    <div className="relative z-10 flex items-center gap-3">
+      <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-primary/30">
+        <Image
+          src={testimonial.image}
+          alt={testimonial.name}
+          width={48}
+          height={48}
+          className="object-cover"
+          onError={(e) => {
+            // Fallback to placeholder if image fails to load
+            e.currentTarget.src = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Crect fill='%2300adb5' width='48' height='48'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-size='20' font-family='sans-serif'%3E${testimonial.name[0]}%3C/text%3E%3C/svg%3E`;
+          }}
+        />
+      </div>
+      <div>
+        <p className="font-semibold text-white text-base">{testimonial.name}</p>
+        <p className="text-sm text-gray-400">{testimonial.role}</p>
+      </div>
+    </div>
+  </div>
+);
+
 export default function SocialProof() {
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [visibleCards, setVisibleCards] = useState([0, 1, 2]);
+  const [direction, setDirection] = useState(1);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % testimonials.length);
+      setDirection(1);
+      setVisibleCards((prev) => {
+        const newCards = [...prev];
+        newCards.shift(); // Remove first card
+        newCards.push((newCards[newCards.length - 1] + 1) % testimonials.length); // Add new card at end
+        return newCards;
+      });
     }, 4000);
 
     return () => clearInterval(interval);
   }, []);
 
   const goToSlide = (index: number) => {
-    setCurrentIndex(index);
+    const currentFirst = visibleCards[0];
+    if (index === currentFirst) return;
+
+    setDirection(index > currentFirst ? 1 : -1);
+    setVisibleCards([index, (index + 1) % testimonials.length, (index + 2) % testimonials.length]);
   };
 
   return (
@@ -78,74 +139,34 @@ export default function SocialProof() {
           </p>
         </motion.div>
 
-        {/* Carousel Container - 3 Cards Display */}
+        {/* Carousel Container - 3 Cards Display with single-card transitions */}
         <div className="relative max-w-7xl mx-auto mb-12 overflow-hidden">
           <div className="grid md:grid-cols-3 gap-8">
-            {[0, 1, 2].map((offset) => {
-              const index = (currentIndex + offset) % testimonials.length;
-              const testimonial = testimonials[index];
-              return (
+            <AnimatePresence mode="popLayout">
+              {visibleCards.map((cardIndex) => (
                 <motion.div
-                  key={`${currentIndex}-${offset}`}
-                  initial={{ opacity: 0, x: 300 }}
+                  key={cardIndex}
+                  layout
+                  initial={{ opacity: 0, x: direction > 0 ? 300 : -300 }}
                   animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: direction > 0 ? -300 : 300 }}
                   transition={{ duration: 0.5 }}
-                  className="relative bg-dark-700 rounded-2xl border border-primary/20 p-8 hover:border-primary/50 transition-all duration-300 group"
                 >
-                  {/* Quote icon */}
-                  <div className="absolute top-4 right-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                    <svg className="w-12 h-12 text-primary" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
-                    </svg>
-                  </div>
-
-                  {/* Star Rating */}
-                  <div className="relative z-10 mb-4">
-                    <StarRating />
-                  </div>
-
-                  {/* Quote */}
-                  <div className="relative z-10 mb-6">
-                    <p className="text-gray-300 leading-relaxed italic text-base">
-                      "{testimonial.quote}"
-                    </p>
-                  </div>
-
-                  {/* Result badge */}
-                  <div className="mb-6 px-4 py-2 bg-primary/10 border border-primary/30 rounded-lg inline-block">
-                    <span className="text-sm font-semibold text-primary">{testimonial.result}</span>
-                  </div>
-
-                  {/* Author with photo */}
-                  <div className="relative z-10 flex items-center gap-3">
-                    <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-primary/30">
-                      <Image
-                        src={testimonial.image}
-                        alt={testimonial.name}
-                        width={48}
-                        height={48}
-                        className="object-cover"
-                      />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-white text-base">{testimonial.name}</p>
-                      <p className="text-sm text-gray-400">{testimonial.role}</p>
-                    </div>
-                  </div>
+                  <TestimonialCard testimonial={testimonials[cardIndex]} />
                 </motion.div>
-              );
-            })}
+              ))}
+            </AnimatePresence>
           </div>
 
-          {/* Navigation Dots */}
+          {/* Navigation Dots - Active indicator is now white */}
           <div className="flex justify-center gap-3 mt-8">
             {testimonials.map((_, index) => (
               <button
                 key={index}
                 onClick={() => goToSlide(index)}
                 className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                  index === currentIndex
-                    ? "bg-primary w-8"
+                  index === visibleCards[0]
+                    ? "bg-white w-8"
                     : "bg-gray-600 hover:bg-gray-500"
                 }`}
                 aria-label={`Go to testimonial ${index + 1}`}
@@ -154,13 +175,13 @@ export default function SocialProof() {
           </div>
         </div>
 
-        {/* CTA - Made more prominent */}
+        {/* CTA - Made more prominent with visible gradient background */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.4 }}
-          className="relative mt-20 text-center bg-gradient-to-br from-primary/30 via-accent-blue/20 to-accent-purple/30 rounded-3xl p-12 overflow-hidden"
+          className="relative mt-20 text-center bg-gradient-to-br from-accent-blue/70 via-accent-purple/60 to-primary/70 rounded-3xl p-12 overflow-hidden"
         >
           {/* Animated gradient blobs */}
           <motion.div

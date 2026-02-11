@@ -157,14 +157,14 @@ export default function Hero() {
             </div>
 
             {/* Super prominent CTAs */}
-            <div className="flex flex-col sm:flex-row gap-4 mb-8">
+            <div className="flex flex-col sm:flex-row gap-4 mb-8 items-center">
               <motion.div
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.98 }}
               >
                 <Link
                   href="/tools"
-                  className="group relative block px-10 py-5 bg-gradient-to-r from-primary via-accent-blue to-primary text-white text-lg font-bold rounded-full overflow-hidden text-center shadow-2xl shadow-primary/50"
+                  className="group relative flex items-center justify-center px-10 py-5 bg-gradient-to-r from-primary via-accent-blue to-primary text-white text-lg font-bold rounded-full overflow-hidden shadow-2xl shadow-primary/50"
                   style={{ backgroundSize: "200% 100%" }}
                 >
                   <span className="relative z-10">Try Free Tools Now</span>
@@ -184,7 +184,7 @@ export default function Hero() {
               >
                 <Link
                   href="/contact"
-                  className="block px-10 py-5 border-4 border-primary text-primary text-lg font-bold rounded-full hover:bg-primary hover:text-white transition-all duration-300 text-center shadow-xl shadow-primary/30"
+                  className="flex items-center justify-center px-10 py-5 border-4 border-primary text-primary text-lg font-bold rounded-full hover:bg-primary hover:text-white transition-all duration-300 shadow-xl shadow-primary/30"
                 >
                   Talk to a Human
                 </Link>
