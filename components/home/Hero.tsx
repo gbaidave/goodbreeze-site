@@ -30,17 +30,17 @@ export default function Hero() {
             background: `
               radial-gradient(
                 circle at ${mousePosition.x}% ${mousePosition.y}%,
-                rgba(0, 173, 181, 0.15) 0%,
+                rgba(0, 173, 181, 0.25) 0%,
                 transparent 50%
               ),
               radial-gradient(
                 circle at ${100 - mousePosition.x}% ${100 - mousePosition.y}%,
-                rgba(102, 126, 234, 0.1) 0%,
+                rgba(102, 126, 234, 0.18) 0%,
                 transparent 50%
               ),
               radial-gradient(
                 circle at 50% 50%,
-                rgba(139, 92, 246, 0.08) 0%,
+                rgba(139, 92, 246, 0.15) 0%,
                 transparent 70%
               )
             `,
@@ -50,7 +50,7 @@ export default function Hero() {
 
         {/* Animated gradient orbs */}
         <motion.div
-          className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl"
+          className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/30 rounded-full blur-3xl"
           animate={{
             x: [0, 30, 0],
             y: [0, -20, 0],
@@ -63,7 +63,7 @@ export default function Hero() {
           }}
         />
         <motion.div
-          className="absolute top-1/2 right-1/4 w-80 h-80 bg-accent-blue/15 rounded-full blur-3xl"
+          className="absolute top-1/2 right-1/4 w-80 h-80 bg-accent-blue/25 rounded-full blur-3xl"
           animate={{
             x: [0, -20, 0],
             y: [0, 25, 0],
@@ -76,7 +76,7 @@ export default function Hero() {
           }}
         />
         <motion.div
-          className="absolute bottom-1/4 left-1/2 w-72 h-72 bg-accent-purple/12 rounded-full blur-3xl"
+          className="absolute bottom-1/4 left-1/2 w-72 h-72 bg-accent-purple/20 rounded-full blur-3xl"
           animate={{
             x: [0, 15, 0],
             y: [0, -15, 0],
@@ -90,7 +90,7 @@ export default function Hero() {
         />
 
         {/* Tech grid overlay */}
-        <div className="absolute inset-0 opacity-[0.03]"
+        <div className="absolute inset-0 opacity-[0.05]"
           style={{
             backgroundImage: `
               linear-gradient(rgba(0, 173, 181, 0.5) 1px, transparent 1px),
