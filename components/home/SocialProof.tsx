@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 
 const testimonials = [
@@ -9,28 +10,28 @@ const testimonials = [
     role: "Consultant",
     quote: "Call Dave at Good Breeze AI. He built us a simple flow that handles intake, auto-fills proposals, and keeps follow-ups on track so nothing slips.",
     result: "Streamlined intake & proposals",
-    initials: "AS"
+    avatar: "/images/avatars/avatar-as.svg"
   },
   {
     name: "Julia Lawson",
     role: "Attorney",
     quote: "Good Breeze AI fixed our intake and follow-up mess overnight. Their system books consults, tracks next steps, and even handles after-hours calls so we don't lose leads.",
     result: "Zero missed leads",
-    initials: "JL"
+    avatar: "/images/avatars/avatar-jl.svg"
   },
   {
     name: "Rafael Moreno",
     role: "CPA",
     quote: "I'd recommend Dave in a heartbeat. His automations collect client documents, remind people nicely, and flag exceptions so month-end actually ends.",
     result: "Month-end close in half the time",
-    initials: "RM"
+    avatar: "/images/avatars/avatar-rm.svg"
   },
   {
     name: "Marcus Chen",
     role: "Real Estate Broker",
     quote: "Good Breeze AI transformed how we handle leads. Automated follow-ups, instant property alerts, and seamless CRM updates mean we close more deals with less manual work.",
     result: "30% increase in closed deals",
-    initials: "MC"
+    avatar: "/images/avatars/avatar-mc.svg"
   },
 ];
 
@@ -73,8 +74,14 @@ const TestimonialCard = ({ testimonial }: { testimonial: typeof testimonials[0] 
 
     {/* Author with initials avatar */}
     <div className="relative z-10 flex items-center gap-3">
-      <div className="relative w-12 h-12 rounded-full bg-gradient-to-br from-primary to-accent-blue border-2 border-primary/30 flex items-center justify-center">
-        <span className="text-white font-bold text-lg">{testimonial.initials}</span>
+      <div className="relative w-12 h-12 rounded-full border-2 border-primary/30 flex items-center justify-center overflow-hidden">
+        <Image
+          src={testimonial.avatar}
+          alt={testimonial.name + " avatar"}
+          width={48}
+          height={48}
+          className="w-full h-full object-cover"
+        />
       </div>
       <div>
         <p className="font-semibold text-white text-base">{testimonial.name}</p>
