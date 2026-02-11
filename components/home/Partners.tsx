@@ -4,6 +4,21 @@ import { motion } from "framer-motion";
 
 const partners = [
   {
+    name: "OpenAI / ChatGPT",
+    description: "Advanced Language Models",
+    category: "AI Services"
+  },
+  {
+    name: "Anthropic Claude",
+    description: "Enterprise AI Assistant",
+    category: "AI Services"
+  },
+  {
+    name: "Microsoft",
+    description: "Enterprise Cloud & Productivity",
+    category: "Infrastructure"
+  },
+  {
     name: "n8n",
     description: "Workflow Automation Platform",
     category: "Core Infrastructure"
@@ -11,11 +26,6 @@ const partners = [
   {
     name: "OpenRouter",
     description: "AI Model Gateway",
-    category: "AI Services"
-  },
-  {
-    name: "Anthropic Claude",
-    description: "Enterprise AI Assistant",
     category: "AI Services"
   },
   {
@@ -103,7 +113,7 @@ export default function Partners() {
           className="mt-12 text-center"
         >
           <p className="text-gray-400">
-            Plus integrations with 1,000+ apps and services including Slack, HubSpot, Salesforce, QuickBooks, and more
+            Plus integrations with 1,000+ apps and services including Slack, Salesforce, QuickBooks, Airtable, and more
           </p>
         </motion.div>
       </div>

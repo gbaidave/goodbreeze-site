@@ -20,34 +20,34 @@ export default function Solution() {
           className="text-center mb-16"
         >
           <h2 className="text-4xl sm:text-5xl font-bold mb-4">
-            How We're Different
+            Strategy First. Automation That Sticks.
           </h2>
           <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-            We bridge the gap between AI hype and real business results
+            We don't sell cookie cutter solutions. We diagnose first, then build automation guided by proven playbooks.
           </p>
         </motion.div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid lg:grid-cols-4 gap-6">
           <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
             className="p-8 rounded-2xl bg-gradient-to-br from-primary/10 to-transparent border border-primary group hover:border-primary/80 hover:shadow-lg hover:shadow-primary/20 transition-all duration-300"
           >
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-accent-blue flex items-center justify-center text-white font-bold text-xl group-hover:scale-110 transition-transform duration-300">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-accent-blue flex items-center justify-center text-white font-bold text-2xl group-hover:scale-110 transition-transform duration-300">
                 1
               </div>
-              <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
-                <svg className="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
             </div>
-            <h3 className="text-2xl font-semibold mb-4">Start Free</h3>
+            <div className="mb-4">
+              <svg className="w-12 h-12 text-primary mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+              </svg>
+            </div>
+            <h3 className="text-2xl font-semibold mb-4">Business Review</h3>
             <p className="text-gray-300">
-              Try our AI-powered tools (Sales Analyzer, SEO/Website Audits) with no commitment. See the value before spending a dime.
+              We start by understanding your workflows, not pitching solutions. What's taking time? Where do things break?
             </p>
           </motion.div>
 
@@ -58,42 +58,65 @@ export default function Solution() {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="p-8 rounded-2xl bg-gradient-to-br from-accent-blue/10 to-transparent border border-accent-blue group hover:border-accent-blue/80 hover:shadow-lg hover:shadow-accent-blue/20 transition-all duration-300"
           >
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-accent-blue to-accent-purple flex items-center justify-center text-white font-bold text-xl group-hover:scale-110 transition-transform duration-300">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-accent-blue to-accent-purple flex items-center justify-center text-white font-bold text-2xl group-hover:scale-110 transition-transform duration-300">
                 2
               </div>
-              <div className="w-10 h-10 rounded-lg bg-accent-blue/20 flex items-center justify-center">
-                <svg className="w-6 h-6 text-accent-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-              </div>
             </div>
-            <h3 className="text-2xl font-semibold mb-4">Upgrade to Pro</h3>
+            <div className="mb-4">
+              <svg className="w-12 h-12 text-accent-blue mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h3 className="text-2xl font-semibold mb-4">Map Bottlenecks</h3>
             <p className="text-gray-300">
-              Get advanced features, unlimited access, and priority support. Scale your insights without limits.
+              We identify exactly where manual work is killing your efficiency and costing you revenue.
             </p>
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.2 }}
             className="p-8 rounded-2xl bg-gradient-to-br from-accent-purple/10 to-transparent border border-accent-purple group hover:border-accent-purple/80 hover:shadow-lg hover:shadow-accent-purple/20 transition-all duration-300"
           >
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-accent-purple to-primary flex items-center justify-center text-white font-bold text-xl group-hover:scale-110 transition-transform duration-300">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-accent-purple to-primary flex items-center justify-center text-white font-bold text-2xl group-hover:scale-110 transition-transform duration-300">
                 3
               </div>
-              <div className="w-10 h-10 rounded-lg bg-accent-purple/20 flex items-center justify-center">
-                <svg className="w-6 h-6 text-accent-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-                </svg>
+            </div>
+            <div className="mb-4">
+              <svg className="w-12 h-12 text-accent-purple mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+              </svg>
+            </div>
+            <h3 className="text-2xl font-semibold mb-4">Customize Solutions</h3>
+            <p className="text-gray-300">
+              No templates. We build automation tailored to YOUR processes and YOUR data.
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="p-8 rounded-2xl bg-gradient-to-br from-primary/10 via-accent-blue/10 to-accent-purple/10 border-2 border-primary group hover:border-accent-blue hover:shadow-lg hover:shadow-accent-blue/20 transition-all duration-300"
+          >
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary via-accent-blue to-accent-purple flex items-center justify-center text-white font-bold text-2xl group-hover:scale-110 transition-transform duration-300">
+                4
               </div>
             </div>
-            <h3 className="text-2xl font-semibold mb-4">Go Custom</h3>
+            <div className="mb-4">
+              <svg className="w-12 h-12 text-primary mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
+            <h3 className="text-2xl font-semibold mb-4">Deploy with Proven Playbooks</h3>
             <p className="text-gray-300">
-              Need more? We'll build automated workflows, AI agents, and competitive intelligence systems tailored to your business.
+              Launch fast using battle tested frameworks. No endless testing. Just automation that works from day one.
             </p>
           </motion.div>
         </div>

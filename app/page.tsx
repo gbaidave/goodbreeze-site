@@ -8,6 +8,7 @@ import FounderSection from "@/components/home/FounderSection";
 import Partners from "@/components/home/Partners";
 import TechStack from "@/components/home/TechStack";
 import FAQ from "@/components/home/FAQ";
+import TopicPages from "@/components/home/TopicPages";
 import FinalCTA from "@/components/home/FinalCTA";
 
 export default function Home() {
@@ -23,6 +24,7 @@ export default function Home() {
       <Partners />
       <TechStack />
       <FAQ />
+      <TopicPages />
       <FinalCTA />
     </main>
   );

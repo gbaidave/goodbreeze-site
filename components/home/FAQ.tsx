@@ -21,6 +21,11 @@ const faqs = [
     answer: "If you're doing the same tasks over and over, if follow-ups slip through the cracks, or if hiring feels too slow/expensive—you're ready. Our free tools can show you opportunities in minutes.",
   },
   {
+    question: "What business problems does automation actually solve?",
+    answer: "Automation helps businesses in five key ways: (1) Make more money by never missing follow-ups or opportunities, (2) Save money by reducing manual labor costs, (3) Find more clients through consistent outreach and lead nurturing, (4) Close more clients with faster proposals and professional processes, and (5) Solve major pain points like data entry, reporting, and coordination. If you're facing any of these challenges, automation can help.",
+    featured: true,
+  },
+  {
     question: "What's the difference between your tools and hiring someone?",
     answer: "Tools cost hundreds per month, not thousands. They work 24/7, never call in sick, and scale instantly. For the cost of one employee, you get unlimited automated workflows that never stop working.",
   },
@@ -42,7 +47,7 @@ export default function FAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
-    <section className="py-24 px-6 sm:px-8 lg:px-12 bg-dark-800 relative overflow-hidden">
+    <section className="py-24 px-6 sm:px-8 lg:px-12 bg-dark relative overflow-hidden">
       {/* Background gradient decoration */}
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-accent-purple/10 rounded-full blur-3xl" />
       <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
@@ -71,7 +76,7 @@ export default function FAQ() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: index * 0.05 }}
-              className="bg-dark-700 rounded-xl border border-primary/20 overflow-hidden"
+              className={`rounded-xl border overflow-hidden ${faq.featured ? 'bg-gradient-to-br from-primary/10 to-accent-blue/10 border-primary/40' : 'bg-dark-700 border-primary/20'}`}
             >
               <button
                 onClick={() => setOpenIndex(openIndex === index ? null : index)}

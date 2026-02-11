@@ -3,35 +3,100 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
-import { GridPattern } from "../ui/AbstractShapes";
+import { useEffect, useState } from "react";
 
 export default function Hero() {
+  const [mousePosition, setMousePosition] = useState({ x: 50, y: 50 });
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({
+        x: (e.clientX / window.innerWidth) * 100,
+        y: (e.clientY / window.innerHeight) * 100,
+      });
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
+
   return (
     <section className="relative pt-32 pb-20 overflow-hidden bg-dark">
-      {/* Custom algorithmic flows background */}
-      <div className="absolute inset-0">
-        <Image
-          src="/images/hero-bg.png"
-          alt=""
-          fill
-          className="object-cover opacity-70"
-          priority
-          quality={100}
-        />
-        {/* Subtle overlay for depth */}
-        <div className="absolute inset-0 bg-gradient-to-br from-dark/50 via-transparent to-dark/70" />
-
-        {/* Additional animated subtle glow */}
+      {/* Interactive animated gradient mesh background */}
+      <div className="absolute inset-0 overflow-hidden">
         <motion.div
-          className="absolute top-1/3 left-1/3 w-96 h-96 bg-primary/10 rounded-full blur-3xl"
+          className="absolute inset-0"
+          style={{
+            background: `
+              radial-gradient(
+                circle at ${mousePosition.x}% ${mousePosition.y}%,
+                rgba(0, 173, 181, 0.15) 0%,
+                transparent 50%
+              ),
+              radial-gradient(
+                circle at ${100 - mousePosition.x}% ${100 - mousePosition.y}%,
+                rgba(102, 126, 234, 0.1) 0%,
+                transparent 50%
+              ),
+              radial-gradient(
+                circle at 50% 50%,
+                rgba(139, 92, 246, 0.08) 0%,
+                transparent 70%
+              )
+            `,
+          }}
+          transition={{ duration: 0.3 }}
+        />
+
+        {/* Animated gradient orbs */}
+        <motion.div
+          className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl"
           animate={{
+            x: [0, 30, 0],
+            y: [0, -20, 0],
+            scale: [1, 1.1, 1],
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+        <motion.div
+          className="absolute top-1/2 right-1/4 w-80 h-80 bg-accent-blue/15 rounded-full blur-3xl"
+          animate={{
+            x: [0, -20, 0],
+            y: [0, 25, 0],
             scale: [1, 1.15, 1],
-            opacity: [0.3, 0.5, 0.3],
+          }}
+          transition={{
+            duration: 10,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+        <motion.div
+          className="absolute bottom-1/4 left-1/2 w-72 h-72 bg-accent-purple/12 rounded-full blur-3xl"
+          animate={{
+            x: [0, 15, 0],
+            y: [0, -15, 0],
+            scale: [1, 1.08, 1],
           }}
           transition={{
             duration: 12,
             repeat: Infinity,
             ease: "easeInOut",
+          }}
+        />
+
+        {/* Tech grid overlay */}
+        <div className="absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage: `
+              linear-gradient(rgba(0, 173, 181, 0.5) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(0, 173, 181, 0.5) 1px, transparent 1px)
+            `,
+            backgroundSize: '50px 50px',
           }}
         />
       </div>
@@ -86,19 +151,20 @@ export default function Hero() {
               </div>
             </div>
 
-            {/* CTAs */}
+            {/* Enhanced CTAs with hover effects */}
             <div className="flex flex-col sm:flex-row gap-4 mb-8">
               <Link
                 href="/tools"
-                className="px-8 py-4 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full hover:shadow-lg hover:shadow-primary/50 transition-all duration-300 transform hover:scale-105 text-center"
+                className="group relative px-8 py-4 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full overflow-hidden transition-all duration-300 transform hover:scale-105 text-center shadow-lg shadow-primary/30 hover:shadow-primary/60"
               >
-                Try Free Tools
+                <span className="relative z-10">Try Free Tools</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-accent-blue to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               </Link>
               <Link
                 href="/contact"
-                className="px-8 py-4 border-2 border-primary text-primary font-semibold rounded-full hover:bg-primary hover:text-white transition-all duration-300 text-center"
+                className="group relative px-8 py-4 border-2 border-primary text-primary font-semibold rounded-full hover:bg-primary transition-all duration-300 text-center overflow-hidden"
               >
-                Talk to a Human
+                <span className="relative z-10 group-hover:text-white transition-colors">Talk to a Human</span>
               </Link>
             </div>
 
