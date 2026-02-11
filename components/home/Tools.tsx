@@ -66,16 +66,9 @@ export default function Tools() {
               className="group relative"
             >
               <Link href={tool.href} className={tool.comingSoon ? "pointer-events-none" : ""}>
-                <div className="relative p-8 rounded-2xl bg-dark-700 border border-primary/20 hover:border-primary hover:shadow-2xl hover:shadow-primary/30 transition-all duration-300 overflow-hidden h-full">
+                <div className="relative p-8 rounded-2xl bg-dark-700 border border-primary/20 hover:border-primary hover:shadow-2xl hover:shadow-primary/30 transition-all duration-300 overflow-hidden h-full flex flex-col">
                   {/* Animated gradient background on hover */}
                   <div className={`absolute inset-0 bg-gradient-to-br ${tool.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
-
-                  {/* Coming Soon Badge */}
-                  {tool.comingSoon && (
-                    <span className="absolute top-4 right-4 px-3 py-1 bg-accent-purple text-white text-xs font-semibold rounded-full z-10">
-                      Coming Soon
-                    </span>
-                  )}
 
                   {/* Large animated icon */}
                   <div className="relative z-10 mb-6">
@@ -86,23 +79,25 @@ export default function Tools() {
                     </div>
                   </div>
 
-                  <div className="relative z-10">
+                  <div className="relative z-10 flex-1 flex flex-col">
                     <h3 className="text-2xl font-semibold mb-2 group-hover:text-primary transition-colors duration-300">{tool.name}</h3>
                     <p className="text-primary font-medium mb-4 text-lg">{tool.description}</p>
-                    <p className="text-gray-400 mb-6">{tool.detail}</p>
+                    <p className="text-gray-400 mb-6 flex-1">{tool.detail}</p>
 
-                    {/* Prominent CTA Button */}
-                    <div className={`inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold transition-all duration-300 ${
-                      tool.comingSoon
-                        ? "bg-gray-700 text-gray-400 cursor-not-allowed"
-                        : `bg-gradient-to-r ${tool.gradient} text-white group-hover:shadow-lg group-hover:shadow-primary/50 transform group-hover:scale-105`
-                    }`}>
-                      <span>{tool.comingSoon ? "Coming Soon" : "Try Free"}</span>
-                      {!tool.comingSoon && (
-                        <svg className="w-5 h-5 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                        </svg>
-                      )}
+                    {/* Prominent CTA Button - Centered */}
+                    <div className="flex justify-center">
+                      <div className={`inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold transition-all duration-300 ${
+                        tool.comingSoon
+                          ? "bg-gray-700 text-gray-400 cursor-not-allowed"
+                          : `bg-gradient-to-r ${tool.gradient} text-white group-hover:shadow-lg group-hover:shadow-primary/50 transform group-hover:scale-105`
+                      }`}>
+                        <span>{tool.comingSoon ? "Coming Soon" : "Try Free"}</span>
+                        {!tool.comingSoon && (
+                          <svg className="w-5 h-5 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                          </svg>
+                        )}
+                      </div>
                     </div>
                   </div>
 

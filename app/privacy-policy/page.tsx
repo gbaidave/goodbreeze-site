@@ -16,7 +16,7 @@ export default function PrivacyPolicy() {
           <section>
             <h2 className="text-2xl font-bold text-white mb-4">2. What We Collect</h2>
             <p className="text-gray-300 leading-relaxed mb-3">
-              The company states it does not actively collect personal data through our website but may gather information directly from clients or prospects, including:
+              The company states they do not actively collect personal data through our website but may gather information directly from clients, including:
             </p>
             <ul className="list-disc pl-6 text-gray-300 space-y-2">
               <li>Contact details (name, email, phone)</li>
@@ -30,66 +30,56 @@ export default function PrivacyPolicy() {
           <section>
             <h2 className="text-2xl font-bold text-white mb-4">3. How We Use Information</h2>
             <p className="text-gray-300 leading-relaxed mb-3">
-              Information is used to deliver services, schedule meetings, configure integrations, process payments, improve services, and send updates, insights, or marketing emails.
-            </p>
-            <p className="text-gray-300 leading-relaxed font-semibold">
-              We do not sell or rent your personal information.
+              Good Breeze AI uses information to deliver services, schedule meetings, configure integrations, process payments, improve services, and send updates or marketing emails. They affirm: "We do not sell or rent your personal information."
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-white mb-4">4. Tools & Platforms Used</h2>
+            <h2 className="text-2xl font-bold text-white mb-4">4. Tools & Platforms</h2>
             <p className="text-gray-300 leading-relaxed mb-3">
-              Third-party services include:
+              They utilize third-party tools including scheduling platforms, payment processors (Stripe, PayPal), automation tools (n8n, Zapier, Make.com), email systems, and AI assistants, with data practices governed by those providers' policies.
             </p>
-            <ul className="list-disc pl-6 text-gray-300 space-y-2">
-              <li>Scheduling tools</li>
-              <li>Payment platforms (Stripe, PayPal)</li>
-              <li>Automation tools (n8n, Zapier, Make.com)</li>
-              <li>Email systems</li>
-              <li>AI assistants or workflow bots (e.g., ChatGPT, Perplexity)</li>
-            </ul>
           </section>
 
           <section>
             <h2 className="text-2xl font-bold text-white mb-4">5. Cookies & Analytics</h2>
             <p className="text-gray-300 leading-relaxed">
-              The company may enable cookies or analytics tools in the future to track performance and visitor behavior.
+              The company may enable cookies and analytics tools in the future, stating any tools will comply with legal requirements and user consent mechanisms.
             </p>
           </section>
 
           <section>
             <h2 className="text-2xl font-bold text-white mb-4">6. Email Marketing</h2>
             <p className="text-gray-300 leading-relaxed">
-              Opt-in subscribers may receive emails about automation strategy and service updates with unsubscribe options. Platforms like Mailchimp may manage communications.
+              Users can opt into email communications about automation strategy and service updates, with unsubscribe options available.
             </p>
           </section>
 
           <section>
             <h2 className="text-2xl font-bold text-white mb-4">7. Your Rights</h2>
             <p className="text-gray-300 leading-relaxed">
-              California and other jurisdictions grant rights to access, correct, delete data, or withdraw consent or unsubscribe from communications by contacting <a href="mailto:contact@goodbreeze.ai" className="text-primary hover:underline">contact@goodbreeze.ai</a>.
+              Californians and those in jurisdictions with data rights laws may request access, correction, deletion, or consent withdrawal by contacting <a href="mailto:contact@goodbreeze.ai" className="text-primary hover:underline">contact@goodbreeze.ai</a>.
             </p>
           </section>
 
           <section>
             <h2 className="text-2xl font-bold text-white mb-4">8. Data Retention</h2>
             <p className="text-gray-300 leading-relaxed">
-              Data is retained only as long as necessary to deliver services or comply with legal obligations.
+              Data is retained only as necessary for service delivery, legal compliance, and maintaining project records.
             </p>
           </section>
 
           <section>
             <h2 className="text-2xl font-bold text-white mb-4">9. Security</h2>
             <p className="text-gray-300 leading-relaxed">
-              The policy advises no system is completely secure and recommends avoiding sharing unnecessary sensitive data.
+              They take commercially reasonable measures to protect data but acknowledge no system is completely secure.
             </p>
           </section>
 
           <section>
             <h2 className="text-2xl font-bold text-white mb-4">10. Policy Changes</h2>
             <p className="text-gray-300 leading-relaxed">
-              Updates will reflect new effective dates on the website, with direct notification to active clients.
+              Updates will be posted with revised effective dates, with direct notification to active clients or subscribers.
             </p>
           </section>
 

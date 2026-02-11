@@ -55,11 +55,15 @@ export default function Problem() {
               <div className="absolute inset-0 bg-gradient-to-br from-primary/0 to-primary/0 group-hover:from-primary/5 group-hover:to-transparent transition-all duration-300" />
               <div className="relative z-10">
                 <div className="mb-6 transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
-                  <div className={`w-20 h-20 mx-auto rounded-xl bg-gradient-to-br ${problem.gradient} flex items-center justify-center`}>
-                    <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d={problem.iconPath} />
-                    </svg>
-                  </div>
+                  <svg className="w-20 h-20 mx-auto" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                      <linearGradient id={`grad-${index}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor={problem.gradient === "from-primary to-accent-blue" ? "#00adb5" : problem.gradient === "from-accent-blue to-accent-purple" ? "#3b82f6" : "#a855f7"} />
+                        <stop offset="100%" stopColor={problem.gradient === "from-primary to-accent-blue" ? "#3b82f6" : problem.gradient === "from-accent-blue to-accent-purple" ? "#a855f7" : "#00adb5"} />
+                      </linearGradient>
+                    </defs>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} stroke={`url(#grad-${index})`} d={problem.iconPath} />
+                  </svg>
                 </div>
                 <h3 className="text-2xl font-semibold mb-4 text-primary text-center">
                   {problem.title}

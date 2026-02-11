@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import Image from "next/image";
 
 const testimonials = [
@@ -51,7 +51,7 @@ export default function SocialProof() {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % testimonials.length);
-    }, 3000);
+    }, 4000);
 
     return () => clearInterval(interval);
   }, []);
@@ -78,58 +78,64 @@ export default function SocialProof() {
           </p>
         </motion.div>
 
-        {/* Carousel Container */}
-        <div className="relative max-w-4xl mx-auto mb-12">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentIndex}
-              initial={{ opacity: 0, x: 100 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -100 }}
-              transition={{ duration: 0.5 }}
-              className="relative bg-dark-700 rounded-2xl border border-primary/20 p-12 hover:border-primary/50 transition-all duration-300 group"
-            >
-              {/* Quote icon */}
-              <div className="absolute top-8 right-8 opacity-10 group-hover:opacity-20 transition-opacity">
-                <svg className="w-16 h-16 text-primary" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
-                </svg>
-              </div>
+        {/* Carousel Container - 3 Cards Display */}
+        <div className="relative max-w-7xl mx-auto mb-12 overflow-hidden">
+          <div className="grid md:grid-cols-3 gap-8">
+            {[0, 1, 2].map((offset) => {
+              const index = (currentIndex + offset) % testimonials.length;
+              const testimonial = testimonials[index];
+              return (
+                <motion.div
+                  key={`${currentIndex}-${offset}`}
+                  initial={{ opacity: 0, x: 300 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5 }}
+                  className="relative bg-dark-700 rounded-2xl border border-primary/20 p-8 hover:border-primary/50 transition-all duration-300 group"
+                >
+                  {/* Quote icon */}
+                  <div className="absolute top-4 right-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <svg className="w-12 h-12 text-primary" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
+                    </svg>
+                  </div>
 
-              {/* Star Rating */}
-              <div className="relative z-10 mb-6">
-                <StarRating />
-              </div>
+                  {/* Star Rating */}
+                  <div className="relative z-10 mb-4">
+                    <StarRating />
+                  </div>
 
-              {/* Quote */}
-              <div className="relative z-10 mb-8">
-                <p className="text-gray-300 leading-relaxed italic text-xl">
-                  "{testimonials[currentIndex].quote}"
-                </p>
-              </div>
+                  {/* Quote */}
+                  <div className="relative z-10 mb-6">
+                    <p className="text-gray-300 leading-relaxed italic text-base">
+                      "{testimonial.quote}"
+                    </p>
+                  </div>
 
-              {/* Result badge */}
-              <div className="mb-8 px-6 py-3 bg-primary/10 border border-primary/30 rounded-lg inline-block">
-                <span className="text-base font-semibold text-primary">{testimonials[currentIndex].result}</span>
-              </div>
+                  {/* Result badge */}
+                  <div className="mb-6 px-4 py-2 bg-primary/10 border border-primary/30 rounded-lg inline-block">
+                    <span className="text-sm font-semibold text-primary">{testimonial.result}</span>
+                  </div>
 
-              {/* Author with photo */}
-              <div className="relative z-10 flex items-center gap-4">
-                <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-primary/30">
-                  <Image
-                    src={testimonials[currentIndex].image}
-                    alt={testimonials[currentIndex].name}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-                <div>
-                  <p className="font-semibold text-white text-lg">{testimonials[currentIndex].name}</p>
-                  <p className="text-base text-gray-400">{testimonials[currentIndex].role}</p>
-                </div>
-              </div>
-            </motion.div>
-          </AnimatePresence>
+                  {/* Author with photo */}
+                  <div className="relative z-10 flex items-center gap-3">
+                    <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-primary/30">
+                      <Image
+                        src={testimonial.image}
+                        alt={testimonial.name}
+                        width={48}
+                        height={48}
+                        className="object-cover"
+                      />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-white text-base">{testimonial.name}</p>
+                      <p className="text-sm text-gray-400">{testimonial.role}</p>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
 
           {/* Navigation Dots */}
           <div className="flex justify-center gap-3 mt-8">
@@ -154,20 +160,51 @@ export default function SocialProof() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.4 }}
-          className="mt-20 text-center bg-gradient-to-br from-primary/10 to-accent-purple/10 rounded-3xl border-2 border-primary/30 p-12"
+          className="relative mt-20 text-center bg-gradient-to-br from-primary/30 via-accent-blue/20 to-accent-purple/30 rounded-3xl p-12 overflow-hidden"
         >
-          <h3 className="text-3xl sm:text-4xl font-bold mb-4 bg-gradient-to-r from-primary via-accent-blue to-accent-purple bg-clip-text text-transparent">
-            Ready to See Similar Results in Your Business?
-          </h3>
-          <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-            Book a strategy call and we'll show you exactly how automation can transform your operations
-          </p>
-          <a
-            href="/contact"
-            className="inline-block px-10 py-5 bg-gradient-to-r from-primary to-accent-blue text-white text-lg font-bold rounded-full hover:shadow-2xl hover:shadow-primary/50 transition-all duration-300 transform hover:scale-105"
-          >
-            Book Your Strategy Call
-          </a>
+          {/* Animated gradient blobs */}
+          <motion.div
+            className="absolute top-0 right-0 w-64 h-64 bg-primary rounded-full blur-3xl opacity-20"
+            animate={{
+              scale: [1, 1.2, 1],
+              rotate: [0, 90, 0],
+            }}
+            transition={{
+              duration: 10,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
+          <motion.div
+            className="absolute bottom-0 left-0 w-64 h-64 bg-accent-purple rounded-full blur-3xl opacity-15"
+            animate={{
+              scale: [1, 1.3, 1],
+              rotate: [0, -90, 0],
+            }}
+            transition={{
+              duration: 12,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
+
+          <div className="relative z-10">
+            <h3 className="text-4xl sm:text-5xl font-bold mb-6 bg-gradient-to-r from-primary via-accent-blue to-accent-purple bg-clip-text text-transparent">
+              Ready to See Similar Results in Your Business?
+            </h3>
+            <p className="text-2xl text-white mb-10 max-w-2xl mx-auto leading-relaxed">
+              Book a strategy call and we'll show you exactly how automation can transform your operations
+            </p>
+            <motion.a
+              href="/contact"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.98 }}
+              className="inline-block px-12 py-6 bg-gradient-to-r from-primary via-accent-blue to-primary text-white text-xl font-bold rounded-full shadow-2xl shadow-primary/60 hover:shadow-primary/80 transition-all duration-300"
+              style={{ backgroundSize: "200% 100%" }}
+            >
+              Book Your Strategy Call
+            </motion.a>
+          </div>
         </motion.div>
       </div>
     </section>

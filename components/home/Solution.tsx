@@ -33,18 +33,19 @@ export default function Solution() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="p-8 rounded-2xl bg-gradient-to-br from-primary/10 to-transparent border border-primary group hover:border-primary/80 hover:shadow-lg hover:shadow-primary/20 transition-all duration-300"
+            whileHover={{ scale: 1.05 }}
+            className="relative p-8 rounded-2xl bg-gradient-to-br from-primary via-accent-blue to-primary group hover:shadow-lg hover:shadow-primary/30 transition-all duration-300 overflow-hidden"
           >
-            <div className="mb-6 transform group-hover:scale-110 transition-all duration-300">
-              <div className="w-14 h-14 mx-auto rounded-full bg-gradient-to-br from-primary to-accent-blue flex items-center justify-center text-white font-bold text-2xl mb-4">
-                1
-              </div>
-              <svg className="w-16 h-16 mx-auto text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <div className="absolute top-6 left-6 w-16 h-16 rounded-full bg-gradient-to-br from-primary to-accent-blue flex items-center justify-center text-white font-bold text-3xl z-10">
+              1
+            </div>
+            <div className="mb-6 mt-20 transform group-hover:scale-110 transition-all duration-300">
+              <svg className="w-16 h-16 mx-auto text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
               </svg>
             </div>
-            <h3 className="text-2xl font-semibold mb-4 text-center">Business Review</h3>
-            <p className="text-gray-300">
+            <h3 className="text-2xl font-semibold mb-4 text-center text-white">Business Review</h3>
+            <p className="text-white/90">
               We start by understanding your workflows, not pitching solutions. What's taking time? Where do things break?
             </p>
           </motion.div>
@@ -54,18 +55,19 @@ export default function Solution() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="p-8 rounded-2xl bg-gradient-to-br from-accent-blue/10 to-transparent border border-accent-blue group hover:border-accent-blue/80 hover:shadow-lg hover:shadow-accent-blue/20 transition-all duration-300"
+            whileHover={{ scale: 1.05 }}
+            className="relative p-8 rounded-2xl bg-gradient-to-br from-accent-blue via-accent-purple to-accent-blue group hover:shadow-lg hover:shadow-accent-blue/30 transition-all duration-300 overflow-hidden"
           >
-            <div className="mb-6 transform group-hover:scale-110 transition-all duration-300">
-              <div className="w-14 h-14 mx-auto rounded-full bg-gradient-to-br from-accent-blue to-accent-purple flex items-center justify-center text-white font-bold text-2xl mb-4">
-                2
-              </div>
-              <svg className="w-16 h-16 mx-auto text-accent-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <div className="absolute top-6 left-6 w-16 h-16 rounded-full bg-gradient-to-br from-accent-blue to-accent-purple flex items-center justify-center text-white font-bold text-3xl z-10">
+              2
+            </div>
+            <div className="mb-6 mt-20 transform group-hover:scale-110 transition-all duration-300">
+              <svg className="w-16 h-16 mx-auto text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <h3 className="text-2xl font-semibold mb-4 text-center">Map Bottlenecks</h3>
-            <p className="text-gray-300">
+            <h3 className="text-2xl font-semibold mb-4 text-center text-white">Map Bottlenecks</h3>
+            <p className="text-white/90">
               We identify exactly where manual work is killing your efficiency and costing you revenue.
             </p>
           </motion.div>
@@ -75,18 +77,19 @@ export default function Solution() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="p-8 rounded-2xl bg-gradient-to-br from-accent-purple/10 to-transparent border border-accent-purple group hover:border-accent-purple/80 hover:shadow-lg hover:shadow-accent-purple/20 transition-all duration-300"
+            whileHover={{ scale: 1.05 }}
+            className="relative p-8 rounded-2xl bg-gradient-to-br from-accent-purple via-primary to-accent-purple group hover:shadow-lg hover:shadow-accent-purple/30 transition-all duration-300 overflow-hidden"
           >
-            <div className="mb-6 transform group-hover:scale-110 transition-all duration-300">
-              <div className="w-14 h-14 mx-auto rounded-full bg-gradient-to-br from-accent-purple to-primary flex items-center justify-center text-white font-bold text-2xl mb-4">
-                3
-              </div>
-              <svg className="w-16 h-16 mx-auto text-accent-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <div className="absolute top-6 left-6 w-16 h-16 rounded-full bg-gradient-to-br from-accent-purple to-primary flex items-center justify-center text-white font-bold text-3xl z-10">
+              3
+            </div>
+            <div className="mb-6 mt-20 transform group-hover:scale-110 transition-all duration-300">
+              <svg className="w-16 h-16 mx-auto text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
               </svg>
             </div>
-            <h3 className="text-2xl font-semibold mb-4 text-center">Customize Solutions</h3>
-            <p className="text-gray-300">
+            <h3 className="text-2xl font-semibold mb-4 text-center text-white">Customize Solutions</h3>
+            <p className="text-white/90">
               No templates. We build automation tailored to YOUR processes and YOUR data.
             </p>
           </motion.div>
@@ -96,18 +99,19 @@ export default function Solution() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="p-8 rounded-2xl bg-gradient-to-br from-primary/10 via-accent-blue/10 to-accent-purple/10 border-2 border-primary group hover:border-accent-blue hover:shadow-lg hover:shadow-accent-blue/20 transition-all duration-300"
+            whileHover={{ scale: 1.05 }}
+            className="relative p-8 rounded-2xl bg-gradient-to-br from-primary via-accent-blue to-accent-purple group hover:shadow-lg hover:shadow-primary/30 transition-all duration-300 overflow-hidden"
           >
-            <div className="mb-6 transform group-hover:scale-110 transition-all duration-300">
-              <div className="w-14 h-14 mx-auto rounded-full bg-gradient-to-br from-primary via-accent-blue to-accent-purple flex items-center justify-center text-white font-bold text-2xl mb-4">
-                4
-              </div>
-              <svg className="w-16 h-16 mx-auto text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <div className="absolute top-6 left-6 w-16 h-16 rounded-full bg-gradient-to-br from-primary via-accent-blue to-accent-purple flex items-center justify-center text-white font-bold text-3xl z-10">
+              4
+            </div>
+            <div className="mb-6 mt-20 transform group-hover:scale-110 transition-all duration-300">
+              <svg className="w-16 h-16 mx-auto text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
             </div>
-            <h3 className="text-2xl font-semibold mb-4 text-center">Deploy with Proven Playbooks</h3>
-            <p className="text-gray-300">
+            <h3 className="text-2xl font-semibold mb-4 text-center text-white">Deploy with Proven Playbooks</h3>
+            <p className="text-white/90">
               Launch fast using battle tested frameworks. No endless testing. Just automation that works from day one.
             </p>
           </motion.div>

@@ -53,13 +53,13 @@ export default function Header() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
                     transition={{ duration: 0.2 }}
-                    className="absolute top-full left-0 mt-2 w-64 bg-dark-700 border border-primary/20 rounded-lg shadow-xl overflow-hidden"
+                    className="absolute top-full left-0 mt-2 w-64 bg-gradient-to-br from-primary/20 via-accent-blue/10 to-dark-700 backdrop-blur-xl border-2 border-primary/50 rounded-lg shadow-2xl shadow-primary/30 overflow-hidden"
                   >
                     {services.map((service, index) => (
                       <Link
                         key={index}
                         href={service.href}
-                        className="block px-4 py-3 text-gray-300 hover:bg-primary/10 hover:text-primary transition-colors"
+                        className="block px-4 py-3 text-white font-medium hover:bg-primary/30 hover:text-white transition-all duration-200"
                       >
                         {service.name}
                       </Link>

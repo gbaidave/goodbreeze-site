@@ -25,7 +25,7 @@ const services = [
   },
   {
     title: "Process Optimization",
-    description: "Audit, redesign, and automate your operations from end-to-end",
+    description: "Audit, redesign, and automate your operations completely",
     Icon: GearIcon,
     href: "/services/process-optimization"
   },
