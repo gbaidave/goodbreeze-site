@@ -70,14 +70,14 @@ export default function TechStack() {
               transition={{ duration: 0.6, delay: index * 0.1 }}
               className="bg-dark-700 rounded-2xl border border-primary/20 p-6 hover:border-primary/50 transition-all duration-300 group"
             >
-              <div className="flex items-center gap-3 mb-4">
-                <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${category.gradient} flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300`}>
-                  <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <div className="mb-6 transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
+                <div className={`w-16 h-16 mx-auto rounded-xl bg-gradient-to-br ${category.gradient} flex items-center justify-center`}>
+                  <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d={category.iconPath} />
                   </svg>
                 </div>
-                <h3 className="text-xl font-bold text-white">{category.category}</h3>
               </div>
+              <h3 className="text-xl font-bold text-white text-center mb-4">{category.category}</h3>
               <div className="flex flex-wrap gap-2">
                 {category.tools.map((tool, toolIndex) => (
                   <span

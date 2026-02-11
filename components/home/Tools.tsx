@@ -7,7 +7,7 @@ const tools = [
   {
     name: "Sales Analyzer",
     description: "AI-Powered Competitive Sales Intelligence",
-    detail: "Understand how you stack up against competitors in seconds",
+    detail: "Understand how you stack up against competitors quickly",
     href: "/tools/sales-analyzer",
     gradient: "from-primary to-accent-blue",
     iconPath: "M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z",
@@ -15,7 +15,7 @@ const tools = [
   {
     name: "SEO Audit",
     description: "Instant Technical SEO Analysis",
-    detail: "Get a comprehensive SEO report in under 60 seconds",
+    detail: "Get a comprehensive SEO report fast",
     href: "/tools/seo-audit",
     gradient: "from-accent-blue to-accent-purple",
     comingSoon: true,
@@ -24,7 +24,7 @@ const tools = [
   {
     name: "Website Audit",
     description: "Complete Website Performance Review",
-    detail: "Uncover speed, UX, and conversion issues instantly",
+    detail: "Uncover speed, UX, and conversion issues",
     href: "/tools/website-audit",
     gradient: "from-accent-purple to-primary",
     comingSoon: true,
@@ -48,10 +48,10 @@ export default function Tools() {
           className="text-center mb-16"
         >
           <h2 className="text-4xl sm:text-5xl font-bold mb-4">
-            Try Our Tools Free
+            Free Tools That Solve Real Problems
           </h2>
           <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-            No credit card required. See the value instantly.
+            No credit card required. Get actionable insights right now.
           </p>
         </motion.div>
 

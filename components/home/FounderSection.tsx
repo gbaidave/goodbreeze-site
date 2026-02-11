@@ -54,8 +54,8 @@ export default function FounderSection() {
               transition={{ duration: 0.8, delay: 0.4 }}
               className="absolute -bottom-6 -right-6 bg-dark-700/95 backdrop-blur-lg border border-primary/30 rounded-xl p-6 shadow-lg"
             >
-              <div className="text-2xl font-bold text-primary">Eats His Own Cooking</div>
-              <div className="text-sm text-gray-300">Built on Real-World Use</div>
+              <div className="text-2xl font-bold text-primary">Practitioner First</div>
+              <div className="text-sm text-gray-300">Built on Real-World Experience</div>
             </motion.div>
           </motion.div>
 

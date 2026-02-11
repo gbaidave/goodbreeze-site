@@ -46,7 +46,7 @@ export default function Services() {
           className="text-center mb-16"
         >
           <h2 className="text-4xl sm:text-5xl font-bold mb-4">
-            Done-For-You Services
+            Done For You Services
           </h2>
           <p className="text-xl text-gray-400 max-w-3xl mx-auto">
             Need more than tools? We'll build custom automation tailored to your business.
