@@ -54,15 +54,17 @@ export default function Problem() {
             >
               <div className="absolute inset-0 bg-gradient-to-br from-primary/0 to-primary/0 group-hover:from-primary/5 group-hover:to-transparent transition-all duration-300" />
               <div className="relative z-10">
-                <div className={`w-16 h-16 mb-6 rounded-xl bg-gradient-to-br ${problem.gradient} flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
-                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d={problem.iconPath} />
-                  </svg>
+                <div className="mb-6 transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
+                  <div className={`w-20 h-20 mx-auto rounded-xl bg-gradient-to-br ${problem.gradient} flex items-center justify-center`}>
+                    <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d={problem.iconPath} />
+                    </svg>
+                  </div>
                 </div>
-                <h3 className="text-2xl font-semibold mb-4 text-primary">
+                <h3 className="text-2xl font-semibold mb-4 text-primary text-center">
                   {problem.title}
                 </h3>
-                <p className="text-gray-300 leading-relaxed">
+                <p className="text-gray-300 leading-relaxed text-center">
                   {problem.description}
                 </p>
               </div>

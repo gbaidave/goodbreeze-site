@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef } from "react";
 
 interface Particle {
   x: number;
@@ -15,7 +15,6 @@ interface Particle {
 
 export default function Hero() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const particlesRef = useRef<Particle[]>([]);
   const animationFrameRef = useRef<number | null>(null);
 
@@ -41,18 +40,8 @@ export default function Hero() {
       y: Math.random() * canvas.height,
       vx: (Math.random() - 0.5) * 0.5,
       vy: (Math.random() - 0.5) * 0.5,
-      size: Math.random() * 2 + 1,
+      size: Math.random() * 1.5 + 1,
     }));
-
-    // Mouse move handler
-    const handleMouseMove = (e: MouseEvent) => {
-      const rect = canvas.getBoundingClientRect();
-      setMousePosition({
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top,
-      });
-    };
-    canvas.addEventListener("mousemove", handleMouseMove);
 
     // Animation loop
     const animate = () => {
@@ -70,33 +59,10 @@ export default function Hero() {
         if (particle.x < 0 || particle.x > canvas.width) particle.vx *= -1;
         if (particle.y < 0 || particle.y > canvas.height) particle.vy *= -1;
 
-        // Mouse interaction - particles move away from cursor
-        const dx = mousePosition.x - particle.x;
-        const dy = mousePosition.y - particle.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        const maxDistance = 150;
-
-        if (distance < maxDistance) {
-          const force = (maxDistance - distance) / maxDistance;
-          particle.x -= (dx / distance) * force * 2;
-          particle.y -= (dy / distance) * force * 2;
-        }
-
-        // Draw particle with glow
-        const gradient = ctx.createRadialGradient(
-          particle.x,
-          particle.y,
-          0,
-          particle.x,
-          particle.y,
-          particle.size * 3
-        );
-        gradient.addColorStop(0, "rgba(0, 173, 181, 0.8)");
-        gradient.addColorStop(1, "rgba(0, 173, 181, 0)");
-
-        ctx.fillStyle = gradient;
+        // Draw particle sharper (no glow)
+        ctx.fillStyle = "rgba(0, 173, 181, 0.9)";
         ctx.beginPath();
-        ctx.arc(particle.x, particle.y, particle.size * 3, 0, Math.PI * 2);
+        ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
         ctx.fill();
 
         // Draw connections between nearby particles
@@ -107,9 +73,9 @@ export default function Hero() {
           const maxLineDistance = 120;
 
           if (distance < maxLineDistance) {
-            const opacity = (1 - distance / maxLineDistance) * 0.3;
+            const opacity = (1 - distance / maxLineDistance) * 0.5;
             ctx.strokeStyle = `rgba(0, 173, 181, ${opacity})`;
-            ctx.lineWidth = 0.5;
+            ctx.lineWidth = 1;
             ctx.beginPath();
             ctx.moveTo(particle.x, particle.y);
             ctx.lineTo(otherParticle.x, otherParticle.y);
@@ -125,12 +91,11 @@ export default function Hero() {
 
     return () => {
       window.removeEventListener("resize", resizeCanvas);
-      canvas.removeEventListener("mousemove", handleMouseMove);
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [mousePosition.x, mousePosition.y]);
+  }, []);
 
   return (
     <section className="relative pt-32 pb-20 overflow-hidden bg-dark">
@@ -150,12 +115,12 @@ export default function Hero() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
           >
-            {/* Problem-focused headline */}
+            {/* Problem-focused headline with keyword at beginning */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 text-white leading-tight">
-              Tired of Watching Your Team
               <span className="block bg-gradient-to-r from-primary via-accent-blue to-accent-purple bg-clip-text text-transparent">
-                Drown in Busywork?
+                AI Automation for SMBs:
               </span>
+              Stop Watching Your Team Drown in Busywork
             </h1>
 
             {/* Clear outcome promise */}
@@ -202,12 +167,7 @@ export default function Hero() {
                   className="group relative block px-10 py-5 bg-gradient-to-r from-primary via-accent-blue to-primary text-white text-lg font-bold rounded-full overflow-hidden text-center shadow-2xl shadow-primary/50"
                   style={{ backgroundSize: "200% 100%" }}
                 >
-                  <span className="relative z-10 flex items-center justify-center gap-2">
-                    <span>Try Free Tools</span>
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                    </svg>
-                  </span>
+                  <span className="relative z-10">Try Free Tools Now</span>
                   <motion.div
                     className="absolute inset-0 bg-gradient-to-r from-accent-blue via-primary to-accent-blue"
                     initial={{ x: "-100%" }}

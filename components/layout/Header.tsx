@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -19,8 +20,15 @@ export default function Header() {
     <header className="fixed top-0 left-0 right-0 z-50 bg-dark/80 backdrop-blur-lg border-b border-gray-800">
       <nav className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-4">
         <div className="flex items-center justify-between">
-          <Link href="/" className="text-2xl font-bold text-primary">
-            Good Breeze AI
+          <Link href="/" className="flex items-center">
+            <Image
+              src="/gbai-logo.png"
+              alt="Good Breeze AI"
+              width={150}
+              height={50}
+              className="h-10 w-auto"
+              priority
+            />
           </Link>
 
           {/* Desktop Navigation */}
