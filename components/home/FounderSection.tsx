@@ -59,13 +59,13 @@ export default function FounderSection() {
 
             <div className="space-y-4 text-gray-300 mb-8">
               <p>
-                Dave isn't building theoretical solutions. Every system Good Breeze AI offers is battle tested in real operations first.
+                I'm not building theoretical solutions. Every system Good Breeze AI offers is battle tested in real operations first.
               </p>
               <p>
-                As a business operator who mastered technology out of necessity, Dave built automation tools when existing solutions fell short for real businesses. Other SMBs faced the same challenges.
+                As a business operator who mastered technology out of necessity, I built automation tools when existing solutions fell short for real businesses. Other SMBs faced the same challenges.
               </p>
               <p>
-                The competitive analyzer? Used daily for client calls. The proposal system? Powers the entire sales process. The workflow automation? Runs the whole operation. If a system doesn't deliver value internally, it won't be offered to clients.
+                The competitive analyzer? I use it daily for client calls. The proposal system? It powers my entire sales process. The workflow automation? It runs my whole operation. If a system doesn't deliver value internally, I won't offer it to clients.
               </p>
             </div>
 

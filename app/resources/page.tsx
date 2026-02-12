@@ -2,51 +2,78 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useState } from "react";
 
 const resourceCategories = [
-  {
-    title: "Video Guides",
-    description: "Step-by-step video tutorials on automation and AI",
-    icon: "🎥",
-    items: [
-      { title: "How AI Automation Can Save Your Business 20+ Hours/Week", status: "Coming Soon" },
-      { title: "The 5 Processes Every SMB Should Automate First", status: "Coming Soon" },
-      { title: "How We Use Our Own Automation Tools at Good Breeze AI", status: "Coming Soon" },
-    ]
-  },
   {
     title: "Written Guides",
     description: "In-depth articles on scaling with automation",
     icon: "📄",
-    items: [
-      { title: "The Business Owner's Guide to AI Automation (Plain English)", status: "Coming Soon" },
-      { title: "5 Signs Your Business is Ready for Automation", status: "Coming Soon" },
-      { title: "How to Scale Without Hiring: A Real-World Playbook", status: "Coming Soon" },
-    ]
+    href: "/resources/written-guides",
+    itemCount: "3 guides",
   },
   {
     title: "Templates & Tools",
     description: "Free resources to get you started",
     icon: "🛠️",
-    items: [
-      { title: "ROI Calculator: How Much Time Could You Save?", status: "Coming Soon" },
-      { title: "Automation Readiness Checklist for SMBs", status: "Coming Soon" },
-      { title: "Sales Analyzer", status: "Available", href: "/tools/sales-analyzer" },
-    ]
+    href: "/resources/templates-tools",
+    itemCount: "3 templates",
   },
   {
     title: "Case Studies",
     description: "See how we've helped businesses automate and scale",
     icon: "📊",
-    items: [
-      { title: "How Good Breeze AI Automates Its Own Operations", status: "Coming Soon" },
-      { title: "CPA Firm: Automated Client Onboarding", status: "Coming Soon" },
-      { title: "Consulting Agency: Automated Lead Follow-Up", status: "Coming Soon" },
-    ]
+    href: "/case-studies",
+    itemCount: "4 case studies",
+  },
+  {
+    title: "Video Guides",
+    description: "Step-by-step video tutorials on automation and AI",
+    icon: "🎥",
+    href: "/resources/video-guides",
+    itemCount: "Coming soon",
+  },
+  {
+    title: "Partners",
+    description: "Technology partners we work with",
+    icon: "🤝",
+    href: "/partners",
+    itemCount: "View partners",
   },
 ];
 
 export default function Resources() {
+  const [formData, setFormData] = useState({ name: '', email: '' });
+  const [formStatus, setFormStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormStatus('loading');
+    setErrorMessage('');
+
+    try {
+      const response = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setFormStatus('success');
+        setFormData({ name: '', email: '' });
+      } else {
+        setFormStatus('error');
+        setErrorMessage(data.error || 'Failed to subscribe. Please try again.');
+      }
+    } catch (error) {
+      setFormStatus('error');
+      setErrorMessage('Network error. Please try again later.');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-dark py-24 px-6">
       <div className="max-w-7xl mx-auto">
@@ -73,77 +100,94 @@ export default function Resources() {
           </p>
         </motion.div>
 
-        {/* Resource Categories */}
-        <div className="grid md:grid-cols-2 gap-8 mb-16">
+        {/* Resource Categories Grid */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
           {resourceCategories.map((category, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="bg-dark-700 rounded-2xl border border-primary/20 p-8"
-            >
-              <div className="flex items-center gap-3 mb-4">
-                <div className="text-4xl">{category.icon}</div>
-                <div>
-                  <h2 className="text-2xl font-bold text-white">{category.title}</h2>
-                  <p className="text-sm text-gray-400">{category.description}</p>
+            <Link key={index} href={category.href}>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className="group bg-dark-700 rounded-2xl border border-primary/20 p-8 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/20 transition-all duration-300 h-full flex flex-col"
+              >
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="text-4xl">{category.icon}</div>
+                  <h2 className="text-2xl font-bold text-white group-hover:text-primary transition-colors">
+                    {category.title}
+                  </h2>
                 </div>
-              </div>
 
-              <ul className="space-y-3">
-                {category.items.map((item, itemIndex) => (
-                  <li key={itemIndex} className="flex items-center justify-between p-3 bg-dark rounded-lg border border-primary/10">
-                    <span className="text-gray-300">{item.title}</span>
-                    {item.status === "Available" && item.href ? (
-                      <Link
-                        href={item.href}
-                        className="px-4 py-1 bg-gradient-to-r from-primary to-accent-blue text-white text-sm font-semibold rounded-full hover:shadow-lg hover:shadow-primary/50 transition-all"
-                      >
-                        Access
-                      </Link>
-                    ) : (
-                      <span className="px-4 py-1 bg-dark-800 border border-primary/20 text-gray-400 text-sm rounded-full">
-                        {item.status}
-                      </span>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </motion.div>
+                <p className="text-gray-400 mb-4 flex-grow">{category.description}</p>
+
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-500">{category.itemCount}</span>
+                  <div className="flex items-center gap-2 text-primary group-hover:gap-3 transition-all">
+                    <span className="text-sm font-semibold">Explore</span>
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </div>
+              </motion.div>
+            </Link>
           ))}
         </div>
 
-        {/* Newsletter Signup (Placeholder) */}
+        {/* Newsletter Signup */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
+          transition={{ delay: 0.5 }}
           className="bg-gradient-to-br from-primary/10 to-accent-purple/10 rounded-2xl border border-primary/30 p-12 text-center"
         >
           <h2 className="text-3xl font-bold text-white mb-4">Get Notified When We Publish New Resources</h2>
           <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
             Join our mailing list to receive guides, templates, and automation tips straight to your inbox.
           </p>
-          <div className="max-w-md mx-auto">
-            <p className="text-gray-400 text-sm mb-6">
-              Newsletter coming soon! For now, try our free tools or book a strategy call.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                href="/tools"
-                className="px-8 py-4 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full hover:shadow-lg hover:shadow-primary/50 transition-all duration-300 transform hover:scale-105"
-              >
-                Try Free Tools
-              </Link>
-              <Link
-                href="/contact"
-                className="px-8 py-4 border-2 border-primary text-primary font-semibold rounded-full hover:bg-primary hover:text-white transition-all duration-300"
-              >
-                Book Strategy Call
-              </Link>
+
+          {/* Email Signup Form */}
+          {formStatus === 'success' ? (
+            <div className="max-w-md mx-auto text-center p-6 bg-primary/10 border border-primary/30 rounded-lg">
+              <div className="text-4xl mb-4">🎉</div>
+              <h3 className="text-2xl font-bold text-white mb-2">You're subscribed!</h3>
+              <p className="text-gray-300">
+                Thank you for joining our newsletter. You'll receive valuable automation tips, guides, and exclusive insights to help you scale your business efficiently.
+              </p>
             </div>
-          </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="max-w-md mx-auto space-y-4">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <input
+                  type="text"
+                  placeholder="Your Name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="flex-1 px-4 py-3 rounded-lg bg-dark border border-primary/30 text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-colors"
+                  required
+                  disabled={formStatus === 'loading'}
+                />
+                <input
+                  type="email"
+                  placeholder="Your Email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className="flex-1 px-4 py-3 rounded-lg bg-dark border border-primary/30 text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-colors"
+                  required
+                  disabled={formStatus === 'loading'}
+                />
+              </div>
+              {formStatus === 'error' && (
+                <p className="text-red-400 text-sm text-center">{errorMessage}</p>
+              )}
+              <button
+                type="submit"
+                disabled={formStatus === 'loading'}
+                className="w-full px-8 py-4 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full hover:shadow-lg hover:shadow-primary/50 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {formStatus === 'loading' ? 'Subscribing...' : 'Subscribe to Newsletter'}
+              </button>
+            </form>
+          )}
         </motion.div>
       </div>
     </div>

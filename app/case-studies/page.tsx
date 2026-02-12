@@ -89,84 +89,48 @@ export default function CaseStudiesPage() {
           </p>
         </div>
 
-        {/* Case Studies */}
-        <div className="space-y-12">
+        {/* Case Studies Grid */}
+        <div className="grid md:grid-cols-2 gap-8 mb-16">
           {caseStudies.map((study, index) => (
-            <div
-              key={index}
-              className="bg-gradient-to-br from-[#3b82f6]/20 via-[#a855f7]/20 to-[#00adb5]/10 rounded-2xl p-8 lg:p-12"
-            >
-              {/* Header with avatar */}
-              <div className="flex items-center gap-4 mb-8">
-                <div className="relative w-16 h-16 rounded-full border-2 border-primary/30 overflow-hidden flex-shrink-0">
-                  <Image
-                    src={study.avatar}
-                    alt={study.name}
-                    width={64}
-                    height={64}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-white">{study.name}</h2>
-                  <p className="text-primary">{study.role}</p>
-                </div>
-              </div>
-
-              {/* Problem */}
-              <div className="mb-8">
-                <h3 className="text-xl font-bold text-white mb-3 flex items-center gap-2">
-                  <span className="text-red-400">⚠️</span>
-                  The Problem
-                </h3>
-                <p className="text-gray-300 leading-relaxed">{study.problem}</p>
-              </div>
-
-              {/* Solution */}
-              <div className="mb-8">
-                <h3 className="text-xl font-bold text-white mb-3 flex items-center gap-2">
-                  <span className="text-primary">⚙️</span>
-                  The Solution
-                </h3>
-                <p className="text-gray-300 leading-relaxed">{study.solution}</p>
-              </div>
-
-              {/* Results */}
-              <div className="mb-8">
-                <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                  <span className="text-green-400">📈</span>
-                  The Results
-                </h3>
-                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div className="bg-dark rounded-xl border border-primary/20 p-4">
-                    <div className="text-sm text-gray-400 mb-1">Time to Market</div>
-                    <div className="text-white font-semibold">{study.results.timeToMarket}</div>
+            <Link key={index} href={`/case-studies/${study.name.toLowerCase().replace(' ', '-')}`}>
+              <div
+                className="group bg-gradient-to-br from-[#3b82f6]/20 via-[#a855f7]/20 to-[#00adb5]/10 rounded-2xl p-8 hover:shadow-lg hover:shadow-primary/20 transition-all duration-300 h-full flex flex-col"
+              >
+                {/* Header with avatar */}
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="relative w-16 h-16 rounded-full border-2 border-primary/30 overflow-hidden flex-shrink-0">
+                    <Image
+                      src={study.avatar}
+                      alt={study.name}
+                      width={64}
+                      height={64}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
-                  <div className="bg-dark rounded-xl border border-primary/20 p-4">
-                    <div className="text-sm text-gray-400 mb-1">Effectiveness</div>
-                    <div className="text-white font-semibold">{study.results.effectiveness}</div>
-                  </div>
-                  <div className="bg-dark rounded-xl border border-primary/20 p-4">
-                    <div className="text-sm text-gray-400 mb-1">ROI</div>
-                    <div className="text-white font-semibold">{study.results.roi}</div>
-                  </div>
-                  <div className="bg-dark rounded-xl border border-primary/20 p-4">
-                    <div className="text-sm text-gray-400 mb-1">Key Metric</div>
-                    <div className="text-primary font-semibold">{study.results.metrics}</div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-white group-hover:text-primary transition-colors">{study.name}</h2>
+                    <p className="text-primary">{study.role}</p>
                   </div>
                 </div>
-              </div>
 
-              {/* Quote */}
-              <div className="border-l-4 border-primary pl-6 py-2 bg-primary/5 rounded-r-xl">
-                <p className="text-lg italic text-gray-300">
-                  "{study.quote}"
-                </p>
-                <p className="text-sm text-gray-400 mt-2">
-                  — {study.name}, {study.role}
-                </p>
+                {/* Summary */}
+                <p className="text-gray-300 leading-relaxed mb-6 flex-grow line-clamp-3">{study.problem}</p>
+
+                {/* Key Result */}
+                <div className="bg-dark/50 rounded-xl border border-primary/20 p-4 mb-6">
+                  <div className="text-sm text-gray-400 mb-1">Key Result</div>
+                  <div className="text-primary font-semibold text-lg">{study.results.metrics}</div>
+                </div>
+
+                {/* Read More Link */}
+                <div className="flex items-center gap-2 text-primary font-semibold group-hover:gap-3 transition-all">
+                  <span>Read Full Case Study</span>
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
 
