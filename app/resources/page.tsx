@@ -10,35 +10,30 @@ const resourceCategories = [
     description: "In-depth articles on scaling with automation",
     icon: "📄",
     href: "/resources/written-guides",
-    itemCount: "3 guides",
   },
   {
     title: "Templates & Tools",
     description: "Free resources to get you started",
     icon: "🛠️",
     href: "/resources/templates-tools",
-    itemCount: "3 templates",
   },
   {
     title: "Case Studies",
     description: "See how we've helped businesses automate and scale",
     icon: "📊",
     href: "/case-studies",
-    itemCount: "4 case studies",
   },
   {
     title: "Video Guides",
     description: "Step-by-step video tutorials on automation and AI",
     icon: "🎥",
     href: "/resources/video-guides",
-    itemCount: "Coming soon",
   },
   {
     title: "Partners",
     description: "Technology partners we work with",
     icon: "🤝",
     href: "/partners",
-    itemCount: "View partners",
   },
 ];
 
@@ -119,14 +114,11 @@ export default function Resources() {
 
                 <p className="text-gray-400 mb-4 flex-grow">{category.description}</p>
 
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-500">{category.itemCount}</span>
-                  <div className="flex items-center gap-2 text-primary group-hover:gap-3 transition-all">
-                    <span className="text-sm font-semibold">Explore</span>
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
+                <div className="flex items-center gap-2 text-primary group-hover:gap-3 transition-all">
+                  <span className="text-sm font-semibold">Explore</span>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
                 </div>
               </motion.div>
             </Link>

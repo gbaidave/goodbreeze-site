@@ -36,26 +36,15 @@ export default function TopicPages() {
           </h3>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 gap-3 max-w-4xl mx-auto">
+        <ul className="grid md:grid-cols-2 gap-2 max-w-4xl mx-auto list-disc list-inside text-gray-300">
           {topics.map((topic, index) => (
-            <Link key={index} href={topic.href}>
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: index * 0.03 }}
-                className="group flex items-center gap-2 p-3 rounded-lg bg-dark-700/50 border border-primary/10 hover:border-primary/40 hover:bg-dark-700 transition-all duration-200"
-              >
-                <svg className="w-4 h-4 text-primary flex-shrink-0 transform group-hover:translate-x-0.5 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-                <span className="text-gray-300 group-hover:text-primary transition-colors duration-200 text-sm">
-                  {topic.title}
-                </span>
-              </motion.div>
-            </Link>
+            <li key={index}>
+              <Link href={topic.href} className="hover:text-primary transition-colors">
+                {topic.title}
+              </Link>
+            </li>
           ))}
-        </div>
+        </ul>
       </div>
     </section>
   );

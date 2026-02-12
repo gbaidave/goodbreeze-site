@@ -90,12 +90,12 @@ export default function Header() {
               onMouseEnter={() => setResourcesOpen(true)}
               onMouseLeave={() => setResourcesOpen(false)}
             >
-              <button className="text-gray-300 hover:text-primary transition-colors flex items-center gap-1">
+              <Link href="/resources" className="text-gray-300 hover:text-primary transition-colors flex items-center gap-1">
                 Resources
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
-              </button>
+              </Link>
 
               <AnimatePresence>
                 {resourcesOpen && (

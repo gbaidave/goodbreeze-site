@@ -117,7 +117,7 @@ export default function TechStack() {
               Why This Matters
             </h3>
             <p className="text-gray-200 text-center max-w-3xl mx-auto leading-relaxed">
-              We don't lock you into proprietary systems. Everything we build uses open standards and best-in-class tools—so you own your automation, not the other way around.
+              We don't lock you into proprietary systems. Everything we build uses open standards and best in class tools, so you own your automation, not the other way around.
             </p>
           </div>
         </motion.div>

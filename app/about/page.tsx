@@ -62,10 +62,10 @@ export default function About() {
                   <span className="text-primary">Founder: Good Breeze AI</span>
                 </p>
                 <p>
-                  I'm not building theoretical solutions. Every system Good Breeze AI offers is battle tested in real operations first.
+                  Hi, I'm Dave. I'm not building theoretical solutions. Every system Good Breeze AI offers is battle tested in real operations first.
                 </p>
                 <p>
-                  As a business operator who mastered technology out of necessity, I built automation tools when existing solutions fell short for real businesses. Other SMBs faced the same challenges.
+                  As a business operator who mastered technology out of necessity, I built automation tools when existing solutions fell short for real businesses. When I realized other SMBs were struggling with the same problems, Good Breeze AI was born.
                 </p>
                 <p>
                   The competitive analyzer? I use it daily for client calls. The proposal system? It powers my entire sales process. The workflow automation? It runs my whole operation. If a system doesn't deliver value internally, I won't offer it to clients.
