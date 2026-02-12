@@ -65,7 +65,6 @@ export default function Resources() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-16"
         >
-          </Link>
           <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-primary to-accent-blue bg-clip-text text-transparent">
             Resources & Learning Center
           </h1>
