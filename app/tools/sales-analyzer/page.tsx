@@ -133,7 +133,7 @@ export default function SalesAnalyzer() {
           <Link href="/" className="text-primary hover:underline mb-4 inline-block">
             ← Back to Home
           </Link>
-          <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-accent-blue bg-clip-text text-transparent">
+          <h1 className="text-5xl font-bold mb-4 text-white">
             Sales Analyzer
           </h1>
           <p className="text-xl text-gray-300 max-w-2xl mx-auto">

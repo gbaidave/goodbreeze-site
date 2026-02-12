@@ -64,7 +64,7 @@ export default function ToolsDirectory() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-16"
         >
-          <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-[#00adb5] to-[#3b82f6] bg-clip-text text-transparent">
+          <h1 className="text-5xl font-bold mb-6 text-white">
             Free Business Intelligence Tools
           </h1>
           <p className="text-xl text-gray-300 max-w-3xl mx-auto">

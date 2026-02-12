@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 
 export const metadata: Metadata = {
   title: "Our Partners | Good Breeze AI",
@@ -12,6 +13,7 @@ const partners = [
     category: "Automation Partner",
     description: "Capricorn PMS specializes in property management solutions and workflow automation. Their expertise in complex system integrations helps us deliver robust automation solutions to clients with unique operational needs.",
     website: "https://capricornpms.com/",
+    logo: "/images/capricorn-logo.png",
     services: ["Property Management Systems", "Workflow Automation", "System Integration"]
   },
   {
@@ -19,6 +21,7 @@ const partners = [
     category: "Marketing Partner",
     description: "Silvernail Web Design brings decades of experience in web design, SEO, and digital marketing. Their strategic approach to online presence complements our automation services perfectly, helping clients grow and scale their digital footprint.",
     website: "https://silvernailwebdesign.com/",
+    logo: "/images/silvernail-logo.png",
     services: ["Web Design", "SEO Services", "Digital Marketing"]
   },
 ];
@@ -38,7 +41,7 @@ export default function PartnersPage() {
 
         {/* Header */}
         <div className="text-center mb-16">
-          <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-[#00adb5] to-[#3b82f6] bg-clip-text text-transparent">
+          <h1 className="text-5xl font-bold mb-6 text-white">
             Our Trusted Partners
           </h1>
           <p className="text-xl text-gray-300 max-w-3xl mx-auto">
@@ -64,11 +67,15 @@ export default function PartnersPage() {
                   <h3 className="text-2xl font-bold text-white">{partner.name}</h3>
                 </div>
 
-                {/* Logo placeholder - styled text for now */}
-                <div className="w-24 h-24 rounded-lg bg-gradient-to-br from-primary/20 to-accent-blue/20 border-2 border-primary/30 flex items-center justify-center flex-shrink-0 ml-4">
-                  <span className="text-2xl font-bold text-primary">
-                    {partner.name.split(' ').map(word => word[0]).join('')}
-                  </span>
+                {/* Partner Logo */}
+                <div className="w-32 h-24 rounded-lg bg-white/5 border-2 border-primary/30 flex items-center justify-center flex-shrink-0 ml-4 p-3">
+                  <Image
+                    src={partner.logo}
+                    alt={`${partner.name} logo`}
+                    width={120}
+                    height={80}
+                    className="w-full h-full object-contain"
+                  />
                 </div>
               </div>
 
