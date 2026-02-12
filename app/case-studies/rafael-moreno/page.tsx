@@ -53,18 +53,81 @@ export default function RafaelMorenoCaseStudy() {
               The Problem
             </h2>
             <p className="text-lg leading-relaxed mb-4">
-              Rafael's accounting firm dreaded month end close. Collecting documents from clients required endless email chains and phone calls. Manual reminders were inconsistent, exceptions got buried, and close processes routinely stretched 2-3 weeks due to missing information and manual reconciliation steps.
+              "Month end is a war zone," Rafael said. Every month, the same nightmare: 50+ clients who needed to submit receipts, invoices, and bank statements. His team sent initial requests, then follow up emails, then phone calls. Some clients responded immediately. Others took weeks. Meanwhile, Rafael's accountants could not close the books until every document was in.
+            </p>
+            <p className="text-lg leading-relaxed mb-4">
+              The industry standard is 5 to 7 days for month end close. Rafael's firm was averaging 14 to 21 days. His senior accountants were spending hours chasing documents instead of doing actual accounting work. And when unusual transactions appeared, they often got missed in the chaos until someone noticed weeks later.
             </p>
             <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
-              <h3 className="text-lg font-bold text-white mb-3">The Month-End Nightmare:</h3>
+              <h3 className="text-lg font-bold text-white mb-3">The Month End Grind:</h3>
               <ul className="space-y-2">
-                <li className="flex items-start gap-2">• 14-21 day close process (industry standard: 5-7 days)</li>
-                <li className="flex items-start gap-2">• 50+ email threads per client for document requests</li>
-                <li className="flex items-start gap-2">• Manual tracking of who submitted what in spreadsheets</li>
-                <li className="flex items-start gap-2">• Exception handling required senior accountant review</li>
-                <li className="flex items-start gap-2">• Staff burnout from repetitive follow-up work</li>
+                <li className="flex items-start gap-2">• 14 to 21 days to close books (should be 5 to 7 days)</li>
+                <li className="flex items-start gap-2">• 50+ email threads per client, "Did you send the receipts yet?"</li>
+                <li className="flex items-start gap-2">• Manual spreadsheet tracking of who submitted what</li>
+                <li className="flex items-start gap-2">• Exception handling ate senior accountant time</li>
+                <li className="flex items-start gap-2">• Team burnout from repetitive follow-ups</li>
               </ul>
             </div>
+          </section>
+
+          <section>
+            <h2 className="text-3xl font-bold text-white mb-6 flex items-center gap-3">
+              <span className="text-accent-purple text-2xl">🔄</span>
+              How We Cut Close Time in Half
+            </h2>
+            <p className="text-lg leading-relaxed mb-6">
+              We sat down with Rafael's team during month end close. Watched them work for half a day. The pattern was obvious: same questions, same documents, same reminder emails, just copy paste with different client names. "How do you know who to chase?" we asked. They pointed at a shared Excel spreadsheet.
+            </p>
+
+            <div className="bg-dark-700 rounded-xl border border-primary/20 p-8 mb-6">
+              <h4 className="font-bold text-white mb-4 text-center">Month End Close Timeline</h4>
+              <p className="text-base text-white font-semibold mb-2 text-center">BEFORE: 14 to 21 Days</p>
+              <p className="text-xs text-gray-400 mb-4 text-center">Manual document chasing, email threads, spreadsheet tracking</p>
+              <svg viewBox="0 0 800 240" className="w-full h-auto mb-6" role="img" aria-label="Month end close timeline comparison">
+                <rect x="125" y="20" width="550" height="50" rx="6" fill="#ef4444" fillOpacity="0.2" stroke="#ef4444" strokeWidth="2"/>
+
+                <rect x="151" y="35" width="90" height="20" rx="4" fill="#fbbf24" fillOpacity="0.3" stroke="#fbbf24" strokeWidth="1"/>
+                <text x="196" y="50" fill="#fbbf24" fontSize="9" textAnchor="middle">Initial request</text>
+
+                <rect x="253" y="35" width="90" height="20" rx="4" fill="#fbbf24" fillOpacity="0.3" stroke="#fbbf24" strokeWidth="1"/>
+                <text x="298" y="50" fill="#fbbf24" fontSize="9" textAnchor="middle">Follow up 1</text>
+
+                <rect x="355" y="35" width="90" height="20" rx="4" fill="#fbbf24" fillOpacity="0.3" stroke="#fbbf24" strokeWidth="1"/>
+                <text x="400" y="50" fill="#fbbf24" fontSize="9" textAnchor="middle">Follow up 2</text>
+
+                <rect x="457" y="35" width="90" height="20" rx="4" fill="#ef4444" fillOpacity="0.3" stroke="#ef4444" strokeWidth="1"/>
+                <text x="502" y="50" fill="#ef4444" fontSize="9" textAnchor="middle">Phone calls</text>
+
+                <rect x="559" y="35" width="90" height="20" rx="4" fill="#ef4444" fillOpacity="0.3" stroke="#ef4444" strokeWidth="1"/>
+                <text x="604" y="50" fill="#ef4444" fontSize="9" textAnchor="middle">Manual reconcile</text>
+
+                <text x="400" y="120" fill="#fff" fontSize="16" fontWeight="bold" textAnchor="middle">AFTER: 7 Days</text>
+                <text x="400" y="140" fill="#9ca3af" fontSize="11" textAnchor="middle">Automated reminders, instant tracking, AI exception flagging</text>
+
+                <rect x="225" y="160" width="350" height="50" rx="6" fill="#10b981" fillOpacity="0.2" stroke="#10b981" strokeWidth="2"/>
+
+                <rect x="255" y="175" width="65" height="20" rx="4" fill="#00adb5" fillOpacity="0.3" stroke="#00adb5" strokeWidth="1"/>
+                <text x="287" y="190" fill="#00adb5" fontSize="9" textAnchor="middle">Day -5</text>
+
+                <rect x="330" y="175" width="65" height="20" rx="4" fill="#00adb5" fillOpacity="0.3" stroke="#00adb5" strokeWidth="1"/>
+                <text x="362" y="190" fill="#00adb5" fontSize="9" textAnchor="middle">Day -3</text>
+
+                <rect x="405" y="175" width="65" height="20" rx="4" fill="#00adb5" fillOpacity="0.3" stroke="#00adb5" strokeWidth="1"/>
+                <text x="437" y="190" fill="#00adb5" fontSize="9" textAnchor="middle">Day -1</text>
+
+                <rect x="480" y="175" width="65" height="20" rx="4" fill="#10b981" fillOpacity="0.3" stroke="#10b981" strokeWidth="1"/>
+                <text x="512" y="190" fill="#10b981" fontSize="9" textAnchor="middle">Auto reconcile</text>
+              </svg>
+              <p className="text-sm text-primary font-semibold mb-2">95% on time submission, 40+ hours saved per month</p>
+              <p className="text-sm text-gray-400 italic">Automated reminders and smart escalation cut close time from 14 to 21 days to 7 days</p>
+            </div>
+
+            <p className="text-lg leading-relaxed mb-4">
+              We built reminders that send automatically 5 days before month end, then 3 days, then 1 day. If a client does not respond after three attempts, it escalates to their account manager, no manual tracking needed. The system knows who submitted what, flags missing documents, and even detects unusual transactions based on historical patterns.
+            </p>
+            <p className="text-lg leading-relaxed mb-4">
+              Standard transactions? They reconcile automatically through the accounting software integration. Exceptions get flagged for review. Four weeks later, Rafael's close time dropped to 7 days, right in line with industry standards.
+            </p>
           </section>
 
           <section>
@@ -73,72 +136,24 @@ export default function RafaelMorenoCaseStudy() {
               The Automation System
             </h2>
             <p className="text-lg leading-relaxed mb-4">
-              We automated the entire document collection workflow with scheduled reminders sent at optimal times, automated escalation for non responders, exception flagging based on predefined rules, and integration with their accounting software for automatic reconciliation of standard transactions.
+              Now document requests go out automatically at day -5, -3, and -1. Non responders escalate to account managers after three attempts. AI flags unusual transactions for review based on each client's historical patterns. Standard transactions reconcile automatically through their accounting software. The team sees everything in a real time dashboard, no more spreadsheets.
             </p>
             <div className="grid md:grid-cols-2 gap-4">
               <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
                 <h4 className="font-bold text-white mb-2">Scheduled Reminders</h4>
-                <p className="text-sm">Automated emails sent 5, 3, and 1 days before month-end deadline</p>
+                <p className="text-sm">Automated emails at day -5, -3, -1 with personalized document lists</p>
               </div>
               <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
                 <h4 className="font-bold text-white mb-2">Smart Escalation</h4>
-                <p className="text-sm">Non-responders automatically escalated to account manager</p>
+                <p className="text-sm">Non responders escalate to account manager after 3 attempts</p>
               </div>
               <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
                 <h4 className="font-bold text-white mb-2">Exception Detection</h4>
-                <p className="text-sm">AI flags unusual transactions for review based on historical patterns</p>
+                <p className="text-sm">AI flags unusual transactions based on historical patterns</p>
               </div>
               <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
-                <h4 className="font-bold text-white mb-2">Auto-Reconciliation</h4>
-                <p className="text-sm">Standard transactions reconciled automatically via accounting software integration</p>
-              </div>
-            </div>
-          </section>
-
-          <section>
-            <h2 className="text-3xl font-bold text-white mb-6 flex items-center gap-3">
-              <span className="text-accent-purple text-2xl">🔄</span>
-              Our Process
-            </h2>
-            <p className="text-lg leading-relaxed mb-6">
-              We followed our structured automation framework to transform Rafael's month-end close workflow:
-            </p>
-            <div className="space-y-4">
-              <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">1</div>
-                  <div>
-                    <h4 className="font-bold text-white mb-2">Discovery & Audit (Week 1)</h4>
-                    <p className="text-sm text-gray-300">Documented entire month-end close process step-by-step, identified which document requests were manual vs automated, analyzed submission patterns and common exceptions</p>
-                  </div>
-                </div>
-              </div>
-              <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">2</div>
-                  <div>
-                    <h4 className="font-bold text-white mb-2">Roadmap & Design (Week 1-2)</h4>
-                    <p className="text-sm text-gray-300">Created document collection templates for each client type, designed reminder schedule (5, 3, 1 days before deadline), built exception detection rules based on transaction patterns</p>
-                  </div>
-                </div>
-              </div>
-              <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">3</div>
-                  <div>
-                    <h4 className="font-bold text-white mb-2">Build & Implementation (Week 2-4)</h4>
-                    <p className="text-sm text-gray-300">Built automated reminder system with escalation logic, integrated with accounting software for reconciliation, configured AI exception flagging based on historical data, deployed tracking dashboard for team visibility</p>
-                  </div>
-                </div>
-              </div>
-              <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">4</div>
-                  <div>
-                    <h4 className="font-bold text-white mb-2">Optimize & Handoff (Ongoing)</h4>
-                    <p className="text-sm text-gray-300">Trained accounting team on system and exception handling, monitored two full month-end cycles and refined timing, adjusted exception rules based on feedback and false positives</p>
-                  </div>
-                </div>
+                <h4 className="font-bold text-white mb-2">Auto Reconciliation</h4>
+                <p className="text-sm">Standard transactions reconciled automatically via software integration</p>
               </div>
             </div>
           </section>

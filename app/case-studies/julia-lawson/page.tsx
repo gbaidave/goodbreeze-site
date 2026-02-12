@@ -53,17 +53,66 @@ export default function JuliaLawsonCaseStudy() {
               The Challenge
             </h2>
             <p className="text-lg leading-relaxed mb-4">
-              Julia's law practice was hemorrhaging potential clients due to missed calls and slow response times. Without a system to track intake and follow up, leads would call once and never hear back. After hours inquiries went completely unanswered, meaning business walked straight to competitors.
+              Julia called us frustrated. "I just lost another client," she said. Someone had filled out the contact form at 7 PM on Friday. By the time her assistant called back Monday morning, they had already retained another attorney who responded immediately with an automated booking link.
+            </p>
+            <p className="text-lg leading-relaxed mb-4">
+              The math was brutal: 40% of leads never got callbacks because they came in after hours or when staff was tied up. Every consultation required 5 to 7 emails just to find a time that worked. And Julia had no idea which leads were hot, which were warm, or which had gone cold because nobody followed up.
             </p>
             <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
-              <h3 className="text-lg font-bold text-white mb-3">Before Automation:</h3>
+              <h3 className="text-lg font-bold text-white mb-3">The Leaky Funnel:</h3>
               <ul className="space-y-2">
                 <li className="flex items-start gap-2">• 40% of leads never received callbacks</li>
-                <li className="flex items-start gap-2">• After-hours inquiries had 0% conversion rate</li>
-                <li className="flex items-start gap-2">• Consultation scheduling took 5-7 back-and-forth emails</li>
-                <li className="flex items-start gap-2">• No visibility into lead pipeline or follow-up status</li>
+                <li className="flex items-start gap-2">• After hours inquiries had 0% conversion, pure lost revenue</li>
+                <li className="flex items-start gap-2">• 5 to 7 back and forth emails just to schedule one consultation</li>
+                <li className="flex items-start gap-2">• Zero pipeline visibility, could not tell who needed follow up</li>
               </ul>
             </div>
+          </section>
+
+          <section>
+            <h2 className="text-3xl font-bold text-white mb-6 flex items-center gap-3">
+              <span className="text-accent-purple text-2xl">🔄</span>
+              How We Fixed It
+            </h2>
+            <p className="text-lg leading-relaxed mb-6">
+              We started by asking Julia to pull up her last 50 leads and tell us what happened to each one. We color coded them: green for retained, yellow for in progress, red for lost. The pattern jumped out immediately. Most reds came in after 5 PM or on weekends.
+            </p>
+
+            <div className="bg-dark-700 rounded-xl border border-primary/20 p-8 mb-6">
+              <h4 className="font-bold text-white mb-4">Lead Recovery Funnel</h4>
+              <svg viewBox="0 0 700 340" className="w-full h-auto mb-4" role="img" aria-label="Lead recovery funnel diagram">
+                <text x="350" y="30" fill="#fff" fontSize="16" fontWeight="bold" textAnchor="middle">100 Monthly Leads</text>
+
+                <polygon points="200,60 500,60 450,150 250,150" fill="#ef4444" fillOpacity="0.3" stroke="#ef4444" strokeWidth="2"/>
+                <text x="350" y="100" fill="#fff" fontSize="14" textAnchor="middle">BEFORE: 40 Lost</text>
+                <text x="350" y="120" fill="#9ca3af" fontSize="10" textAnchor="middle">(No callback / After hours /</text>
+                <text x="350" y="135" fill="#9ca3af" fontSize="10" textAnchor="middle">Slow response)</text>
+
+                <polygon points="250,150 450,150 400,240 300,240" fill="#fbbf24" fillOpacity="0.3" stroke="#fbbf24" strokeWidth="2"/>
+                <text x="350" y="190" fill="#fff" fontSize="14" textAnchor="middle">60 Contacted</text>
+                <text x="350" y="210" fill="#9ca3af" fontSize="10" textAnchor="middle">(But scheduling took</text>
+                <text x="350" y="225" fill="#9ca3af" fontSize="10" textAnchor="middle">5 to 7 emails)</text>
+
+                <polygon points="300,240 400,240 380,305 320,305" fill="#10b981" fillOpacity="0.3" stroke="#10b981" strokeWidth="2"/>
+                <text x="350" y="278" fill="#fff" fontSize="14" textAnchor="middle">35 Retained</text>
+
+                <rect x="520" y="140" width="160" height="140" rx="8" fill="#21272e" stroke="#00adb5" strokeWidth="2"/>
+                <text x="600" y="165" fill="#00adb5" fontSize="14" fontWeight="bold" textAnchor="middle">AFTER:</text>
+                <text x="600" y="190" fill="#10b981" fontSize="20" fontWeight="bold" textAnchor="middle">95%</text>
+                <text x="600" y="210" fill="#fff" fontSize="12" textAnchor="middle">get instant response</text>
+                <text x="600" y="235" fill="#10b981" fontSize="20" fontWeight="bold" textAnchor="middle">65</text>
+                <text x="600" y="255" fill="#fff" fontSize="12" textAnchor="middle">retained clients</text>
+                <text x="600" y="270" fill="#9ca3af" fontSize="10" textAnchor="middle">(+30% conversion)</text>
+              </svg>
+              <p className="text-sm text-gray-400 italic">From 35% to 65% conversion by capturing after hours leads and instant scheduling</p>
+            </div>
+
+            <p className="text-lg leading-relaxed mb-4">
+              Then we asked, "What questions do people ask when they call?" She rattled off the same five questions every time: Do you handle my case type? What's the cost? How long does it take? What do I need to bring? Can I schedule a consultation?
+            </p>
+            <p className="text-lg leading-relaxed mb-4">
+              We built an AI assistant that answers those questions 24/7, captures their information, and drops a Calendly link right in the confirmation email. Now leads book themselves instantly, and Julia's team only handles actual consultations, not scheduling ping pong.
+            </p>
           </section>
 
           <section>
@@ -72,72 +121,24 @@ export default function JuliaLawsonCaseStudy() {
               The Solution
             </h2>
             <p className="text-lg leading-relaxed mb-4">
-              We implemented an automated client intake system that books consultations instantly, sends immediate confirmation emails, tracks next steps for each prospect, and routes after hours inquiries to an AI assistant that provides basic information and schedules callbacks for the next business day.
+              Every inquiry, whether 3 PM on Tuesday or 9 PM on Saturday, gets an instant response. The AI assistant answers common questions, captures case details, and sends a booking link. The lead schedules their own consultation, receives confirmation, and enters Julia's CRM automatically. No manual work, no missed follow ups.
             </p>
             <div className="grid md:grid-cols-2 gap-4">
               <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
                 <h4 className="font-bold text-white mb-2">24/7 Lead Capture</h4>
-                <p className="text-sm">Automated intake forms with instant confirmation and AI-powered after-hours assistant</p>
+                <p className="text-sm">AI assistant answers common questions and collects case details any time</p>
               </div>
               <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
                 <h4 className="font-bold text-white mb-2">Instant Scheduling</h4>
-                <p className="text-sm">Calendar integration allows prospects to book consultations without email ping-pong</p>
+                <p className="text-sm">Calendar link in confirmation email, prospects book themselves</p>
               </div>
               <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
-                <h4 className="font-bold text-white mb-2">Automated Follow-Ups</h4>
-                <p className="text-sm">95% engagement rate with sequenced follow-up emails based on prospect actions</p>
+                <h4 className="font-bold text-white mb-2">Smart Follow Ups</h4>
+                <p className="text-sm">Automated sequences based on lead source and urgency, 95% engagement</p>
               </div>
               <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
-                <h4 className="font-bold text-white mb-2">Pipeline Visibility</h4>
-                <p className="text-sm">Real-time dashboard shows all prospects and their current status</p>
-              </div>
-            </div>
-          </section>
-
-          <section>
-            <h2 className="text-3xl font-bold text-white mb-6 flex items-center gap-3">
-              <span className="text-accent-purple text-2xl">🔄</span>
-              Our Process
-            </h2>
-            <p className="text-lg leading-relaxed mb-6">
-              We applied our proven automation framework to transform Julia's client acquisition system:
-            </p>
-            <div className="space-y-4">
-              <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">1</div>
-                  <div>
-                    <h4 className="font-bold text-white mb-2">Discovery & Audit (Week 1)</h4>
-                    <p className="text-sm text-gray-300">Analyzed lead sources and conversion rates, tracked time from inquiry to first contact, identified after-hours inquiry volume and missed opportunities</p>
-                  </div>
-                </div>
-              </div>
-              <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">2</div>
-                  <div>
-                    <h4 className="font-bold text-white mb-2">Roadmap & Design (Week 1-2)</h4>
-                    <p className="text-sm text-gray-300">Designed intake forms optimized for legal services, built AI assistant conversation flows for common questions, created follow-up sequences based on lead source and urgency</p>
-                  </div>
-                </div>
-              </div>
-              <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">3</div>
-                  <div>
-                    <h4 className="font-bold text-white mb-2">Build & Implementation (Week 2-3)</h4>
-                    <p className="text-sm text-gray-300">Deployed 24/7 lead capture forms with instant confirmation, configured AI assistant for after-hours support, integrated calendar for direct consultation booking, built pipeline dashboard for visibility</p>
-                  </div>
-                </div>
-              </div>
-              <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">4</div>
-                  <div>
-                    <h4 className="font-bold text-white mb-2">Optimize & Handoff (Ongoing)</h4>
-                    <p className="text-sm text-gray-300">Trained staff on dashboard usage and exception handling, fine-tuned AI responses based on client feedback, monitored conversion rates and adjusted follow-up timing</p>
-                  </div>
-                </div>
+                <h4 className="font-bold text-white mb-2">Pipeline Dashboard</h4>
+                <p className="text-sm">Real-time view of all prospects and their current status</p>
               </div>
             </div>
           </section>

@@ -49,65 +49,29 @@ export default function AlanaShawCaseStudy() {
               The Problem
             </h2>
             <p className="text-lg leading-relaxed mb-4">
-              Alana's consulting firm was losing leads due to slow intake processes and inconsistent proposal delivery. Manual follow ups meant opportunities slipped through the cracks, and proposal creation took hours of repetitive work that could have been spent on billable client time.
+              When Alana first reached out, she was drowning. Every new lead meant hours of back and forth emails just to get basic information. Proposals that should take 30 minutes were eating 3 to 4 hours because she had to manually copy data from intake forms into Word templates. Worse, her follow up system was "whenever I remember to check my calendar," which meant 30% of prospects never heard back at all.
+            </p>
+            <p className="text-lg leading-relaxed mb-4">
+              The breaking point came when she lost a $45K contract because she took 48 hours to respond with a proposal. The prospect had already signed with a competitor who sent theirs the same day.
             </p>
             <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
-              <h3 className="text-xl font-bold text-white mb-4">Specific Pain Points:</h3>
+              <h3 className="text-xl font-bold text-white mb-4">The Daily Reality:</h3>
               <ul className="space-y-3">
                 <li className="flex items-start gap-3">
                   <span className="text-primary">•</span>
-                  <span>Lead response time averaged 24-48 hours (competitors responded within minutes)</span>
+                  <span>24 to 48 hour response times while competitors responded in minutes</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-primary">•</span>
-                  <span>Proposal creation took 3-4 hours per client due to manual data entry and formatting</span>
+                  <span>3 to 4 hours per proposal spent copying and pasting the same information</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-primary">•</span>
-                  <span>Follow-up reminders relied on memory and calendar entries, resulting in 30% missed follow-ups</span>
+                  <span>30% of leads never received follow-ups because they slipped through the cracks</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-primary">•</span>
-                  <span>Inconsistent proposal quality depending on who created them</span>
-                </li>
-              </ul>
-            </div>
-          </section>
-
-          <section>
-            <h2 className="text-3xl font-bold text-white mb-6 flex items-center gap-3">
-              <span className="text-primary text-2xl">⚙️</span>
-              The Solution
-            </h2>
-            <p className="text-lg leading-relaxed mb-6">
-              We built an automated intake workflow that captures lead information, auto fills proposal templates based on service type, and schedules follow up reminders at optimal intervals. The system integrates with her CRM to ensure nothing falls through the cracks.
-            </p>
-            <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
-              <h3 className="text-xl font-bold text-white mb-4">Implementation Details:</h3>
-              <ul className="space-y-3">
-                <li className="flex items-start gap-3">
-                  <span className="text-primary">1.</span>
-                  <div>
-                    <strong className="text-white">Lead Capture & Response:</strong> Automated form submission triggers instant confirmation email with next steps
-                  </div>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-primary">2.</span>
-                  <div>
-                    <strong className="text-white">Proposal Automation:</strong> Service type determines template, client data auto-populates fields, custom pricing rules apply based on scope
-                  </div>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-primary">3.</span>
-                  <div>
-                    <strong className="text-white">Follow-Up Sequencing:</strong> Automated reminders sent at day 3, 7, and 14 if no response, escalation to manual review after 3 attempts
-                  </div>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-primary">4.</span>
-                  <div>
-                    <strong className="text-white">CRM Integration:</strong> All interactions logged automatically, status updates tracked in real-time
-                  </div>
+                  <span>Inconsistent proposal quality, some great, some rushed</span>
                 </li>
               </ul>
             </div>
@@ -116,47 +80,97 @@ export default function AlanaShawCaseStudy() {
           <section>
             <h2 className="text-3xl font-bold text-white mb-6 flex items-center gap-3">
               <span className="text-accent-purple text-2xl">🔄</span>
-              Our Process
+              How We Figured It Out
             </h2>
             <p className="text-lg leading-relaxed mb-6">
-              We follow a proven four-phase methodology adapted from leading automation agency frameworks to deliver results quickly and reliably:
+              We asked Alana to walk us through her last three proposals, not just the final docs, but every email, every question, every piece of information she needed. That's when the pattern emerged.
             </p>
-            <div className="space-y-4">
+
+            <div className="bg-dark-700 rounded-xl border border-primary/20 p-8 mb-6">
+              <h4 className="font-bold text-white mb-4">The Intake Workflow (Before & After)</h4>
+              <svg viewBox="0 0 900 300" className="w-full h-auto mb-4" role="img" aria-label="Workflow comparison diagram">
+                <text x="50" y="30" fill="#9ca3af" fontSize="14" fontWeight="bold">BEFORE (Manual)</text>
+                <rect x="50" y="50" width="120" height="60" rx="8" fill="#21272e" stroke="#00adb5" strokeWidth="2"/>
+                <text x="110" y="85" fill="#fff" fontSize="12" textAnchor="middle">Lead fills form</text>
+                <path d="M 170 80 L 230 80" stroke="#9ca3af" strokeWidth="2" markerEnd="url(#arrowgray)"/>
+                <text x="200" y="70" fill="#9ca3af" fontSize="10" textAnchor="middle">24 to 48hrs</text>
+                <rect x="230" y="50" width="120" height="60" rx="8" fill="#21272e" stroke="#00adb5" strokeWidth="2"/>
+                <text x="290" y="75" fill="#fff" fontSize="11" textAnchor="middle">Alana reads email,</text>
+                <text x="290" y="90" fill="#fff" fontSize="11" textAnchor="middle">copies to Word</text>
+                <path d="M 350 80 L 410 80" stroke="#9ca3af" strokeWidth="2" markerEnd="url(#arrowgray)"/>
+                <text x="380" y="70" fill="#9ca3af" fontSize="10" textAnchor="middle">3 to 4hrs</text>
+                <rect x="410" y="50" width="120" height="60" rx="8" fill="#21272e" stroke="#00adb5" strokeWidth="2"/>
+                <text x="470" y="75" fill="#fff" fontSize="11" textAnchor="middle">Manual proposal</text>
+                <text x="470" y="90" fill="#fff" fontSize="11" textAnchor="middle">creation</text>
+                <path d="M 530 80 L 590 80" stroke="#9ca3af" strokeWidth="2" markerEnd="url(#arrowgray)"/>
+                <text x="560" y="70" fill="#9ca3af" fontSize="10" textAnchor="middle">?</text>
+                <rect x="590" y="50" width="120" height="60" rx="8" fill="#21272e" stroke="#ef4444" strokeWidth="2"/>
+                <text x="650" y="75" fill="#ef4444" fontSize="11" textAnchor="middle">Follow up</text>
+                <text x="650" y="90" fill="#ef4444" fontSize="11" textAnchor="middle">(or forget)</text>
+
+                <text x="50" y="170" fill="#9ca3af" fontSize="14" fontWeight="bold">AFTER (Automated)</text>
+                <rect x="50" y="190" width="120" height="60" rx="8" fill="#21272e" stroke="#00adb5" strokeWidth="2"/>
+                <text x="110" y="225" fill="#fff" fontSize="12" textAnchor="middle">Lead fills form</text>
+                <path d="M 170 220 L 230 220" stroke="#00adb5" strokeWidth="2" markerEnd="url(#arrowprimary)"/>
+                <text x="200" y="210" fill="#00adb5" fontSize="10" textAnchor="middle">instant</text>
+                <rect x="230" y="190" width="120" height="60" rx="8" fill="#21272e" stroke="#00adb5" strokeWidth="2"/>
+                <text x="290" y="215" fill="#fff" fontSize="11" textAnchor="middle">Auto populate</text>
+                <text x="290" y="230" fill="#fff" fontSize="11" textAnchor="middle">template</text>
+                <path d="M 350 220 L 410 220" stroke="#00adb5" strokeWidth="2" markerEnd="url(#arrowprimary)"/>
+                <text x="380" y="210" fill="#00adb5" fontSize="10" textAnchor="middle">instant</text>
+                <rect x="410" y="190" width="120" height="60" rx="8" fill="#21272e" stroke="#00adb5" strokeWidth="2"/>
+                <text x="470" y="215" fill="#fff" fontSize="11" textAnchor="middle">Send proposal</text>
+                <text x="470" y="230" fill="#fff" fontSize="11" textAnchor="middle">+ confirm email</text>
+                <path d="M 530 220 L 590 220" stroke="#00adb5" strokeWidth="2" markerEnd="url(#arrowprimary)"/>
+                <text x="560" y="210" fill="#00adb5" fontSize="10" textAnchor="middle">auto</text>
+                <rect x="590" y="190" width="120" height="60" rx="8" fill="#21272e" stroke="#10b981" strokeWidth="2"/>
+                <text x="650" y="215" fill="#10b981" fontSize="11" textAnchor="middle">Follow up</text>
+                <text x="650" y="230" fill="#10b981" fontSize="11" textAnchor="middle">days 3, 7, 14</text>
+
+                <defs>
+                  <marker id="arrowgray" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+                    <path d="M0,0 L0,6 L9,3 z" fill="#9ca3af" />
+                  </marker>
+                  <marker id="arrowprimary" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+                    <path d="M0,0 L0,6 L9,3 z" fill="#00adb5" />
+                  </marker>
+                </defs>
+              </svg>
+              <p className="text-sm text-gray-400 italic">From 2 to 3 days and manual work to instant, automated delivery</p>
+            </div>
+
+            <p className="text-lg leading-relaxed mb-4">
+              She was asking the same questions every time: company size, service needed, budget range, timeline. Each proposal followed the same template, just different names and numbers. The follow ups were supposed to happen at day 3, day 7, and day 14, but only if Alana remembered to set calendar reminders.
+            </p>
+            <p className="text-lg leading-relaxed mb-4">
+              So we built a system that captures everything once, populates the right template automatically, and handles follow-ups like clockwork. Two weeks from start to finish.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-3xl font-bold text-white mb-6 flex items-center gap-3">
+              <span className="text-primary text-2xl">⚙️</span>
+              The Solution
+            </h2>
+            <p className="text-lg leading-relaxed mb-6">
+              Every intake form submission now triggers an instant confirmation email, auto fills the proposal template based on service type, and queues follow up reminders at exactly day 3, 7, and 14. Everything logs to her CRM automatically. No manual entry, no missed follow ups.
+            </p>
+            <div className="grid md:grid-cols-2 gap-4">
               <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">1</div>
-                  <div>
-                    <h4 className="font-bold text-white mb-2">Discovery & Audit (Week 1)</h4>
-                    <p className="text-sm text-gray-300">Mapped Alana's current intake and proposal workflow, identified bottlenecks through process observation, analyzed competitor response times and proposal quality benchmarks</p>
-                  </div>
-                </div>
+                <h4 className="font-bold text-white mb-2">Instant Response</h4>
+                <p className="text-sm">Form submission triggers immediate confirmation with next steps</p>
               </div>
               <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">2</div>
-                  <div>
-                    <h4 className="font-bold text-white mb-2">Roadmap & Design (Week 1)</h4>
-                    <p className="text-sm text-gray-300">Created automation blueprint showing exact workflow logic, designed proposal templates with smart autofill rules, mapped CRM integration points and data flow</p>
-                  </div>
-                </div>
+                <h4 className="font-bold text-white mb-2">Smart Templates</h4>
+                <p className="text-sm">Service type determines template, data auto populates, pricing rules apply</p>
               </div>
               <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">3</div>
-                  <div>
-                    <h4 className="font-bold text-white mb-2">Build & Implementation (Week 2)</h4>
-                    <p className="text-sm text-gray-300">Built intake forms and automated email responses, configured proposal templates with autofill logic, integrated with existing CRM system, set up follow-up sequencing rules</p>
-                  </div>
-                </div>
+                <h4 className="font-bold text-white mb-2">Scheduled Follow Ups</h4>
+                <p className="text-sm">Automated reminders at day 3, 7, 14, escalates after 3 attempts</p>
               </div>
               <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">4</div>
-                  <div>
-                    <h4 className="font-bold text-white mb-2">Optimize & Handoff (Ongoing)</h4>
-                    <p className="text-sm text-gray-300">Trained team on system usage and exception handling, monitored performance for 30 days and adjusted timing, established feedback loop for continuous improvement</p>
-                  </div>
-                </div>
+                <h4 className="font-bold text-white mb-2">CRM Sync</h4>
+                <p className="text-sm">All interactions logged automatically, status updates in real-time</p>
               </div>
             </div>
           </section>

@@ -53,18 +53,81 @@ export default function MarcusChenCaseStudy() {
               The Challenge
             </h2>
             <p className="text-lg leading-relaxed mb-4">
-              Marcus was losing deals because his team couldn't keep up with lead follow ups and property alerts. Manual CRM updates meant data was always outdated, leads received inconsistent communication, and hot properties weren't matched to interested buyers fast enough. In real estate, speed wins deals.
+              "We're bleeding deals to agents who text back in 30 seconds," Marcus told us. In Austin's red hot real estate market, buyers expect instant gratification. When a perfect property hits the market, the agent who alerts their buyer first gets the showing. And the showing usually gets the deal.
+            </p>
+            <p className="text-lg leading-relaxed mb-4">
+              Marcus's team was manually matching properties to buyers, which took 2 to 3 hours per listing. By the time they sent alerts, other agents had already scheduled showings. Meanwhile, lead response averaged 18 to 24 hours, an eternity when competitors responded in minutes. And the CRM? Less than 60% accurate because agents forgot to log interactions.
             </p>
             <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
-              <h3 className="text-lg font-bold text-white mb-3">Critical Issues:</h3>
+              <h3 className="text-lg font-bold text-white mb-3">The Speed Problem:</h3>
               <ul className="space-y-2">
-                <li className="flex items-start gap-2">• Average 18-24 hour lead response time (competitors: minutes)</li>
-                <li className="flex items-start gap-2">• Manual property matching took 2-3 hours per new listing</li>
-                <li className="flex items-start gap-2">• CRM data accuracy below 60% due to manual entry</li>
-                <li className="flex items-start gap-2">• Leads slipped through cracks during agent vacations</li>
-                <li className="flex items-start gap-2">• No systematic nurture for cold leads</li>
+                <li className="flex items-start gap-2">• 18 to 24 hour lead response while competitors responded in under 60 seconds</li>
+                <li className="flex items-start gap-2">• 2 to 3 hours to manually match each new listing to buyer preferences</li>
+                <li className="flex items-start gap-2">• CRM only 60% accurate, agents too busy to update it</li>
+                <li className="flex items-start gap-2">• Leads fell through when agents went on vacation</li>
+                <li className="flex items-start gap-2">• Cold leads never got nurtured, just went stale</li>
               </ul>
             </div>
+          </section>
+
+          <section>
+            <h2 className="text-3xl font-bold text-white mb-6 flex items-center gap-3">
+              <span className="text-accent-purple text-2xl">🔄</span>
+              How We Built Speed to Lead
+            </h2>
+            <p className="text-lg leading-relaxed mb-6">
+              We asked Marcus to show us his buyer intake form and his MLS feed. "What criteria matter most?" we asked. He pulled up a buyer profile: 3 bed, 2 bath, under $500K, north Austin, near good schools. "Every buyer fills this out," he said. "Then we manually search MLS and email matches."
+            </p>
+
+            <div className="bg-dark-700 rounded-xl border border-primary/20 p-8 mb-6">
+              <h4 className="font-bold text-white mb-4">Property Matching Flow</h4>
+              <svg viewBox="0 0 750 280" className="w-full h-auto mb-4" role="img" aria-label="Property matching automation diagram">
+                <text x="375" y="25" fill="#fff" fontSize="15" fontWeight="bold" textAnchor="middle">New Listing Appears on MLS</text>
+
+                <rect x="50" y="50" width="280" height="80" rx="8" fill="#21272e" stroke="#ef4444" strokeWidth="2"/>
+                <text x="190" y="75" fill="#ef4444" fontSize="13" fontWeight="bold" textAnchor="middle">BEFORE (Manual)</text>
+                <text x="190" y="95" fill="#fff" fontSize="11" textAnchor="middle">Agent searches MLS</text>
+                <text x="190" y="110" fill="#fff" fontSize="11" textAnchor="middle">Manually checks buyer preferences</text>
+                <text x="190" y="125" fill="#9ca3af" fontSize="10" textAnchor="middle">2 to 3 hours delay</text>
+
+                <rect x="420" y="50" width="280" height="80" rx="8" fill="#21272e" stroke="#10b981" strokeWidth="2"/>
+                <text x="560" y="75" fill="#10b981" fontSize="13" fontWeight="bold" textAnchor="middle">AFTER (Automated)</text>
+                <text x="560" y="95" fill="#fff" fontSize="11" textAnchor="middle">AI matches criteria instantly</text>
+                <text x="560" y="110" fill="#fff" fontSize="11" textAnchor="middle">Sends personalized alerts</text>
+                <text x="560" y="125" fill="#00adb5" fontSize="10" textAnchor="middle">Under 60 seconds</text>
+
+                <rect x="140" y="160" width="100" height="50" rx="6" fill="#21272e" stroke="#00adb5" strokeWidth="2"/>
+                <text x="190" y="185" fill="#fff" fontSize="11" textAnchor="middle">Buyer gets alert</text>
+                <text x="190" y="200" fill="#9ca3af" fontSize="9" textAnchor="middle">(too late)</text>
+
+                <rect x="510" y="160" width="100" height="50" rx="6" fill="#21272e" stroke="#10b981" strokeWidth="2"/>
+                <text x="560" y="185" fill="#fff" fontSize="11" textAnchor="middle">Buyer gets alert</text>
+                <text x="560" y="200" fill="#10b981" fontSize="9" textAnchor="middle">(instant)</text>
+
+                <path d="M 190 130 L 190 160" stroke="#ef4444" strokeWidth="2" markerEnd="url(#arrowred)"/>
+                <path d="M 560 130 L 560 160" stroke="#10b981" strokeWidth="2" markerEnd="url(#arrowgreen)"/>
+
+                <rect x="440" y="235" width="240" height="35" rx="6" fill="#00adb5" fillOpacity="0.2" stroke="#00adb5" strokeWidth="2"/>
+                <text x="560" y="258" fill="#10b981" fontSize="13" fontWeight="bold" textAnchor="middle">First showing = First offer</text>
+
+                <defs>
+                  <marker id="arrowred" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+                    <path d="M0,0 L0,6 L9,3 z" fill="#ef4444" />
+                  </marker>
+                  <marker id="arrowgreen" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+                    <path d="M0,0 L0,6 L9,3 z" fill="#10b981" />
+                  </marker>
+                </defs>
+              </svg>
+              <p className="text-sm text-gray-400 italic">Speed wins in real estate, instant matching beats manual searching every time</p>
+            </div>
+
+            <p className="text-lg leading-relaxed mb-4">
+              That was the insight. We did not need a complex AI, we just needed to connect his MLS feed to buyer preferences and automate the match. New listing comes in? System checks all buyer profiles in under 60 seconds, sends personalized alerts with photos and scheduling links, and logs everything to the CRM automatically.
+            </p>
+            <p className="text-lg leading-relaxed mb-4">
+              Same thing for new leads. Form submission triggers instant text and email with next steps, buyer preferences get captured, and follow ups happen on days 1, 3, 7, and 14 without anyone thinking about it.
+            </p>
           </section>
 
           <section>
@@ -73,72 +136,24 @@ export default function MarcusChenCaseStudy() {
               The Solution
             </h2>
             <p className="text-lg leading-relaxed mb-4">
-              We built an automated lead management system that sends instant follow ups based on lead source and interest level, triggers property alerts when new listings match buyer criteria, updates the CRM automatically as leads progress through the pipeline, and sequences nurture emails for cold leads to keep them warm.
+              Now every new lead gets instant follow up within 60 seconds. Every new MLS listing gets matched to buyer preferences automatically and alerts go out immediately. The CRM updates itself, no manual logging. And cold leads get nurtured with value driven content so they are warm when they are ready to buy.
             </p>
             <div className="grid md:grid-cols-2 gap-4">
               <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
                 <h4 className="font-bold text-white mb-2">Instant Lead Response</h4>
-                <p className="text-sm">Automated follow-up within 60 seconds of inquiry with personalized messaging</p>
+                <p className="text-sm">Text and email within 60 seconds with personalized next steps</p>
               </div>
               <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
                 <h4 className="font-bold text-white mb-2">Smart Property Matching</h4>
-                <p className="text-sm">AI matches new listings to buyer preferences and sends instant alerts</p>
+                <p className="text-sm">AI matches MLS listings to buyer criteria, alerts in under 60 seconds</p>
               </div>
               <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
-                <h4 className="font-bold text-white mb-2">Auto-CRM Updates</h4>
-                <p className="text-sm">Every interaction logged automatically with 100% accuracy</p>
+                <h4 className="font-bold text-white mb-2">Auto CRM Updates</h4>
+                <p className="text-sm">Every interaction logged automatically, 100% data accuracy</p>
               </div>
               <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
                 <h4 className="font-bold text-white mb-2">Nurture Sequences</h4>
-                <p className="text-sm">Cold leads receive value-driven emails to stay top-of-mind</p>
-              </div>
-            </div>
-          </section>
-
-          <section>
-            <h2 className="text-3xl font-bold text-white mb-6 flex items-center gap-3">
-              <span className="text-accent-purple text-2xl">🔄</span>
-              Our Process
-            </h2>
-            <p className="text-lg leading-relaxed mb-6">
-              We implemented our automation methodology to give Marcus's team a competitive edge in speed to lead:
-            </p>
-            <div className="space-y-4">
-              <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">1</div>
-                  <div>
-                    <h4 className="font-bold text-white mb-2">Discovery & Audit (Week 1-2)</h4>
-                    <p className="text-sm text-gray-300">Mapped current lead flow and CRM update processes, analyzed buyer preferences and property matching accuracy, identified gaps in follow-up and nurture sequences</p>
-                  </div>
-                </div>
-              </div>
-              <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">2</div>
-                  <div>
-                    <h4 className="font-bold text-white mb-2">Roadmap & Design (Week 2-3)</h4>
-                    <p className="text-sm text-gray-300">Designed instant response templates based on lead source, built AI matching logic for properties and buyers, created nurture email sequences for different buyer stages</p>
-                  </div>
-                </div>
-              </div>
-              <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">3</div>
-                  <div>
-                    <h4 className="font-bold text-white mb-2">Build & Implementation (Week 3-5)</h4>
-                    <p className="text-sm text-gray-300">Built automated lead response system with 60-second SLA, configured property matching engine with AI preferences, integrated CRM for automatic logging and status updates, deployed nurture sequences for cold lead warming</p>
-                  </div>
-                </div>
-              </div>
-              <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">4</div>
-                  <div>
-                    <h4 className="font-bold text-white mb-2">Optimize & Handoff (Ongoing)</h4>
-                    <p className="text-sm text-gray-300">Trained 6-agent team on system usage and overrides, fine-tuned property matching based on conversion data, established reporting dashboard for pipeline visibility</p>
-                  </div>
-                </div>
+                <p className="text-sm">Cold leads get value content on days 1, 3, 7, 14 — stay top-of-mind</p>
               </div>
             </div>
           </section>
