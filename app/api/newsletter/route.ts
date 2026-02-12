@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { getSupabaseClient } from '@/lib/supabase';
 
 /*
  * TODO: Create Supabase table with the following SQL:
@@ -40,6 +40,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Insert into Supabase
+    const supabase = getSupabaseClient();
     const { data, error } = await supabase
       .from('leads')
       .insert([
@@ -49,7 +50,7 @@ export async function POST(request: NextRequest) {
           newsletter: true,
           source: 'newsletter_signup',
         },
-      ])
+      ] as any)
       .select()
       .single();
 
