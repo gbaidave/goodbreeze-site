@@ -97,6 +97,54 @@ export default function RafaelMorenoCaseStudy() {
 
           <section>
             <h2 className="text-3xl font-bold text-white mb-6 flex items-center gap-3">
+              <span className="text-accent-purple text-2xl">🔄</span>
+              Our Process
+            </h2>
+            <p className="text-lg leading-relaxed mb-6">
+              We followed our structured automation framework to transform Rafael's month-end close workflow:
+            </p>
+            <div className="space-y-4">
+              <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">1</div>
+                  <div>
+                    <h4 className="font-bold text-white mb-2">Discovery & Audit (Week 1)</h4>
+                    <p className="text-sm text-gray-300">Documented entire month-end close process step-by-step, identified which document requests were manual vs automated, analyzed submission patterns and common exceptions</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">2</div>
+                  <div>
+                    <h4 className="font-bold text-white mb-2">Roadmap & Design (Week 1-2)</h4>
+                    <p className="text-sm text-gray-300">Created document collection templates for each client type, designed reminder schedule (5, 3, 1 days before deadline), built exception detection rules based on transaction patterns</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">3</div>
+                  <div>
+                    <h4 className="font-bold text-white mb-2">Build & Implementation (Week 2-4)</h4>
+                    <p className="text-sm text-gray-300">Built automated reminder system with escalation logic, integrated with accounting software for reconciliation, configured AI exception flagging based on historical data, deployed tracking dashboard for team visibility</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">4</div>
+                  <div>
+                    <h4 className="font-bold text-white mb-2">Optimize & Handoff (Ongoing)</h4>
+                    <p className="text-sm text-gray-300">Trained accounting team on system and exception handling, monitored two full month-end cycles and refined timing, adjusted exception rules based on feedback and false positives</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section>
+            <h2 className="text-3xl font-bold text-white mb-6 flex items-center gap-3">
               <span className="text-green-400 text-2xl">📈</span>
               The Results
             </h2>

@@ -96,6 +96,54 @@ export default function JuliaLawsonCaseStudy() {
 
           <section>
             <h2 className="text-3xl font-bold text-white mb-6 flex items-center gap-3">
+              <span className="text-accent-purple text-2xl">🔄</span>
+              Our Process
+            </h2>
+            <p className="text-lg leading-relaxed mb-6">
+              We applied our proven automation framework to transform Julia's client acquisition system:
+            </p>
+            <div className="space-y-4">
+              <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">1</div>
+                  <div>
+                    <h4 className="font-bold text-white mb-2">Discovery & Audit (Week 1)</h4>
+                    <p className="text-sm text-gray-300">Analyzed lead sources and conversion rates, tracked time from inquiry to first contact, identified after-hours inquiry volume and missed opportunities</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">2</div>
+                  <div>
+                    <h4 className="font-bold text-white mb-2">Roadmap & Design (Week 1-2)</h4>
+                    <p className="text-sm text-gray-300">Designed intake forms optimized for legal services, built AI assistant conversation flows for common questions, created follow-up sequences based on lead source and urgency</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">3</div>
+                  <div>
+                    <h4 className="font-bold text-white mb-2">Build & Implementation (Week 2-3)</h4>
+                    <p className="text-sm text-gray-300">Deployed 24/7 lead capture forms with instant confirmation, configured AI assistant for after-hours support, integrated calendar for direct consultation booking, built pipeline dashboard for visibility</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">4</div>
+                  <div>
+                    <h4 className="font-bold text-white mb-2">Optimize & Handoff (Ongoing)</h4>
+                    <p className="text-sm text-gray-300">Trained staff on dashboard usage and exception handling, fine-tuned AI responses based on client feedback, monitored conversion rates and adjusted follow-up timing</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section>
+            <h2 className="text-3xl font-bold text-white mb-6 flex items-center gap-3">
               <span className="text-green-400 text-2xl">📈</span>
               The Impact
             </h2>

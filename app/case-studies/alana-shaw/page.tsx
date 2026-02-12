@@ -115,6 +115,54 @@ export default function AlanaShawCaseStudy() {
 
           <section>
             <h2 className="text-3xl font-bold text-white mb-6 flex items-center gap-3">
+              <span className="text-accent-purple text-2xl">🔄</span>
+              Our Process
+            </h2>
+            <p className="text-lg leading-relaxed mb-6">
+              We follow a proven four-phase methodology adapted from leading automation agency frameworks to deliver results quickly and reliably:
+            </p>
+            <div className="space-y-4">
+              <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">1</div>
+                  <div>
+                    <h4 className="font-bold text-white mb-2">Discovery & Audit (Week 1)</h4>
+                    <p className="text-sm text-gray-300">Mapped Alana's current intake and proposal workflow, identified bottlenecks through process observation, analyzed competitor response times and proposal quality benchmarks</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">2</div>
+                  <div>
+                    <h4 className="font-bold text-white mb-2">Roadmap & Design (Week 1)</h4>
+                    <p className="text-sm text-gray-300">Created automation blueprint showing exact workflow logic, designed proposal templates with smart autofill rules, mapped CRM integration points and data flow</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">3</div>
+                  <div>
+                    <h4 className="font-bold text-white mb-2">Build & Implementation (Week 2)</h4>
+                    <p className="text-sm text-gray-300">Built intake forms and automated email responses, configured proposal templates with autofill logic, integrated with existing CRM system, set up follow-up sequencing rules</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">4</div>
+                  <div>
+                    <h4 className="font-bold text-white mb-2">Optimize & Handoff (Ongoing)</h4>
+                    <p className="text-sm text-gray-300">Trained team on system usage and exception handling, monitored performance for 30 days and adjusted timing, established feedback loop for continuous improvement</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section>
+            <h2 className="text-3xl font-bold text-white mb-6 flex items-center gap-3">
               <span className="text-green-400 text-2xl">📈</span>
               The Results
             </h2>
