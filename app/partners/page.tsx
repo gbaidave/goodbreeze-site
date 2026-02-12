@@ -68,7 +68,7 @@ export default function PartnersPage() {
                 </div>
 
                 {/* Partner Logo */}
-                <div className="w-32 h-24 rounded-lg bg-white/5 border-2 border-primary/30 flex items-center justify-center flex-shrink-0 ml-4 p-3">
+                <div className="w-32 h-24 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0 ml-4 p-3">
                   <Image
                     src={partner.logo}
                     alt={`${partner.name} logo`}
