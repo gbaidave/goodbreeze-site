@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import NewsletterSignup from "@/components/newsletter/NewsletterSignup";
 
 export const metadata: Metadata = {
   title: "Written Guides | Good Breeze AI",
@@ -84,18 +85,9 @@ export default function WrittenGuidesPage() {
           ))}
         </div>
 
-        {/* CTA */}
-        <div className="mt-16 text-center bg-gradient-to-br from-primary/10 to-accent-purple/10 rounded-2xl border border-primary/30 p-12">
-          <h2 className="text-3xl font-bold mb-4">Need Help Getting Started?</h2>
-          <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-            Book a free strategy call to discuss your automation opportunities.
-          </p>
-          <Link
-            href="/contact"
-            className="inline-block px-8 py-4 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full hover:shadow-lg hover:shadow-primary/50 transition-all duration-300 transform hover:scale-105"
-          >
-            Book Your Strategy Call
-          </Link>
+        {/* Newsletter Signup */}
+        <div className="mt-16">
+          <NewsletterSignup />
         </div>
       </div>
     </div>
