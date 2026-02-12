@@ -95,24 +95,24 @@ export default function ProcessOptimizationServices() {
         <div className="mb-12">
           <h2 className="text-2xl font-bold text-white mb-6">Common Process Optimization Areas</h2>
           <div className="grid md:grid-cols-2 gap-6">
-            <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
-              <h3 className="text-lg font-semibold text-primary mb-2">Sales to Fulfillment</h3>
-              <p className="text-gray-300">Streamline the handoff from closed deal to project kickoff—eliminate delays and reduce errors.</p>
+            <div className="bg-gradient-to-br from-[#3b82f6] via-[#a855f7] to-[#00adb5] rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-white mb-2">Sales to Fulfillment</h3>
+              <p className="text-white/90">Streamline the handoff from closed deal to project kickoff—eliminate delays and reduce errors.</p>
             </div>
 
-            <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
-              <h3 className="text-lg font-semibold text-primary mb-2">Client Onboarding</h3>
-              <p className="text-gray-300">Reduce onboarding time from weeks to days by eliminating unnecessary steps and automating what remains.</p>
+            <div className="bg-gradient-to-br from-[#3b82f6] via-[#a855f7] to-[#3b82f6] rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-white mb-2">Client Onboarding</h3>
+              <p className="text-white/90">Reduce onboarding time from weeks to days by eliminating unnecessary steps and automating what remains.</p>
             </div>
 
-            <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
-              <h3 className="text-lg font-semibold text-primary mb-2">Financial Close</h3>
-              <p className="text-gray-300">Cut month-end close time in half by automating reconciliations, approvals, and report generation.</p>
+            <div className="bg-gradient-to-br from-[#a855f7] via-[#00adb5] to-[#a855f7] rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-white mb-2">Financial Close</h3>
+              <p className="text-white/90">Cut month-end close time in half by automating reconciliations, approvals, and report generation.</p>
             </div>
 
-            <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
-              <h3 className="text-lg font-semibold text-primary mb-2">Customer Support Triage</h3>
-              <p className="text-gray-300">Route support tickets faster and more accurately—reduce response times and improve customer satisfaction.</p>
+            <div className="bg-gradient-to-br from-[#00adb5] via-[#3b82f6] to-[#a855f7] rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-white mb-2">Customer Support Triage</h3>
+              <p className="text-white/90">Route support tickets faster and more accurately—reduce response times and improve customer satisfaction.</p>
             </div>
           </div>
         </div>

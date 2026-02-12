@@ -50,6 +50,16 @@ export default function Footer() {
                   Process Optimization
                 </Link>
               </li>
+              <li>
+                <Link href="/services/content-management" className="hover:text-primary transition-colors">
+                  Content Management
+                </Link>
+              </li>
+              <li>
+                <Link href="/services/custom-solutions" className="hover:text-primary transition-colors">
+                  Custom Solutions
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -76,6 +86,16 @@ export default function Footer() {
               <li>
                 <Link href="/about" className="hover:text-primary transition-colors">
                   About
+                </Link>
+              </li>
+              <li>
+                <Link href="/partners" className="hover:text-primary transition-colors">
+                  Partners
+                </Link>
+              </li>
+              <li>
+                <Link href="/case-studies" className="hover:text-primary transition-colors">
+                  Case Studies
                 </Link>
               </li>
               <li>

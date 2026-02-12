@@ -50,14 +50,21 @@ export default function Resources() {
   return (
     <div className="min-h-screen bg-dark py-24 px-6">
       <div className="max-w-7xl mx-auto">
+        {/* Breadcrumb */}
+        <div className="mb-8">
+          <Link href="/" className="text-gray-400 hover:text-primary transition-colors">
+            Home
+          </Link>
+          <span className="text-gray-600 mx-2">/</span>
+          <span className="text-gray-300">Resources</span>
+        </div>
+
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-16"
         >
-          <Link href="/" className="text-primary hover:underline mb-4 inline-block">
-            ← Back to Home
           </Link>
           <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-primary to-accent-blue bg-clip-text text-transparent">
             Resources & Learning Center

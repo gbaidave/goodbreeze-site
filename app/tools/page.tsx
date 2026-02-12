@@ -50,19 +50,25 @@ export default function ToolsDirectory() {
   return (
     <div className="min-h-screen bg-dark py-24 px-6">
       <div className="max-w-7xl mx-auto">
+        {/* Breadcrumb */}
+        <div className="mb-8">
+          <Link href="/" className="text-gray-400 hover:text-primary transition-colors">
+            Home
+          </Link>
+          <span className="text-gray-600 mx-2">/</span>
+          <span className="text-gray-300">Free Tools</span>
+        </div>
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-16"
         >
-          <Link href="/" className="text-primary hover:underline mb-4 inline-block">
-            ← Back to Home
-          </Link>
           <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-primary to-accent-blue bg-clip-text text-transparent">
             Free Business Intelligence Tools
           </h1>
           <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-            Try our AI-powered tools to get instant insights into your business, competitors, and growth opportunities—completely free.
+            Try our AI powered tools to get instant insights into your business, competitors, and growth opportunities—completely free.
           </p>
         </motion.div>
 
@@ -75,20 +81,13 @@ export default function ToolsDirectory() {
               transition={{ delay: index * 0.1 }}
               className="relative group"
             >
-              <div className="relative h-full p-8 rounded-2xl bg-dark-700 border border-primary/20 hover:border-primary/50 transition-all duration-300 overflow-hidden">
+              <div className="relative h-full p-8 rounded-2xl bg-dark-700 border border-primary/20 hover:border-primary/50 transition-all duration-300 overflow-hidden flex flex-col">
                 {/* Gradient overlay on hover */}
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-accent-purple/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-                <div className="relative z-10">
+                <div className="relative z-10 flex flex-col flex-grow">
                   {/* Icon */}
                   <tool.icon className="w-16 h-16 mx-auto mb-6" />
-
-                  {/* Status badge */}
-                  {tool.status === "coming-soon" && (
-                    <div className="absolute top-4 right-4 px-3 py-1 bg-accent-purple/20 border border-accent-purple/30 rounded-full text-xs text-accent-purple font-semibold">
-                      Coming Soon
-                    </div>
-                  )}
 
                   {/* Title */}
                   <h3 className="text-2xl font-bold text-white mb-4">
@@ -101,7 +100,7 @@ export default function ToolsDirectory() {
                   </p>
 
                   {/* Features */}
-                  <ul className="space-y-2 mb-8">
+                  <ul className="space-y-2 mb-8 flex-grow">
                     {tool.features.map((feature, idx) => (
                       <li key={idx} className="flex items-start text-sm text-gray-400">
                         <span className="text-primary mr-2">✓</span>

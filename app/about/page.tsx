@@ -8,14 +8,20 @@ export default function About() {
   return (
     <div className="min-h-screen bg-dark py-24 px-6">
       <div className="max-w-4xl mx-auto">
+        {/* Breadcrumb */}
+        <div className="mb-8">
+          <Link href="/" className="text-gray-400 hover:text-primary transition-colors">
+            Home
+          </Link>
+          <span className="text-gray-600 mx-2">/</span>
+          <span className="text-gray-300">About</span>
+        </div>
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-16"
         >
-          <Link href="/" className="text-primary hover:underline mb-4 inline-block">
-            ← Back to Home
-          </Link>
           <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-primary to-accent-blue bg-clip-text text-transparent">
             About Good Breeze AI
           </h1>
@@ -38,13 +44,13 @@ export default function About() {
           </section>
 
           <section className="bg-dark-700 rounded-2xl border border-primary/20 p-8">
-            <h2 className="text-3xl font-bold mb-6">Meet David Silverstein</h2>
+            <h2 className="text-3xl font-bold mb-6">Meet Your Automation Partner</h2>
             <div className="grid md:grid-cols-3 gap-8 items-start">
               <div className="md:col-span-1">
                 <div className="relative w-full aspect-square rounded-2xl overflow-hidden border-2 border-primary/30">
                   <Image
                     src="/images/dave-profile.jpg"
-                    alt="David Silverstein - Founder & CEO"
+                    alt="Dave Silverstein, Founder of Good Breeze AI"
                     fill
                     className="object-cover"
                   />
@@ -52,17 +58,23 @@ export default function About() {
               </div>
               <div className="md:col-span-2 space-y-4 text-gray-300 leading-relaxed text-lg">
                 <p>
-                  <strong className="text-white">Founder & CEO</strong> of Good Breeze AI
+                  <strong className="text-white">Dave Silverstein</strong><br />
+                  <span className="text-primary">Founder: Good Breeze AI</span>
                 </p>
                 <p>
-                  David isn't your typical tech founder. He's built, scaled, and exited multiple businesses across gaming, ecommerce, and web development. His expertise spans product management, team scaling, and translating complex technology into measurable business outcomes.
+                  Dave isn't building theoretical solutions. Every system Good Breeze AI offers is battle tested in real operations first.
                 </p>
                 <p>
-                  He's not someone who learned business after learning code—he's a <strong className="text-primary">business operator who happens to be technical</strong>. That's the difference. He speaks your language, understands your problems, and knows how to translate AI/automation into actual ROI.
+                  As a business operator who mastered technology out of necessity, Dave built automation tools when existing solutions fell short for real businesses. Other SMBs faced the same challenges.
                 </p>
                 <p>
-                  David's written extensively on product management, scaling teams, and leveraging AI for real business outcomes. He's not here to sell you buzzwords—he's here to help you grow without the growing pains.
+                  The competitive analyzer? Used daily for client calls. The proposal system? Powers the entire sales process. The workflow automation? Runs the whole operation. If a system doesn't deliver value internally, it won't be offered to clients.
                 </p>
+                <div className="border-l-4 border-primary pl-6 py-2 mt-6">
+                  <p className="italic">
+                    "I build systems I wish existed when I was drowning in manual work. It saves me time and makes me money, it'll do the same for you."
+                  </p>
+                </div>
               </div>
             </div>
           </section>

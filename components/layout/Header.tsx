@@ -8,12 +8,21 @@ import { motion, AnimatePresence } from "framer-motion";
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
 
   const services = [
     { name: "Workflow Automation", href: "/services/workflow-automation" },
     { name: "AI Agent Implementation", href: "/services/ai-agents" },
     { name: "Competitive Intelligence", href: "/services/competitive-intelligence" },
     { name: "Process Optimization", href: "/services/process-optimization" },
+    { name: "Content Management & Delivery", href: "/services/content-management" },
+    { name: "Custom Solutions", href: "/services/custom-solutions" },
+  ];
+
+  const aboutLinks = [
+    { name: "About", href: "/about" },
+    { name: "Partners", href: "/partners" },
+    { name: "Case Studies", href: "/case-studies" },
   ];
 
   return (
@@ -75,9 +84,42 @@ export default function Header() {
             <Link href="/resources" className="text-gray-300 hover:text-primary transition-colors">
               Resources
             </Link>
-            <Link href="/about" className="text-gray-300 hover:text-primary transition-colors">
-              About
-            </Link>
+
+            {/* About Dropdown */}
+            <div
+              className="relative"
+              onMouseEnter={() => setAboutOpen(true)}
+              onMouseLeave={() => setAboutOpen(false)}
+            >
+              <button className="text-gray-300 hover:text-primary transition-colors flex items-center gap-1">
+                About
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              <AnimatePresence>
+                {aboutOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute top-full left-0 mt-2 w-64 bg-[#2a2a2a] border-2 border-primary/50 rounded-lg shadow-2xl shadow-primary/30 overflow-hidden"
+                  >
+                    {aboutLinks.map((link, index) => (
+                      <Link
+                        key={index}
+                        href={link.href}
+                        className="block px-4 py-3 text-white font-medium hover:bg-primary/30 hover:text-white transition-all duration-200"
+                      >
+                        {link.name}
+                      </Link>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
 
             <Link href="/contact" className="px-6 py-2 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full hover:shadow-lg hover:shadow-primary/50 transition-all duration-300">
               Book a Call
@@ -155,9 +197,21 @@ export default function Header() {
             <Link href="/resources" className="block text-gray-300 hover:text-primary transition-colors">
               Resources
             </Link>
-            <Link href="/about" className="block text-gray-300 hover:text-primary transition-colors">
-              About
-            </Link>
+
+            {/* Mobile About */}
+            <div>
+              <div className="text-gray-400 text-sm font-semibold mb-2">About</div>
+              {aboutLinks.map((link, index) => (
+                <Link
+                  key={index}
+                  href={link.href}
+                  className="block pl-4 py-2 text-gray-300 hover:text-primary transition-colors"
+                >
+                  {link.name}
+                </Link>
+              ))}
+            </div>
+
             <Link href="/contact" className="block text-center px-6 py-2 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full">
               Book a Call
             </Link>

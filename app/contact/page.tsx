@@ -7,19 +7,25 @@ export default function Contact() {
   return (
     <div className="min-h-screen bg-dark py-24 px-6">
       <div className="max-w-4xl mx-auto">
+        {/* Breadcrumb */}
+        <div className="mb-8">
+          <Link href="/" className="text-gray-400 hover:text-primary transition-colors">
+            Home
+          </Link>
+          <span className="text-gray-600 mx-2">/</span>
+          <span className="text-gray-300">Contact</span>
+        </div>
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-16"
         >
-          <Link href="/" className="text-primary hover:underline mb-4 inline-block">
-            ← Back to Home
-          </Link>
           <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-primary to-accent-blue bg-clip-text text-transparent">
             Let's Talk
           </h1>
           <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-            Book a 30-minute strategy call to discuss how automation can help your business scale.
+            Book a 30 minute strategy call to discuss how automation can help your business scale.
           </p>
         </motion.div>
 
@@ -72,10 +78,10 @@ export default function Contact() {
 
           <div className="text-center">
             <a
-              href={process.env.NEXT_PUBLIC_CALENDLY_URL}
+              href="https://calendly.com/dave-goodbreeze/30min"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-block px-8 py-4 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full hover:shadow-lg hover:shadow-primary/50 transition-all duration-300 transform hover:scale-105"
+              className="inline-block px-8 py-4 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full border-4 border-white hover:shadow-lg hover:shadow-primary/50 transition-all duration-300 transform hover:scale-105"
             >
               Schedule Your Call
             </a>
