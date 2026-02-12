@@ -22,7 +22,7 @@ export default function About() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-16"
         >
-          <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-primary to-accent-blue bg-clip-text text-transparent">
+          <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-[#00adb5] to-[#3b82f6] bg-clip-text text-transparent">
             About Good Breeze AI
           </h1>
           <p className="text-xl text-gray-300">

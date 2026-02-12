@@ -81,7 +81,7 @@ export default function CaseStudiesPage() {
 
         {/* Header */}
         <div className="text-center mb-16">
-          <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-primary to-accent-blue bg-clip-text text-transparent">
+          <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-[#00adb5] to-[#3b82f6] bg-clip-text text-transparent">
             Real Results from Real Businesses
           </h1>
           <p className="text-xl text-gray-300 max-w-3xl mx-auto">
@@ -94,7 +94,7 @@ export default function CaseStudiesPage() {
           {caseStudies.map((study, index) => (
             <div
               key={index}
-              className="bg-dark-700 rounded-2xl border border-primary/20 p-8 lg:p-12"
+              className="bg-gradient-to-br from-[#3b82f6]/20 via-[#a855f7]/20 to-[#00adb5]/10 rounded-2xl p-8 lg:p-12"
             >
               {/* Header with avatar */}
               <div className="flex items-center gap-4 mb-8">

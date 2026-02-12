@@ -38,7 +38,7 @@ export default function PartnersPage() {
 
         {/* Header */}
         <div className="text-center mb-16">
-          <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-primary to-accent-blue bg-clip-text text-transparent">
+          <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-[#00adb5] to-[#3b82f6] bg-clip-text text-transparent">
             Our Trusted Partners
           </h1>
           <p className="text-xl text-gray-300 max-w-3xl mx-auto">
@@ -51,17 +51,28 @@ export default function PartnersPage() {
           {partners.map((partner, index) => (
             <div
               key={index}
-              className="bg-dark-700 rounded-2xl border border-primary/20 p-8 hover:border-primary/50 transition-all duration-300"
+              className="bg-dark-700 rounded-2xl border border-primary/20 p-8 hover:border-primary/50 transition-all duration-300 flex flex-col"
             >
-              <div className="mb-4">
-                <span className="px-3 py-1 bg-primary/20 border border-primary/30 rounded-full text-xs text-primary font-semibold">
-                  {partner.category}
-                </span>
+              {/* Header with logo on right */}
+              <div className="flex items-start justify-between mb-6">
+                <div className="flex-1">
+                  <div className="mb-3">
+                    <span className="px-3 py-1 bg-primary/20 border border-primary/30 rounded-full text-xs text-primary font-semibold">
+                      {partner.category}
+                    </span>
+                  </div>
+                  <h3 className="text-2xl font-bold text-white">{partner.name}</h3>
+                </div>
+
+                {/* Logo placeholder - styled text for now */}
+                <div className="w-24 h-24 rounded-lg bg-gradient-to-br from-primary/20 to-accent-blue/20 border-2 border-primary/30 flex items-center justify-center flex-shrink-0 ml-4">
+                  <span className="text-2xl font-bold text-primary">
+                    {partner.name.split(' ').map(word => word[0]).join('')}
+                  </span>
+                </div>
               </div>
 
-              <h3 className="text-2xl font-bold text-white mb-4">{partner.name}</h3>
-
-              <p className="text-gray-300 mb-6 leading-relaxed">
+              <p className="text-gray-300 mb-6 leading-relaxed flex-grow">
                 {partner.description}
               </p>
 
@@ -81,7 +92,7 @@ export default function PartnersPage() {
                 href={partner.website}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-block px-6 py-3 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full hover:shadow-lg hover:shadow-primary/50 transition-all duration-300 transform hover:scale-105"
+                className="inline-block px-6 py-3 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full hover:shadow-lg hover:shadow-primary/50 transition-all duration-300 transform hover:scale-105 text-center mt-auto"
               >
                 Visit {partner.name} →
               </a>
@@ -95,12 +106,12 @@ export default function PartnersPage() {
           <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
             We're always looking to collaborate with experts who share our commitment to delivering real value to SMBs. If you think we'd be a good fit, let's talk.
           </p>
-          <Link
-            href="/contact"
+          <a
+            href="mailto:contact@goodbreeze.ai"
             className="inline-block px-8 py-4 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full hover:shadow-lg hover:shadow-primary/50 transition-all duration-300 transform hover:scale-105"
           >
-            Get in Touch
-          </Link>
+            contact@goodbreeze.ai
+          </a>
         </div>
       </div>
     </div>

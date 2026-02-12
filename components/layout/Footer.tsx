@@ -19,12 +19,14 @@ export default function Footer() {
             <p className="text-gray-400 text-sm mb-3">
               AI Operations That Scale Your Business
             </p>
-            <Link
-              href="/contact"
+            <a
+              href="https://calendly.com/dave-goodbreeze/30min"
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-block text-primary hover:text-accent-blue transition-colors text-sm font-semibold"
             >
               Book a Strategy Call →
-            </Link>
+            </a>
           </div>
 
           <div>

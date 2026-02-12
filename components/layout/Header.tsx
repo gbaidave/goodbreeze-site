@@ -121,9 +121,9 @@ export default function Header() {
               </AnimatePresence>
             </div>
 
-            <Link href="/contact" className="px-6 py-2 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full hover:shadow-lg hover:shadow-primary/50 transition-all duration-300">
+            <a href="https://calendly.com/dave-goodbreeze/30min" target="_blank" rel="noopener noreferrer" className="px-6 py-2 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full hover:shadow-lg hover:shadow-primary/50 transition-all duration-300">
               Book a Call
-            </Link>
+            </a>
 
             {/* Social Icons */}
             <div className="flex items-center gap-3 pl-4 border-l border-gray-700">
@@ -212,9 +212,9 @@ export default function Header() {
               ))}
             </div>
 
-            <Link href="/contact" className="block text-center px-6 py-2 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full">
+            <a href="https://calendly.com/dave-goodbreeze/30min" target="_blank" rel="noopener noreferrer" className="block text-center px-6 py-2 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full">
               Book a Call
-            </Link>
+            </a>
 
             {/* Mobile Social Icons */}
             <div className="flex items-center gap-4 pt-4 border-t border-gray-700">
