@@ -118,7 +118,7 @@ export default function Hero() {
             {/* Problem-focused headline with keyword at beginning */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 text-white leading-tight">
               <span className="block bg-gradient-to-r from-primary via-accent-blue to-accent-purple bg-clip-text text-transparent">
-                AI Automation for SMBs:
+                Good Breeze AI Automation:
               </span>
               Stop Watching Your Team Drown in Busywork
             </h1>

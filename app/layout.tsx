@@ -11,7 +11,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "Good Breeze AI | AI Operations That Scale Your Business",
-  description: "Freemium AI tools + done-for-you automation to eliminate busywork and 10x your output—without hiring a team.",
+  description: "Good Breeze AI delivers freemium AI tools + done-for-you automation to eliminate busywork and 10x your output—without hiring a team.",
 };
 
 export default function RootLayout({
