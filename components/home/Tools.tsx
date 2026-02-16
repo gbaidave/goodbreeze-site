@@ -8,24 +8,23 @@ const tools = [
     name: "Sales Analyzer",
     description: "AI-Powered Competitive Sales Intelligence",
     detail: "Understand how you stack up against competitors quickly",
-    href: "/tools/sales-analyzer",
+    href: "/sales-analyzer",
     gradient: "from-primary to-accent-blue",
     iconPath: "M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z",
   },
   {
-    name: "SEO Audit",
-    description: "Instant Technical SEO Analysis",
-    detail: "Get a comprehensive SEO report fast",
-    href: "/tools/seo-audit",
+    name: "SEO Analyzer",
+    description: "Professional SEO Audit Report",
+    detail: "Get a comprehensive SEO audit PDF with actionable recommendations",
+    href: "/seo-audit",
     gradient: "from-accent-blue to-accent-purple",
-    comingSoon: true,
     iconPath: "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z",
   },
   {
-    name: "Website Audit",
+    name: "Website Analyzer",
     description: "Complete Website Performance Review",
     detail: "Uncover speed, UX, and conversion issues",
-    href: "/tools/website-audit",
+    href: "/website-audit",
     gradient: "from-accent-purple to-primary",
     comingSoon: true,
     iconPath: "M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z",
@@ -48,7 +47,7 @@ export default function Tools() {
           className="text-center mb-16"
         >
           <h2 className="text-4xl sm:text-5xl font-bold mb-4">
-            Free Tools That Solve Real Problems
+            Free Analyzers That Solve Real Problems
           </h2>
           <p className="text-xl text-gray-400 max-w-3xl mx-auto">
             No credit card required. Get actionable insights right now.
