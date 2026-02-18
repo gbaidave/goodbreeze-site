@@ -41,10 +41,17 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Parse request
-    const { priceId } = await request.json()
+    const body = await request.json()
+
+    // Accept either a raw priceId or a plan name (keeps price IDs server-side)
+    const planPriceMap: Record<string, string | undefined> = {
+      starter: process.env.STRIPE_STARTER_PRICE_ID,
+      impulse: process.env.STRIPE_IMPULSE_PRICE_ID,
+    }
+    const priceId: string | undefined = body.priceId ?? planPriceMap[body.plan]
 
     if (!priceId) {
-      return NextResponse.json({ error: 'priceId is required' }, { status: 400 })
+      return NextResponse.json({ error: 'priceId or valid plan name is required' }, { status: 400 })
     }
 
     // 3. Get or create Stripe customer

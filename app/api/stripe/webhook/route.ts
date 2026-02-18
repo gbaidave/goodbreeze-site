@@ -14,6 +14,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
 import { createClient } from '@supabase/supabase-js'
 import Stripe from 'stripe'
+import {
+  sendPaymentConfirmationEmail,
+  sendPaymentFailedEmail,
+} from '@/lib/email'
 
 function getServiceClient() {
   return createClient(
@@ -46,7 +50,7 @@ export async function POST(request: NextRequest) {
     switch (event.type) {
 
       case 'checkout.session.completed': {
-        const session = event.data.object as Stripe.CheckoutSession
+        const session = event.data.object as Stripe.Checkout.Session
         const userId = session.metadata?.supabase_user_id
         const priceId = session.metadata?.price_id
 
@@ -69,6 +73,15 @@ export async function POST(request: NextRequest) {
             purchased_at: new Date().toISOString(),
             expires_at: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(), // 90 days
           })
+
+          // Send payment confirmation email
+          const { data: profile } = await supabase
+            .from('profiles').select('name, email').eq('id', userId).single()
+          if (profile?.email) {
+            await sendPaymentConfirmationEmail(
+              profile.email, profile.name || profile.email, 'impulse', '$10.00'
+            ).catch(console.error)
+          }
         }
         break
       }
@@ -81,7 +94,7 @@ export async function POST(request: NextRequest) {
         // Look up user by Stripe customer ID
         const { data: profile } = await supabase
           .from('profiles')
-          .select('id')
+          .select('id, name, email')
           .eq('stripe_customer_id', customerId)
           .single()
 
@@ -89,6 +102,13 @@ export async function POST(request: NextRequest) {
 
         const priceId = sub.items.data[0]?.price.id
         const plan = priceId === process.env.STRIPE_STARTER_PRICE_ID ? 'starter' : 'free'
+
+        // Send confirmation email on new subscription
+        if (event.type === 'customer.subscription.created' && sub.status === 'active' && profile.email) {
+          await sendPaymentConfirmationEmail(
+            profile.email, profile.name || profile.email, 'starter', '$20.00'
+          ).catch(console.error)
+        }
 
         await supabase.from('subscriptions').upsert({
           user_id: profile.id,
@@ -123,6 +143,23 @@ export async function POST(request: NextRequest) {
             .from('subscriptions')
             .update({ status: 'past_due', updated_at: new Date().toISOString() })
             .eq('stripe_subscription_id', subId)
+
+          // Send payment failed email
+          const { data: sub } = await supabase
+            .from('subscriptions')
+            .select('user_id')
+            .eq('stripe_subscription_id', subId)
+            .single()
+          if (sub?.user_id) {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('name, email')
+              .eq('id', sub.user_id)
+              .single()
+            if (profile?.email) {
+              await sendPaymentFailedEmail(profile.email, profile.name || profile.email).catch(console.error)
+            }
+          }
         }
         break
       }
