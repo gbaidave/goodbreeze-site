@@ -3,8 +3,13 @@ import Link from "next/link";
 import { ChartIcon } from "@/components/ui/ModernIcons";
 
 export const metadata: Metadata = {
-  title: "Competitive Intelligence Services | Good Breeze AI",
-  description: "Stay ahead of competitors with automated competitive intelligence services that monitor pricing, positioning, and market moves—so you never miss an opportunity.",
+  title: "Competitive Intelligence Services",
+  description: "Know what your competitors are doing before it costs you. Automated monitoring of pricing, positioning, and market moves — so you never get caught off guard.",
+  openGraph: {
+    title: "Competitive Intelligence Services | Good Breeze AI",
+    description: "Know what your competitors are doing before it costs you. Automated monitoring of pricing, positioning, and market moves — so you never get caught off guard.",
+    url: "https://goodbreeze.ai/services/competitive-intelligence",
+  },
 };
 
 export default function CompetitiveIntelligenceServices() {

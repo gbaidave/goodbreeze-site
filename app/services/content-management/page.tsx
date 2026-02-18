@@ -3,8 +3,13 @@ import Link from "next/link";
 import { ContentIcon } from "@/components/ui/ModernIcons";
 
 export const metadata: Metadata = {
-  title: "Content Management & Delivery Services | Good Breeze AI",
-  description: "Automate your social media content creation and delivery with custom workflows that plan, create, and schedule content across all platforms—freeing you from the content treadmill.",
+  title: "Content Management & Delivery Services",
+  description: "Get off the content treadmill. Custom workflows that plan, create, and schedule content across platforms — so your business stays visible without consuming your week.",
+  openGraph: {
+    title: "Content Management & Delivery Services | Good Breeze AI",
+    description: "Get off the content treadmill. Custom workflows that plan, create, and schedule content across platforms — so your business stays visible without consuming your week.",
+    url: "https://goodbreeze.ai/services/content-management",
+  },
 };
 
 export default function ContentManagementServices() {

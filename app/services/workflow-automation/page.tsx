@@ -3,8 +3,13 @@ import Link from "next/link";
 import { WorkflowIcon } from "@/components/ui/ModernIcons";
 
 export const metadata: Metadata = {
-  title: "Workflow Automation Services | Good Breeze AI",
-  description: "Eliminate repetitive tasks with custom workflow automation services. Save 20+ hours per week by automating manual processes that slow your business down.",
+  title: "Workflow Automation Services",
+  description: "Eliminate repetitive tasks with custom workflow automation. Save 20+ hours per week by automating the manual work that's slowing your small business down.",
+  openGraph: {
+    title: "Workflow Automation Services | Good Breeze AI",
+    description: "Eliminate repetitive tasks with custom workflow automation. Save 20+ hours per week by automating the manual work that's slowing your small business down.",
+    url: "https://goodbreeze.ai/services/workflow-automation",
+  },
 };
 
 export default function WorkflowAutomationServices() {

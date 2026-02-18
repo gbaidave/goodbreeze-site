@@ -3,8 +3,13 @@ import Link from "next/link";
 import { BotIcon } from "@/components/ui/ModernIcons";
 
 export const metadata: Metadata = {
-  title: "AI Agent Implementation Services | Good Breeze AI",
-  description: "Deploy AI agents that handle customer support, lead qualification, and internal processes 24/7—without the complexity or technical debt.",
+  title: "AI Agent Implementation Services",
+  description: "Deploy AI agents that handle customer support, lead qualification, and internal processes 24/7 — without the complexity or technical debt.",
+  openGraph: {
+    title: "AI Agent Implementation Services | Good Breeze AI",
+    description: "Deploy AI agents that handle customer support, lead qualification, and internal processes 24/7 — without the complexity or technical debt.",
+    url: "https://goodbreeze.ai/services/ai-agents",
+  },
 };
 
 export default function AIAgentServices() {

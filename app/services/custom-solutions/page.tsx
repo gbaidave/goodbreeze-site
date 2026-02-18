@@ -3,8 +3,13 @@ import Link from "next/link";
 import { CustomIcon } from "@/components/ui/ModernIcons";
 
 export const metadata: Metadata = {
-  title: "Custom Automation Solutions | Good Breeze AI",
-  description: "Need something unique? We build bespoke automation solutions tailored to your specific business processes—no templates, no compromises, just exactly what you need.",
+  title: "Custom Automation Solutions",
+  description: "Your business isn't generic — your automation shouldn't be either. Bespoke solutions built exactly for your processes, your tools, and the way your team actually works.",
+  openGraph: {
+    title: "Custom Automation Solutions | Good Breeze AI",
+    description: "Your business isn't generic — your automation shouldn't be either. Bespoke solutions built exactly for your processes, your tools, and the way your team actually works.",
+    url: "https://goodbreeze.ai/services/custom-solutions",
+  },
 };
 
 export default function CustomSolutionsServices() {

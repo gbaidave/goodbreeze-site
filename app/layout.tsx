@@ -12,8 +12,33 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Good Breeze AI | AI Operations That Scale Your Business",
-  description: "Good Breeze AI delivers freemium AI tools + done-for-you automation to eliminate busywork and 10x your output—without hiring a team.",
+  metadataBase: new URL("https://goodbreeze.ai"),
+  title: {
+    default: "Good Breeze AI | AI Automation & Intelligence for Small Business",
+    template: "%s | Good Breeze AI",
+  },
+  description:
+    "Good Breeze AI helps small businesses and startups cut busywork, outmaneuver competitors, and grow faster with AI automation and free intelligence tools.",
+  openGraph: {
+    type: "website",
+    siteName: "Good Breeze AI",
+    title: "Good Breeze AI | AI Automation & Intelligence for Small Business",
+    description:
+      "Good Breeze AI helps small businesses and startups cut busywork, outmaneuver competitors, and grow faster with AI automation and free intelligence tools.",
+    url: "https://goodbreeze.ai",
+  },
+  twitter: {
+    card: "summary_large_image",
+    site: "@goodbreezeai",
+    title: "Good Breeze AI | AI Automation & Intelligence for Small Business",
+    description:
+      "Good Breeze AI helps small businesses and startups cut busywork, outmaneuver competitors, and grow faster with AI automation and free intelligence tools.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true },
+  },
 };
 
 export default function RootLayout({

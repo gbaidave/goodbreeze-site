@@ -3,8 +3,13 @@ import Link from "next/link";
 import { GearIcon } from "@/components/ui/ModernIcons";
 
 export const metadata: Metadata = {
-  title: "Process Optimization Services | Good Breeze AI",
-  description: "Identify bottlenecks and streamline operations with process optimization services that redesign workflows for speed, accuracy, and scalability.",
+  title: "Process Optimization Services",
+  description: "Find the bottlenecks costing you time and money. We redesign how work flows through your business so it runs faster, with fewer errors, and without constant firefighting.",
+  openGraph: {
+    title: "Process Optimization Services | Good Breeze AI",
+    description: "Find the bottlenecks costing you time and money. We redesign how work flows through your business so it runs faster, with fewer errors, and without constant firefighting.",
+    url: "https://goodbreeze.ai/services/process-optimization",
+  },
 };
 
 export default function ProcessOptimizationServices() {
