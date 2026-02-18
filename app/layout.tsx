@@ -41,6 +41,47 @@ export const metadata: Metadata = {
   },
 };
 
+const organizationSchema = {
+  "@context": "https://schema.org",
+  "@type": "ProfessionalService",
+  name: "Good Breeze AI",
+  url: "https://goodbreeze.ai",
+  description:
+    "AI automation and competitive intelligence services for small businesses and startups. We help business owners cut busywork, understand their market, and grow without hiring a bigger team.",
+  serviceType: [
+    "AI Automation",
+    "Workflow Automation",
+    "Competitive Intelligence",
+    "SEO Consulting",
+    "Process Optimization",
+    "Content Automation",
+  ],
+  areaServed: "Worldwide",
+  priceRange: "$$",
+  contactPoint: {
+    "@type": "ContactPoint",
+    contactType: "customer service",
+    url: "https://goodbreeze.ai/contact",
+  },
+};
+
+const websiteSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "Good Breeze AI",
+  url: "https://goodbreeze.ai",
+  description:
+    "AI automation and competitive intelligence for small businesses and startups.",
+  potentialAction: {
+    "@type": "SearchAction",
+    target: {
+      "@type": "EntryPoint",
+      urlTemplate: "https://goodbreeze.ai/?q={search_term_string}",
+    },
+    "query-input": "required name=search_term_string",
+  },
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -49,6 +90,16 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <Script
+          id="schema-organization"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+        />
+        <Script
+          id="schema-website"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+        />
         <Script
           id="gtm-script"
           strategy="afterInteractive"
