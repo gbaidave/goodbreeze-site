@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import { AuthProvider } from "@/components/auth/AuthProvider";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -24,9 +25,11 @@ export default function RootLayout({
       <body
         className={`${inter.variable} font-sans antialiased bg-dark text-white`}
       >
-        <Header />
-        <main className="pt-16">{children}</main>
-        <Footer />
+        <AuthProvider>
+          <Header />
+          <main className="pt-16">{children}</main>
+          <Footer />
+        </AuthProvider>
       </body>
     </html>
   );

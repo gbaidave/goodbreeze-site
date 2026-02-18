@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { UserMenu } from "@/components/auth/UserMenu";
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -128,6 +129,8 @@ export default function Header() {
               Book a Call
             </a>
 
+            <UserMenu />
+
             {/* Social Icons */}
             <div className="flex items-center gap-3 pl-4 border-l border-gray-700">
               <a href="https://www.linkedin.com/company/good-breeze-ai" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-primary transition-colors">
@@ -219,6 +222,10 @@ export default function Header() {
             <a href="https://calendly.com/dave-goodbreeze/30min" target="_blank" rel="noopener noreferrer" className="block text-center px-6 py-2 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full">
               Book a Call
             </a>
+
+            <div className="pt-2">
+              <UserMenu />
+            </div>
 
             {/* Mobile Social Icons */}
             <div className="flex items-center gap-4 pt-4 border-t border-gray-700">
