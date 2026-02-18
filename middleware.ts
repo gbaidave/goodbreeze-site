@@ -1,17 +1,17 @@
-import { createServerClient } from '
-import { NextResponse, type NextRequest } from '
+import { createServerClient } from '@supabase/ssr'
+import { NextResponse, type NextRequest } from 'next/server'
 
 // Routes that require authentication
-const PROTECTED_ROUTES = [', ', ', ']
+const PROTECTED_ROUTES = ['/dashboard', '/account', '/api/reports']
 // Routes that redirect to dashboard if already logged in
-const AUTH_ROUTES = [', ', ']
+const AUTH_ROUTES = ['/login', '/signup']
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL\!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY\!,
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
         getAll: () => request.cookies.getAll(),
@@ -33,13 +33,13 @@ export async function middleware(request: NextRequest) {
 
   // Redirect authenticated users away from auth pages
   if (user && AUTH_ROUTES.some(route => pathname.startsWith(route))) {
-    return NextResponse.redirect(new URL(', request.url))
+    return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
   // Redirect unauthenticated users away from protected routes
-  if (\!user && PROTECTED_ROUTES.some(route => pathname.startsWith(route))) {
-    const loginUrl = new URL(', request.url)
-    loginUrl.searchParams.set(', pathname)
+  if (!user && PROTECTED_ROUTES.some(route => pathname.startsWith(route))) {
+    const loginUrl = new URL('/login', request.url)
+    loginUrl.searchParams.set('redirectTo', pathname)
     return NextResponse.redirect(loginUrl)
   }
 
@@ -48,6 +48,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    ',
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }

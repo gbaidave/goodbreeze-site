@@ -1,0 +1,36 @@
+# Good Breeze AI
+
+> AI-powered business operations tools for small and mid-size businesses. Freemium SaaS platform delivering competitive analysis, SEO auditing, and marketing automation reports.
+
+## What We Do
+
+Good Breeze AI helps business owners eliminate busywork and scale output without hiring a team. We provide:
+
+- **Competitive Analyzer** — AI-generated head-to-head, top 3 competitors, and competitive position reports
+- **SEO Auditor** — Technical SEO audits, keyword research, landing page optimization, and AI SEO recommendations
+- **Done-for-you automation** — Custom n8n workflow implementations for client businesses
+
+## Products
+
+- Free tier: 1 report to try (no credit card required)
+- Impulse pack: 3 reports for $1
+- Starter subscription: $20/month unlimited access
+
+## Target Audience
+
+Small business owners, marketing consultants, and agency operators who want AI-powered insights without enterprise pricing.
+
+## Company
+
+- Website: https://goodbreeze.ai
+- Founded: 2025
+- Location: United States
+- Contact: https://goodbreeze.ai/contact
+
+## Key Pages
+
+- Homepage: https://goodbreeze.ai
+- Tools: https://goodbreeze.ai/tools
+- SEO Audit: https://goodbreeze.ai/seo-audit
+- About: https://goodbreeze.ai/about
+- Case Studies: https://goodbreeze.ai/case-studies/alana-shaw
