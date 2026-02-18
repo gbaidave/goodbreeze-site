@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
+import { useAuth } from "@/components/auth/AuthProvider";
 
 // ============================================================================
 // Plan data
@@ -45,16 +45,8 @@ type Plan = "free" | "starter";
 
 export default function PricingPage() {
   const [loading, setLoading] = useState<Plan | null>(null);
-  const [user, setUser] = useState<{ id: string } | null>(null);
   const [error, setError] = useState("");
-
-  // Check auth state on mount
-  useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => {
-      setUser(data.user ?? null);
-    });
-  }, []);
+  const { user } = useAuth();
 
   async function handleStarterCheckout() {
     if (!user) {
