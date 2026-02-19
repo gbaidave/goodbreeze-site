@@ -7,7 +7,13 @@ export const metadata = { title: 'Account Settings — Good Breeze AI' }
 export default async function AccountPage() {
   const supabase = await createClient()
 
-  const { data: { user } } = await supabase.auth.getUser()
+  let user: Awaited<ReturnType<typeof supabase.auth.getUser>>['data']['user'] = null
+  try {
+    const { data } = await supabase.auth.getUser()
+    user = data.user
+  } catch {
+    // Supabase error — treat as unauthenticated
+  }
   if (!user) redirect('/login')
 
   const [profileRes, subRes, creditsRes] = await Promise.all([

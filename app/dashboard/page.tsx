@@ -24,7 +24,13 @@ const STATUS_STYLES: Record<string, string> = {
 export default async function DashboardPage() {
   const supabase = await createClient()
 
-  const { data: { user } } = await supabase.auth.getUser()
+  let user: Awaited<ReturnType<typeof supabase.auth.getUser>>['data']['user'] = null
+  try {
+    const { data } = await supabase.auth.getUser()
+    user = data.user
+  } catch {
+    // Supabase error — treat as unauthenticated
+  }
   if (!user) redirect('/login')
 
   // Fetch profile, subscription, credits, reports in parallel

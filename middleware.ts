@@ -51,7 +51,13 @@ export async function middleware(request: NextRequest) {
 
     return supabaseResponse
   } catch {
-    // If middleware throws for any reason, pass through rather than 500
+    // If middleware throws for a protected route, redirect to login rather than crash
+    const { pathname } = request.nextUrl
+    if (PROTECTED_ROUTES.some(route => pathname.startsWith(route))) {
+      const loginUrl = new URL('/login', request.url)
+      loginUrl.searchParams.set('redirectTo', pathname)
+      return NextResponse.redirect(loginUrl)
+    }
     return NextResponse.next({ request })
   }
 }
