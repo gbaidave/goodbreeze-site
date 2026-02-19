@@ -43,15 +43,20 @@ export async function POST(request: NextRequest) {
     // 2. Parse request
     const body = await request.json()
 
-    // Accept either a raw priceId or a plan name (keeps price IDs server-side)
-    const planPriceMap: Record<string, string | undefined> = {
+    // Only accept plan names — never raw priceIds from client (keeps price IDs server-side)
+    const VALID_PLANS = ['starter', 'impulse'] as const
+    type Plan = typeof VALID_PLANS[number]
+    const planPriceMap: Record<Plan, string | undefined> = {
       starter: process.env.STRIPE_STARTER_PRICE_ID,
       impulse: process.env.STRIPE_IMPULSE_PRICE_ID,
     }
-    const priceId: string | undefined = body.priceId ?? planPriceMap[body.plan]
-
+    const plan = body.plan
+    if (!plan || !VALID_PLANS.includes(plan)) {
+      return NextResponse.json({ error: 'Valid plan name is required (starter or impulse)' }, { status: 400 })
+    }
+    const priceId: string | undefined = planPriceMap[plan as Plan]
     if (!priceId) {
-      return NextResponse.json({ error: 'priceId or valid plan name is required' }, { status: 400 })
+      return NextResponse.json({ error: 'Plan not configured' }, { status: 500 })
     }
 
     // 3. Get or create Stripe customer
@@ -83,7 +88,9 @@ export async function POST(request: NextRequest) {
     const isSubscription = price.type === 'recurring'
 
     // 5. Create checkout session
-    const origin = request.headers.get('origin') || 'https://goodbreeze.ai'
+    const ALLOWED_ORIGINS = ['https://goodbreeze.ai', 'https://goodbreeze-site.vercel.app', 'http://localhost:3000']
+    const rawOrigin = request.headers.get('origin') || ''
+    const origin = ALLOWED_ORIGINS.includes(rawOrigin) ? rawOrigin : 'https://goodbreeze.ai'
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
