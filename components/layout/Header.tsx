@@ -121,10 +121,6 @@ export default function Header() {
               </AnimatePresence>
             </div>
 
-            <Link href="/pricing" className="text-gray-300 hover:text-primary transition-colors">
-              Pricing
-            </Link>
-
             <Link href="/about" className="text-gray-300 hover:text-primary transition-colors">
               About
             </Link>
@@ -218,10 +214,6 @@ export default function Header() {
                 </Link>
               ))}
             </div>
-
-            <Link href="/pricing" className="block text-gray-300 hover:text-primary transition-colors">
-              Pricing
-            </Link>
 
             <Link href="/about" className="block text-gray-300 hover:text-primary transition-colors">
               About
