@@ -26,18 +26,18 @@ const STARTER_FEATURES = [
   "Cancel anytime — active until billing period ends",
 ];
 
-const CREDITS_FEATURES = [
-  "Buy a block of reports without a subscription",
-  "Use at any time — no monthly commitment",
-  "Credits are use-it-or-lose-it (no rollover)",
-  "Good for occasional users",
+const IMPULSE_FEATURES = [
+  "3 report credits — use anytime",
+  "Head-to-Head, Top 3, AI SEO, Keyword Research, Landing Page Optimizer, SEO Audit",
+  "No subscription commitment",
+  "Credits valid for 30 days",
 ];
 
 // ============================================================================
 // Types
 // ============================================================================
 
-type Plan = "free" | "starter";
+type Plan = "free" | "starter" | "impulse";
 
 // ============================================================================
 // Page
@@ -48,18 +48,18 @@ export default function PricingPage() {
   const [error, setError] = useState("");
   const { user } = useAuth();
 
-  async function handleStarterCheckout() {
+  async function handleCheckout(plan: "starter" | "impulse") {
     if (!user) {
-      window.location.href = "/signup?redirect=/pricing";
+      window.location.href = `/signup?redirect=/pricing`;
       return;
     }
-    setLoading("starter");
+    setLoading(plan);
     setError("");
     try {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan: "starter" }),
+        body: JSON.stringify({ plan }),
       });
       const data = await res.json();
       if (data.url) {
@@ -177,7 +177,7 @@ export default function PricingPage() {
             </ul>
 
             <button
-              onClick={handleStarterCheckout}
+              onClick={() => handleCheckout("starter")}
               disabled={loading === "starter"}
               className="w-full px-6 py-3 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full hover:shadow-lg hover:shadow-primary/50 transition-all duration-300 transform hover:scale-105 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
             >
@@ -193,45 +193,46 @@ export default function PricingPage() {
             </p>
           </motion.div>
 
-          {/* CREDITS — coming soon stub */}
+          {/* IMPULSE — one-time credit pack */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="relative flex flex-col p-8 rounded-2xl bg-dark-700 border border-primary/20 opacity-70"
+            className="relative flex flex-col p-8 rounded-2xl bg-dark-700 border border-primary/20 hover:border-primary/40 transition-all duration-300"
           >
-            {/* Coming soon badge */}
-            <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-              <span className="px-4 py-1 bg-dark-800 border border-primary/30 text-gray-400 text-xs font-bold rounded-full uppercase tracking-wider">
-                Coming Soon
-              </span>
-            </div>
-
             <div className="mb-6">
-              <p className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-2">Report Credits</p>
+              <p className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-2">Impulse</p>
               <div className="flex items-end gap-1 mb-1">
-                <span className="text-5xl font-bold text-white">$5</span>
+                <span className="text-5xl font-bold text-white">$10</span>
                 <span className="text-gray-400 mb-2">/ 3 reports</span>
               </div>
-              <p className="text-gray-400 text-sm">No subscription needed</p>
+              <p className="text-gray-400 text-sm">One-time purchase</p>
             </div>
 
             <ul className="space-y-3 mb-8 flex-grow">
-              {CREDITS_FEATURES.map((f, i) => (
+              {IMPULSE_FEATURES.map((f, i) => (
                 <li key={i} className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-gray-700 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg className="w-3 h-3 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <svg className="w-3 h-3 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
-                  <span className="text-gray-500 text-sm">{f}</span>
+                  <span className="text-gray-300 text-sm">{f}</span>
                 </li>
               ))}
             </ul>
 
-            <div className="block text-center px-6 py-3 bg-dark-800 border border-primary/20 text-gray-500 font-semibold rounded-full cursor-not-allowed">
-              Coming Soon
-            </div>
+            <button
+              onClick={() => handleCheckout("impulse")}
+              disabled={loading === "impulse"}
+              className="w-full px-6 py-3 border-2 border-primary text-primary font-semibold rounded-full hover:bg-primary hover:text-white transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {loading === "impulse"
+                ? "Redirecting…"
+                : user
+                ? "Buy 3 Reports"
+                : "Get Started"}
+            </button>
           </motion.div>
 
         </div>
@@ -256,11 +257,15 @@ export default function PricingPage() {
               },
               {
                 q: "Are there usage limits on Starter?",
-                a: "Starter includes up to 5 competitive analysis reports per day and 50 SEO reports per month. In practice these limits are generous — most users never hit them.",
+                a: "Starter includes up to 5 Analyzer reports per day and 50 SEO reports per month. In practice these limits are generous — most users never hit them.",
               },
               {
                 q: "What's in the free tier exactly?",
                 a: "You get one free Head-to-Head Competitor Analysis and one free AI SEO Optimizer report. No credit card needed. It's a real report, not a demo — a full PDF delivered to your email.",
+              },
+              {
+                q: "What's the difference between Impulse and Starter?",
+                a: "Impulse is a one-time pack of 3 reports — good for occasional use. Starter is a monthly subscription giving you access to all 9 report types including SEO Comprehensive and Multi-Page Audit, with much higher usage limits.",
               },
             ].map(({ q, a }, i) => (
               <div key={i} className="p-6 rounded-xl bg-dark-700 border border-primary/10">

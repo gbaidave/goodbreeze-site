@@ -180,7 +180,7 @@ export async function checkEntitlement(
     if ((count ?? 0) > 0) {
       return {
         allowed: false,
-        reason: `You've used your free report. Get 3 more reports for just $1, or upgrade to Starter for unlimited access.`,
+        reason: `You've used your free report. Get 3 more reports for just $10, or upgrade to Starter for unlimited access.`,
         upgradePrompt: 'impulse',
       }
     }
@@ -205,7 +205,7 @@ export async function checkEntitlement(
   if (!creditRow) {
     return {
       allowed: false,
-      reason: `You have no remaining reports. Get 3 more for $1 or upgrade to Starter.`,
+      reason: `You have no remaining reports. Get 3 more for $10 or upgrade to Starter.`,
       upgradePrompt: meta.impulseAllowed ? 'impulse' : 'starter',
     }
   }
