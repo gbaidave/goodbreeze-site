@@ -1,25 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { UpgradeButton } from './UpgradeButton'
-
-const REPORT_TYPE_LABELS: Record<string, string> = {
-  h2h:               'Head to Head Analysis',
-  t3c:               'Top 3 Competitors',
-  cp:                'Competitive Position',
-  ai_seo:            'AI SEO Optimizer',
-  landing_page:      'Landing Page Optimizer',
-  keyword_research:  'Keyword Research',
-  seo_audit:         'SEO Audit',
-  seo_comprehensive: 'SEO Comprehensive',
-  multi_page:        'Multi-Page Audit',
-}
-
-const STATUS_STYLES: Record<string, string> = {
-  pending:    'bg-yellow-900/40 text-yellow-400 border-yellow-800',
-  processing: 'bg-blue-900/40 text-blue-400 border-blue-800',
-  complete:   'bg-green-900/40 text-green-400 border-green-800',
-  failed:     'bg-red-900/40 text-red-400 border-red-800',
-}
+import ReportList from './ReportList'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -39,7 +21,7 @@ export default async function DashboardPage() {
     supabase.from('subscriptions').select('plan, status, current_period_end')
       .eq('user_id', user.id).in('status', ['active', 'trialing']).order('created_at', { ascending: false }).limit(1).single(),
     supabase.from('credits').select('balance, expires_at').eq('user_id', user.id).gt('balance', 0).order('purchased_at', { ascending: true }),
-    supabase.from('reports').select('id, report_type, status, created_at, pdf_url').eq('user_id', user.id)
+    supabase.from('reports').select('id, report_type, status, created_at, pdf_url, expires_at').eq('user_id', user.id)
       .order('created_at', { ascending: false }).limit(20),
   ])
 
@@ -63,7 +45,7 @@ export default async function DashboardPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-white">Hey, {firstName} 👋</h1>
-            <p className="text-gray-400 mt-1">Here's your Good Breeze AI dashboard.</p>
+            <p className="text-gray-400 mt-1">Here&apos;s your Good Breeze AI dashboard.</p>
           </div>
           <a
             href="/tools"
@@ -132,55 +114,7 @@ export default async function DashboardPage() {
         {/* Report history */}
         <div>
           <h2 className="text-xl font-bold text-white mb-4">Report history</h2>
-
-          {reports.length === 0 ? (
-            <div className="bg-dark-700 border border-primary/20 rounded-2xl p-12 text-center">
-              <p className="text-gray-400 mb-4">No reports yet. Run your first one free.</p>
-              <a
-                href="/tools"
-                className="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold px-6 py-3 rounded-xl hover:shadow-lg transition-all"
-              >
-                Get started
-              </a>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {reports.map((report) => (
-                <div
-                  key={report.id}
-                  className="bg-dark-700 border border-primary/20 rounded-xl px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
-                >
-                  <div className="flex items-center gap-4">
-                    <div>
-                      <p className="text-white font-medium">
-                        {REPORT_TYPE_LABELS[report.report_type] ?? report.report_type}
-                      </p>
-                      <p className="text-gray-500 text-sm">
-                        {new Date(report.created_at).toLocaleDateString('en-US', {
-                          month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit'
-                        })}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className={`text-xs font-medium px-3 py-1 rounded-full border capitalize ${STATUS_STYLES[report.status] ?? STATUS_STYLES.pending}`}>
-                      {report.status}
-                    </span>
-                    {report.pdf_url && report.status === 'complete' && (
-                      <a
-                        href={report.pdf_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-primary hover:text-primary/80 font-medium transition-colors"
-                      >
-                        Download PDF →
-                      </a>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+          <ReportList initialReports={reports} />
         </div>
 
       </div>
