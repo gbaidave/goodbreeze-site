@@ -66,6 +66,54 @@ interface GenerateRequest {
 }
 
 // ============================================================================
+// Input validation
+// ============================================================================
+
+const MAX_URL_LEN = 500
+const MAX_STR_LEN = 200
+
+function isValidHttpUrl(str: string): boolean {
+  try {
+    const url = new URL(str)
+    return url.protocol === 'http:' || url.protocol === 'https:'
+  } catch {
+    return false
+  }
+}
+
+function validateInput(body: GenerateRequest): string | null {
+  // Validate URL fields
+  for (const field of ['url', 'targetWebsite', 'competitor1Website', 'competitor2Website', 'competitor3Website'] as const) {
+    const val = body[field]
+    if (val !== undefined && val !== '') {
+      if (val.length > MAX_URL_LEN || !isValidHttpUrl(val))
+        return `Invalid URL in field: ${field}`
+    }
+  }
+  // Validate string lengths
+  for (const field of ['company', 'focusKeyword', 'competitor1', 'competitor2', 'competitor3'] as const) {
+    const val = body[field]
+    if (val && val.length > MAX_STR_LEN)
+      return `${field} exceeds maximum length of ${MAX_STR_LEN} characters`
+  }
+  // Required fields per report type
+  if (['h2h', 't3c', 'cp'].includes(body.reportType)) {
+    if (!body.targetWebsite || !isValidHttpUrl(body.targetWebsite))
+      return 'Valid target website URL is required'
+    if (body.reportType === 'h2h' && (!body.competitor1Website || !isValidHttpUrl(body.competitor1Website)))
+      return 'Valid competitor website URL is required'
+    if (body.reportType === 't3c') {
+      if (!body.competitor1Website || !body.competitor2Website || !body.competitor3Website)
+        return 'All 3 competitor website URLs are required for Top 3 Competitors report'
+    }
+  } else {
+    if (!body.url || !isValidHttpUrl(body.url))
+      return 'Valid website URL is required'
+  }
+  return null
+}
+
+// ============================================================================
 // Handler
 // ============================================================================
 
@@ -97,7 +145,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 2. Parse request
+    // 2. Parse and validate request
     const body: GenerateRequest = await request.json()
     const { reportType } = body
 
@@ -105,6 +153,29 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'Invalid report type', code: 'INVALID_REPORT_TYPE' },
         { status: 400 }
+      )
+    }
+
+    const validationError = validateInput(body)
+    if (validationError) {
+      return NextResponse.json(
+        { error: validationError, code: 'INVALID_INPUT' },
+        { status: 400 }
+      )
+    }
+
+    // 2b. Hourly rate limit — max 20 reports per user per hour (burst protection)
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
+    const { count: recentCount } = await supabase
+      .from('reports')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .gte('created_at', oneHourAgo)
+
+    if (recentCount !== null && recentCount >= 20) {
+      return NextResponse.json(
+        { error: 'Too many requests. You can generate up to 20 reports per hour.', code: 'RATE_LIMITED' },
+        { status: 429 }
       )
     }
 

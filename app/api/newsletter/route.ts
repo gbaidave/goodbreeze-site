@@ -30,6 +30,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Length limits
+    if (typeof name !== 'string' || name.length > 100) {
+      return NextResponse.json({ error: 'Name must be under 100 characters' }, { status: 400 });
+    }
+    if (typeof email !== 'string' || email.length > 254) {
+      return NextResponse.json({ error: 'Invalid email address' }, { status: 400 });
+    }
+
     // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
