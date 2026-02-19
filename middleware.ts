@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 // Routes that require authentication
-const PROTECTED_ROUTES = ['/dashboard', '/account', '/api/reports']
+const PROTECTED_ROUTES = ['/dashboard', '/account', '/api/reports', '/admin', '/api/admin']
 // Routes that redirect to dashboard if already logged in
 const AUTH_ROUTES = ['/login', '/signup']
 
@@ -47,6 +47,18 @@ export async function middleware(request: NextRequest) {
       const loginUrl = new URL('/login', request.url)
       loginUrl.searchParams.set('redirectTo', pathname)
       return NextResponse.redirect(loginUrl)
+    }
+
+    // Admin routes: require role = 'admin'
+    if (user && (pathname.startsWith('/admin') || pathname.startsWith('/api/admin'))) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+      if (profile?.role !== 'admin') {
+        return NextResponse.redirect(new URL('/dashboard', request.url))
+      }
     }
 
     return supabaseResponse
