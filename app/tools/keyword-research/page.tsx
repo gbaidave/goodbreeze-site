@@ -1,18 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { useAuth } from '@/components/auth/AuthProvider'
-
-function LoadingSpinner() {
-  return (
-    <div className="min-h-screen bg-dark flex items-center justify-center">
-      <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-    </div>
-  )
-}
 
 function SuccessState({ onReset }: { onReset: () => void }) {
   return (
@@ -61,8 +52,9 @@ function UpgradeState({ error, upgradePrompt }: { error: string; upgradePrompt: 
 }
 
 export default function KeywordResearchPage() {
-  const router = useRouter()
   const { user, loading: authLoading } = useAuth()
+  const isGuest = !authLoading && !user
+
   const [keyword, setKeyword] = useState('')
   const [url, setUrl] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -70,11 +62,6 @@ export default function KeywordResearchPage() {
   const [error, setError] = useState('')
   const [upgradePrompt, setUpgradePrompt] = useState('')
 
-  useEffect(() => {
-    if (!authLoading && !user) router.push('/login?redirectTo=/tools/keyword-research')
-  }, [user, authLoading, router])
-
-  if (authLoading || !user) return <LoadingSpinner />
   if (submitted) return <SuccessState onReset={() => setSubmitted(false)} />
   if (upgradePrompt) return <UpgradeState error={error} upgradePrompt={upgradePrompt} />
 
@@ -139,10 +126,20 @@ export default function KeywordResearchPage() {
               className={inputClass} placeholder="https://yoursite.com" />
           </div>
 
-          <button type="submit" disabled={submitting}
-            className="w-full py-4 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full hover:shadow-lg hover:shadow-primary/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-            {submitting ? 'Researching keywords…' : 'Run Keyword Research'}
-          </button>
+          {isGuest ? (
+            <div className="border border-primary/20 rounded-xl p-5 text-center space-y-3">
+              <p className="text-sm text-gray-400">Create a free account to access this tool. Requires Impulse credits or Starter subscription.</p>
+              <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                <Link href="/register" className="px-5 py-2.5 bg-gradient-to-r from-primary to-accent-blue text-white text-sm font-semibold rounded-full hover:shadow-lg transition-all">Create free account</Link>
+                <Link href="/login" className="px-5 py-2.5 border border-primary/30 text-gray-300 text-sm rounded-full hover:border-primary hover:text-white transition-colors">Sign in</Link>
+              </div>
+            </div>
+          ) : (
+            <button type="submit" disabled={submitting}
+              className="w-full py-4 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full hover:shadow-lg hover:shadow-primary/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+              {submitting ? 'Researching keywords…' : 'Run Keyword Research'}
+            </button>
+          )}
 
           <p className="text-center text-xs text-gray-600">
             Report delivered by email in 2–3 minutes. Requires Impulse credits or Starter subscription.

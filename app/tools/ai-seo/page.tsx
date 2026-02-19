@@ -1,20 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { useAuth } from '@/components/auth/AuthProvider'
+import { GuestFields } from '@/components/tools/GuestFields'
 
-function LoadingSpinner() {
-  return (
-    <div className="min-h-screen bg-dark flex items-center justify-center">
-      <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-    </div>
-  )
-}
-
-function SuccessState({ onReset }: { onReset: () => void }) {
+function SuccessState({ isGuest, onReset }: { isGuest: boolean; onReset: () => void }) {
   return (
     <div className="min-h-screen bg-dark flex items-center justify-center px-6">
       <motion.div
@@ -27,15 +19,29 @@ function SuccessState({ onReset }: { onReset: () => void }) {
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <h2 className="text-2xl font-bold text-white mb-3">Report on its way!</h2>
-        <p className="text-gray-400 mb-2">
-          Your AI SEO report is being generated. You&apos;ll receive the PDF by email in <strong className="text-white">2–3 minutes</strong>.
-        </p>
-        <p className="text-gray-500 text-sm mb-8">Track progress or view past reports in your dashboard.</p>
+        {isGuest ? (
+          <>
+            <h2 className="text-2xl font-bold text-white mb-3">Report running — check your inbox!</h2>
+            <p className="text-gray-400 mb-2">
+              We&apos;ve started your AI SEO report and emailed you a link to access your account and results.
+            </p>
+            <p className="text-gray-500 text-sm mb-8">The PDF will be ready in 2–3 minutes.</p>
+          </>
+        ) : (
+          <>
+            <h2 className="text-2xl font-bold text-white mb-3">Report on its way!</h2>
+            <p className="text-gray-400 mb-2">
+              Your AI SEO report is being generated. You&apos;ll receive the PDF by email in <strong className="text-white">2–3 minutes</strong>.
+            </p>
+            <p className="text-gray-500 text-sm mb-8">Track progress or view past reports in your dashboard.</p>
+          </>
+        )}
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Link href="/dashboard" className="px-6 py-3 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full hover:shadow-lg hover:shadow-primary/30 transition-all">
-            Go to Dashboard
-          </Link>
+          {!isGuest && (
+            <Link href="/dashboard" className="px-6 py-3 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full hover:shadow-lg hover:shadow-primary/30 transition-all">
+              Go to Dashboard
+            </Link>
+          )}
           <button onClick={onReset} className="px-6 py-3 border border-primary/40 text-gray-300 rounded-full hover:border-primary hover:text-white transition-all">
             Run Another
           </button>
@@ -69,36 +75,55 @@ function UpgradeState({ error, upgradePrompt }: { error: string; upgradePrompt: 
 }
 
 export default function AiSeoPage() {
-  const router = useRouter()
   const { user, loading: authLoading } = useAuth()
+  const isGuest = !authLoading && !user
+
   const [url, setUrl] = useState('')
   const [company, setCompany] = useState('')
+  const [guestName, setGuestName] = useState('')
+  const [guestEmail, setGuestEmail] = useState('')
+  const [guestErrors, setGuestErrors] = useState<Partial<Record<'name' | 'email', string>>>({})
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
   const [upgradePrompt, setUpgradePrompt] = useState('')
 
-  useEffect(() => {
-    if (!authLoading && !user) router.push('/login?redirectTo=/tools/ai-seo')
-  }, [user, authLoading, router])
-
-  if (authLoading || !user) return <LoadingSpinner />
-  if (submitted) return <SuccessState onReset={() => setSubmitted(false)} />
+  if (submitted) return <SuccessState isGuest={isGuest} onReset={() => setSubmitted(false)} />
   if (upgradePrompt) return <UpgradeState error={error} upgradePrompt={upgradePrompt} />
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    setSubmitting(true)
     setError('')
+
+    if (isGuest) {
+      const errs: typeof guestErrors = {}
+      if (!guestName.trim()) errs.name = 'Name is required'
+      if (!guestEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestEmail)) errs.email = 'Valid email is required'
+      if (Object.keys(errs).length) { setGuestErrors(errs); return }
+      setGuestErrors({})
+    }
+
+    setSubmitting(true)
     try {
-      const res = await fetch('/api/reports/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reportType: 'ai_seo', url, company }),
-      })
-      const data = await res.json()
-      if (res.status === 402) { setError(data.error); setUpgradePrompt(data.upgradePrompt ?? 'impulse'); return }
-      if (!res.ok) { setError(data.error || 'Something went wrong.'); return }
+      if (user) {
+        const res = await fetch('/api/reports/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reportType: 'ai_seo', url, company }),
+        })
+        const data = await res.json()
+        if (res.status === 402) { setError(data.error); setUpgradePrompt(data.upgradePrompt ?? 'impulse'); return }
+        if (!res.ok) { setError(data.error || 'Something went wrong.'); return }
+      } else {
+        const res = await fetch('/api/frictionless', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reportType: 'ai_seo', url, company, name: guestName, email: guestEmail }),
+        })
+        const data = await res.json()
+        if (res.status === 409) { setError('You already have an account. Sign in to continue.'); return }
+        if (!res.ok) { setError(data.error || 'Something went wrong.'); return }
+      }
       setSubmitted(true)
     } catch {
       setError('Something went wrong. Please try again.')
@@ -129,7 +154,7 @@ export default function AiSeoPage() {
           onSubmit={handleSubmit}
           className="bg-dark-700 border border-primary/20 rounded-2xl p-8 space-y-5"
         >
-          {error && !upgradePrompt && (
+          {error && (
             <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm">{error}</div>
           )}
 
@@ -146,13 +171,23 @@ export default function AiSeoPage() {
               className={inputClass} placeholder="Your Company Name" />
           </div>
 
+          {isGuest && (
+            <GuestFields
+              name={guestName} onNameChange={setGuestName}
+              email={guestEmail} onEmailChange={setGuestEmail}
+              errors={guestErrors}
+            />
+          )}
+
           <button type="submit" disabled={submitting}
             className="w-full py-4 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full hover:shadow-lg hover:shadow-primary/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
             {submitting ? 'Generating report…' : 'Generate AI SEO Report'}
           </button>
 
           <p className="text-center text-xs text-gray-600">
-            Report delivered by email in 2–3 minutes. Saved to your dashboard.
+            {isGuest
+              ? 'Free for new users — no account needed. Report delivered by email in 2–3 minutes.'
+              : 'Report delivered by email in 2–3 minutes. Saved to your dashboard.'}
           </p>
         </motion.form>
       </div>
