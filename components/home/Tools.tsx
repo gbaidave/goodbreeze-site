@@ -5,29 +5,28 @@ import Link from "next/link";
 
 const tools = [
   {
-    name: "Sales Analyzer",
-    description: "AI-Powered Competitive Sales Intelligence",
-    detail: "Understand how you stack up against competitors quickly",
-    href: "/sales-analyzer",
+    name: "Head-to-Head Analyzer",
+    description: "AI-Powered Competitor Intelligence",
+    detail: "See exactly how you stack up against a direct competitor — keywords, SEO, content, and positioning — in one PDF.",
+    href: "/tools/sales-analyzer",
     gradient: "from-primary to-accent-blue",
     iconPath: "M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z",
   },
   {
-    name: "SEO Analyzer",
-    description: "Professional SEO Audit Report",
-    detail: "Get a comprehensive SEO audit PDF with actionable recommendations",
-    href: "/seo-audit",
+    name: "AI SEO Optimizer",
+    description: "Full On-Page SEO & AI Visibility Report",
+    detail: "Get a comprehensive SEO audit with specific fixes for on-page issues, keyword gaps, and AI search optimization.",
+    href: "/tools/ai-seo",
     gradient: "from-accent-blue to-accent-purple",
     iconPath: "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z",
   },
   {
-    name: "Website Analyzer",
-    description: "Complete Website Performance Review",
-    detail: "Uncover speed, UX, and conversion issues",
-    href: "/website-audit",
+    name: "Keyword Research Report",
+    description: "Target Keywords Your Competitors Miss",
+    detail: "Discover high-value keywords with search intent analysis, difficulty scores, and content opportunity mapping.",
+    href: "/tools/keyword-research",
     gradient: "from-accent-purple to-primary",
-    comingSoon: true,
-    iconPath: "M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z",
+    iconPath: "M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z",
   },
 ];
 
@@ -47,10 +46,10 @@ export default function Tools() {
           className="text-center mb-16"
         >
           <h2 className="text-4xl sm:text-5xl font-bold mb-4">
-            Free Analyzers That Solve Real Problems
+            Free Intelligence Reports
           </h2>
           <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-            No credit card required. Get actionable insights right now.
+            PDF reports delivered to your inbox. No credit card. No account needed for your first report.
           </p>
         </motion.div>
 

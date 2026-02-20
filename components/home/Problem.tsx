@@ -4,20 +4,20 @@ import { motion } from "framer-motion";
 
 const problems = [
   {
-    title: "Drowning in Manual Work",
-    description: "Your team spends hours on repetitive tasks that should be automated. Follow-ups get missed, data entry never ends, and nothing scales.",
+    title: "You're Flying Blind on SEO",
+    description: "Your competitors are ranking for keywords you don't even know exist. Every content decision is a shot in the dark — and you have no idea what's actually working for them.",
     iconPath: "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z",
     gradient: "from-primary to-accent-blue",
   },
   {
-    title: "Hiring is Expensive & Slow",
-    description: "You need to grow, but hiring takes months and costs thousands. Every new employee means more overhead, more management, more complexity.",
+    title: "Manual Research Wastes Hours",
+    description: "Pulling keyword data, crawling competitor pages, building spreadsheets — it takes hours, and you're never sure if you got it right. There's no time left to actually act on what you find.",
     iconPath: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z",
     gradient: "from-accent-blue to-accent-purple",
   },
   {
-    title: "Tried Automation, It Failed",
-    description: "You've bought tools that sit unused. Too technical, too complicated, or just didn't work. You're back to doing it manually.",
+    title: "You Don't Know What's Actually Broken",
+    description: "Traffic is flat, but is it a technical issue? A content gap? The wrong keywords? Without a clear diagnosis, you keep guessing — and guessing costs you time and rankings.",
     iconPath: "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z",
     gradient: "from-accent-purple to-primary",
   },
@@ -38,7 +38,7 @@ export default function Problem() {
             Sound Familiar?
           </h2>
           <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-            Most SMBs face the same scaling problems. You're not alone.
+            Most growing businesses hit the same SEO wall. You know you need to improve — you just don't know exactly where to start.
           </p>
         </motion.div>
 

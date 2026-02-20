@@ -13,13 +13,13 @@ import TopicPages from "@/components/home/TopicPages";
 import FinalCTA from "@/components/home/FinalCTA";
 
 export const metadata: Metadata = {
-  title: "AI Automation & Competitive Intelligence for Small Business",
+  title: "Good Breeze AI — SEO & Competitive Intelligence Reports",
   description:
-    "Stop drowning in busywork. Good Breeze AI builds custom AI automation and delivers competitive intelligence tools so small businesses and startups can operate like a team twice their size.",
+    "Get AI-powered SEO audits, keyword research, and competitor analysis reports delivered to your inbox in minutes. Free to try. No account needed.",
   openGraph: {
-    title: "AI Automation & Competitive Intelligence for Small Business | Good Breeze AI",
+    title: "Good Breeze AI — SEO & Competitive Intelligence Reports",
     description:
-      "Stop drowning in busywork. Good Breeze AI builds custom AI automation and delivers competitive intelligence tools so small businesses and startups can operate like a team twice their size.",
+      "Get AI-powered SEO audits, keyword research, and competitor analysis reports delivered to your inbox in minutes. Free to try. No account needed.",
     url: "https://goodbreeze.ai",
   },
 };

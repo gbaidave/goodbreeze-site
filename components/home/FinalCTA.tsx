@@ -54,28 +54,20 @@ export default function FinalCTA() {
         >
           <div className="relative z-10">
             <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 text-center bg-gradient-to-r from-primary via-accent-blue to-accent-purple bg-clip-text text-transparent">
-              Ready to Scale Without the Headcount?
+              Your First Report Is Free
             </h2>
             <p className="text-2xl text-white mb-12 max-w-2xl mx-auto text-center leading-relaxed">
-              Try our tools free or book a strategy call. No commitment, no technical jargon, just real solutions for real business problems.
+              Enter your URL and we&apos;ll have a full intelligence report in your inbox in minutes. No account needed. No credit card.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
                 <Link
-                  href="/tools/sales-analyzer"
+                  href="/tools"
                   className="block px-12 py-6 bg-gradient-to-r from-primary via-accent-blue to-primary text-white text-xl font-bold rounded-full shadow-2xl shadow-primary/60 hover:shadow-primary/80 transition-all duration-300"
                   style={{ backgroundSize: "200% 100%" }}
                 >
-                  Try Free Tools Now
-                </Link>
-              </motion.div>
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
-                <Link
-                  href="/contact"
-                  className="block px-12 py-6 border-4 border-primary text-white text-xl font-bold rounded-full hover:bg-primary transition-all duration-300 shadow-xl shadow-primary/40 bg-primary/20"
-                >
-                  Book Strategy Call
+                  Run Your First Free Report
                 </Link>
               </motion.div>
             </div>
