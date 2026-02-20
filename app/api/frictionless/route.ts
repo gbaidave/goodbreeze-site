@@ -15,18 +15,22 @@ import { sendMagicLinkSetupEmail } from '@/lib/email'
 
 // ============================================================================
 // n8n webhook URLs (same as /api/reports/generate — internal only)
+// N8N_WEBHOOK_BASE_URL: set to https://n8n.goodbreeze.ai on Vercel (staging/prod)
+//                       leave unset on VPS to use localhost:5678 (bypasses Cloudflare)
 // ============================================================================
 
+const N8N_BASE = process.env.N8N_WEBHOOK_BASE_URL ?? 'http://localhost:5678'
+
 const N8N_WEBHOOKS: Record<string, string> = {
-  h2h:               'http://localhost:5678/webhook/bfa6c879-77ea-475c-b279-09f6fdbfdfde',
-  t3c:               'http://localhost:5678/webhook/bfa6c879-77ea-475c-b279-09f6fdbfdfde',
-  cp:                'http://localhost:5678/webhook/bfa6c879-77ea-475c-b279-09f6fdbfdfde',
-  ai_seo:            'http://localhost:5678/webhook/ai-seo-optimizer-pdf',
-  landing_page:      'http://localhost:5678/webhook/landing-page-optimizer-pdf',
-  keyword_research:  'http://localhost:5678/webhook/keyword-research-pdf',
-  seo_audit:         'http://localhost:5678/webhook/seo-audit-pdf',
-  seo_comprehensive: 'http://localhost:5678/webhook/seo-comprehensive-pdf',
-  multi_page:        'http://localhost:5678/webhook/seo-audit-multi-page',
+  h2h:               `${N8N_BASE}/webhook/bfa6c879-77ea-475c-b279-09f6fdbfdfde`,
+  t3c:               `${N8N_BASE}/webhook/bfa6c879-77ea-475c-b279-09f6fdbfdfde`,
+  cp:                `${N8N_BASE}/webhook/bfa6c879-77ea-475c-b279-09f6fdbfdfde`,
+  ai_seo:            `${N8N_BASE}/webhook/ai-seo-optimizer-pdf`,
+  landing_page:      `${N8N_BASE}/webhook/landing-page-optimizer-pdf`,
+  keyword_research:  `${N8N_BASE}/webhook/keyword-research-pdf`,
+  seo_audit:         `${N8N_BASE}/webhook/seo-audit-pdf`,
+  seo_comprehensive: `${N8N_BASE}/webhook/seo-comprehensive-pdf`,
+  multi_page:        `${N8N_BASE}/webhook/seo-audit-multi-page`,
 }
 
 const REPORT_TYPE_LABELS: Record<string, string> = {
@@ -182,14 +186,25 @@ export async function POST(request: NextRequest) {
     let userId: string
     let isNewUser: boolean
 
+    // Check if the profile's auth account still exists (guard against re-registration after deletion)
+    let liveProfile = existingProfile
     if (existingProfile) {
-      userId = existingProfile.id
+      const { data: authLookup } = await supabase.auth.admin.getUserById(existingProfile.id)
+      if (!authLookup?.user) {
+        // Stale profile: auth account was deleted — remove it so the user can re-register cleanly
+        await supabase.from('profiles').delete().eq('id', existingProfile.id)
+        liveProfile = null
+      }
+    }
+
+    if (liveProfile) {
+      userId = liveProfile.id
       isNewUser = false
 
       // Check if they've already used this frictionless report type.
       // h2h is tracked under "analyzer" key (shared with authenticated free tier — prevents double-dipping).
       // ai_seo is tracked under "ai_seo_frictionless" key (separate from the authenticated brand_visibility slot).
-      const freeUsed = (existingProfile.free_reports_used ?? {}) as Record<string, string | boolean>
+      const freeUsed = (liveProfile.free_reports_used ?? {}) as Record<string, string | boolean>
       const frictionlessKey = body.reportType === 'h2h' ? 'analyzer' : 'ai_seo_frictionless'
 
       if (freeUsed[frictionlessKey]) {
@@ -262,7 +277,7 @@ export async function POST(request: NextRequest) {
     // 5. Mark free report as used on profile.
     // h2h: stored as { "analyzer": "h2h" } — shared key with authenticated free tier (prevents double-dipping).
     // ai_seo: stored as { "ai_seo_frictionless": true } — separate from the authenticated brand_visibility free slot.
-    const freeUsed = (existingProfile?.free_reports_used ?? {}) as Record<string, string | boolean>
+    const freeUsed = (liveProfile?.free_reports_used ?? {}) as Record<string, string | boolean>
     const freeUsedUpdate =
       body.reportType === 'h2h'
         ? { ...freeUsed, analyzer: 'h2h' }

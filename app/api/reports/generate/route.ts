@@ -27,21 +27,25 @@ import { createServiceClient } from '@/lib/supabase/service-client'
 import { sendReportsExhaustedEmail } from '@/lib/email'
 
 // ============================================================================
-// n8n webhook URLs (internal — bypasses Cloudflare 100s limit)
+// n8n webhook URLs
+// N8N_WEBHOOK_BASE_URL: set to https://n8n.goodbreeze.ai on Vercel (staging/prod)
+//                       leave unset on VPS to use localhost:5678 (bypasses Cloudflare)
 // ============================================================================
+
+const N8N_BASE = process.env.N8N_WEBHOOK_BASE_URL ?? 'http://localhost:5678'
 
 const N8N_WEBHOOKS: Record<ReportType, string> = {
   // Analyzer
-  h2h:               'http://localhost:5678/webhook/bfa6c879-77ea-475c-b279-09f6fdbfdfde',
-  t3c:               'http://localhost:5678/webhook/bfa6c879-77ea-475c-b279-09f6fdbfdfde',
-  cp:                'http://localhost:5678/webhook/bfa6c879-77ea-475c-b279-09f6fdbfdfde',
+  h2h:               `${N8N_BASE}/webhook/bfa6c879-77ea-475c-b279-09f6fdbfdfde`,
+  t3c:               `${N8N_BASE}/webhook/bfa6c879-77ea-475c-b279-09f6fdbfdfde`,
+  cp:                `${N8N_BASE}/webhook/bfa6c879-77ea-475c-b279-09f6fdbfdfde`,
   // SEO Auditor PDFs
-  ai_seo:            'http://localhost:5678/webhook/ai-seo-optimizer-pdf',
-  landing_page:      'http://localhost:5678/webhook/landing-page-optimizer-pdf',
-  keyword_research:  'http://localhost:5678/webhook/keyword-research-pdf',
-  seo_audit:         'http://localhost:5678/webhook/seo-audit-pdf',
-  seo_comprehensive: 'http://localhost:5678/webhook/seo-comprehensive-pdf',
-  multi_page:        'http://localhost:5678/webhook/seo-audit-multi-page',
+  ai_seo:            `${N8N_BASE}/webhook/ai-seo-optimizer-pdf`,
+  landing_page:      `${N8N_BASE}/webhook/landing-page-optimizer-pdf`,
+  keyword_research:  `${N8N_BASE}/webhook/keyword-research-pdf`,
+  seo_audit:         `${N8N_BASE}/webhook/seo-audit-pdf`,
+  seo_comprehensive: `${N8N_BASE}/webhook/seo-comprehensive-pdf`,
+  multi_page:        `${N8N_BASE}/webhook/seo-audit-multi-page`,
 }
 
 // ============================================================================
