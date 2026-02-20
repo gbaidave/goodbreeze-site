@@ -69,13 +69,21 @@ export default async function DashboardPage() {
             <h1 className="text-3xl font-bold text-white">Hey, {firstName} 👋</h1>
             <p className="text-gray-400 mt-1">Here&apos;s your Good Breeze AI dashboard.</p>
           </div>
-          <a
-            href="/tools"
-            className="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold px-6 py-3 rounded-xl hover:shadow-lg hover:shadow-primary/30 transition-all"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-            Run a new report
-          </a>
+          <div className="flex items-center gap-3">
+            <a
+              href="/support"
+              className="text-sm text-gray-500 hover:text-gray-300 transition-colors"
+            >
+              Get help
+            </a>
+            <a
+              href="/tools"
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold px-6 py-3 rounded-xl hover:shadow-lg hover:shadow-primary/30 transition-all"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+              Run a new report
+            </a>
+          </div>
         </div>
 
         {/* Plan + Credits */}

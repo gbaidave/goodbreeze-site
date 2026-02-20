@@ -240,12 +240,20 @@ export default function AccountClient({
 
         {/* Footer actions */}
         <div className="flex items-center justify-between pt-2">
-          <Link
-            href="/dashboard"
-            className="text-sm text-gray-500 hover:text-gray-300 transition-colors"
-          >
-            ← Back to dashboard
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link
+              href="/dashboard"
+              className="text-sm text-gray-500 hover:text-gray-300 transition-colors"
+            >
+              ← Back to dashboard
+            </Link>
+            <Link
+              href="/support"
+              className="text-sm text-gray-500 hover:text-gray-300 transition-colors"
+            >
+              Get help
+            </Link>
+          </div>
           <SignOutButton />
         </div>
 

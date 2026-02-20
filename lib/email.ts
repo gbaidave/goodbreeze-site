@@ -9,6 +9,7 @@ import { paymentConfirmationEmail } from './emails/payment-confirmation'
 import { paymentFailedEmail } from './emails/payment-failed'
 import { magicLinkSetupEmail } from './emails/magic-link-setup'
 import { reportsExhaustedEmail } from './emails/reports-exhausted'
+import { supportNotificationEmail } from './emails/support-notification'
 
 export async function sendWelcomeEmail(to: string, name: string) {
   const { subject, html } = welcomeEmail(name)
@@ -69,6 +70,23 @@ export async function sendReportsExhaustedEmail(to: string, name: string) {
     from: `${FROM_NAME} <${FROM}>`,
     to,
     replyTo: REPLY_TO,
+    subject,
+    html,
+  })
+}
+
+export async function sendSupportNotificationEmail(data: {
+  userName: string
+  userEmail: string
+  planAtTime: string
+  lastReportContext: string
+  message: string
+}) {
+  const { subject, html } = supportNotificationEmail(data)
+  return resend.emails.send({
+    from: `${FROM_NAME} <${FROM}>`,
+    to: process.env.SUPPORT_EMAIL || 'support@goodbreeze.ai',
+    replyTo: data.userEmail, // admin can reply directly to the user
     subject,
     html,
   })
