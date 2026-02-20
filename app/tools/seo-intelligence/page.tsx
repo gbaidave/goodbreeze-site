@@ -366,14 +366,14 @@ export default function SeoIntelligencePage() {
           {isGuest && !config.frictionless ? (
             <div className="border border-primary/20 rounded-xl p-5 text-center space-y-3">
               <p className="text-sm text-gray-400">
-                {config.label} requires a paid plan. Create a free account to get started.
+                {config.label} requires a paid plan. Sign in or create an account, then upgrade to run this report.
               </p>
               <div className="flex flex-col sm:flex-row gap-2 justify-center">
                 <Link
-                  href="/register"
+                  href="/signup"
                   className="px-5 py-2.5 bg-gradient-to-r from-primary to-accent-blue text-white text-sm font-semibold rounded-full hover:shadow-lg transition-all"
                 >
-                  Create free account
+                  Create account
                 </Link>
                 <Link
                   href="/login"

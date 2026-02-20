@@ -22,7 +22,7 @@ export function UserMenu() {
     return (
       <div className="flex items-center gap-3">
         <a href="/login" className="text-zinc-300 hover:text-white text-sm font-medium transition-colors">Sign in</a>
-        <a href="/signup" className="bg-cyan-500 hover:bg-cyan-400 text-zinc-950 text-sm font-semibold px-4 py-2 rounded-lg transition-colors">Start free</a>
+        <a href="/tools" className="bg-cyan-500 hover:bg-cyan-400 text-zinc-950 text-sm font-semibold px-4 py-2 rounded-lg transition-colors">Start free</a>
       </div>
     )
   }

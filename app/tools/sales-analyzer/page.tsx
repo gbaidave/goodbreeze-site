@@ -300,11 +300,11 @@ export default function SalesAnalyzer() {
           {isGuest && reportType !== 'h2h' ? (
             <div className="border border-primary/20 rounded-xl p-5 text-center space-y-3">
               <p className="text-sm text-gray-400">
-                {REPORT_LABELS[reportType]} requires a paid plan. Create a free account to get started.
+                {REPORT_LABELS[reportType]} requires a paid plan. Sign in or create an account, then upgrade to run this report.
               </p>
               <div className="flex flex-col sm:flex-row gap-2 justify-center">
-                <Link href="/register" className="px-5 py-2.5 bg-gradient-to-r from-primary to-accent-blue text-white text-sm font-semibold rounded-full hover:shadow-lg transition-all">
-                  Create free account
+                <Link href="/signup" className="px-5 py-2.5 bg-gradient-to-r from-primary to-accent-blue text-white text-sm font-semibold rounded-full hover:shadow-lg transition-all">
+                  Create account
                 </Link>
                 <Link href="/login" className="px-5 py-2.5 border border-primary/30 text-gray-300 text-sm rounded-full hover:border-primary hover:text-white transition-colors">
                   Sign in
