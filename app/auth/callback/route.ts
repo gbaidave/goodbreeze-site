@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
         const isNewUser = Date.now() - createdAt < 2 * 60 * 60 * 1000
         if (isNewUser) {
           const name = user.user_metadata?.name || user.email
-          sendWelcomeEmail(user.email, name).catch(console.error)
+          sendWelcomeEmail(user.email, name, user.id).catch(console.error)
 
           // Process referral: check URL param (from signup form) then cookie fallback
           const refCode =

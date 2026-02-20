@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
             .from('profiles').select('name, email').eq('id', userId).single()
           if (profile?.email) {
             await sendPaymentConfirmationEmail(
-              profile.email, profile.name || profile.email, 'impulse', '$10.00'
+              profile.email, profile.name || profile.email, 'impulse', '$10.00', userId
             ).catch(console.error)
           }
         }
@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
         // Send confirmation email on new subscription
         if (event.type === 'customer.subscription.created' && sub.status === 'active' && profile.email) {
           await sendPaymentConfirmationEmail(
-            profile.email, profile.name || profile.email, 'starter', '$20.00'
+            profile.email, profile.name || profile.email, 'starter', '$20.00', profile.id
           ).catch(console.error)
         }
 
@@ -157,7 +157,7 @@ export async function POST(request: NextRequest) {
               .eq('id', sub.user_id)
               .single()
             if (profile?.email) {
-              await sendPaymentFailedEmail(profile.email, profile.name || profile.email).catch(console.error)
+              await sendPaymentFailedEmail(profile.email, profile.name || profile.email, sub.user_id).catch(console.error)
             }
           }
         }

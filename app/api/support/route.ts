@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 5. Notify support (fire and forget — don't fail the user if email fails)
-    sendSupportNotificationEmail({ userName, userEmail, planAtTime: plan, lastReportContext, message })
+    sendSupportNotificationEmail({ userName, userEmail, planAtTime: plan, lastReportContext, message }, user.id)
       .catch((err) => console.error('Support notification email failed:', err))
 
     // 6. Return success

@@ -246,7 +246,7 @@ export async function POST(request: NextRequest) {
             .single()
           const freeUsed = (prof?.free_reports_used ?? {}) as Record<string, string>
           if (freeUsed.analyzer && freeUsed.brand_visibility) {
-            await sendReportsExhaustedEmail(userEmail, userName)
+            await sendReportsExhaustedEmail(userEmail, userName, user.id)
           }
         } catch (e) {
           console.error('Reports-exhausted nudge email failed:', e)
