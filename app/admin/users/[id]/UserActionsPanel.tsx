@@ -11,6 +11,8 @@ interface Props {
   stripeCustomerId: string | null
 }
 
+const CONFIRM_ROLES = new Set(['tester', 'admin'])
+
 export function UserActionsPanel({
   userId,
   currentRole,
@@ -20,6 +22,7 @@ export function UserActionsPanel({
 }: Props) {
   const [pending, startTransition] = useTransition()
   const [feedback, setFeedback] = useState<{ type: 'ok' | 'err'; msg: string } | null>(null)
+  const [confirming, setConfirming] = useState<string | null>(null)
 
   function act(fn: () => Promise<void>) {
     startTransition(async () => {
@@ -50,7 +53,13 @@ export function UserActionsPanel({
             <button
               key={role}
               disabled={pending || currentRole === role}
-              onClick={() => act(() => setUserRole(userId, role))}
+              onClick={() => {
+                if (CONFIRM_ROLES.has(role)) {
+                  setConfirming(role)
+                } else {
+                  act(() => setUserRole(userId, role))
+                }
+              }}
               className={`px-3 py-1.5 rounded-lg text-sm font-medium capitalize transition-colors border
                 ${currentRole === role
                   ? 'bg-primary/20 border-primary text-primary cursor-default'
@@ -60,6 +69,24 @@ export function UserActionsPanel({
             </button>
           ))}
         </div>
+        {confirming && (
+          <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-yellow-900/20 border border-yellow-700/40 text-sm">
+            <span className="text-yellow-300">Promote to <strong className="capitalize">{confirming}</strong>?</span>
+            <button
+              onClick={() => { act(() => setUserRole(userId, confirming)); setConfirming(null) }}
+              disabled={pending}
+              className="px-3 py-1 bg-primary text-white rounded-md text-xs font-medium hover:bg-primary/90 disabled:opacity-50"
+            >
+              Confirm
+            </button>
+            <button
+              onClick={() => setConfirming(null)}
+              className="px-3 py-1 border border-gray-600 text-gray-400 rounded-md text-xs hover:text-white"
+            >
+              Cancel
+            </button>
+          </div>
+        )}
       </section>
 
       {/* Plan override */}
