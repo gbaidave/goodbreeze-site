@@ -186,9 +186,13 @@ export async function POST(request: NextRequest) {
       userId = existingProfile.id
       isNewUser = false
 
-      // Existing user: check if they've already used their free report for this type
-      const freeUsed = (existingProfile.free_reports_used ?? {}) as Record<string, boolean>
-      if (freeUsed[body.reportType]) {
+      // Check if they've already used this frictionless report type.
+      // h2h is tracked under "analyzer" key (shared with authenticated free tier — prevents double-dipping).
+      // ai_seo is tracked under "ai_seo_frictionless" key (separate from the authenticated brand_visibility slot).
+      const freeUsed = (existingProfile.free_reports_used ?? {}) as Record<string, string | boolean>
+      const frictionlessKey = body.reportType === 'h2h' ? 'analyzer' : 'ai_seo_frictionless'
+
+      if (freeUsed[frictionlessKey]) {
         return NextResponse.json(
           {
             error: 'You already have a Good Breeze AI account. Sign in to run more reports.',
@@ -255,11 +259,15 @@ export async function POST(request: NextRequest) {
 
     const reportId = await createReportRow(userId, body.reportType, inputData, 'free')
 
-    // 5. Mark free report type as used on profile
-    const freeUsed = (existingProfile?.free_reports_used ?? {}) as Record<string, boolean>
-    const updates: Record<string, unknown> = {
-      free_reports_used: { ...freeUsed, [body.reportType]: true },
-    }
+    // 5. Mark free report as used on profile.
+    // h2h: stored as { "analyzer": "h2h" } — shared key with authenticated free tier (prevents double-dipping).
+    // ai_seo: stored as { "ai_seo_frictionless": true } — separate from the authenticated brand_visibility free slot.
+    const freeUsed = (existingProfile?.free_reports_used ?? {}) as Record<string, string | boolean>
+    const freeUsedUpdate =
+      body.reportType === 'h2h'
+        ? { ...freeUsed, analyzer: 'h2h' }
+        : { ...freeUsed, ai_seo_frictionless: true }
+    const updates: Record<string, unknown> = { free_reports_used: freeUsedUpdate }
     if (body.phone) updates.phone = body.phone
 
     await supabase.from('profiles').update(updates).eq('id', userId)

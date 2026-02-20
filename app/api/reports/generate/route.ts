@@ -230,7 +230,7 @@ export async function POST(request: NextRequest) {
     })
 
     // 8. Record usage (optimistic — before n8n confirms success)
-    await recordUsage(user.id, reportType, entitlement.deductFrom!, entitlement.creditRowId)
+    await recordUsage(user.id, reportType, entitlement.deductFrom!, entitlement.creditRowId, entitlement.freeSystemConsumed)
 
     // 9. Return immediately
     return NextResponse.json({

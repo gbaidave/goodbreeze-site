@@ -23,39 +23,57 @@ export type Product = 'analyzer' | 'seo_auditor'
 
 export type Plan = 'free' | 'impulse' | 'starter' | 'custom'
 
+// System keys used in free_reports_used JSONB
+// e.g. { "analyzer": "h2h", "brand_visibility": "seo_audit" }
+export type FreeSystem = 'analyzer' | 'brand_visibility'
+
 export interface EntitlementResult {
   allowed: boolean
   reason?: string          // shown to user if not allowed
   deductFrom?: 'subscription' | 'credits'
   creditRowId?: string     // which credits row to decrement
   upgradePrompt?: 'impulse' | 'starter'  // what to show in paywall
+  freeSystemConsumed?: FreeSystem  // if set, mark this system's free slot as used
 }
 
 // ============================================================================
-// Report metadata: which product each type belongs to, and tier access
+// Report metadata: which product each type belongs to, and free-tier eligibility
+//
+// freeSystem: which system's free slot this consumes when used on a free plan.
+//   'analyzer'       → user gets ONE free (h2h or t3c) — stored in free_reports_used.analyzer
+//   'brand_visibility' → user gets ONE free (seo_audit or landing_page) — stored in free_reports_used.brand_visibility
+//   null             → never free for authenticated users (may be available via frictionless)
+//
+// Note: ai_seo is free via frictionless (guest flow) only — not the authenticated free tier.
 // ============================================================================
 
 const REPORT_META: Record<ReportType, {
   product: Product
-  freeAllowed: boolean
+  freeSystem: FreeSystem | null
   impulseAllowed: boolean
   usesMoz: boolean
   usesSerp: boolean
 }> = {
   // Analyzer
-  h2h:               { product: 'analyzer',    freeAllowed: true,  impulseAllowed: true,  usesMoz: false, usesSerp: false },
-  t3c:               { product: 'analyzer',    freeAllowed: false, impulseAllowed: true,  usesMoz: false, usesSerp: false },
-  cp:                { product: 'analyzer',    freeAllowed: false, impulseAllowed: true,  usesMoz: false, usesSerp: false },
-  // SEO Auditor
-  ai_seo:            { product: 'seo_auditor', freeAllowed: true,  impulseAllowed: true,  usesMoz: false, usesSerp: false },
-  landing_page:      { product: 'seo_auditor', freeAllowed: false, impulseAllowed: true,  usesMoz: false, usesSerp: false },
-  keyword_research:  { product: 'seo_auditor', freeAllowed: false, impulseAllowed: true,  usesMoz: false, usesSerp: true  },
-  seo_audit:         { product: 'seo_auditor', freeAllowed: false, impulseAllowed: true,  usesMoz: true,  usesSerp: true  },
-  seo_comprehensive: { product: 'seo_auditor', freeAllowed: false, impulseAllowed: false, usesMoz: true,  usesSerp: true  },
-  multi_page:        { product: 'seo_auditor', freeAllowed: false, impulseAllowed: false, usesMoz: true,  usesSerp: true  },
+  h2h:               { product: 'analyzer',    freeSystem: 'analyzer',         impulseAllowed: true,  usesMoz: false, usesSerp: false },
+  t3c:               { product: 'analyzer',    freeSystem: 'analyzer',         impulseAllowed: true,  usesMoz: false, usesSerp: false },
+  cp:                { product: 'analyzer',    freeSystem: null,               impulseAllowed: true,  usesMoz: false, usesSerp: false },
+  // SEO Auditor — only seo_audit + landing_page are free for authenticated users
+  ai_seo:            { product: 'seo_auditor', freeSystem: null,               impulseAllowed: true,  usesMoz: false, usesSerp: false },
+  landing_page:      { product: 'seo_auditor', freeSystem: 'brand_visibility', impulseAllowed: true,  usesMoz: false, usesSerp: false },
+  keyword_research:  { product: 'seo_auditor', freeSystem: null,               impulseAllowed: true,  usesMoz: false, usesSerp: true  },
+  seo_audit:         { product: 'seo_auditor', freeSystem: 'brand_visibility', impulseAllowed: true,  usesMoz: true,  usesSerp: true  },
+  seo_comprehensive: { product: 'seo_auditor', freeSystem: null,               impulseAllowed: false, usesMoz: true,  usesSerp: true  },
+  multi_page:        { product: 'seo_auditor', freeSystem: null,               impulseAllowed: false, usesMoz: true,  usesSerp: true  },
 }
 
-// Per-plan daily/monthly limits (starter). Free/impulse = 1 per purchase event.
+// Human-readable system name for error messages
+const FREE_SYSTEM_LABELS: Record<FreeSystem, string> = {
+  analyzer:         'Competitive Analyzer',
+  brand_visibility: 'Brand Visibility',
+}
+
+// Per-plan limits (starter). Free/impulse = 1 per purchase event.
 const STARTER_LIMITS = {
   analyzer_per_day: 5,
   // SEO limits TBD pending COGS analysis — set generously for now
@@ -88,10 +106,10 @@ export async function checkEntitlement(
   const meta = REPORT_META[reportType]
   const supabase = getServiceClient()
 
-  // 1. Fetch user plan + role
+  // 1. Fetch profile: role, plan override, and free_reports_used JSONB
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select('role')
+    .select('role, plan_override_type, plan_override_until, free_reports_used')
     .eq('id', userId)
     .single()
 
@@ -99,7 +117,7 @@ export async function checkEntitlement(
     return { allowed: false, reason: 'Account not found. Please sign in again.' }
   }
 
-  // Testers and admins bypass all limits
+  // Testers and admins bypass all limits (no deduction either)
   if (profile.role === 'tester' || profile.role === 'admin') {
     return { allowed: true, deductFrom: 'subscription' }
   }
@@ -114,18 +132,23 @@ export async function checkEntitlement(
     .limit(1)
     .single()
 
-  const plan = (sub?.plan ?? 'free') as Plan
+  const rawPlan = (sub?.plan ?? 'free') as Plan
 
-  // 3. Starter plan — check usage limits
-  if (plan === 'starter' || plan === 'custom') {
-    if (plan === 'custom') {
-      return { allowed: true, deductFrom: 'subscription' }
-    }
+  // 3. Check for active plan override (admin-granted temporary plan)
+  //    plan_override_until = null means indefinite
+  const overrideActive =
+    profile.plan_override_type &&
+    (!profile.plan_override_until || new Date(profile.plan_override_until) > new Date())
 
-    // Check if report type is allowed on starter
-    // seo_comprehensive and multi_page: allowed on starter
-    // (all types allowed on starter per spec)
+  const plan: Plan = overrideActive ? (profile.plan_override_type as Plan) : rawPlan
 
+  // 4. Custom plan — no limits
+  if (plan === 'custom') {
+    return { allowed: true, deductFrom: 'subscription' }
+  }
+
+  // 5. Starter plan — check usage limits (all report types allowed)
+  if (plan === 'starter') {
     const now = new Date()
     const periodStart = sub?.current_period_start
       ? new Date(sub.current_period_start).toISOString().split('T')[0]
@@ -152,7 +175,7 @@ export async function checkEntitlement(
     if (meta.product === 'seo_auditor' && seoUsed >= STARTER_LIMITS.seo_per_month) {
       return {
         allowed: false,
-        reason: `You've reached your monthly SEO report limit. Upgrade or add a credit pack to continue.`,
+        reason: `You've reached your monthly SEO report limit. Contact us if you need more.`,
         upgradePrompt: 'starter',
       }
     }
@@ -160,9 +183,12 @@ export async function checkEntitlement(
     return { allowed: true, deductFrom: 'subscription' }
   }
 
-  // 4. Free plan — check if this report type is allowed for free
+  // 6. Free plan — check per-system free slot using free_reports_used JSONB
   if (plan === 'free') {
-    if (!meta.freeAllowed) {
+    const freeSystem = meta.freeSystem
+
+    if (!freeSystem) {
+      // This report type is never free for authenticated users
       return {
         allowed: false,
         reason: `This report type requires a paid plan or credit pack.`,
@@ -170,26 +196,27 @@ export async function checkEntitlement(
       }
     }
 
-    // Check if free report already used
-    const { count } = await supabase
-      .from('reports')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', userId)
-      .in('status', ['complete', 'processing', 'pending'])
+    // Check if user has already consumed their free slot for this system
+    const freeUsed = (profile.free_reports_used ?? {}) as Record<string, string>
 
-    if ((count ?? 0) > 0) {
+    if (freeUsed[freeSystem]) {
+      const systemLabel = FREE_SYSTEM_LABELS[freeSystem]
       return {
         allowed: false,
-        reason: `You've used your free report. Get 3 more reports for just $10, or upgrade to Starter for unlimited access.`,
+        reason: `You've already used your free ${systemLabel} report. Get 3 more for $10 or upgrade to Starter for unlimited access.`,
         upgradePrompt: 'impulse',
       }
     }
 
-    return { allowed: true, deductFrom: 'subscription' }
+    return {
+      allowed: true,
+      deductFrom: 'subscription',
+      freeSystemConsumed: freeSystem,
+    }
   }
 
-  // 5. Impulse plan ($1 pack) — check credits
-  // Find oldest non-expired credit row with balance > 0
+  // 7. Impulse plan (credit pack) — check credits
+  // Find oldest non-expired credit row with balance > 0, matching product (or universal)
   const { data: creditRows } = await supabase
     .from('credits')
     .select('id, balance, expires_at, product')
@@ -210,7 +237,7 @@ export async function checkEntitlement(
     }
   }
 
-  // Check if this report type is allowed on impulse
+  // Check if this report type is allowed on impulse (some require starter)
   if (!meta.impulseAllowed) {
     return {
       allowed: false,
@@ -234,7 +261,8 @@ export async function recordUsage(
   userId: string,
   reportType: ReportType,
   deductFrom: 'subscription' | 'credits',
-  creditRowId?: string
+  creditRowId?: string,
+  freeSystemConsumed?: FreeSystem
 ): Promise<void> {
   const meta = REPORT_META[reportType]
   const supabase = getServiceClient()
@@ -243,11 +271,7 @@ export async function recordUsage(
   const periodStart = new Date(now.getFullYear(), now.getMonth(), 1)
     .toISOString().split('T')[0]
 
-  // Upsert usage row
-  const usageIncrement = meta.product === 'analyzer'
-    ? { analyzer_reports_used: 1 }
-    : { seo_reports_used: 1 }
-
+  // Increment usage counters (used for starter limits)
   await supabase.rpc('increment_usage', {
     p_user_id: userId,
     p_period_start: periodStart,
@@ -255,11 +279,26 @@ export async function recordUsage(
     p_seo_delta: meta.product === 'seo_auditor' ? 1 : 0,
   })
 
-  // Decrement credit balance if applicable
+  // Decrement credit balance (impulse pack)
   if (deductFrom === 'credits' && creditRowId) {
     await supabase.rpc('decrement_credit', {
       p_credit_id: creditRowId,
     })
+  }
+
+  // Mark free system slot as consumed (free plan only)
+  if (freeSystemConsumed) {
+    const { data: prof } = await supabase
+      .from('profiles')
+      .select('free_reports_used')
+      .eq('id', userId)
+      .single()
+
+    const current = (prof?.free_reports_used ?? {}) as Record<string, string>
+    await supabase
+      .from('profiles')
+      .update({ free_reports_used: { ...current, [freeSystemConsumed]: reportType } })
+      .eq('id', userId)
   }
 }
 
