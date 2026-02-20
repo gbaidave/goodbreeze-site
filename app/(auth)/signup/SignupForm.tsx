@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/client'
 import { captureEvent } from '@/lib/analytics'
+import { isDisposableEmail } from '@/lib/disposable-email'
 
 const schema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -33,6 +34,10 @@ export default function SignupForm() {
 
   async function onSubmit(data: FormData) {
     setServerError(null)
+    if (isDisposableEmail(data.email)) {
+      setServerError('Please use a real email address to create an account.')
+      return
+    }
     try {
       const supabase = createClient()
       const { data: signUpData, error } = await supabase.auth.signUp({

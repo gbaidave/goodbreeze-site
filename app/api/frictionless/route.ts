@@ -12,6 +12,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/service-client'
 import { createReportRow, type ReportType } from '@/lib/entitlement'
 import { sendMagicLinkSetupEmail } from '@/lib/email'
+import { isDisposableEmail } from '@/lib/disposable-email'
 
 // ============================================================================
 // n8n webhook URLs (same as /api/reports/generate — internal only)
@@ -89,6 +90,7 @@ function isValidEmail(email: string): boolean {
 
 function validateInput(body: FrictionlessRequest): string | null {
   if (!body.email || !isValidEmail(body.email)) return 'Valid email address is required'
+  if (isDisposableEmail(body.email)) return 'Please use a real email address to receive your report.'
   if (!body.name || body.name.trim().length < 1) return 'Name is required'
   if (body.name.length > MAX_STR_LEN) return 'Name is too long'
 
@@ -174,9 +176,29 @@ export async function POST(request: NextRequest) {
 
     const email = body.email.toLowerCase().trim()
     const name = body.name.trim()
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+            || request.headers.get('x-real-ip')
+            || null
     const supabase = createServiceClient()
 
-    // 2. Find or create user
+    // 2. IP rate limit: max 3 frictionless accounts per IP per 24 hours
+    if (ip) {
+      const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+      const { count: ipCount } = await supabase
+        .from('profiles')
+        .select('id', { count: 'exact', head: true })
+        .eq('signup_ip', ip)
+        .gte('created_at', oneDayAgo)
+
+      if (ipCount !== null && ipCount >= 3) {
+        return NextResponse.json(
+          { error: 'Too many accounts created from this device. Please sign in or try again later.', code: 'IP_RATE_LIMITED' },
+          { status: 429 }
+        )
+      }
+    }
+
+    // 3. Find or create user
     const { data: existingProfile } = await supabase
       .from('profiles')
       .select('id, free_reports_used')
@@ -284,6 +306,7 @@ export async function POST(request: NextRequest) {
         : { ...freeUsed, ai_seo_frictionless: true }
     const updates: Record<string, unknown> = { free_reports_used: freeUsedUpdate }
     if (body.phone) updates.phone = body.phone
+    if (isNewUser && ip) updates.signup_ip = ip
 
     await supabase.from('profiles').update(updates).eq('id', userId)
 
