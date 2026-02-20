@@ -33,26 +33,35 @@ export default function SignupForm() {
 
   async function onSubmit(data: FormData) {
     setServerError(null)
-    const supabase = createClient()
-    const { error } = await supabase.auth.signUp({
-      email: data.email,
-      password: data.password,
-      options: {
-        data: {
-          name: data.name,
-          company: data.company || null,
-          marketing_opt_in: data.marketingOptIn,
-          referred_by_affiliate_code: referralCode,
+    try {
+      const supabase = createClient()
+      const { data: signUpData, error } = await supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
+        options: {
+          data: {
+            name: data.name,
+            company: data.company || null,
+            marketing_opt_in: data.marketingOptIn,
+            referred_by_affiliate_code: referralCode,
+          },
+          emailRedirectTo: `${window.location.origin}/auth/callback?returnUrl=${returnUrl}`,
         },
-        emailRedirectTo: `${window.location.origin}/auth/callback?returnUrl=${returnUrl}`,
-      },
-    })
-    if (error) {
-      setServerError(error.message)
-      return
+      })
+      if (error) {
+        setServerError(error.message)
+        return
+      }
+      try { captureEvent('signup_completed', { method: 'email' }) } catch (_) {}
+      // If Supabase returns a session immediately (email confirmation disabled), redirect
+      if (signUpData?.session) {
+        router.push(returnUrl)
+        return
+      }
+      setSuccess(true)
+    } catch (err: any) {
+      setServerError(err?.message ?? 'Something went wrong. Please try again.')
     }
-    captureEvent('signup_completed', { method: 'email' })
-    setSuccess(true)
   }
 
   async function signUpWithGoogle() {
