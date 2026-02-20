@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { UserMenu } from "@/components/auth/UserMenu";
+import { NotificationBell } from "@/components/layout/NotificationBell";
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -129,6 +130,7 @@ export default function Header() {
               Book a Call
             </a>
 
+            <NotificationBell />
             <UserMenu />
 
             {/* Social Icons */}
@@ -223,7 +225,8 @@ export default function Header() {
               Book a Call
             </a>
 
-            <div className="pt-2">
+            <div className="pt-2 flex items-center gap-3">
+              <NotificationBell />
               <UserMenu />
             </div>
 
