@@ -50,13 +50,13 @@ export default function FinalCTA() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="relative bg-gradient-to-br from-[#3b82f6] via-[#a855f7] to-[#00adb5] backdrop-blur-xl rounded-3xl p-12 shadow-2xl overflow-hidden"
+          className="relative bg-gradient-to-br from-[#3b82f6] via-[#a855f7] to-[#00adb5] backdrop-blur-xl rounded-3xl px-12 pt-8 pb-12 shadow-2xl overflow-hidden"
         >
           <div className="relative z-10">
-            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 text-center bg-gradient-to-r from-primary via-accent-blue to-accent-purple bg-clip-text text-transparent">
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 text-center text-white">
               Your First Report Is Free
             </h2>
-            <p className="text-2xl text-white mb-12 max-w-2xl mx-auto text-center leading-relaxed">
+            <p className="text-2xl text-white/85 mb-10 max-w-2xl mx-auto text-center leading-relaxed">
               Enter your URL and we&apos;ll have a full intelligence report in your inbox in minutes. No account needed. No credit card.
             </p>
 
@@ -64,8 +64,7 @@ export default function FinalCTA() {
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
                 <Link
                   href="/tools"
-                  className="block px-12 py-6 bg-gradient-to-r from-primary via-accent-blue to-primary text-white text-xl font-bold rounded-full shadow-2xl shadow-primary/60 hover:shadow-primary/80 transition-all duration-300"
-                  style={{ backgroundSize: "200% 100%" }}
+                  className="block px-12 py-6 bg-white text-gray-900 text-xl font-bold rounded-full shadow-2xl hover:bg-gray-100 hover:shadow-white/30 transition-all duration-300"
                 >
                   Run Your First Free Report
                 </Link>
