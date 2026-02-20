@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { UpgradeButton } from './UpgradeButton'
 import ReportList from './ReportList'
+import { ReferralSection } from './ReferralSection'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -15,20 +16,25 @@ export default async function DashboardPage() {
   }
   if (!user) redirect('/login')
 
-  // Fetch profile, subscription, credits, reports in parallel
-  const [profileRes, subRes, creditsRes, reportsRes] = await Promise.all([
+  // Fetch profile, subscription, credits, reports, and referral data in parallel
+  const [profileRes, subRes, creditsRes, reportsRes, referralRes] = await Promise.all([
     supabase.from('profiles').select('name, email').eq('id', user.id).single(),
     supabase.from('subscriptions').select('plan, status, current_period_end')
       .eq('user_id', user.id).in('status', ['active', 'trialing']).order('created_at', { ascending: false }).limit(1).single(),
     supabase.from('credits').select('balance, expires_at').eq('user_id', user.id).gt('balance', 0).order('purchased_at', { ascending: true }),
     supabase.from('reports').select('id, report_type, status, created_at, pdf_url, expires_at').eq('user_id', user.id)
       .order('created_at', { ascending: false }).limit(20),
+    supabase.from('referral_codes').select('code, referral_uses(reward_granted)').eq('user_id', user.id).single(),
   ])
 
   const profile = profileRes.data
   const sub = subRes.data
   const credits = creditsRes.data ?? []
   const reports = reportsRes.data ?? []
+  const referralCode = referralRes.data?.code ?? null
+  const referralUses = (referralRes.data as any)?.referral_uses ?? []
+  const referralSignups = referralUses.length
+  const referralCredits = referralUses.filter((u: { reward_granted: boolean }) => u.reward_granted).length
 
   const plan = sub?.plan ?? 'free'
   const totalCredits = credits.reduce((sum, c) => sum + (c.balance ?? 0), 0)
@@ -109,6 +115,15 @@ export default async function DashboardPage() {
               />
             </div>
           </div>
+        )}
+
+        {/* Referral */}
+        {referralCode && (
+          <ReferralSection
+            code={referralCode}
+            signups={referralSignups}
+            creditsEarned={referralCredits}
+          />
         )}
 
         {/* Report history */}
