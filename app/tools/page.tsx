@@ -19,74 +19,19 @@ const tools = [
     badge: null,
   },
   {
-    name: "AI SEO Optimizer",
-    description: "Analyze your page for AI search visibility and on-page SEO gaps. Get a prioritized optimization plan.",
-    href: "/tools/ai-seo",
-    tier: "1 free",
+    name: "SEO Intelligence Suite",
+    description: "Five AI-powered SEO reports in one place — from AI visibility audits to full keyword research and competitor benchmarking.",
+    href: "/tools/seo-intelligence",
+    tier: "1 free + paid",
     tierStyle: "bg-primary/10 text-primary border-primary/30",
     features: [
-      "AI & LLM visibility analysis",
-      "On-page SEO scoring",
-      "Content gap identification",
-      "Prioritized fix recommendations",
+      "AI SEO Optimizer (1 free)",
+      "SEO Audit — technical + keyword opportunities",
+      "Keyword Research — seed to content strategy",
+      "Landing Page Optimizer — conversions + SEO",
+      "SEO Comprehensive — our most complete report",
     ],
-    badge: null,
-  },
-  {
-    name: "SEO Audit",
-    description: "Full technical SEO audit with keyword opportunities, performance insights, and actionable fixes.",
-    href: "/tools/seo-audit",
-    tier: "Impulse / Starter",
-    tierStyle: "bg-accent-blue/10 text-accent-blue border-accent-blue/30",
-    features: [
-      "Technical SEO analysis",
-      "Keyword opportunity mapping",
-      "Backlink & authority signals",
-      "Prioritized action plan",
-    ],
-    badge: null,
-  },
-  {
-    name: "Keyword Research",
-    description: "Discover high-value keywords with difficulty scores, search volume, and content opportunity mapping.",
-    href: "/tools/keyword-research",
-    tier: "Impulse / Starter",
-    tierStyle: "bg-accent-blue/10 text-accent-blue border-accent-blue/30",
-    features: [
-      "Seed keyword expansion",
-      "Difficulty & volume scoring",
-      "Search intent classification",
-      "Content gap opportunities",
-    ],
-    badge: null,
-  },
-  {
-    name: "Landing Page Optimizer",
-    description: "Optimize your landing page for conversions, search ranking, and messaging clarity.",
-    href: "/tools/landing-page-optimizer",
-    tier: "Impulse / Starter",
-    tierStyle: "bg-accent-blue/10 text-accent-blue border-accent-blue/30",
-    features: [
-      "Conversion rate analysis",
-      "SEO & keyword alignment",
-      "Messaging clarity review",
-      "CTA and structure recommendations",
-    ],
-    badge: null,
-  },
-  {
-    name: "SEO Comprehensive",
-    description: "Our most powerful report — technical audit + keyword research + competitor analysis combined.",
-    href: "/tools/seo-comprehensive",
-    tier: "Starter Only",
-    tierStyle: "bg-primary/10 text-primary border-primary/30",
-    features: [
-      "Full technical SEO audit",
-      "Keyword gap & opportunities",
-      "Competitor comparison",
-      "Complete SEO strategy roadmap",
-    ],
-    badge: "Most Complete",
+    badge: "5 Reports",
   },
 ];
 
@@ -118,20 +63,16 @@ export default function ToolsDirectory() {
         >
           <div className="flex items-center gap-1.5">
             <span className="px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/30 font-semibold">1 free</span>
-            <span className="text-gray-500">— included on free account</span>
+            <span className="text-gray-500">— one free report per tool, no account needed</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="px-2.5 py-1 rounded-full bg-accent-blue/10 text-accent-blue border border-accent-blue/30 font-semibold">Impulse / Starter</span>
-            <span className="text-gray-500">— credit pack or subscription</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/30 font-semibold">Starter Only</span>
-            <span className="text-gray-500">— $20/month subscription</span>
+            <span className="text-gray-500">— credit pack or $20/month subscription</span>
           </div>
         </motion.div>
 
         {/* Tool grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
           {tools.map((tool, index) => (
             <motion.div
               key={tool.href}
@@ -195,7 +136,7 @@ export default function ToolsDirectory() {
         >
           <h2 className="text-3xl font-bold mb-4 text-white">Need More Firepower?</h2>
           <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-            Starter gives you unlimited access to all 6 tools for $20/month. Or grab a credit pack for occasional use.
+            Starter gives you unlimited access to all 8 reports for $20/month. Or grab a credit pack for occasional use.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
