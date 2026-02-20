@@ -7,6 +7,7 @@ import { useAuth } from '@/components/auth/AuthProvider'
 import { GuestFields } from '@/components/tools/GuestFields'
 import { captureEvent } from '@/lib/analytics'
 import { ExhaustedState } from '@/components/ExhaustedState'
+import { isValidPhone, normalizePhone } from '@/lib/phone'
 
 type ReportType = 'h2h' | 't3c' | 'cp'
 
@@ -81,7 +82,8 @@ export default function SalesAnalyzer() {
   const [competitor3Website, setCompetitor3Website] = useState('')
   const [guestName, setGuestName] = useState('')
   const [guestEmail, setGuestEmail] = useState('')
-  const [guestErrors, setGuestErrors] = useState<Partial<Record<'name' | 'email', string>>>({})
+  const [guestPhone, setGuestPhone] = useState('')
+  const [guestErrors, setGuestErrors] = useState<Partial<Record<'name' | 'email' | 'phone', string>>>({})
 
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
@@ -105,6 +107,7 @@ export default function SalesAnalyzer() {
       const errs: typeof guestErrors = {}
       if (!guestName.trim()) errs.name = 'Name is required'
       if (!guestEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestEmail)) errs.email = 'Valid email is required'
+      if (guestPhone.trim() && !isValidPhone(guestPhone)) errs.phone = 'Enter a valid phone number'
       if (Object.keys(errs).length) { setGuestErrors(errs); return }
       setGuestErrors({})
     }
@@ -141,6 +144,7 @@ export default function SalesAnalyzer() {
             competitor1Website,
             name: guestName,
             email: guestEmail,
+            ...(guestPhone.trim() && { phone: normalizePhone(guestPhone) }),
           }),
         })
         const data = await res.json()
@@ -286,6 +290,8 @@ export default function SalesAnalyzer() {
             <GuestFields
               name={guestName} onNameChange={setGuestName}
               email={guestEmail} onEmailChange={setGuestEmail}
+              phone={guestPhone} onPhoneChange={setGuestPhone}
+              showPhone={true}
               errors={guestErrors}
             />
           )}

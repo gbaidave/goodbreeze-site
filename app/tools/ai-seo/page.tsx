@@ -7,6 +7,7 @@ import { useAuth } from '@/components/auth/AuthProvider'
 import { GuestFields } from '@/components/tools/GuestFields'
 import { captureEvent } from '@/lib/analytics'
 import { ExhaustedState } from '@/components/ExhaustedState'
+import { isValidPhone, normalizePhone } from '@/lib/phone'
 
 function SuccessState({ isGuest, onReset }: { isGuest: boolean; onReset: () => void }) {
   return (
@@ -61,7 +62,8 @@ export default function AiSeoPage() {
   const [company, setCompany] = useState('')
   const [guestName, setGuestName] = useState('')
   const [guestEmail, setGuestEmail] = useState('')
-  const [guestErrors, setGuestErrors] = useState<Partial<Record<'name' | 'email', string>>>({})
+  const [guestPhone, setGuestPhone] = useState('')
+  const [guestErrors, setGuestErrors] = useState<Partial<Record<'name' | 'email' | 'phone', string>>>({})
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
@@ -78,6 +80,7 @@ export default function AiSeoPage() {
       const errs: typeof guestErrors = {}
       if (!guestName.trim()) errs.name = 'Name is required'
       if (!guestEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestEmail)) errs.email = 'Valid email is required'
+      if (guestPhone.trim() && !isValidPhone(guestPhone)) errs.phone = 'Enter a valid phone number'
       if (Object.keys(errs).length) { setGuestErrors(errs); return }
       setGuestErrors({})
     }
@@ -97,7 +100,14 @@ export default function AiSeoPage() {
         const res = await fetch('/api/frictionless', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ reportType: 'ai_seo', url, company, name: guestName, email: guestEmail }),
+          body: JSON.stringify({
+            reportType: 'ai_seo',
+            url,
+            company,
+            name: guestName,
+            email: guestEmail,
+            ...(guestPhone.trim() && { phone: normalizePhone(guestPhone) }),
+          }),
         })
         const data = await res.json()
         if (res.status === 409) { setError('You already have an account. Sign in to continue.'); return }
@@ -155,6 +165,8 @@ export default function AiSeoPage() {
             <GuestFields
               name={guestName} onNameChange={setGuestName}
               email={guestEmail} onEmailChange={setGuestEmail}
+              phone={guestPhone} onPhoneChange={setGuestPhone}
+              showPhone={true}
               errors={guestErrors}
             />
           )}

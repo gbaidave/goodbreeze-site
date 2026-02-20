@@ -4,9 +4,12 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import { isValidPhone, normalizePhone } from '@/lib/phone'
 
 interface Props {
   initialName: string
+  initialPhone: string
+  initialSmsOk: boolean
   email: string
   plan: string
   status?: string
@@ -19,6 +22,8 @@ interface Props {
 
 export default function AccountClient({
   initialName,
+  initialPhone,
+  initialSmsOk,
   email,
   plan,
   status,
@@ -29,20 +34,33 @@ export default function AccountClient({
   creditExpiry,
 }: Props) {
   const [name, setName] = useState(initialName)
+  const [phone, setPhone] = useState(initialPhone)
+  const [smsOk, setSmsOk] = useState(initialSmsOk)
+  const [phoneError, setPhoneError] = useState('')
   const [saving, setSaving] = useState(false)
   const [saveMsg, setSaveMsg] = useState('')
   const [portalLoading, setPortalLoading] = useState(false)
 
-  async function saveName() {
+  const hasChanges = name !== initialName || phone !== initialPhone || smsOk !== initialSmsOk
+
+  async function saveProfile() {
+    setPhoneError('')
+    if (phone.trim() && !isValidPhone(phone)) {
+      setPhoneError('Enter a valid phone number (e.g. +1 555 000 0000)')
+      return
+    }
     setSaving(true)
     setSaveMsg('')
     try {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Not authenticated')
+      const updates: Record<string, unknown> = { name, sms_ok: smsOk }
+      if (phone.trim()) updates.phone = normalizePhone(phone)
+      else updates.phone = null
       const { error } = await supabase
         .from('profiles')
-        .update({ name })
+        .update(updates)
         .eq('id', user.id)
       if (error) throw error
       setSaveMsg('Saved!')
@@ -98,28 +116,13 @@ export default function AccountClient({
           {/* Name */}
           <div>
             <label className="block text-sm text-gray-400 mb-1.5">Full name</label>
-            <div className="flex gap-3">
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && saveName()}
-                className="flex-1 bg-dark border border-gray-700 text-white rounded-xl px-4 py-2.5 focus:outline-none focus:border-primary transition-colors text-sm"
-                placeholder="Your name"
-              />
-              <button
-                onClick={saveName}
-                disabled={saving || name === initialName}
-                className="px-5 py-2.5 bg-gradient-to-r from-primary to-accent-blue text-white text-sm font-medium rounded-xl disabled:opacity-40 hover:shadow-lg hover:shadow-primary/20 transition-all"
-              >
-                {saving ? 'Saving…' : 'Save'}
-              </button>
-            </div>
-            {saveMsg && (
-              <p className={`text-xs mt-1.5 ${saveMsg === 'Saved!' ? 'text-green-400' : 'text-red-400'}`}>
-                {saveMsg}
-              </p>
-            )}
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full bg-dark border border-gray-700 text-white rounded-xl px-4 py-2.5 focus:outline-none focus:border-primary transition-colors text-sm"
+              placeholder="Your name"
+            />
           </div>
 
           {/* Email */}
@@ -134,6 +137,55 @@ export default function AccountClient({
             <p className="text-xs text-gray-600 mt-1">
               Email is managed through your login provider and cannot be changed here.
             </p>
+          </div>
+
+          {/* Phone */}
+          <div>
+            <label className="block text-sm text-gray-400 mb-1.5">
+              Phone <span className="text-gray-600">(optional)</span>
+            </label>
+            <input
+              type="tel"
+              value={phone}
+              onChange={(e) => { setPhone(e.target.value); setPhoneError('') }}
+              placeholder="+1 555 000 0000"
+              autoComplete="tel"
+              className={`w-full bg-dark border rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-primary transition-colors
+                ${phoneError ? 'border-red-500' : 'border-gray-700'}`}
+            />
+            {phoneError
+              ? <p className="text-xs text-red-400 mt-1">{phoneError}</p>
+              : <p className="text-xs text-gray-600 mt-1">Used for account identification and future SMS notifications.</p>
+            }
+          </div>
+
+          {/* SMS opt-in */}
+          <label className="flex items-center gap-3 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={smsOk}
+              onChange={(e) => setSmsOk(e.target.checked)}
+              className="w-4 h-4 accent-primary"
+            />
+            <span className="text-sm text-gray-400">
+              Send me SMS notifications (e.g. when reports are ready). Opt out any time.
+            </span>
+          </label>
+
+          {/* Save button */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={saveProfile}
+              disabled={saving || !hasChanges}
+              className="px-5 py-2.5 bg-gradient-to-r from-primary to-accent-blue text-white text-sm font-medium rounded-xl disabled:opacity-40 hover:shadow-lg hover:shadow-primary/20 transition-all"
+            >
+              {saving ? 'Saving…' : 'Save changes'}
+            </button>
+            {saveMsg && (
+              <p className={`text-sm ${saveMsg === 'Saved!' ? 'text-green-400' : 'text-red-400'}`}>
+                {saveMsg}
+              </p>
+            )}
           </div>
         </motion.div>
 
