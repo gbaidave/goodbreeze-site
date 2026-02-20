@@ -11,6 +11,7 @@ interface Props {
   initialPhone: string
   initialSmsOk: boolean
   email: string
+  role: string
   plan: string
   status?: string
   currentPeriodEnd?: string
@@ -25,6 +26,7 @@ export default function AccountClient({
   initialPhone,
   initialSmsOk,
   email,
+  role,
   plan,
   status,
   currentPeriodEnd,
@@ -40,6 +42,8 @@ export default function AccountClient({
   const [saving, setSaving] = useState(false)
   const [saveMsg, setSaveMsg] = useState('')
   const [portalLoading, setPortalLoading] = useState(false)
+  const [resetSent, setResetSent] = useState(false)
+  const [resetLoading, setResetLoading] = useState(false)
 
   const hasChanges = name !== initialName || phone !== initialPhone || smsOk !== initialSmsOk
 
@@ -89,7 +93,21 @@ export default function AccountClient({
     }
   }
 
+  async function sendPasswordReset() {
+    setResetLoading(true)
+    const supabase = createClient()
+    await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth/callback?returnUrl=/reset-password`,
+    })
+    setResetLoading(false)
+    setResetSent(true)
+  }
+
+  const isPrivileged = role === 'admin' || role === 'tester'
+
   const planLabel =
+    role === 'admin' ? 'Admin' :
+    role === 'tester' ? 'Tester' :
     plan === 'starter' ? 'Starter' :
     plan === 'impulse' ? 'Impulse' : 'Free'
 
@@ -201,11 +219,16 @@ export default function AccountClient({
           {/* Current plan */}
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-white font-medium">{planLabel} Plan</p>
-              {status && status !== 'active' && status !== 'trialing' && (
+              <p className="text-white font-medium">
+                {isPrivileged ? `${planLabel} Account` : `${planLabel} Plan`}
+              </p>
+              {isPrivileged && (
+                <p className="text-xs text-gray-500 mt-0.5">Full access — no billing required.</p>
+              )}
+              {!isPrivileged && status && status !== 'active' && status !== 'trialing' && (
                 <p className="text-xs text-yellow-400 mt-0.5 capitalize">{status.replace('_', ' ')}</p>
               )}
-              {currentPeriodEnd && plan === 'starter' && (
+              {!isPrivileged && currentPeriodEnd && plan === 'starter' && (
                 <p className="text-xs text-gray-500 mt-0.5">
                   {cancelAtPeriodEnd ? 'Cancels on' : 'Renews'}{' '}
                   {new Date(currentPeriodEnd).toLocaleDateString('en-US', {
@@ -215,7 +238,9 @@ export default function AccountClient({
               )}
             </div>
             <span className={`text-xs font-semibold px-3 py-1 rounded-full border ${
-              plan === 'starter'
+              isPrivileged
+                ? 'bg-primary/10 text-primary border-primary/30'
+                : plan === 'starter'
                 ? 'bg-primary/10 text-primary border-primary/30'
                 : plan === 'impulse'
                 ? 'bg-accent-blue/10 text-accent-blue border-accent-blue/30'
@@ -225,8 +250,8 @@ export default function AccountClient({
             </span>
           </div>
 
-          {/* Credit balance — show for non-starter users who have credits */}
-          {totalCredits > 0 && plan !== 'starter' && (
+          {/* Credit balance — show for non-starter, non-privileged users who have credits */}
+          {!isPrivileged && totalCredits > 0 && plan !== 'starter' && (
             <div className="bg-dark/50 border border-gray-800 rounded-xl px-4 py-3 flex items-center justify-between">
               <div>
                 <p className="text-sm text-white font-medium">
@@ -250,7 +275,7 @@ export default function AccountClient({
           )}
 
           {/* Billing portal — for users with a Stripe customer on paid plans */}
-          {hasStripeCustomer && isPaid && (
+          {!isPrivileged && hasStripeCustomer && isPaid && (
             <button
               onClick={openBillingPortal}
               disabled={portalLoading}
@@ -260,8 +285,8 @@ export default function AccountClient({
             </button>
           )}
 
-          {/* Upgrade CTAs — for free users */}
-          {plan === 'free' && (
+          {/* Upgrade CTAs — for free users only */}
+          {!isPrivileged && plan === 'free' && (
             <div className="space-y-2.5">
               <Link
                 href="/pricing"
@@ -278,8 +303,8 @@ export default function AccountClient({
             </div>
           )}
 
-          {/* Buy more credits — for users on free without a subscription */}
-          {plan === 'free' && totalCredits === 0 && (
+          {/* Buy more credits — for free users without a subscription */}
+          {!isPrivileged && plan === 'free' && totalCredits === 0 && (
             <p className="text-xs text-gray-600 text-center -mt-1">
               Or{' '}
               <Link href="/pricing" className="text-primary hover:underline">
@@ -288,6 +313,33 @@ export default function AccountClient({
               with no subscription required.
             </p>
           )}
+        </motion.div>
+
+        {/* Security Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="bg-dark-700 border border-primary/20 rounded-2xl p-6 space-y-4"
+        >
+          <h2 className="text-lg font-semibold text-white">Security</h2>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-white font-medium">Password</p>
+              <p className="text-xs text-gray-500 mt-0.5">Send a reset link to {email}</p>
+            </div>
+            {resetSent ? (
+              <p className="text-sm text-green-400">Reset link sent!</p>
+            ) : (
+              <button
+                onClick={sendPasswordReset}
+                disabled={resetLoading}
+                className="px-4 py-2 text-sm border border-primary/30 text-primary rounded-xl hover:bg-primary/10 transition-colors disabled:opacity-40"
+              >
+                {resetLoading ? 'Sending…' : 'Send reset link'}
+              </button>
+            )}
+          </div>
         </motion.div>
 
         {/* Footer actions */}

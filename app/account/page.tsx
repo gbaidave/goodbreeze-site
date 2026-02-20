@@ -19,7 +19,7 @@ export default async function AccountPage() {
   const [profileRes, subRes, creditsRes] = await Promise.all([
     supabase
       .from('profiles')
-      .select('name, email, phone, sms_ok, stripe_customer_id')
+      .select('name, email, phone, sms_ok, stripe_customer_id, role')
       .eq('id', user.id)
       .single(),
     supabase
@@ -49,6 +49,7 @@ export default async function AccountPage() {
       initialPhone={profile?.phone || ''}
       initialSmsOk={profile?.sms_ok ?? false}
       email={profile?.email || user.email || ''}
+      role={profile?.role ?? 'user'}
       plan={sub?.plan ?? 'free'}
       status={sub?.status}
       currentPeriodEnd={sub?.current_period_end}
