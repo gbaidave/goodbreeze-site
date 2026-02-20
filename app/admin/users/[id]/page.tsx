@@ -21,7 +21,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
   const supabase = createServiceClient()
 
   // Fetch all user data in parallel
-  const [profileRes, subRes, creditsRes, reportsRes, emailLogsRes, supportRes, notesRes] = await Promise.all([
+  const [profileRes, subRes, creditsRes, reportsRes, emailLogsRes, supportRes, notesRes, testimonialsRes] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', id).single(),
     supabase.from('subscriptions').select('*').eq('user_id', id).order('created_at', { ascending: false }).limit(1).single(),
     supabase.from('credits').select('balance, expires_at, purchased_at, product').eq('user_id', id).order('purchased_at', { ascending: false }),
@@ -29,6 +29,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
     supabase.from('email_logs').select('id, type, subject, status, created_at, error').eq('user_id', id).order('created_at', { ascending: false }).limit(20),
     supabase.from('support_requests').select('id, message, status, created_at').eq('user_id', id).order('created_at', { ascending: false }).limit(10),
     supabase.from('admin_notes').select('id, note, created_at, created_by').eq('user_id', id).order('created_at', { ascending: false }),
+    supabase.from('testimonials').select('id, type, status, pull_quote, content, video_url, credits_granted, admin_note, created_at').eq('user_id', id).order('created_at', { ascending: false }),
   ])
 
   const profile = profileRes.data
@@ -40,6 +41,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
   const emailLogs = emailLogsRes.data ?? []
   const supportRequests = supportRes.data ?? []
   const rawNotes = notesRes.data ?? []
+  const testimonials = testimonialsRes.data ?? []
 
   // Fetch note author names
   const authorIds = [...new Set(rawNotes.map((n: any) => n.created_by))]
@@ -208,6 +210,52 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
                       </span>
                     </div>
                     <p className="text-white text-sm">{s.message}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Section>
+
+          {/* Testimonials */}
+          <Section title={`Testimonials (${testimonials.length})`}>
+            {testimonials.length === 0 ? (
+              <p className="text-gray-500 text-sm px-4 py-3">No testimonials submitted.</p>
+            ) : (
+              <div className="divide-y divide-primary/10">
+                {testimonials.map((t: any) => (
+                  <div key={t.id} className="px-4 py-4 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs px-2 py-0.5 rounded-full border capitalize bg-dark-700 text-gray-300 border-gray-700">
+                          {t.type}
+                        </span>
+                        <span className={`text-xs px-2 py-0.5 rounded-full border capitalize
+                          ${t.status === 'approved' ? 'bg-green-900/40 text-green-400 border-green-800'
+                            : t.status === 'rejected' ? 'bg-red-900/40 text-red-400 border-red-800'
+                            : 'bg-yellow-900/40 text-yellow-400 border-yellow-800'}`}>
+                          {t.status}
+                        </span>
+                        {t.credits_granted > 0 && (
+                          <span className="text-xs text-primary">+{t.credits_granted} credits</span>
+                        )}
+                      </div>
+                      <span className="text-gray-500 text-xs">
+                        {new Date(t.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </span>
+                    </div>
+                    <p className="text-white text-sm font-medium">&ldquo;{t.pull_quote}&rdquo;</p>
+                    {t.content && (
+                      <p className="text-gray-400 text-xs leading-relaxed line-clamp-3">{t.content}</p>
+                    )}
+                    {t.video_url && (
+                      <a href={t.video_url} target="_blank" rel="noopener noreferrer"
+                        className="text-primary text-xs hover:underline">
+                        View video →
+                      </a>
+                    )}
+                    {t.admin_note && (
+                      <p className="text-gray-500 text-xs italic">Note: {t.admin_note}</p>
+                    )}
                   </div>
                 ))}
               </div>
