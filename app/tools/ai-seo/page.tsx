@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { GuestFields } from '@/components/tools/GuestFields'
+import { captureEvent } from '@/lib/analytics'
 
 function SuccessState({ isGuest, onReset }: { isGuest: boolean; onReset: () => void }) {
   return (
@@ -124,6 +125,7 @@ export default function AiSeoPage() {
         if (res.status === 409) { setError('You already have an account. Sign in to continue.'); return }
         if (!res.ok) { setError(data.error || 'Something went wrong.'); return }
       }
+      captureEvent('tool_form_submit', { reportType: 'ai_seo' })
       setSubmitted(true)
     } catch {
       setError('Something went wrong. Please try again.')

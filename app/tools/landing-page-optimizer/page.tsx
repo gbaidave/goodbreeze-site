@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { useAuth } from '@/components/auth/AuthProvider'
+import { captureEvent } from '@/lib/analytics'
 
 function SuccessState({ onReset }: { onReset: () => void }) {
   return (
@@ -79,6 +80,7 @@ export default function LandingPageOptimizerPage() {
       const data = await res.json()
       if (res.status === 402) { setError(data.error); setUpgradePrompt(data.upgradePrompt ?? 'impulse'); return }
       if (!res.ok) { setError(data.error || 'Something went wrong.'); return }
+      captureEvent('tool_form_submit', { reportType: 'landing_page' })
       setSubmitted(true)
     } catch {
       setError('Something went wrong. Please try again.')

@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import type { User, Session } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
+import { identifyUser, resetAnalyticsUser } from '@/lib/analytics'
 
 interface AuthContextType {
   user: User | null
@@ -39,6 +40,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(session)
         setUser(session?.user ?? null)
         setLoading(false)
+        if (session?.user) {
+          identifyUser(session.user.id, { email: session.user.email })
+        } else {
+          resetAnalyticsUser()
+        }
       })
       subscription = data.subscription
     } catch (err) {

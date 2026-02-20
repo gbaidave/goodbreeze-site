@@ -5,6 +5,7 @@ import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { AuthProvider } from "@/components/auth/AuthProvider";
+import { PostHogProvider } from "@/providers/PostHogProvider";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -115,11 +116,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       <body
         className={`${inter.variable} font-sans antialiased bg-dark text-white`}
       >
-        <AuthProvider>
-          <Header />
-          <main className="pt-16">{children}</main>
-          <Footer />
-        </AuthProvider>
+        <PostHogProvider>
+          <AuthProvider>
+            <Header />
+            <main className="pt-16">{children}</main>
+            <Footer />
+          </AuthProvider>
+        </PostHogProvider>
       </body>
     </html>
   );

@@ -77,6 +77,34 @@ export default async function AdminOverviewPage() {
         <StatCard label="Failed this month" value={failedReports ?? 0} sub="reports failed" />
       </div>
 
+      {/* PostHog Analytics */}
+      <div>
+        <h2 className="text-lg font-semibold text-white mb-4">Analytics</h2>
+        {process.env.NEXT_PUBLIC_POSTHOG_DASHBOARD_URL ? (
+          <div className="bg-dark-700 border border-primary/20 rounded-2xl overflow-hidden">
+            <iframe
+              src={process.env.NEXT_PUBLIC_POSTHOG_DASHBOARD_URL}
+              className="w-full border-0"
+              style={{ height: '600px' }}
+              title="PostHog Analytics"
+            />
+          </div>
+        ) : (
+          <div className="bg-dark-700 border border-primary/10 rounded-2xl p-6 text-center">
+            <p className="text-gray-400 text-sm">
+              PostHog dashboard embed not configured.{' '}
+              <span className="text-gray-500">
+                Add <code className="bg-dark px-1.5 py-0.5 rounded text-primary text-xs">NEXT_PUBLIC_POSTHOG_DASHBOARD_URL</code> to Vercel env vars
+                with your PostHog shared dashboard URL.
+              </span>
+            </p>
+            <p className="text-gray-600 text-xs mt-2">
+              PostHog → Dashboards → Share → Copy share link
+            </p>
+          </div>
+        )}
+      </div>
+
       {/* Recent signups */}
       <div>
         <h2 className="text-lg font-semibold text-white mb-4">New users this week</h2>

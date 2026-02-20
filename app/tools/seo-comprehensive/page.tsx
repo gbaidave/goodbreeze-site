@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { useAuth } from '@/components/auth/AuthProvider'
+import { captureEvent } from '@/lib/analytics'
 
 function SuccessState({ onReset }: { onReset: () => void }) {
   return (
@@ -87,6 +88,7 @@ export default function SeoComprehensivePage() {
       const data = await res.json()
       if (res.status === 402) { setError(data.error); setUpgradePrompt(data.upgradePrompt ?? 'starter'); return }
       if (!res.ok) { setError(data.error || 'Something went wrong.'); return }
+      captureEvent('tool_form_submit', { reportType: 'seo_comprehensive' })
       setSubmitted(true)
     } catch {
       setError('Something went wrong. Please try again.')

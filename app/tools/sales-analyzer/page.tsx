@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { GuestFields } from '@/components/tools/GuestFields'
+import { captureEvent } from '@/lib/analytics'
 
 type ReportType = 'h2h' | 't3c' | 'cp'
 
@@ -179,6 +180,7 @@ export default function SalesAnalyzer() {
         if (res.status === 409) { setError('You already have an account. Sign in to continue.'); return }
         if (!res.ok) { setError(data.error || 'Something went wrong. Please try again.'); return }
       }
+      captureEvent('tool_form_submit', { reportType })
       setSubmitted(true)
     } catch {
       setError('Something went wrong. Please try again.')

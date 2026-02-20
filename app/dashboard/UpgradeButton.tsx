@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { captureEvent } from '@/lib/analytics'
 
 interface UpgradeButtonProps {
   priceId: string
@@ -13,7 +14,9 @@ export function UpgradeButton({ priceId, label, className }: UpgradeButtonProps)
 
   async function handleClick() {
     setLoading(true)
+    captureEvent('upgrade_cta_clicked', { label })
     try {
+      captureEvent('checkout_started', { label, priceId })
       const res = await fetch('/api/stripe/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

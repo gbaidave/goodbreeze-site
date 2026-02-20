@@ -1,6 +1,7 @@
 import { redirect, notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
+import { ReportViewTracker } from './ReportViewTracker'
 
 // ============================================================================
 // Constants
@@ -159,6 +160,7 @@ export default async function ReportViewerPage({
 
   return (
     <div className="min-h-screen bg-dark">
+      <ReportViewTracker reportId={report.id} reportType={report.report_type} />
       {/* Header bar */}
       <div className="border-b border-primary/10 bg-dark-800/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
