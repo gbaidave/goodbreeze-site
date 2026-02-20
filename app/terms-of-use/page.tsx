@@ -8,7 +8,7 @@ export default function TermsOfUse() {
         <div className="prose prose-invert prose-primary max-w-none space-y-8">
           <section>
             <p className="text-gray-300 leading-relaxed">
-              These Terms of Use ("Terms") govern your use of the website located at <a href="https://goodbreeze.ai" className="text-primary hover:underline">https://goodbreeze.ai</a> and any related services, content, or tools offered by Good Breeze AI ("we," "us," "our"). By accessing or using our website or services, you agree to be bound by these Terms.
+              These Terms of Use ("Terms") govern your use of the website located at <a href="https://goodbreeze.ai" className="text-primary hover:underline">https://goodbreeze.ai</a> and any related services, content, or tools offered by Good Breeze AI LLC ("we," "us," "our"). By accessing or using our website or services, you agree to be bound by these Terms.
             </p>
           </section>
 
@@ -75,7 +75,7 @@ export default function TermsOfUse() {
           <section>
             <h2 className="text-2xl font-bold text-white mb-4">5. Intellectual Property</h2>
             <p className="text-gray-300 leading-relaxed mb-3">
-              All content, documentation, workflows, and original materials created by Good Breeze AI remain our intellectual property unless otherwise specified in a separate agreement.
+              All content, documentation, workflows, and original materials created by Good Breeze AI LLC remain our intellectual property unless otherwise specified in a separate agreement.
             </p>
             <p className="text-gray-300 leading-relaxed">
               You may not reuse, resell, or distribute our work without our written permission.

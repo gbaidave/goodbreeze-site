@@ -9,7 +9,7 @@ export default function PrivacyPolicy() {
           <section>
             <h2 className="text-2xl font-bold text-white mb-4">1. Who We Are</h2>
             <p className="text-gray-300 leading-relaxed">
-              This Privacy Policy applies to Good Breeze AI ("we," "our," "us"), an AI solutions provider specializing in automation, consulting, and system design. Our website address is <a href="https://goodbreeze.ai" className="text-primary hover:underline">https://goodbreeze.ai</a>.
+              This Privacy Policy applies to Good Breeze AI LLC ("we," "our," "us"), an AI solutions provider specializing in automation, consulting, and system design. Our website address is <a href="https://goodbreeze.ai" className="text-primary hover:underline">https://goodbreeze.ai</a>.
             </p>
           </section>
 
