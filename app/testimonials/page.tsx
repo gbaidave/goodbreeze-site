@@ -28,7 +28,7 @@ export default async function TestimonialsPage() {
     .eq('status', 'approved')
     .order('created_at', { ascending: false })
 
-  const approved = (testimonials ?? []) as Testimonial[]
+  const approved = (testimonials ?? []) as unknown as Testimonial[]
 
   return (
     <div className="min-h-screen bg-dark py-24 px-6">

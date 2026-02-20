@@ -63,7 +63,7 @@ export default function Tools() {
               transition={{ duration: 0.6, delay: index * 0.1 }}
               className="group relative"
             >
-              <Link href={tool.href} className={tool.comingSoon ? "pointer-events-none" : ""}>
+              <Link href={tool.href}>
                 <div className="relative p-8 rounded-2xl bg-dark-700 border border-primary/20 hover:border-primary hover:shadow-2xl hover:shadow-primary/30 transition-all duration-300 overflow-hidden h-full flex flex-col">
                   {/* Animated gradient background on hover */}
                   <div className={`absolute inset-0 bg-gradient-to-br ${tool.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
@@ -84,17 +84,11 @@ export default function Tools() {
 
                     {/* Prominent CTA Button - Centered */}
                     <div className="flex justify-center">
-                      <div className={`inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold transition-all duration-300 ${
-                        tool.comingSoon
-                          ? "bg-gray-700 text-gray-400 cursor-not-allowed"
-                          : `bg-gradient-to-r ${tool.gradient} text-white group-hover:shadow-lg group-hover:shadow-primary/50 transform group-hover:scale-105`
-                      }`}>
-                        <span>{tool.comingSoon ? "Coming Soon" : "Try Free"}</span>
-                        {!tool.comingSoon && (
-                          <svg className="w-5 h-5 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                          </svg>
-                        )}
+                      <div className={`inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold transition-all duration-300 bg-gradient-to-r ${tool.gradient} text-white group-hover:shadow-lg group-hover:shadow-primary/50 transform group-hover:scale-105`}>
+                        <span>Try Free</span>
+                        <svg className="w-5 h-5 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
                       </div>
                     </div>
                   </div>
