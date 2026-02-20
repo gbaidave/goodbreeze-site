@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { captureEvent } from '@/lib/analytics'
+import { ExhaustedState } from '@/components/ExhaustedState'
 
 function SuccessState({ onReset }: { onReset: () => void }) {
   return (
@@ -32,34 +33,6 @@ function SuccessState({ onReset }: { onReset: () => void }) {
   )
 }
 
-function UpgradeState({ error }: { error: string }) {
-  return (
-    <div className="min-h-screen bg-dark flex items-center justify-center px-6">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-        className="max-w-lg w-full p-10 rounded-2xl bg-dark-700 border border-primary/30 text-center">
-        <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
-          <svg className="w-8 h-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.562.562 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
-          </svg>
-        </div>
-        <h2 className="text-2xl font-bold text-white mb-3">Starter Plan Required</h2>
-        <p className="text-gray-400 mb-2">{error}</p>
-        <p className="text-gray-500 text-sm mb-8">
-          The SEO Comprehensive Report is our most powerful analysis — it combines technical audit, keyword research, and competitor analysis into one report. Available exclusively on Starter.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Link href="/pricing" className="px-6 py-3 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full hover:shadow-lg transition-all">
-            Upgrade to Starter — $20/mo
-          </Link>
-          <Link href="/dashboard" className="px-6 py-3 border border-gray-700 text-gray-400 rounded-full hover:border-gray-500 transition-all">
-            Back to Dashboard
-          </Link>
-        </div>
-      </motion.div>
-    </div>
-  )
-}
-
 export default function SeoComprehensivePage() {
   const { user, loading: authLoading } = useAuth()
   const isGuest = !authLoading && !user
@@ -73,7 +46,7 @@ export default function SeoComprehensivePage() {
   const [upgradePrompt, setUpgradePrompt] = useState('')
 
   if (submitted) return <SuccessState onReset={() => setSubmitted(false)} />
-  if (upgradePrompt) return <UpgradeState error={error} />
+  if (upgradePrompt) return <ExhaustedState error={error} upgradePrompt={upgradePrompt} />
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()

@@ -8,6 +8,7 @@ import { welcomeEmail } from './emails/welcome'
 import { paymentConfirmationEmail } from './emails/payment-confirmation'
 import { paymentFailedEmail } from './emails/payment-failed'
 import { magicLinkSetupEmail } from './emails/magic-link-setup'
+import { reportsExhaustedEmail } from './emails/reports-exhausted'
 
 export async function sendWelcomeEmail(to: string, name: string) {
   const { subject, html } = welcomeEmail(name)
@@ -53,6 +54,17 @@ export async function sendMagicLinkSetupEmail(
   reportTypeLabel: string
 ) {
   const { subject, html } = magicLinkSetupEmail(magicLink, reportTypeLabel)
+  return resend.emails.send({
+    from: `${FROM_NAME} <${FROM}>`,
+    to,
+    replyTo: REPLY_TO,
+    subject,
+    html,
+  })
+}
+
+export async function sendReportsExhaustedEmail(to: string, name: string) {
+  const { subject, html } = reportsExhaustedEmail(name)
   return resend.emails.send({
     from: `${FROM_NAME} <${FROM}>`,
     to,

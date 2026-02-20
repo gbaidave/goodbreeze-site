@@ -23,6 +23,8 @@ import {
   createReportRow,
   type ReportType,
 } from '@/lib/entitlement'
+import { createServiceClient } from '@/lib/supabase/service-client'
+import { sendReportsExhaustedEmail } from '@/lib/email'
 
 // ============================================================================
 // n8n webhook URLs (internal — bypasses Cloudflare 100s limit)
@@ -231,6 +233,26 @@ export async function POST(request: NextRequest) {
 
     // 8. Record usage (optimistic — before n8n confirms success)
     await recordUsage(user.id, reportType, entitlement.deductFrom!, entitlement.creditRowId, entitlement.freeSystemConsumed)
+
+    // 8b. If this was the last free slot, check if both systems are now exhausted — fire nudge email
+    if (entitlement.freeSystemConsumed) {
+      void (async () => {
+        try {
+          const svc = createServiceClient()
+          const { data: prof } = await svc
+            .from('profiles')
+            .select('free_reports_used')
+            .eq('id', user.id)
+            .single()
+          const freeUsed = (prof?.free_reports_used ?? {}) as Record<string, string>
+          if (freeUsed.analyzer && freeUsed.brand_visibility) {
+            await sendReportsExhaustedEmail(userEmail, userName)
+          }
+        } catch (e) {
+          console.error('Reports-exhausted nudge email failed:', e)
+        }
+      })()
+    }
 
     // 9. Return immediately
     return NextResponse.json({

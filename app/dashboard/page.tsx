@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { UpgradeButton } from './UpgradeButton'
 import ReportList from './ReportList'
 import { ReferralSection } from './ReferralSection'
+import { NudgeCard } from './NudgeCard'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -16,15 +17,16 @@ export default async function DashboardPage() {
   }
   if (!user) redirect('/login')
 
-  // Fetch profile, subscription, credits, reports, and referral data in parallel
-  const [profileRes, subRes, creditsRes, reportsRes, referralRes] = await Promise.all([
-    supabase.from('profiles').select('name, email').eq('id', user.id).single(),
+  // Fetch profile, subscription, credits, reports, referral data, and testimonials in parallel
+  const [profileRes, subRes, creditsRes, reportsRes, referralRes, testimonialsRes] = await Promise.all([
+    supabase.from('profiles').select('name, email, free_reports_used, plan_override_type, plan_override_until').eq('id', user.id).single(),
     supabase.from('subscriptions').select('plan, status, current_period_end')
       .eq('user_id', user.id).in('status', ['active', 'trialing']).order('created_at', { ascending: false }).limit(1).single(),
     supabase.from('credits').select('balance, expires_at').eq('user_id', user.id).gt('balance', 0).order('purchased_at', { ascending: true }),
     supabase.from('reports').select('id, report_type, status, created_at, pdf_url, expires_at').eq('user_id', user.id)
       .order('created_at', { ascending: false }).limit(20),
     supabase.from('referral_codes').select('code, referral_uses(reward_granted)').eq('user_id', user.id).single(),
+    supabase.from('testimonials').select('type').eq('user_id', user.id),
   ])
 
   const profile = profileRes.data
@@ -35,10 +37,24 @@ export default async function DashboardPage() {
   const referralUses = (referralRes.data as any)?.referral_uses ?? []
   const referralSignups = referralUses.length
   const referralCredits = referralUses.filter((u: { reward_granted: boolean }) => u.reward_granted).length
+  const submittedTestimonialTypes = (testimonialsRes.data ?? []).map((t: { type: string }) => t.type)
+  const hasWrittenTestimonial = submittedTestimonialTypes.includes('written')
+  const hasVideoTestimonial = submittedTestimonialTypes.includes('video')
 
-  const plan = sub?.plan ?? 'free'
+  // Plan: check for active override
+  const overrideActive =
+    profile?.plan_override_type &&
+    (!profile.plan_override_until || new Date(profile.plan_override_until) > new Date())
+  const rawPlan = sub?.plan ?? 'free'
+  const plan = overrideActive ? (profile!.plan_override_type as string) : rawPlan
+
   const totalCredits = credits.reduce((sum, c) => sum + (c.balance ?? 0), 0)
   const firstName = profile?.name?.split(' ')[0] || profile?.email?.split('@')[0] || 'there'
+
+  // Free reports remaining (free plan only — 1 per system)
+  const freeUsed = (profile?.free_reports_used ?? {}) as Record<string, string>
+  const freeRemaining = (freeUsed.analyzer ? 0 : 1) + (freeUsed.brand_visibility ? 0 : 1)
+  const isExhausted = plan !== 'starter' && plan !== 'custom' && totalCredits === 0 && freeRemaining === 0
 
   const starterPriceId = process.env.STRIPE_STARTER_PRICE_ID!
   const impulsePriceId = process.env.STRIPE_IMPULSE_PRICE_ID!
@@ -79,9 +95,17 @@ export default async function DashboardPage() {
           {/* Credits */}
           <div className="bg-dark-700 border border-primary/20 rounded-2xl p-6">
             <p className="text-gray-400 text-sm mb-1">Report credits</p>
-            <p className="text-2xl font-bold text-white">{plan === 'starter' ? '∞' : totalCredits}</p>
+            <p className="text-2xl font-bold text-white">
+              {plan === 'starter' || plan === 'custom' ? '∞' : totalCredits > 0 ? totalCredits : freeRemaining > 0 ? `${freeRemaining} free` : '0'}
+            </p>
             <p className="text-gray-500 text-xs mt-1">
-              {plan === 'starter' ? 'Unlimited on Starter plan' : totalCredits === 0 ? 'No credits remaining' : `${totalCredits} report${totalCredits !== 1 ? 's' : ''} available`}
+              {plan === 'starter' || plan === 'custom'
+                ? 'Unlimited on your plan'
+                : totalCredits > 0
+                  ? `${totalCredits} paid credit${totalCredits !== 1 ? 's' : ''} available`
+                  : freeRemaining > 0
+                    ? `${freeRemaining} free report${freeRemaining !== 1 ? 's' : ''} remaining`
+                    : 'No credits remaining'}
             </p>
           </div>
 
@@ -117,14 +141,26 @@ export default async function DashboardPage() {
           </div>
         )}
 
-        {/* Referral */}
-        {referralCode && (
-          <ReferralSection
-            code={referralCode}
-            signups={referralSignups}
-            creditsEarned={referralCredits}
+        {/* Exhausted nudge — shown only when all free + paid credits consumed */}
+        {isExhausted && (
+          <NudgeCard
+            starterPriceId={starterPriceId}
+            impulsePriceId={impulsePriceId}
+            hasWrittenTestimonial={hasWrittenTestimonial}
+            hasVideoTestimonial={hasVideoTestimonial}
           />
         )}
+
+        {/* Referral */}
+        <div id="referral">
+          {referralCode && (
+            <ReferralSection
+              code={referralCode}
+              signups={referralSignups}
+              creditsEarned={referralCredits}
+            />
+          )}
+        </div>
 
         {/* Report history */}
         <div>

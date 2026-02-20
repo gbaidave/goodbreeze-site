@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { captureEvent } from '@/lib/analytics'
+import { ExhaustedState } from '@/components/ExhaustedState'
 
 function SuccessState({ onReset }: { onReset: () => void }) {
   return (
@@ -32,26 +33,6 @@ function SuccessState({ onReset }: { onReset: () => void }) {
   )
 }
 
-function UpgradeState({ error, upgradePrompt }: { error: string; upgradePrompt: string }) {
-  return (
-    <div className="min-h-screen bg-dark flex items-center justify-center px-6">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-        className="max-w-lg w-full p-10 rounded-2xl bg-dark-700 border border-primary/30 text-center">
-        <h2 className="text-2xl font-bold text-white mb-3">Upgrade to Continue</h2>
-        <p className="text-gray-400 mb-8">{error}</p>
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Link href="/pricing" className="px-6 py-3 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full hover:shadow-lg transition-all">
-            {upgradePrompt === 'starter' ? 'Upgrade to Starter' : 'Get Report Credits'}
-          </Link>
-          <Link href="/dashboard" className="px-6 py-3 border border-gray-700 text-gray-400 rounded-full hover:border-gray-500 transition-all">
-            Back to Dashboard
-          </Link>
-        </div>
-      </motion.div>
-    </div>
-  )
-}
-
 export default function SeoAuditPage() {
   const { user, loading: authLoading } = useAuth()
   const isGuest = !authLoading && !user
@@ -65,7 +46,7 @@ export default function SeoAuditPage() {
   const [upgradePrompt, setUpgradePrompt] = useState('')
 
   if (submitted) return <SuccessState onReset={() => setSubmitted(false)} />
-  if (upgradePrompt) return <UpgradeState error={error} upgradePrompt={upgradePrompt} />
+  if (upgradePrompt) return <ExhaustedState error={error} upgradePrompt={upgradePrompt} />
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
