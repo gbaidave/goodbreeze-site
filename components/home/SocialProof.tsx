@@ -171,57 +171,6 @@ export default function SocialProof() {
           </div>
         </div>
 
-        {/* CTA - Made more prominent with visible gradient background */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className="relative mt-20 text-center bg-gradient-to-br from-[#3b82f6] via-[#a855f7] to-[#00adb5] rounded-3xl p-12 overflow-hidden"
-        >
-          {/* Animated gradient blobs */}
-          <motion.div
-            className="absolute top-0 right-0 w-64 h-64 bg-primary rounded-full blur-3xl opacity-20"
-            animate={{
-              scale: [1, 1.2, 1],
-              rotate: [0, 90, 0],
-            }}
-            transition={{
-              duration: 10,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-          />
-          <motion.div
-            className="absolute bottom-0 left-0 w-64 h-64 bg-accent-purple rounded-full blur-3xl opacity-15"
-            animate={{
-              scale: [1, 1.3, 1],
-              rotate: [0, -90, 0],
-            }}
-            transition={{
-              duration: 12,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-          />
-
-          <div className="relative z-10">
-            <h3 className="text-4xl sm:text-5xl font-bold mb-6 bg-gradient-to-r from-primary via-accent-blue to-accent-purple bg-clip-text text-transparent">
-              Ready to See Similar Results in Your Business?
-            </h3>
-            <p className="text-2xl text-white mb-10 max-w-2xl mx-auto leading-relaxed">
-              Book a strategy call and we'll show you exactly how automation can transform your operations
-            </p>
-            <motion.a
-              href="/contact"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.98 }}
-              className="inline-block px-12 py-6 border-4 border-white text-white text-xl font-bold rounded-full shadow-2xl shadow-white/40 hover:bg-white hover:text-dark transition-all duration-300"
-            >
-              Book Your Strategy Call
-            </motion.a>
-          </div>
-        </motion.div>
       </div>
     </section>
   );

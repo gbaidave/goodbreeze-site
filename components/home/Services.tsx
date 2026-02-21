@@ -9,8 +9,8 @@ const services = [
     qualifier: "For teams doing the same manual tasks every day",
     outcomes: [
       "Your team stops doing the same task twice",
-      "Work gets done overnight — no one has to trigger it",
-      "Works with what you already use — no ripping and replacing",
+      "Work gets done overnight. No one has to trigger it.",
+      "Works with what you already use. No ripping and replacing.",
       "Documented so your team runs it without you in the room",
     ],
   },
@@ -21,7 +21,7 @@ const services = [
       "Leads get followed up while your team is doing other work",
       "Built around your actual products, language, and processes",
       "Handles intake, inquiries, and follow-up automatically",
-      "Handed off with training — not a black box you can't touch",
+      "Handed off with training, not a black box you can't touch.",
     ],
   },
   {
@@ -29,7 +29,7 @@ const services = [
     qualifier: "For owners spending too much time running the business instead of building it",
     outcomes: [
       "See exactly where your time and money are going",
-      "Reporting built for your business — no more digging for answers",
+      "Reporting built for your business. No more digging for answers.",
       "Your team can follow the system without asking you every step",
       "Built to handle more volume without adding headcount",
     ],
@@ -104,7 +104,7 @@ export default function Services() {
             href="/contact"
             className="inline-flex items-center justify-center px-10 py-5 bg-gradient-to-r from-primary via-accent-blue to-primary text-white text-lg font-bold rounded-full shadow-2xl shadow-primary/30 border-2 border-white/60 hover:shadow-primary/50 transition-all duration-300 hover:scale-105"
           >
-            Book MY Strategy Call
+            Book My Strategy Call
           </Link>
           <p className="text-gray-500 text-sm mt-4">
             Free call. We&apos;ll tell you whether custom work makes sense before you spend anything.

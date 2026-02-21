@@ -34,7 +34,7 @@ export default function FounderSection() {
             transition={{ duration: 0.8 }}
             className="relative"
           >
-            <div className="relative rounded-2xl overflow-hidden border-2 border-primary/30 shadow-2xl shadow-primary/20">
+            <div className="relative rounded-2xl overflow-hidden border-2 border-primary/30 shadow-2xl shadow-primary/20 max-w-xs lg:max-w-sm mx-auto">
               <Image
                 src="/images/dave-silverstein-good-breeze-ai-founder.webp"
                 alt="Dave Silverstein, founder of Good Breeze AI"

@@ -118,14 +118,12 @@ export default function Hero() {
           >
             {/* Brand headline */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 text-white leading-tight">
-              <span className="bg-gradient-to-r from-primary via-accent-blue to-accent-purple bg-clip-text text-transparent">
-                Good Breeze AI
-              </span>
+              Good Breeze AI
             </h1>
 
             {/* Value statement */}
             <p className="text-xl sm:text-2xl text-gray-300 mb-8 leading-relaxed">
-              Good Breeze AI generates reports that show you exactly why competitors rank higher in Google Search and what to change. Free to try, no credit card required.
+              If your business isn&apos;t growing the way it should, the problems are usually in the systems, not the effort. We surface what&apos;s holding you back. Then we fix it. Start with a free report.
             </p>
 
             {/* Specific outcomes */}
@@ -136,7 +134,7 @@ export default function Hero() {
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
                 </div>
-                <p className="text-gray-300">Discover which keywords send customers to your competitors instead of you</p>
+                <p className="text-gray-300">Your competitors are pulling ahead and you&apos;re not sure what&apos;s driving it</p>
               </div>
               <div className="flex items-start gap-3">
                 <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-1">
@@ -144,7 +142,7 @@ export default function Hero() {
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
                 </div>
-                <p className="text-gray-300">Get a prioritized fix list for your SEO, landing pages, and content gaps</p>
+                <p className="text-gray-300">Your team is handling the same manual work every single day</p>
               </div>
               <div className="flex items-start gap-3">
                 <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-1">
@@ -152,7 +150,7 @@ export default function Hero() {
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
                 </div>
-                <p className="text-gray-300">Run competitive analysis in minutes without hiring an agency or consultant</p>
+                <p className="text-gray-300">You want to grow but you&apos;re already running at full capacity</p>
               </div>
             </div>
 
@@ -181,11 +179,11 @@ export default function Hero() {
 
             {/* Trust indicator */}
             <p className="text-gray-400 text-sm text-center">
-              Free to try. No credit card needed, get business insights fast!
+              Start with a free report. No account required. No credit card.
             </p>
           </motion.div>
 
-          {/* Right: Hero Image with results */}
+          {/* Right: Hero Image */}
           <motion.div
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
@@ -207,29 +205,15 @@ export default function Hero() {
 
             <div className="relative rounded-2xl overflow-hidden border-2 border-primary/30 shadow-2xl shadow-primary/20 group-hover:border-primary/50 transition-all duration-500">
               <Image
-                src="/images/good-breeze-ai-competitor-analysis-report-preview.webp"
-                alt="Competitor analysis report showing keyword gaps, SEO issues, and ranking opportunities"
+                src="/images/good-breeze-ai-business-owner-hero.webp"
+                alt="Small business owner watching a focused team in a well-run operation — Good Breeze AI"
                 width={800}
-                height={450}
+                height={600}
                 className="w-full h-auto transform group-hover:scale-105 transition-transform duration-700"
                 priority
               />
               <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 to-accent-purple/10 group-hover:from-primary/20 group-hover:to-accent-purple/20 transition-all duration-500" />
             </div>
-
-            {/* Results card */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.8 }}
-              className="absolute -top-4 -right-4 bg-dark-700/95 backdrop-blur-lg border border-accent-blue/30 rounded-xl p-5 shadow-lg hover:shadow-accent-blue/50 hover:scale-110 transition-all duration-300 cursor-pointer group/card"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-accent-blue/0 to-accent-blue/0 group-hover/card:from-accent-blue/10 group-hover/card:to-transparent rounded-xl transition-all duration-300" />
-              <div className="relative z-10">
-                <div className="text-3xl font-bold text-accent-blue mb-1">Free</div>
-                <div className="text-sm text-gray-300">First report, no card</div>
-              </div>
-            </motion.div>
           </motion.div>
         </div>
       </div>

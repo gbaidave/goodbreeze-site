@@ -5,18 +5,18 @@ import { motion } from "framer-motion";
 const steps = [
   {
     number: "1",
-    title: "Enter Your URL",
-    description: "Paste the URL you want analyzed. Add your business name. No account needed to start.",
+    title: "Tell Us What's Broken",
+    description: "We start with a conversation about your business — where time and money are going, what keeps slipping, where the real bottlenecks are. We ask the right questions and put together a clear proposal for what we'll build and what it will cost.",
   },
   {
     number: "2",
-    title: "We Run the Analysis",
-    description: "We pull keyword data, check your SEO gaps, and see how you stack up against competitors. Takes 2 to 3 minutes.",
+    title: "We Build It",
+    description: "Once we're aligned on the plan, we get to work. Built for your business, your team, and your actual processes. Not templates. You stay in the loop. We do the heavy lifting.",
   },
   {
     number: "3",
-    title: "Read the Report and Act",
-    description: "A full report lands in your inbox. Open it. Follow the specific fixes. Start outranking them.",
+    title: "Up and Running",
+    description: "We hand everything off with training and documentation your team can follow. It works the way we scoped it. You're off and moving.",
   },
 ];
 
@@ -32,10 +32,10 @@ export default function HowItWorks() {
           className="text-center mb-16"
         >
           <h2 className="text-4xl sm:text-5xl font-bold mb-4 bg-gradient-to-r from-primary via-accent-blue to-accent-purple bg-clip-text text-transparent">
-            How It Works
+            How We Work
           </h2>
           <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-            Three steps from zero to knowing exactly what to fix.
+            Custom work, clear process, nothing left to figure out on your own.
           </p>
         </motion.div>
 
