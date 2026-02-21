@@ -117,15 +117,14 @@ export default function Hero() {
           >
             {/* Brand headline */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 text-white leading-tight">
-              <span className="block bg-gradient-to-r from-primary via-accent-blue to-accent-purple bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-primary via-accent-blue to-accent-purple bg-clip-text text-transparent">
                 Good Breeze AI
               </span>
-              Competitor Analysis Reports
             </h1>
 
             {/* Value statement */}
             <p className="text-xl sm:text-2xl text-gray-300 mb-8 leading-relaxed">
-              Good Breeze AI generates AI-powered reports that show you exactly why competitors rank higher in Google Search and what to change. Free to try, no credit card required.
+              Good Breeze AI generates reports that show you exactly why competitors rank higher in Google Search and what to change. Free to try, no credit card required.
             </p>
 
             {/* Specific outcomes */}
