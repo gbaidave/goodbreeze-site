@@ -1,8 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
-import { isValidPhone, normalizePhone } from '@/lib/phone'
+import { isValidPhone } from '@/lib/phone'
 
 interface Props {
   /** Called after the phone number has been saved successfully. Use this to re-submit the original request. */
@@ -31,14 +30,16 @@ export function PhoneGatePrompt({ onPhoneSaved }: Props) {
     }
     setSaving(true)
     try {
-      const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Not authenticated')
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ phone: normalizePhone(phone) })
-        .eq('id', user.id)
-      if (updateError) throw updateError
+      const res = await fetch('/api/account/save-phone', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: phone.trim() }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.error || 'Failed to save phone number. Please try again.')
+        return
+      }
       onPhoneSaved()
     } catch {
       setError('Failed to save phone number. Please try again.')

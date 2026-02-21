@@ -60,14 +60,32 @@ export default function AccountClient({
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Not authenticated')
-      const updates: Record<string, unknown> = { name, sms_ok: smsOk }
-      if (phone.trim()) updates.phone = normalizePhone(phone)
-      else updates.phone = null
+
+      // Save name + sms_ok directly (no dedup concerns)
       const { error } = await supabase
         .from('profiles')
-        .update(updates)
+        .update({ name, sms_ok: smsOk })
         .eq('id', user.id)
       if (error) throw error
+
+      // Save phone via server route (runs dedup check across all profiles)
+      if (phone !== initialPhone) {
+        const res = await fetch('/api/account/save-phone', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone: phone.trim() }),
+        })
+        const data = await res.json()
+        if (!res.ok) {
+          if (data.code === 'PHONE_DUPLICATE') {
+            setPhoneError(data.error)
+          } else {
+            throw new Error(data.error || 'Phone save failed')
+          }
+          return
+        }
+      }
+
       setSaveMsg('Saved!')
     } catch {
       setSaveMsg('Failed to save. Try again.')
