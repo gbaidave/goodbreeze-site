@@ -248,6 +248,18 @@ export async function POST(request: NextRequest) {
       })
 
       if (createError || !newUser.user) {
+        // status 422 = Supabase still has this email in auth (orphaned after deletion or cooldown)
+        // Treat it the same as ACCOUNT_EXISTS rather than a generic 500
+        if (createError?.status === 422) {
+          return NextResponse.json(
+            {
+              error: 'You already have a Good Breeze AI account. Sign in to run more reports.',
+              code: 'ACCOUNT_EXISTS',
+              signInUrl: '/login',
+            },
+            { status: 409 }
+          )
+        }
         console.error('Failed to create frictionless user:', createError)
         return NextResponse.json(
           { error: 'Failed to create account. Please try again.', code: 'CREATE_FAILED' },

@@ -17,6 +17,7 @@ export default function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const returnUrl = searchParams.get('returnUrl') || '/dashboard'
+  const sessionExpired = searchParams.get('reason') === 'timeout'
   const [serverError, setServerError] = useState<string | null>(null)
   const [oauthLoading, setOauthLoading] = useState(false)
 
@@ -56,6 +57,12 @@ export default function LoginForm() {
     <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-8">
       <h1 className="text-2xl font-bold text-white mb-2">Welcome back</h1>
       <p className="text-zinc-400 mb-6">Sign in to your Good Breeze AI account</p>
+
+      {sessionExpired && (
+        <div className="bg-amber-950 border border-amber-800 text-amber-300 text-sm px-4 py-3 rounded-lg mb-4">
+          Your session expired due to inactivity. Sign in to continue.
+        </div>
+      )}
 
       {/* Google OAuth */}
       <button

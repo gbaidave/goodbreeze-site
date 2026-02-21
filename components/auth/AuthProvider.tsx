@@ -1,9 +1,11 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
 import type { User, Session } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
 import { identifyUser, resetAnalyticsUser } from '@/lib/analytics'
+
+const IDLE_TIMEOUT_MS = 30 * 60 * 1000 // 30 minutes
 
 interface AuthContextType {
   user: User | null
@@ -23,6 +25,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
+  const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     let subscription: { unsubscribe: () => void } | null = null
@@ -54,6 +57,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return () => subscription?.unsubscribe()
   }, [])
+
+  // Idle session timeout — sign out after 30 minutes of inactivity
+  useEffect(() => {
+    if (!user) return
+
+    function resetTimer() {
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current)
+      idleTimerRef.current = setTimeout(async () => {
+        const supabase = createClient()
+        await supabase.auth.signOut()
+        window.location.href = '/login?reason=timeout'
+      }, IDLE_TIMEOUT_MS)
+    }
+
+    const events = ['mousemove', 'keydown', 'touchstart', 'scroll', 'click'] as const
+    events.forEach((e) => window.addEventListener(e, resetTimer, { passive: true }))
+    resetTimer()
+
+    return () => {
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current)
+      events.forEach((e) => window.removeEventListener(e, resetTimer))
+    }
+  }, [user])
 
   async function signOut() {
     const supabase = createClient()
