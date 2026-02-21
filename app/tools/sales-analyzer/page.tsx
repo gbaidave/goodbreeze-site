@@ -7,6 +7,7 @@ import { useAuth } from '@/components/auth/AuthProvider'
 import { GuestFields } from '@/components/tools/GuestFields'
 import { captureEvent } from '@/lib/analytics'
 import { ExhaustedState } from '@/components/ExhaustedState'
+import { PhoneGatePrompt } from '@/components/tools/PhoneGatePrompt'
 import { isValidPhone, normalizePhone } from '@/lib/phone'
 
 type ReportType = 'h2h' | 't3c' | 'cp'
@@ -90,14 +91,48 @@ export default function SalesAnalyzer() {
   const [error, setError] = useState('')
   const [upgradePrompt, setUpgradePrompt] = useState('')
   const [accountExists, setAccountExists] = useState(false)
+  const [phoneRequired, setPhoneRequired] = useState(false)
 
   if (submitted) return <SuccessState isGuest={isGuest} onReset={() => setSubmitted(false)} />
   if (upgradePrompt) return <ExhaustedState error={error} upgradePrompt={upgradePrompt} />
+
+  async function doSubmitAuthenticated() {
+    setSubmitting(true)
+    try {
+      const res = await fetch('/api/reports/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          reportType,
+          targetWebsite,
+          competitor1,
+          competitor1Website,
+          competitor2,
+          competitor2Website,
+          competitor3,
+          competitor3Website,
+        }),
+      })
+      const data = await res.json()
+      if (res.status === 402) {
+        if (data.code === 'PHONE_REQUIRED') { setPhoneRequired(true); return }
+        setError(data.error); setUpgradePrompt(data.upgradePrompt ?? 'impulse'); return
+      }
+      if (!res.ok) { setError(data.error || 'Something went wrong. Please try again.'); return }
+      captureEvent('tool_form_submit', { reportType })
+      setSubmitted(true)
+    } catch {
+      setError('Something went wrong. Please try again.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError('')
     setAccountExists(false)
+    setPhoneRequired(false)
 
     // Guests can only run h2h (freeAllowed)
     if (isGuest && reportType !== 'h2h') {
@@ -114,45 +149,30 @@ export default function SalesAnalyzer() {
       setGuestErrors({})
     }
 
+    if (user) {
+      await doSubmitAuthenticated()
+      return
+    }
+
+    // Guest frictionless — h2h only
     setSubmitting(true)
     try {
-      if (user) {
-        const res = await fetch('/api/reports/generate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            reportType,
-            targetWebsite,
-            competitor1,
-            competitor1Website,
-            competitor2,
-            competitor2Website,
-            competitor3,
-            competitor3Website,
-          }),
-        })
-        const data = await res.json()
-        if (res.status === 402) { setError(data.error); setUpgradePrompt(data.upgradePrompt ?? 'impulse'); return }
-        if (!res.ok) { setError(data.error || 'Something went wrong. Please try again.'); return }
-      } else {
-        // Guest frictionless — h2h only
-        const res = await fetch('/api/frictionless', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            reportType: 'h2h',
-            targetWebsite,
-            competitor1,
-            competitor1Website,
-            name: guestName,
-            email: guestEmail,
-            ...(guestPhone.trim() && { phone: normalizePhone(guestPhone) }),
-          }),
-        })
-        const data = await res.json()
-        if (res.status === 409) { setAccountExists(true); return }
-        if (!res.ok) { setError(data.error || 'Something went wrong. Please try again.'); return }
-      }
+      const res = await fetch('/api/frictionless', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          reportType: 'h2h',
+          targetWebsite,
+          competitor1,
+          competitor1Website,
+          name: guestName,
+          email: guestEmail,
+          ...(guestPhone.trim() && { phone: normalizePhone(guestPhone) }),
+        }),
+      })
+      const data = await res.json()
+      if (res.status === 409) { setAccountExists(true); return }
+      if (!res.ok) { setError(data.error || 'Something went wrong. Please try again.'); return }
       captureEvent('tool_form_submit', { reportType })
       setSubmitted(true)
     } catch {
@@ -198,7 +218,10 @@ export default function SalesAnalyzer() {
               </a>
             </div>
           )}
-          {error && !upgradePrompt && (
+          {phoneRequired && (
+            <PhoneGatePrompt onPhoneSaved={() => { setPhoneRequired(false); doSubmitAuthenticated() }} />
+          )}
+          {error && !upgradePrompt && !phoneRequired && (
             <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm">
               {error}
             </div>

@@ -22,7 +22,7 @@ const tools = [
     name: "SEO Intelligence Suite",
     description: "Five AI-powered SEO reports in one place — from AI visibility audits to full keyword research and competitor benchmarking.",
     href: "/tools/seo-intelligence",
-    tier: "1 free + paid",
+    tier: "1 free + credits/plan",
     tierStyle: "bg-primary/10 text-primary border-primary/30",
     features: [
       "AI SEO Optimizer (1 free)",
@@ -66,8 +66,8 @@ export default function ToolsDirectory() {
             <span className="text-gray-500">— one free report per tool, no account needed</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="px-2.5 py-1 rounded-full bg-accent-blue/10 text-accent-blue border border-accent-blue/30 font-semibold">Impulse / Starter</span>
-            <span className="text-gray-500">— credit pack or $20/month subscription</span>
+            <span className="px-2.5 py-1 rounded-full bg-accent-blue/10 text-accent-blue border border-accent-blue/30 font-semibold">Credits / Plan</span>
+            <span className="text-gray-500">— credit pack (from $5) or monthly plan (from $20/mo)</span>
           </div>
         </motion.div>
 

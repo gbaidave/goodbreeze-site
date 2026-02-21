@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { PhoneGatePrompt } from "@/components/tools/PhoneGatePrompt";
 
 // ============================================================================
 // Plan data
@@ -128,6 +129,8 @@ function Check() {
 export default function PricingPage() {
   const [loading, setLoading] = useState<PaidPlan | null>(null);
   const [error, setError] = useState("");
+  const [phoneRequired, setPhoneRequired] = useState(false);
+  const [pendingPlan, setPendingPlan] = useState<PaidPlan | null>(null);
   const { user } = useAuth();
 
   async function handleCheckout(plan: PaidPlan) {
@@ -137,6 +140,7 @@ export default function PricingPage() {
     }
     setLoading(plan);
     setError("");
+    setPhoneRequired(false);
     try {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
@@ -146,6 +150,9 @@ export default function PricingPage() {
       const data = await res.json();
       if (data.url) {
         window.location.href = data.url;
+      } else if (data.code === "PHONE_REQUIRED") {
+        setPendingPlan(plan);
+        setPhoneRequired(true);
       } else {
         setError(data.error ?? "Failed to start checkout. Please try again.");
       }
@@ -180,6 +187,17 @@ export default function PricingPage() {
         {error && (
           <div className="mb-8 max-w-md mx-auto p-4 bg-red-500/10 border border-red-500 rounded-lg text-red-400 text-sm text-center">
             {error}
+          </div>
+        )}
+
+        {phoneRequired && pendingPlan && (
+          <div className="mb-8 max-w-md mx-auto">
+            <PhoneGatePrompt
+              onPhoneSaved={() => {
+                setPhoneRequired(false);
+                handleCheckout(pendingPlan);
+              }}
+            />
           </div>
         )}
 

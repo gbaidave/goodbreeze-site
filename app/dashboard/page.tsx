@@ -5,7 +5,13 @@ import ReportList from './ReportList'
 import { ReferralSection } from './ReferralSection'
 import { NudgeCard } from './NudgeCard'
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ welcome?: string }>
+}) {
+  const params = await searchParams
+  const showWelcomeBanner = params.welcome === '1'
   const supabase = await createClient()
 
   let user: Awaited<ReturnType<typeof supabase.auth.getUser>>['data']['user'] = null
@@ -63,6 +69,25 @@ export default async function DashboardPage() {
   return (
     <div className="min-h-screen bg-dark py-12 px-6">
       <div className="max-w-5xl mx-auto space-y-8">
+
+        {/* Welcome banner — shown on first login after email confirmation */}
+        {showWelcomeBanner && (
+          <div className="bg-gradient-to-r from-primary/10 to-accent-blue/10 border border-primary/30 rounded-2xl p-5 flex items-start gap-4">
+            <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-white font-semibold">Account created — you&apos;re in.</p>
+              <p className="text-gray-400 text-sm mt-0.5">
+                You have {freeRemaining} free report{freeRemaining !== 1 ? 's' : ''} ready to use. Head to{' '}
+                <a href="/tools" className="text-primary hover:text-primary/80 transition-colors font-medium">Tools</a>{' '}
+                to run your first one.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

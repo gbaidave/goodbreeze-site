@@ -7,6 +7,7 @@ import { useAuth } from '@/components/auth/AuthProvider'
 import { GuestFields } from '@/components/tools/GuestFields'
 import { captureEvent } from '@/lib/analytics'
 import { ExhaustedState } from '@/components/ExhaustedState'
+import { PhoneGatePrompt } from '@/components/tools/PhoneGatePrompt'
 import { isValidPhone, normalizePhone } from '@/lib/phone'
 
 type BVReportType = 'ai_seo' | 'seo_audit' | 'keyword_research' | 'landing_page' | 'seo_comprehensive'
@@ -172,6 +173,7 @@ export default function SeoIntelligencePage() {
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
   const [upgradePrompt, setUpgradePrompt] = useState('')
+  const [phoneRequired, setPhoneRequired] = useState(false)
 
   const config = REPORT_CONFIG[reportType]
 
@@ -182,12 +184,42 @@ export default function SeoIntelligencePage() {
     setReportType(type)
     setError('')
     setUpgradePrompt('')
+    setPhoneRequired(false)
     setFocusKeyword('')
+  }
+
+  async function doSubmitAuthenticated() {
+    setSubmitting(true)
+    try {
+      const res = await fetch('/api/reports/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          reportType,
+          url,
+          company: config.showCompany ? company : undefined,
+          focusKeyword: config.showKeyword ? focusKeyword : undefined,
+        }),
+      })
+      const data = await res.json()
+      if (res.status === 402) {
+        if (data.code === 'PHONE_REQUIRED') { setPhoneRequired(true); return }
+        setError(data.error); setUpgradePrompt(data.upgradePrompt ?? 'impulse'); return
+      }
+      if (!res.ok) { setError(data.error || 'Something went wrong.'); return }
+      captureEvent('tool_form_submit', { reportType })
+      setSubmitted(true)
+    } catch {
+      setError('Something went wrong. Please try again.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError('')
+    setPhoneRequired(false)
 
     // Guests can only run ai_seo (frictionless)
     if (isGuest && !config.frictionless) {
@@ -204,40 +236,29 @@ export default function SeoIntelligencePage() {
       setGuestErrors({})
     }
 
+    if (user) {
+      await doSubmitAuthenticated()
+      return
+    }
+
+    // Guest frictionless — ai_seo only
     setSubmitting(true)
     try {
-      if (user) {
-        const res = await fetch('/api/reports/generate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            reportType,
-            url,
-            company: config.showCompany ? company : undefined,
-            focusKeyword: config.showKeyword ? focusKeyword : undefined,
-          }),
-        })
-        const data = await res.json()
-        if (res.status === 402) { setError(data.error); setUpgradePrompt(data.upgradePrompt ?? 'impulse'); return }
-        if (!res.ok) { setError(data.error || 'Something went wrong.'); return }
-      } else {
-        // Guest frictionless — ai_seo only
-        const res = await fetch('/api/frictionless', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            reportType: 'ai_seo',
-            url,
-            company,
-            name: guestName,
-            email: guestEmail,
-            ...(guestPhone.trim() && { phone: normalizePhone(guestPhone) }),
-          }),
-        })
-        const data = await res.json()
-        if (res.status === 409) { setError('You already have an account. Sign in to continue.'); return }
-        if (!res.ok) { setError(data.error || 'Something went wrong.'); return }
-      }
+      const res = await fetch('/api/frictionless', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          reportType: 'ai_seo',
+          url,
+          company,
+          name: guestName,
+          email: guestEmail,
+          ...(guestPhone.trim() && { phone: normalizePhone(guestPhone) }),
+        }),
+      })
+      const data = await res.json()
+      if (res.status === 409) { setError('You already have an account. Sign in to continue.'); return }
+      if (!res.ok) { setError(data.error || 'Something went wrong.'); return }
       captureEvent('tool_form_submit', { reportType })
       setSubmitted(true)
     } catch {
@@ -272,7 +293,10 @@ export default function SeoIntelligencePage() {
           onSubmit={handleSubmit}
           className="bg-dark-700 border border-primary/20 rounded-2xl p-8 space-y-6"
         >
-          {error && !upgradePrompt && (
+          {phoneRequired && (
+            <PhoneGatePrompt onPhoneSaved={() => { setPhoneRequired(false); doSubmitAuthenticated() }} />
+          )}
+          {error && !upgradePrompt && !phoneRequired && (
             <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm">{error}</div>
           )}
 
