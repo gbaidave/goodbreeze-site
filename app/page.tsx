@@ -13,11 +13,11 @@ import TopicPages from "@/components/home/TopicPages";
 import FinalCTA from "@/components/home/FinalCTA";
 
 export const metadata: Metadata = {
-  title: "Good Breeze AI — SEO & Competitive Intelligence Reports",
+  title: "Good Breeze AI | Competitor Analysis and SEO Audit Reports for Small Business",
   description:
     "Get AI-powered SEO audits, keyword research, and competitor analysis reports delivered to your inbox in minutes. Free to try. No account needed.",
   openGraph: {
-    title: "Good Breeze AI — SEO & Competitive Intelligence Reports",
+    title: "Good Breeze AI | Competitor Analysis and SEO Audit Reports for Small Business",
     description:
       "Get AI-powered SEO audits, keyword research, and competitor analysis reports delivered to your inbox in minutes. Free to try. No account needed.",
     url: "https://goodbreeze.ai",

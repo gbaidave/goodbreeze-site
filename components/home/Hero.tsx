@@ -120,12 +120,12 @@ export default function Hero() {
               <span className="block bg-gradient-to-r from-primary via-accent-blue to-accent-purple bg-clip-text text-transparent">
                 Good Breeze AI
               </span>
-              Business Intelligence for Small Businesses That Compete
+              Competitor Analysis and SEO Audit Reports for Small Business Owners
             </h1>
 
             {/* Value statement */}
             <p className="text-xl sm:text-2xl text-gray-300 mb-8 leading-relaxed">
-              Good Breeze AI finds exactly where you are losing to competitors and what to fix. Get clear, actionable intelligence delivered as a PDF straight to your inbox.
+              Good Breeze AI generates AI-powered reports that show you exactly why competitors rank higher in Google Search and what to change. Free to try, no credit card required.
             </p>
 
             {/* Specific outcomes */}
@@ -136,7 +136,7 @@ export default function Hero() {
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
                 </div>
-                <p className="text-gray-300">Find the keywords your competitors rank for that you are missing</p>
+                <p className="text-gray-300">Discover which keywords send customers to your competitors instead of you</p>
               </div>
               <div className="flex items-start gap-3">
                 <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-1">
@@ -144,7 +144,7 @@ export default function Hero() {
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
                 </div>
-                <p className="text-gray-300">Get specific SEO and landing page fixes, not vague recommendations</p>
+                <p className="text-gray-300">Get a prioritized fix list for your SEO, landing pages, and content gaps</p>
               </div>
               <div className="flex items-start gap-3">
                 <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-1">
@@ -152,19 +152,19 @@ export default function Hero() {
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
                 </div>
-                <p className="text-gray-300">Know your competitive position before you make your next move</p>
+                <p className="text-gray-300">Run competitive analysis in minutes without hiring an agency or consultant</p>
               </div>
             </div>
 
             {/* Single CTA */}
-            <div className="flex flex-col sm:flex-row gap-4 mb-8 items-center">
+            <div className="flex justify-center mb-8">
               <motion.div
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.98 }}
               >
                 <Link
                   href="/tools"
-                  className="group relative flex items-center justify-center px-10 py-5 bg-gradient-to-r from-primary via-accent-blue to-primary text-white text-lg font-bold rounded-full overflow-hidden shadow-2xl shadow-primary/50"
+                  className="group relative flex items-center justify-center px-10 py-5 bg-gradient-to-r from-primary via-accent-blue to-primary text-white text-lg font-bold rounded-full overflow-hidden shadow-2xl shadow-primary/50 border-2 border-white/60"
                   style={{ backgroundSize: "200% 100%" }}
                 >
                   <span className="relative z-10">Get My Free Report</span>
@@ -180,7 +180,7 @@ export default function Hero() {
             </div>
 
             {/* Trust indicator */}
-            <p className="text-gray-400 text-sm">
+            <p className="text-gray-400 text-sm text-center">
               Free to try. No credit card needed, get business insights fast!
             </p>
           </motion.div>

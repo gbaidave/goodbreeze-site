@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { TestimonialForm } from './TestimonialForm'
 
 export const metadata = {
-  title: 'Share Your Experience — Good Breeze AI',
+  title: 'Share Your Experience | Good Breeze AI',
   description: 'Submit a testimonial and earn free report credits.',
 }
 

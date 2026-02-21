@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 
 export const metadata: Metadata = {
-  title: 'Customer Stories — Good Breeze AI',
+  title: 'Customer Stories | Good Breeze AI',
   description:
     'See how businesses use Good Breeze AI SEO and competitive intelligence reports to rank higher, outmaneuver competitors, and make smarter content decisions.',
 }

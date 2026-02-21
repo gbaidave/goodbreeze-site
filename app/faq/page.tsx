@@ -3,7 +3,7 @@ import Link from 'next/link'
 import FaqPageClient from './FaqPageClient'
 
 export const metadata: Metadata = {
-  title: 'FAQ — Good Breeze AI',
+  title: 'FAQ | Good Breeze AI',
   description:
     "Everything you want to know before running your first AI report. No jargon, straight answers about how Good Breeze AI works, what's in the reports, pricing, and more.",
 }

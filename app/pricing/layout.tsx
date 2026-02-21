@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Pricing — Free, Impulse & Starter Plans",
+  title: "Pricing | Competitor Analysis Report Plans for Small Business",
   description:
-    "Start free with 2 reports, buy a credit pack for occasional use, or subscribe for unlimited AI-powered competitive and SEO intelligence. No contracts, cancel anytime.",
+    "Start free, buy a credit pack for occasional use, or subscribe monthly for AI-powered competitive and SEO intelligence. Plans from $5. No contracts, cancel anytime.",
   openGraph: {
-    title: "Pricing | Good Breeze AI — Free, Impulse & Starter Plans",
+    title: "Pricing | Good Breeze AI | Competitor Analysis Report Plans",
     description:
-      "Start free with 2 reports, buy a credit pack for occasional use, or subscribe for unlimited AI-powered competitive and SEO intelligence. No contracts, cancel anytime.",
+      "Start free, buy a credit pack for occasional use, or subscribe monthly for AI-powered competitive and SEO intelligence. Plans from $5. No contracts, cancel anytime.",
     url: "https://goodbreeze.ai/pricing",
   },
 };

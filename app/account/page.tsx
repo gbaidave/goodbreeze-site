@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import AccountClient from './AccountClient'
 
-export const metadata = { title: 'Account Settings — Good Breeze AI' }
+export const metadata = { title: 'Account Settings | Good Breeze AI' }
 
 export default async function AccountPage() {
   const supabase = await createClient()

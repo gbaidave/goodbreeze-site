@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import SupportForm from './SupportForm'
 
 export const metadata = {
-  title: 'Get Help — Good Breeze AI',
+  title: 'Get Help | Good Breeze AI',
 }
 
 export default async function SupportPage() {
