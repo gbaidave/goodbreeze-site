@@ -9,7 +9,7 @@ export default function Footer() {
           <div>
             <Link href="/" className="inline-block mb-4">
               <Image
-                src="/gbai-logo.png"
+                src="/good-breeze-ai-logo.png"
                 alt="Good Breeze AI"
                 width={150}
                 height={50}

@@ -49,8 +49,8 @@ export default function About() {
               <div className="md:col-span-1">
                 <div className="relative w-full aspect-square rounded-2xl overflow-hidden border-2 border-primary/30">
                   <Image
-                    src="/images/dave-profile.jpg"
-                    alt="Dave Silverstein, Founder of Good Breeze AI"
+                    src="/images/dave-silverstein-good-breeze-ai-founder.webp"
+                    alt="Dave Silverstein, founder of Good Breeze AI"
                     fill
                     className="object-cover"
                   />

@@ -104,6 +104,7 @@ export default function Hero() {
         ref={canvasRef}
         className="absolute inset-0 w-full h-full"
         style={{ background: "linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)" }}
+        aria-hidden="true"
       />
 
       {/* Content */}
@@ -206,10 +207,10 @@ export default function Hero() {
 
             <div className="relative rounded-2xl overflow-hidden border-2 border-primary/30 shadow-2xl shadow-primary/20 group-hover:border-primary/50 transition-all duration-500">
               <Image
-                src="/images/hero-image.jpg"
-                alt="AI-generated SEO and competitor intelligence report"
+                src="/images/good-breeze-ai-competitor-analysis-report-preview.webp"
+                alt="Competitor analysis report showing keyword gaps, SEO issues, and ranking opportunities"
                 width={800}
-                height={600}
+                height={450}
                 className="w-full h-auto transform group-hover:scale-105 transition-transform duration-700"
                 priority
               />

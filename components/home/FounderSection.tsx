@@ -36,10 +36,10 @@ export default function FounderSection() {
           >
             <div className="relative rounded-2xl overflow-hidden border-2 border-primary/30 shadow-2xl shadow-primary/20">
               <Image
-                src="/images/dave-headshot.webp"
-                alt="Dave Silverstein, Founder of Good Breeze AI"
-                width={800}
-                height={600}
+                src="/images/dave-silverstein-good-breeze-ai-founder.webp"
+                alt="Dave Silverstein, founder of Good Breeze AI"
+                width={600}
+                height={800}
                 className="w-full h-auto"
               />
               {/* Gradient overlay */}
