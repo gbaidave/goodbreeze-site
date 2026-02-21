@@ -32,7 +32,6 @@ const N8N_WEBHOOKS: Record<string, string> = {
   keyword_research:  `${N8N_BASE}/webhook/keyword-research-pdf`,
   seo_audit:         `${N8N_BASE}/webhook/seo-audit-pdf`,
   seo_comprehensive: `${N8N_BASE}/webhook/seo-comprehensive-pdf`,
-  multi_page:        `${N8N_BASE}/webhook/seo-audit-multi-page`,
 }
 
 const REPORT_TYPE_LABELS: Record<string, string> = {
@@ -44,7 +43,6 @@ const REPORT_TYPE_LABELS: Record<string, string> = {
   keyword_research: 'Keyword Research',
   seo_audit:        'SEO Audit',
   seo_comprehensive:'SEO Comprehensive',
-  multi_page:       'Multi-Page Audit',
 }
 
 // Types where freeAllowed = true (must match entitlement.ts REPORT_META)

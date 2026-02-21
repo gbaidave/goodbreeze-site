@@ -17,7 +17,7 @@ import { createClient } from '@supabase/supabase-js'
 export type ReportType =
   | 'h2h' | 't3c' | 'cp'
   | 'ai_seo' | 'landing_page' | 'keyword_research'
-  | 'seo_audit' | 'seo_comprehensive' | 'multi_page'
+  | 'seo_audit' | 'seo_comprehensive'
 
 export type Product = 'analyzer' | 'seo_auditor'
 
@@ -64,7 +64,6 @@ const REPORT_META: Record<ReportType, {
   keyword_research:  { product: 'seo_auditor', freeSystem: null,               impulseAllowed: true,  usesMoz: false, usesSerp: true  },
   seo_audit:         { product: 'seo_auditor', freeSystem: 'brand_visibility', impulseAllowed: true,  usesMoz: true,  usesSerp: true  },
   seo_comprehensive: { product: 'seo_auditor', freeSystem: null,               impulseAllowed: false, usesMoz: true,  usesSerp: true  },
-  multi_page:        { product: 'seo_auditor', freeSystem: null,               impulseAllowed: false, usesMoz: true,  usesSerp: true  },
 }
 
 // Human-readable system name for error messages

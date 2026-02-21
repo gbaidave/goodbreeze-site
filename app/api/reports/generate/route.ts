@@ -45,7 +45,6 @@ const N8N_WEBHOOKS: Record<ReportType, string> = {
   keyword_research:  `${N8N_BASE}/webhook/keyword-research-pdf`,
   seo_audit:         `${N8N_BASE}/webhook/seo-audit-pdf`,
   seo_comprehensive: `${N8N_BASE}/webhook/seo-comprehensive-pdf`,
-  multi_page:        `${N8N_BASE}/webhook/seo-audit-multi-page`,
 }
 
 // ============================================================================
@@ -298,6 +297,15 @@ export async function POST(request: NextRequest) {
 // Build n8n-specific payload per report type
 // ============================================================================
 
+// Extract readable company name from a URL (e.g. "acme" from "https://acme.com")
+function extractDomain(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, '').split('.')[0]
+  } catch {
+    return url
+  }
+}
+
 function buildN8nPayload(
   reportType: ReportType,
   body: GenerateRequest,
@@ -305,13 +313,14 @@ function buildN8nPayload(
 ): Record<string, unknown> {
   const { userEmail, userName, sessionId } = meta
 
-  // Analyzer reports
+  // Analyzer reports — field names must match n8n Orchestrator Agent prompts
   if (reportType === 'h2h') {
     return {
       reportType: 'Head to Head',
-      targetWebsite: body.targetWebsite,
-      competitor1: body.competitor1,
-      competitor1Website: body.competitor1Website,
+      companyA: extractDomain(body.targetWebsite!),
+      websiteA: body.targetWebsite,
+      companyB: body.competitor1 || extractDomain(body.competitor1Website!),
+      websiteB: body.competitor1Website,
       userEmail,
       userName,
       sessionId,
@@ -320,13 +329,14 @@ function buildN8nPayload(
   if (reportType === 't3c') {
     return {
       reportType: 'Top 3 Competitors',
-      targetWebsite: body.targetWebsite,
-      competitor1: body.competitor1,
-      competitor1Website: body.competitor1Website,
-      competitor2: body.competitor2,
-      competitor2Website: body.competitor2Website,
-      competitor3: body.competitor3,
-      competitor3Website: body.competitor3Website,
+      yourCompany: extractDomain(body.targetWebsite!),
+      yourWebsite: body.targetWebsite,
+      companyA: body.competitor1 || extractDomain(body.competitor1Website!),
+      websiteA: body.competitor1Website,
+      companyB: body.competitor2 || extractDomain(body.competitor2Website!),
+      websiteB: body.competitor2Website,
+      companyC: body.competitor3 || extractDomain(body.competitor3Website!),
+      websiteC: body.competitor3Website,
       userEmail,
       userName,
       sessionId,
@@ -335,7 +345,8 @@ function buildN8nPayload(
   if (reportType === 'cp') {
     return {
       reportType: 'Competitive Position',
-      targetWebsite: body.targetWebsite,
+      companyA: extractDomain(body.targetWebsite!),
+      websiteA: body.targetWebsite,
       userEmail,
       userName,
       sessionId,

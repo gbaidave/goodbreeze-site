@@ -51,7 +51,7 @@ Once you've used both free reports, you can purchase a credit pack (Spark Pack: 
     topic: 'Getting Started',
     content: `Most reports complete in 3–5 minutes. The PDF will arrive in your inbox once it's ready.
 
-More complex reports (such as the Top 3 Competitors analysis or Multi-Page SEO Audit) may take slightly longer — up to 8 minutes — due to the volume of data being analyzed.
+More complex reports (such as the Top 3 Competitors analysis) may take slightly longer — up to 8 minutes — due to the volume of data being analyzed.
 
 If you haven't received your report after 10 minutes, check your spam folder first. If it's still missing, contact support from the Get Help page in your dashboard.`,
   },
