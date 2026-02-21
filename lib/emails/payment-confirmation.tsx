@@ -1,15 +1,35 @@
 export function paymentConfirmationEmail(
   name: string,
-  plan: 'starter' | 'impulse',
+  plan: string,
   amount: string
 ): { subject: string; html: string } {
   const firstName = name.split(' ')[0]
-  const isStarter = plan === 'starter'
+
+  const SUBSCRIPTION_PLANS: Record<string, { label: string; reports: string; price: string }> = {
+    starter: { label: 'Starter Plan', reports: '25 reports/month', price: '$20/month' },
+    growth:  { label: 'Growth Plan',  reports: '40 reports/month', price: '$30/month' },
+    pro:     { label: 'Pro Plan',     reports: '50 reports/month', price: '$40/month' },
+  }
+
+  const PACK_PLANS: Record<string, { label: string; credits: string }> = {
+    'Spark Pack': { label: 'Spark Pack', credits: '3 reports' },
+    'Boost Pack': { label: 'Boost Pack', credits: '10 reports' },
+  }
+
+  const sub = SUBSCRIPTION_PLANS[plan]
+  const pack = PACK_PLANS[plan]
+
+  const isSubscription = !!sub
+  const planLabel = sub?.label ?? pack?.label ?? plan
+  const reportsLine = sub?.reports ?? pack?.credits ?? 'Credits added'
+  const priceLine = sub?.price ?? amount
+
+  const subject = isSubscription
+    ? `You're on ${planLabel} — reports are ready`
+    : `Payment confirmed — your reports are ready`
 
   return {
-    subject: isStarter
-      ? `You're on Starter — welcome to unlimited reports`
-      : `Payment confirmed — your 3 reports are ready`,
+    subject,
     html: `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -32,12 +52,12 @@ export function paymentConfirmationEmail(
           <table width="100%" cellpadding="0" cellspacing="0" style="background:#27272a;border-radius:10px;padding:20px;margin-bottom:28px;">
             <tr>
               <td style="font-size:14px;color:#a1a1aa;">Plan</td>
-              <td align="right" style="font-size:14px;font-weight:600;color:#ffffff;">${isStarter ? 'Starter — $20/month' : 'Impulse Credit Pack'}</td>
+              <td align="right" style="font-size:14px;font-weight:600;color:#ffffff;">${planLabel}</td>
             </tr>
             <tr><td colspan="2" style="padding:8px 0;"><hr style="border:none;border-top:1px solid #3f3f46;"></td></tr>
             <tr>
-              <td style="font-size:14px;color:#a1a1aa;">${isStarter ? 'Reports' : 'Credits added'}</td>
-              <td align="right" style="font-size:14px;font-weight:600;color:#22d3ee;">${isStarter ? 'Unlimited' : '3 reports'}</td>
+              <td style="font-size:14px;color:#a1a1aa;">${isSubscription ? 'Reports' : 'Credits added'}</td>
+              <td align="right" style="font-size:14px;font-weight:600;color:#22d3ee;">${reportsLine}</td>
             </tr>
             <tr><td colspan="2" style="padding:8px 0;"><hr style="border:none;border-top:1px solid #3f3f46;"></td></tr>
             <tr>

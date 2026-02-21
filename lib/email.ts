@@ -59,7 +59,7 @@ export async function sendWelcomeEmail(to: string, name: string, userId?: string
 export async function sendPaymentConfirmationEmail(
   to: string,
   name: string,
-  plan: 'starter' | 'impulse',
+  plan: string,
   amount: string,
   userId?: string
 ) {
