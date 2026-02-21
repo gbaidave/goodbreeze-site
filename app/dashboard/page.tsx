@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/service-client'
 import { UpgradeButton } from './UpgradeButton'
 import ReportList from './ReportList'
 import { ReferralSection } from './ReferralSection'
@@ -39,7 +40,18 @@ export default async function DashboardPage({
   const sub = subRes.data
   const credits = creditsRes.data ?? []
   const reports = reportsRes.data ?? []
-  const referralCode = referralRes.data?.code ?? null
+  let referralCode = referralRes.data?.code ?? null
+  if (!referralCode) {
+    // Auto-generate a referral code for users who don't have one yet
+    const code = 'gb' + Math.random().toString(36).slice(2, 8).toUpperCase()
+    const serviceClient = createServiceClient()
+    const { data: newCodeRow } = await serviceClient
+      .from('referral_codes')
+      .insert({ user_id: user.id, code })
+      .select('code')
+      .single()
+    referralCode = newCodeRow?.code ?? null
+  }
   const referralUses = (referralRes.data as any)?.referral_uses ?? []
   const referralSignups = referralUses.length
   const referralCredits = referralUses.filter((u: { reward_granted: boolean }) => u.reward_granted).length

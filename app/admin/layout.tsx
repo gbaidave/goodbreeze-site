@@ -3,10 +3,11 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 
 const NAV_ITEMS = [
-  { href: '/admin',             label: 'Overview' },
-  { href: '/admin/users',       label: 'Users' },
-  { href: '/admin/support',     label: 'Support' },
-  { href: '/admin/email-logs',  label: 'Email Logs' },
+  { href: '/admin',                label: 'Overview' },
+  { href: '/admin/users',          label: 'Users' },
+  { href: '/admin/testimonials',   label: 'Testimonials' },
+  { href: '/admin/support',        label: 'Support' },
+  { href: '/admin/email-logs',     label: 'Email Logs' },
 ]
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {

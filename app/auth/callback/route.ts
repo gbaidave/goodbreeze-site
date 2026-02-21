@@ -25,8 +25,14 @@ export async function GET(request: NextRequest) {
         },
       }
     )
+    const type = searchParams.get('type')
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error) {
+      // Password reset — skip welcome email + referral, go straight to reset page
+      if (type === 'recovery') {
+        return NextResponse.redirect(`${origin}${returnUrl}`)
+      }
+
       // Send welcome email + process referral for new users
       // New user = created within 2 hours (email confirmation links expire in 1 hour)
       const { data: { user } } = await supabase.auth.getUser()
