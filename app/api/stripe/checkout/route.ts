@@ -62,12 +62,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Plan not configured' }, { status: 500 })
     }
 
-    // 3. Get or create Stripe customer
+    // 3. Get or create Stripe customer (also fetch phone for gate check)
     const { data: profile } = await supabase
       .from('profiles')
-      .select('stripe_customer_id, name, email')
+      .select('stripe_customer_id, name, email, phone')
       .eq('id', user.id)
       .single()
+
+    // Phone gate: require phone before any Stripe checkout
+    const hasPhone = profile?.phone && (profile.phone as string).trim().length > 0
+    if (!hasPhone) {
+      return NextResponse.json(
+        { error: 'Add a phone number to your account before upgrading.', code: 'PHONE_REQUIRED' },
+        { status: 400 }
+      )
+    }
 
     let customerId = profile?.stripe_customer_id
 

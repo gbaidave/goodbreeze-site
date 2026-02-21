@@ -136,7 +136,7 @@ export default function ToolsDirectory() {
         >
           <h2 className="text-3xl font-bold mb-4 text-white">Need More Firepower?</h2>
           <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-            Starter gives you unlimited access to all 8 reports for $20/month. Or grab a credit pack for occasional use.
+Monthly plans start at $20/month for 25 reports across all types. Or grab a credit pack for occasional use.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link

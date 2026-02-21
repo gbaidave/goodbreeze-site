@@ -42,6 +42,7 @@ export default function AccountClient({
   const [saving, setSaving] = useState(false)
   const [saveMsg, setSaveMsg] = useState('')
   const [portalLoading, setPortalLoading] = useState(false)
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false)
   const [resetSent, setResetSent] = useState(false)
   const [resetLoading, setResetLoading] = useState(false)
 
@@ -109,9 +110,14 @@ export default function AccountClient({
     role === 'admin' ? 'Admin' :
     role === 'tester' ? 'Tester' :
     plan === 'starter' ? 'Starter' :
+    plan === 'growth' ? 'Growth' :
+    plan === 'pro' ? 'Pro' :
+    plan === 'spark_pack' ? 'Spark Pack' :
+    plan === 'boost_pack' ? 'Boost Pack' :
     plan === 'impulse' ? 'Impulse' : 'Free'
 
-  const isPaid = plan === 'starter' || plan === 'impulse'
+  const isSubscription = plan === 'starter' || plan === 'growth' || plan === 'pro'
+  const isPaid = isSubscription || plan === 'impulse' || plan === 'spark_pack' || plan === 'boost_pack'
 
   return (
     <div className="min-h-screen bg-dark py-12 px-6">
@@ -228,7 +234,7 @@ export default function AccountClient({
               {!isPrivileged && status && status !== 'active' && status !== 'trialing' && (
                 <p className="text-xs text-yellow-400 mt-0.5 capitalize">{status.replace('_', ' ')}</p>
               )}
-              {!isPrivileged && currentPeriodEnd && plan === 'starter' && (
+              {!isPrivileged && currentPeriodEnd && isSubscription && (
                 <p className="text-xs text-gray-500 mt-0.5">
                   {cancelAtPeriodEnd ? 'Cancels on' : 'Renews'}{' '}
                   {new Date(currentPeriodEnd).toLocaleDateString('en-US', {
@@ -276,13 +282,57 @@ export default function AccountClient({
 
           {/* Billing portal — for users with a Stripe customer on paid plans */}
           {!isPrivileged && hasStripeCustomer && isPaid && (
-            <button
-              onClick={openBillingPortal}
-              disabled={portalLoading}
-              className="w-full py-3 border border-primary/30 text-primary text-sm font-medium rounded-xl hover:bg-primary/10 transition-colors disabled:opacity-40"
-            >
-              {portalLoading ? 'Opening…' : 'Manage billing, invoices & payment method →'}
-            </button>
+            <div className="space-y-2">
+              <button
+                onClick={openBillingPortal}
+                disabled={portalLoading}
+                className="w-full py-3 border border-primary/30 text-primary text-sm font-medium rounded-xl hover:bg-primary/10 transition-colors disabled:opacity-40"
+              >
+                {portalLoading ? 'Opening…' : 'Manage billing, invoices & payment method →'}
+              </button>
+              {isSubscription && !cancelAtPeriodEnd && (
+                <button
+                  onClick={() => setShowCancelConfirm(true)}
+                  className="w-full py-2.5 text-sm text-gray-500 hover:text-red-400 transition-colors"
+                >
+                  Cancel subscription
+                </button>
+              )}
+              {cancelAtPeriodEnd && currentPeriodEnd && (
+                <p className="text-xs text-yellow-400 text-center">
+                  Cancellation scheduled. Access until {new Date(currentPeriodEnd).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Cancel confirm dialog */}
+          {showCancelConfirm && (
+            <div className="bg-dark/80 border border-red-500/30 rounded-xl p-5 space-y-4">
+              <p className="text-white font-semibold text-sm">Cancel your {planLabel} plan?</p>
+              <p className="text-gray-400 text-sm">
+                You&apos;ll keep full access until{' '}
+                {currentPeriodEnd
+                  ? new Date(currentPeriodEnd).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+                  : 'the end of your billing period'}
+                . Your subscription won&apos;t renew after that.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => { setShowCancelConfirm(false); openBillingPortal() }}
+                  disabled={portalLoading}
+                  className="flex-1 py-2.5 bg-red-500/20 border border-red-500/40 text-red-400 text-sm font-medium rounded-xl hover:bg-red-500/30 transition-colors disabled:opacity-40"
+                >
+                  Yes, cancel my plan
+                </button>
+                <button
+                  onClick={() => setShowCancelConfirm(false)}
+                  className="flex-1 py-2.5 border border-gray-700 text-gray-400 text-sm rounded-xl hover:border-gray-500 transition-colors"
+                >
+                  Keep my plan
+                </button>
+              </div>
+            </div>
           )}
 
           {/* Upgrade CTAs — for free users only */}
@@ -292,26 +342,15 @@ export default function AccountClient({
                 href="/pricing"
                 className="block w-full py-3 text-center bg-gradient-to-r from-primary to-accent-blue text-white text-sm font-semibold rounded-xl hover:shadow-lg hover:shadow-primary/20 transition-all"
               >
-                Upgrade to Starter — $20/month
+                View plans — from $20/month
               </Link>
               <Link
                 href="/pricing"
                 className="block w-full py-3 text-center border border-gray-700 text-gray-400 text-sm rounded-xl hover:border-gray-500 hover:text-gray-300 transition-colors"
               >
-                View all plans
+                Or get a credit pack (no subscription)
               </Link>
             </div>
-          )}
-
-          {/* Buy more credits — for free users without a subscription */}
-          {!isPrivileged && plan === 'free' && totalCredits === 0 && (
-            <p className="text-xs text-gray-600 text-center -mt-1">
-              Or{' '}
-              <Link href="/pricing" className="text-primary hover:underline">
-                buy a credit pack ($10 for 3 reports)
-              </Link>{' '}
-              with no subscription required.
-            </p>
           )}
         </motion.div>
 

@@ -43,7 +43,7 @@ Analyzer system: one free report from either the Head-to-Head Analyzer or the To
 
 Brand Visibility system: one free report from either the SEO Audit or the Landing Page Optimizer.
 
-Once you've used both free reports, you'll need to either purchase Impulse credits ($10 for 3 reports) or upgrade to the Starter plan ($20/month for unlimited reports). You can also earn additional free credits by submitting a testimonial or referring a friend.`,
+Once you've used both free reports, you can purchase a credit pack (Spark Pack: 3 reports for $5, Boost Pack: 10 reports for $10) or upgrade to a monthly plan (Starter $20/mo, Growth $30/mo, or Pro $40/mo). You can also earn additional free credits by submitting a testimonial or referring a friend.`,
   },
   {
     slug: 'how-long-does-a-report-take',
@@ -141,13 +141,13 @@ Once your two free reports are used, you can earn more by submitting a testimoni
 
 Each credit runs one report of any type. Credits expire 90 days after purchase.
 
-This is the right option if you only need reports occasionally or want to try the full tool set before committing to a monthly subscription. If you find yourself running reports regularly, the Starter plan ($20/month, unlimited) is better value.`,
+This is the right option if you only need reports occasionally or want to try the full tool set before committing to a monthly subscription. If you find yourself running reports regularly, a monthly plan is better value — starting at $20/month for 25 reports.`,
   },
   {
     slug: 'what-is-starter-plan',
     title: 'What is the Starter plan?',
     topic: 'Billing & Plans',
-    content: `The Starter plan is $20/month and gives you unlimited reports across all tool types. There's no credit counting — just run reports whenever you need them.
+    content: `The Starter plan is $20/month and gives you 25 reports per month across all tool types. The Growth plan ($30/month) gives you 40, and the Pro plan ($40/month) gives you 50.
 
 This is the right choice if you're actively working on SEO, monitoring competitors, or running reports for clients on a regular basis.
 
@@ -173,7 +173,7 @@ Free reports (the ones included with your Free plan) don't expire — they're a 
 
 Credits earned from testimonials and referrals don't have a set expiry, though we reserve the right to apply a policy in the future with reasonable notice.
 
-Starter plan subscribers don't have credits — reports are unlimited with no tracking.`,
+Monthly plan subscribers don't use credits — reports count against your monthly plan limit (25, 40, or 50 depending on your plan). Unused monthly reports don't roll over.`,
   },
 
   // ─── Referrals ────────────────────────────────────────────────────────────

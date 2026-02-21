@@ -9,46 +9,128 @@ import { useAuth } from "@/components/auth/AuthProvider";
 // Plan data
 // ============================================================================
 
-const FREE_FEATURES = [
-  "1 free Head-to-Head Competitor Analysis",
-  "1 free AI SEO Optimizer report",
-  "PDF delivered to your email",
-  "No credit card required",
-];
+const SUBSCRIPTION_PLANS = [
+  {
+    key: "starter" as const,
+    name: "Starter",
+    price: "$20",
+    period: "/month",
+    reports: "25 reports/month",
+    features: [
+      "25 reports per month (all types)",
+      "Head-to-Head, Top 3 & Competitive Position",
+      "AI SEO, Keyword Research, Landing Page Optimizer",
+      "SEO Audit & SEO Comprehensive Report",
+      "Multi-Page Audit",
+      "Reports delivered by email + stored in dashboard",
+      "Cancel anytime — access until billing period ends",
+    ],
+    badge: null,
+    highlighted: false,
+  },
+  {
+    key: "growth" as const,
+    name: "Growth",
+    price: "$30",
+    period: "/month",
+    reports: "40 reports/month",
+    features: [
+      "40 reports per month (all types)",
+      "Head-to-Head, Top 3 & Competitive Position",
+      "AI SEO, Keyword Research, Landing Page Optimizer",
+      "SEO Audit & SEO Comprehensive Report",
+      "Multi-Page Audit",
+      "Reports delivered by email + stored in dashboard",
+      "Cancel anytime — access until billing period ends",
+    ],
+    badge: "Best Value",
+    highlighted: true,
+  },
+  {
+    key: "pro" as const,
+    name: "Pro",
+    price: "$40",
+    period: "/month",
+    reports: "50 reports/month",
+    features: [
+      "50 reports per month (all types)",
+      "Head-to-Head, Top 3 & Competitive Position",
+      "AI SEO, Keyword Research, Landing Page Optimizer",
+      "SEO Audit & SEO Comprehensive Report",
+      "Multi-Page Audit",
+      "Reports delivered by email + stored in dashboard",
+      "Cancel anytime — access until billing period ends",
+    ],
+    badge: null,
+    highlighted: false,
+  },
+] as const;
 
-const STARTER_FEATURES = [
-  "All 9 report types",
-  "Head-to-Head, Top 3 & Competitive Position",
-  "AI SEO, Keyword Research, Landing Page Optimizer",
-  "SEO Audit & SEO Comprehensive Report",
-  "Multi-Page Audit",
-  "Reports delivered by email + stored in dashboard",
-  "Cancel anytime — active until billing period ends",
-];
+const ENTRY_OPTIONS = [
+  {
+    key: "free" as const,
+    name: "Free",
+    price: "$0",
+    subtitle: "No credit card required",
+    description: "Try before you buy",
+    features: [
+      "1 free Competitor Analysis report",
+      "1 free AI SEO Optimizer report",
+      "PDF delivered to your email",
+    ],
+  },
+  {
+    key: "spark_pack" as const,
+    name: "Spark Pack",
+    price: "$5",
+    subtitle: "One-time purchase",
+    description: "3 reports, use anytime",
+    features: [
+      "3 report credits (no expiry)",
+      "All standard report types",
+      "PDF by email + dashboard access",
+    ],
+  },
+  {
+    key: "boost_pack" as const,
+    name: "Boost Pack",
+    price: "$10",
+    subtitle: "One-time purchase",
+    description: "10 reports, use anytime",
+    features: [
+      "10 report credits (no expiry)",
+      "All standard report types",
+      "PDF by email + dashboard access",
+    ],
+  },
+] as const;
 
-const IMPULSE_FEATURES = [
-  "3 report credits — use anytime",
-  "Head-to-Head, Top 3, AI SEO, Keyword Research, Landing Page Optimizer, SEO Audit",
-  "No subscription commitment",
-  "Credits valid for 30 days",
-];
+type PaidPlan = "starter" | "growth" | "pro" | "spark_pack" | "boost_pack";
 
 // ============================================================================
-// Types
+// Checkmark icon
 // ============================================================================
 
-type Plan = "free" | "starter" | "impulse";
+function Check() {
+  return (
+    <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+      <svg className="w-3 h-3 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+      </svg>
+    </div>
+  );
+}
 
 // ============================================================================
 // Page
 // ============================================================================
 
 export default function PricingPage() {
-  const [loading, setLoading] = useState<Plan | null>(null);
+  const [loading, setLoading] = useState<PaidPlan | null>(null);
   const [error, setError] = useState("");
   const { user } = useAuth();
 
-  async function handleCheckout(plan: "starter" | "impulse") {
+  async function handleCheckout(plan: PaidPlan) {
     if (!user) {
       window.location.href = `/signup?redirect=/pricing`;
       return;
@@ -91,7 +173,7 @@ export default function PricingPage() {
             Simple, Transparent Pricing
           </h1>
           <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-            Start free. Upgrade when you need more. No hidden fees.
+            Start free. Upgrade when you need more. Cancel anytime, no questions asked.
           </p>
         </motion.div>
 
@@ -101,140 +183,145 @@ export default function PricingPage() {
           </div>
         )}
 
-        {/* Pricing cards */}
-        <div className="grid md:grid-cols-3 gap-8 items-stretch">
+        {/* ── Monthly Plans ─────────────────────────────────────────────── */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          className="mb-4"
+        >
+          <p className="text-center text-sm font-semibold text-gray-400 uppercase tracking-wider mb-6">
+            Monthly Plans
+          </p>
+        </motion.div>
 
-          {/* FREE */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="relative flex flex-col p-8 rounded-2xl bg-dark-700 border border-primary/20 hover:border-primary/40 transition-all duration-300"
-          >
-            <div className="mb-6">
-              <p className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-2">Free</p>
-              <div className="flex items-end gap-1 mb-1">
-                <span className="text-5xl font-bold text-white">$0</span>
-              </div>
-              <p className="text-gray-400 text-sm">No credit card required</p>
-            </div>
-
-            <ul className="space-y-3 mb-8 flex-grow">
-              {FREE_FEATURES.map((f, i) => (
-                <li key={i} className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg className="w-3 h-3 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <span className="text-gray-300 text-sm">{f}</span>
-                </li>
-              ))}
-            </ul>
-
-            <Link
-              href={user ? "/tools" : "/signup"}
-              className="block text-center px-6 py-3 border-2 border-primary text-primary font-semibold rounded-full hover:bg-primary hover:text-white transition-all duration-300"
+        <div className="grid md:grid-cols-3 gap-6 items-stretch mb-16">
+          {SUBSCRIPTION_PLANS.map((plan, idx) => (
+            <motion.div
+              key={plan.key}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 + idx * 0.05 }}
+              className={`relative flex flex-col p-8 rounded-2xl transition-all duration-300 ${
+                plan.highlighted
+                  ? "bg-dark-700 border-2 border-primary md:scale-105 shadow-xl shadow-primary/20"
+                  : "bg-dark-700 border border-primary/20 hover:border-primary/40"
+              }`}
             >
-              {user ? "Go to Tools" : "Get Started Free"}
-            </Link>
-          </motion.div>
+              {plan.badge && (
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                  <span className="px-4 py-1 bg-gradient-to-r from-primary to-accent-blue text-white text-xs font-bold rounded-full uppercase tracking-wider">
+                    {plan.badge}
+                  </span>
+                </div>
+              )}
 
-          {/* STARTER — highlighted */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="relative flex flex-col p-8 rounded-2xl bg-dark-700 border-2 border-primary md:scale-105 shadow-xl shadow-primary/20 transition-all duration-300"
-          >
-            {/* Badge */}
-            <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-              <span className="px-4 py-1 bg-gradient-to-r from-primary to-accent-blue text-white text-xs font-bold rounded-full uppercase tracking-wider">
-                Most Popular
-              </span>
-            </div>
-
-            <div className="mb-6">
-              <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-2">Starter</p>
-              <div className="flex items-end gap-1 mb-1">
-                <span className="text-5xl font-bold text-white">$20</span>
-                <span className="text-gray-400 mb-2">/month</span>
+              <div className="mb-6">
+                <p className={`text-sm font-semibold uppercase tracking-wider mb-2 ${plan.highlighted ? "text-primary" : "text-gray-400"}`}>
+                  {plan.name}
+                </p>
+                <div className="flex items-end gap-1 mb-1">
+                  <span className="text-5xl font-bold text-white">{plan.price}</span>
+                  <span className="text-gray-400 mb-2">{plan.period}</span>
+                </div>
+                <p className="text-primary text-sm font-medium">{plan.reports}</p>
               </div>
-              <p className="text-gray-400 text-sm">Cancel anytime</p>
-            </div>
 
-            <ul className="space-y-3 mb-8 flex-grow">
-              {STARTER_FEATURES.map((f, i) => (
-                <li key={i} className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg className="w-3 h-3 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <span className="text-gray-300 text-sm">{f}</span>
-                </li>
-              ))}
-            </ul>
+              <ul className="space-y-3 mb-8 flex-grow">
+                {plan.features.map((f, i) => (
+                  <li key={i} className="flex items-start gap-3">
+                    <Check />
+                    <span className="text-gray-300 text-sm">{f}</span>
+                  </li>
+                ))}
+              </ul>
 
-            <button
-              onClick={() => handleCheckout("starter")}
-              disabled={loading === "starter"}
-              className="w-full px-6 py-3 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full hover:shadow-lg hover:shadow-primary/50 transition-all duration-300 transform hover:scale-105 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
+              <button
+                onClick={() => handleCheckout(plan.key)}
+                disabled={loading === plan.key}
+                className={`w-full px-6 py-3 font-semibold rounded-full transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed ${
+                  plan.highlighted
+                    ? "bg-gradient-to-r from-primary to-accent-blue text-white hover:shadow-lg hover:shadow-primary/50 transform hover:scale-105 disabled:transform-none"
+                    : "border-2 border-primary text-primary hover:bg-primary hover:text-white"
+                }`}
+              >
+                {loading === plan.key
+                  ? "Redirecting…"
+                  : user
+                  ? `Get ${plan.name}`
+                  : "Start Subscription"}
+              </button>
+
+              <p className="text-center text-xs text-gray-500 mt-3">
+                Access until billing period ends if cancelled
+              </p>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* ── Entry Options (Free + Credit Packs) ───────────────────────── */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
+          className="mb-4"
+        >
+          <p className="text-center text-sm font-semibold text-gray-400 uppercase tracking-wider mb-6">
+            Start Here
+          </p>
+        </motion.div>
+
+        <div className="grid md:grid-cols-3 gap-6 mb-20">
+          {ENTRY_OPTIONS.map((option, idx) => (
+            <motion.div
+              key={option.key}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 + idx * 0.05 }}
+              className="flex flex-col p-6 rounded-2xl bg-dark-700 border border-primary/10 hover:border-primary/30 transition-all duration-300"
             >
-              {loading === "starter"
-                ? "Redirecting…"
-                : user
-                ? "Upgrade to Starter"
-                : "Start Subscription"}
-            </button>
-
-            <p className="text-center text-xs text-gray-500 mt-3">
-              Active until end of billing period if cancelled
-            </p>
-          </motion.div>
-
-          {/* IMPULSE — one-time credit pack */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="relative flex flex-col p-8 rounded-2xl bg-dark-700 border border-primary/20 hover:border-primary/40 transition-all duration-300"
-          >
-            <div className="mb-6">
-              <p className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-2">Impulse</p>
-              <div className="flex items-end gap-1 mb-1">
-                <span className="text-5xl font-bold text-white">$10</span>
-                <span className="text-gray-400 mb-2">/ 3 reports</span>
+              <div className="mb-4">
+                <p className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-1">
+                  {option.name}
+                </p>
+                <div className="flex items-end gap-1 mb-1">
+                  <span className="text-4xl font-bold text-white">{option.price}</span>
+                </div>
+                <p className="text-gray-500 text-xs">{option.subtitle}</p>
+                <p className="text-gray-400 text-sm mt-1">{option.description}</p>
               </div>
-              <p className="text-gray-400 text-sm">One-time purchase</p>
-            </div>
 
-            <ul className="space-y-3 mb-8 flex-grow">
-              {IMPULSE_FEATURES.map((f, i) => (
-                <li key={i} className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg className="w-3 h-3 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <span className="text-gray-300 text-sm">{f}</span>
-                </li>
-              ))}
-            </ul>
+              <ul className="space-y-2 mb-6 flex-grow">
+                {option.features.map((f, i) => (
+                  <li key={i} className="flex items-start gap-2">
+                    <Check />
+                    <span className="text-gray-400 text-sm">{f}</span>
+                  </li>
+                ))}
+              </ul>
 
-            <button
-              onClick={() => handleCheckout("impulse")}
-              disabled={loading === "impulse"}
-              className="w-full px-6 py-3 border-2 border-primary text-primary font-semibold rounded-full hover:bg-primary hover:text-white transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              {loading === "impulse"
-                ? "Redirecting…"
-                : user
-                ? "Buy 3 Reports"
-                : "Get Started"}
-            </button>
-          </motion.div>
-
+              {option.key === "free" ? (
+                <Link
+                  href={user ? "/tools" : "/signup"}
+                  className="block text-center px-5 py-2.5 border border-primary/50 text-primary font-semibold rounded-full hover:bg-primary/10 transition-all duration-300 text-sm"
+                >
+                  {user ? "Go to Tools" : "Get Started Free"}
+                </Link>
+              ) : (
+                <button
+                  onClick={() => handleCheckout(option.key as PaidPlan)}
+                  disabled={loading === option.key}
+                  className="w-full px-5 py-2.5 border border-primary/50 text-primary font-semibold rounded-full hover:bg-primary/10 transition-all duration-300 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {loading === option.key
+                    ? "Redirecting…"
+                    : user
+                    ? `Buy ${option.name}`
+                    : "Get Started"}
+                </button>
+              )}
+            </motion.div>
+          ))}
         </div>
 
         {/* FAQ */}
@@ -242,7 +329,7 @@ export default function PricingPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="mt-20 max-w-3xl mx-auto"
+          className="max-w-3xl mx-auto mb-16"
         >
           <h2 className="text-3xl font-bold text-white text-center mb-10">Common Questions</h2>
           <div className="space-y-6">
@@ -252,20 +339,24 @@ export default function PricingPage() {
                 a: "Each time you submit a tool form and we generate a PDF — that's one report. You get the PDF by email and it's saved to your dashboard.",
               },
               {
-                q: "What happens when I cancel Starter?",
-                a: "Your subscription stays active until the end of your current billing period. You won't be charged again after that.",
+                q: "What happens when I cancel a monthly plan?",
+                a: "Your plan stays active until the end of your current billing period. You won't be charged again after that. You can cancel anytime from your account settings or by contacting us.",
               },
               {
-                q: "Are there usage limits on Starter?",
-                a: "Starter includes up to 5 Analyzer reports per day and 50 SEO reports per month. In practice these limits are generous — most users never hit them.",
+                q: "Do monthly report credits roll over?",
+                a: "Monthly plan reports reset each billing period — unused reports don't roll over. Credit pack reports (Spark and Boost) never expire.",
               },
               {
                 q: "What's in the free tier exactly?",
-                a: "You get one free Head-to-Head Competitor Analysis and one free AI SEO Optimizer report. No credit card needed. It's a real report, not a demo — a full PDF delivered to your email.",
+                a: "You get one free Competitor Analysis report and one free AI SEO Optimizer report. No credit card needed. Full PDFs delivered to your email — not a demo.",
               },
               {
-                q: "What's the difference between Impulse and Starter?",
-                a: "Impulse is a one-time pack of 3 reports — good for occasional use. Starter is a monthly subscription giving you access to all 9 report types including SEO Comprehensive and Multi-Page Audit, with much higher usage limits.",
+                q: "What's the difference between credit packs and monthly plans?",
+                a: "Credit packs (Spark: 3 reports / Boost: 10 reports) are one-time purchases with no commitment. Monthly plans give you a set number of reports per month and access to all 9 report types. If you run reports regularly, a monthly plan is better value.",
+              },
+              {
+                q: "Which plan is best for my business?",
+                a: "Start free to see the value. If you need more than 2 reports, a credit pack is the easiest next step. If you need regular reporting for SEO, competitive tracking, or client work — the Growth plan at $30/month covers most businesses at 40 reports/month.",
               },
             ].map(({ q, a }, i) => (
               <div key={i} className="p-6 rounded-xl bg-dark-700 border border-primary/10">
@@ -281,11 +372,11 @@ export default function PricingPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          className="mt-16 text-center bg-dark-700 rounded-2xl border border-primary/20 p-12"
+          className="text-center bg-dark-700 rounded-2xl border border-primary/20 p-12"
         >
           <h2 className="text-3xl font-bold mb-4 text-white">Need a Custom Solution?</h2>
           <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-            If you need higher volume, custom report types, or a white-label solution — let&apos;s talk.
+            Higher volume, custom report types, or white-label — let&apos;s talk.
           </p>
           <Link
             href="/contact"

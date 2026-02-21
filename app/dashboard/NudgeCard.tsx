@@ -40,7 +40,7 @@ export function NudgeCard({ starterPriceId, boostPackPriceId, hasWrittenTestimon
         />
         <UpgradeButton
           priceId={starterPriceId}
-          label="Unlimited — $20/mo"
+          label="25 reports — $20/mo"
           className="px-5 py-2.5 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-primary/30 transition-all text-sm"
         />
       </div>

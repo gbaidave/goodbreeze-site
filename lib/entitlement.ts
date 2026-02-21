@@ -21,7 +21,7 @@ export type ReportType =
 
 export type Product = 'analyzer' | 'seo_auditor'
 
-export type Plan = 'free' | 'impulse' | 'starter' | 'custom'
+export type Plan = 'free' | 'impulse' | 'starter' | 'growth' | 'pro' | 'custom'
 
 // System keys used in free_reports_used JSONB
 // e.g. { "analyzer": "h2h", "brand_visibility": "seo_audit" }
@@ -73,11 +73,12 @@ const FREE_SYSTEM_LABELS: Record<FreeSystem, string> = {
   brand_visibility: 'Brand Visibility',
 }
 
-// Per-plan limits (starter). Free/impulse = 1 per purchase event.
-const STARTER_LIMITS = {
-  analyzer_per_day: 5,
-  // SEO limits TBD pending COGS analysis — set generously for now
-  seo_per_month: 50,
+// Per-plan monthly report caps (all report types combined).
+// Free/impulse: 1 per purchase event (not monthly).
+const PLAN_MONTHLY_CAPS: Record<string, number> = {
+  starter: 25,
+  growth:  40,
+  pro:     50,
 }
 
 // ============================================================================
@@ -147,8 +148,9 @@ export async function checkEntitlement(
     return { allowed: true, deductFrom: 'subscription' }
   }
 
-  // 5. Starter plan — check usage limits (all report types allowed)
-  if (plan === 'starter') {
+  // 5. Subscription plans (starter / growth / pro) — check combined monthly cap
+  if (plan === 'starter' || plan === 'growth' || plan === 'pro') {
+    const cap = PLAN_MONTHLY_CAPS[plan]
     const now = new Date()
     const periodStart = sub?.current_period_start
       ? new Date(sub.current_period_start).toISOString().split('T')[0]
@@ -161,21 +163,12 @@ export async function checkEntitlement(
       .eq('period_start', periodStart)
       .single()
 
-    const analyzerUsed = usageRow?.analyzer_reports_used ?? 0
-    const seoUsed = usageRow?.seo_reports_used ?? 0
+    const totalUsed = (usageRow?.analyzer_reports_used ?? 0) + (usageRow?.seo_reports_used ?? 0)
 
-    if (meta.product === 'analyzer' && analyzerUsed >= STARTER_LIMITS.analyzer_per_day) {
+    if (totalUsed >= cap) {
       return {
         allowed: false,
-        reason: `You've reached your daily limit of ${STARTER_LIMITS.analyzer_per_day} Analyzer reports. Limit resets tomorrow.`,
-        upgradePrompt: 'starter',
-      }
-    }
-
-    if (meta.product === 'seo_auditor' && seoUsed >= STARTER_LIMITS.seo_per_month) {
-      return {
-        allowed: false,
-        reason: `You've reached your monthly SEO report limit. Contact us if you need more.`,
+        reason: `You've used all ${cap} reports included in your ${plan.charAt(0).toUpperCase() + plan.slice(1)} plan this month. Upgrade your plan or wait until your next billing period.`,
         upgradePrompt: 'starter',
       }
     }
@@ -203,7 +196,7 @@ export async function checkEntitlement(
       const systemLabel = FREE_SYSTEM_LABELS[freeSystem]
       return {
         allowed: false,
-        reason: `You've already used your free ${systemLabel} report. Get 3 more for $10 or upgrade to Starter for unlimited access.`,
+        reason: `You've already used your free ${systemLabel} report. Get a credit pack or upgrade to a monthly plan for more.`,
         upgradePrompt: 'impulse',
       }
     }
@@ -232,7 +225,7 @@ export async function checkEntitlement(
   if (!creditRow) {
     return {
       allowed: false,
-      reason: `You have no remaining reports. Get 3 more for $10 or upgrade to Starter.`,
+      reason: `You have no remaining reports. Get a credit pack or upgrade to a monthly plan.`,
       upgradePrompt: meta.impulseAllowed ? 'impulse' : 'starter',
     }
   }
@@ -315,8 +308,8 @@ export async function createReportRow(
   const meta = REPORT_META[reportType]
   const supabase = getServiceClient()
 
-  // Expiry: 30 days for free/impulse, 12 months for starter+
-  const expiryDays = plan === 'starter' || plan === 'custom' ? 365 : 30
+  // Expiry: 30 days for free/impulse, 12 months for paid subscriptions
+  const expiryDays = (plan === 'starter' || plan === 'growth' || plan === 'pro' || plan === 'custom') ? 365 : 30
   const expiresAt = new Date()
   expiresAt.setDate(expiresAt.getDate() + expiryDays)
 

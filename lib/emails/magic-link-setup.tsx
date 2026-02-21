@@ -72,7 +72,7 @@ export function magicLinkSetupEmail(
                   <tr>
                     <td>
                       <p style="margin:0 0 4px;font-size:13px;font-weight:600;color:#22d3ee;">3. Run more reports</p>
-                      <p style="margin:0;font-size:13px;color:#a1a1aa;line-height:1.5;">Your account includes one free report per tool. Upgrade anytime for unlimited access.</p>
+                      <p style="margin:0;font-size:13px;color:#a1a1aa;line-height:1.5;">Your account includes one free report per tool. Upgrade anytime for more reports.</p>
                     </td>
                   </tr>
                 </table>

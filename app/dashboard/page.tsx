@@ -105,11 +105,11 @@ export default async function DashboardPage() {
           <div className="bg-dark-700 border border-primary/20 rounded-2xl p-6">
             <p className="text-gray-400 text-sm mb-1">Report credits</p>
             <p className="text-2xl font-bold text-white">
-              {PAID_PLANS.includes(plan) ? '∞' : totalCredits > 0 ? totalCredits : freeRemaining > 0 ? `${freeRemaining} free` : '0'}
+              {PAID_PLANS.includes(plan) ? plan.charAt(0).toUpperCase() + plan.slice(1) : totalCredits > 0 ? totalCredits : freeRemaining > 0 ? `${freeRemaining} free` : '0'}
             </p>
             <p className="text-gray-500 text-xs mt-1">
               {PAID_PLANS.includes(plan)
-                ? 'Unlimited on your plan'
+                ? 'Monthly plan — see pricing for report caps'
                 : totalCredits > 0
                   ? `${totalCredits} paid credit${totalCredits !== 1 ? 's' : ''} available`
                   : freeRemaining > 0
@@ -130,8 +130,8 @@ export default async function DashboardPage() {
         {!PAID_PLANS.includes(plan) && (
           <div className="bg-gradient-to-r from-primary/10 to-accent-blue/10 border border-primary/30 rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <p className="text-white font-semibold text-lg">Unlock unlimited reports</p>
-              <p className="text-gray-400 text-sm mt-1">Starter plan — $20/month. All report types, no limits.</p>
+              <p className="text-white font-semibold text-lg">Get more reports</p>
+              <p className="text-gray-400 text-sm mt-1">Monthly plans from $20/month. All report types. Cancel anytime.</p>
             </div>
             <div className="flex gap-3 flex-shrink-0">
               {totalCredits === 0 && (

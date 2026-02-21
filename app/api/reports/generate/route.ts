@@ -199,16 +199,36 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 4. Get user profile for email/name defaults
+    // 4. Get user profile for email/name defaults and phone gate
     const { data: profile } = await supabase
       .from('profiles')
-      .select('name, email, subscriptions(plan)')
+      .select('name, email, phone, free_reports_used, subscriptions(plan)')
       .eq('id', user.id)
       .single()
 
     const userEmail = body.userEmail || profile?.email || user.email!
     const userName = body.userName || profile?.name || userEmail.split('@')[0]
     const plan = (profile as any)?.subscriptions?.[0]?.plan ?? 'free'
+
+    // 4b. Phone gate (Anti-abuse Tier 2): free-plan users must add a phone number
+    // before running their second free report. Gate triggers when:
+    //   - This run consumes a free system slot (not credits or subscription)
+    //   - At least one other free system has already been used
+    //   - No phone number is on file
+    if (entitlement.freeSystemConsumed) {
+      const freeUsed = (profile?.free_reports_used ?? {}) as Record<string, string>
+      const priorFreeCount = Object.keys(freeUsed).length
+      const hasPhone = profile?.phone && (profile.phone as string).trim().length > 0
+      if (priorFreeCount > 0 && !hasPhone) {
+        return NextResponse.json(
+          {
+            error: 'Add a phone number to your account before running more reports.',
+            code: 'PHONE_REQUIRED',
+          },
+          { status: 402 }
+        )
+      }
+    }
 
     // 5. Create report row in DB
     const inputData = { ...body, userEmail, userName }

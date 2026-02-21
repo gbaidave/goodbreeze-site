@@ -26,9 +26,9 @@ export function reportsExhaustedEmail(name: string): { subject: string; html: st
           <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
             <tr>
               <td style="background:#1d1d1f;border:1px solid #27272a;border-radius:12px;padding:20px 24px;margin-bottom:12px;">
-                <p style="margin:0 0 4px;font-size:13px;color:#22d3ee;font-weight:600;">BEST VALUE — $20/month</p>
-                <p style="margin:0 0 8px;font-size:16px;font-weight:700;color:#ffffff;">Starter Plan</p>
-                <p style="margin:0;font-size:14px;color:#a1a1aa;line-height:1.5;">Unlimited reports across all tools. No credit counting, ever.</p>
+                <p style="margin:0 0 4px;font-size:13px;color:#22d3ee;font-weight:600;">MONTHLY PLANS — from $20/month</p>
+                <p style="margin:0 0 8px;font-size:16px;font-weight:700;color:#ffffff;">Starter / Growth / Pro</p>
+                <p style="margin:0;font-size:14px;color:#a1a1aa;line-height:1.5;">25 to 50 reports per month across all tools. Pick the plan that fits your volume.</p>
               </td>
             </tr>
             <tr><td style="height:8px;"></td></tr>
