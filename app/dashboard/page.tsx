@@ -54,10 +54,11 @@ export default async function DashboardPage() {
   // Free reports remaining (free plan only — 1 per system)
   const freeUsed = (profile?.free_reports_used ?? {}) as Record<string, string>
   const freeRemaining = (freeUsed.analyzer ? 0 : 1) + (freeUsed.brand_visibility ? 0 : 1)
-  const isExhausted = plan !== 'starter' && plan !== 'custom' && totalCredits === 0 && freeRemaining === 0
+  const PAID_PLANS = ['starter', 'growth', 'pro', 'custom']
+  const isExhausted = !PAID_PLANS.includes(plan) && totalCredits === 0 && freeRemaining === 0
 
-  const starterPriceId = process.env.STRIPE_STARTER_PRICE_ID!
-  const impulsePriceId = process.env.STRIPE_IMPULSE_PRICE_ID!
+  const starterPriceId = process.env.STRIPE_STARTER_PLAN_PRICE_ID!
+  const boostPackPriceId = process.env.STRIPE_BOOST_PACK_PRICE_ID!
 
   return (
     <div className="min-h-screen bg-dark py-12 px-6">
@@ -104,10 +105,10 @@ export default async function DashboardPage() {
           <div className="bg-dark-700 border border-primary/20 rounded-2xl p-6">
             <p className="text-gray-400 text-sm mb-1">Report credits</p>
             <p className="text-2xl font-bold text-white">
-              {plan === 'starter' || plan === 'custom' ? '∞' : totalCredits > 0 ? totalCredits : freeRemaining > 0 ? `${freeRemaining} free` : '0'}
+              {PAID_PLANS.includes(plan) ? '∞' : totalCredits > 0 ? totalCredits : freeRemaining > 0 ? `${freeRemaining} free` : '0'}
             </p>
             <p className="text-gray-500 text-xs mt-1">
-              {plan === 'starter' || plan === 'custom'
+              {PAID_PLANS.includes(plan)
                 ? 'Unlimited on your plan'
                 : totalCredits > 0
                   ? `${totalCredits} paid credit${totalCredits !== 1 ? 's' : ''} available`
@@ -125,8 +126,8 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        {/* Upgrade banner — only show if not on starter */}
-        {plan !== 'starter' && plan !== 'custom' && (
+        {/* Upgrade banner — only show if not on a paid plan */}
+        {!PAID_PLANS.includes(plan) && (
           <div className="bg-gradient-to-r from-primary/10 to-accent-blue/10 border border-primary/30 rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <p className="text-white font-semibold text-lg">Unlock unlimited reports</p>
@@ -135,8 +136,8 @@ export default async function DashboardPage() {
             <div className="flex gap-3 flex-shrink-0">
               {totalCredits === 0 && (
                 <UpgradeButton
-                  priceId={impulsePriceId}
-                  label="Get 3 reports — $10"
+                  priceId={boostPackPriceId}
+                  label="Get 10 reports — $10"
                   className="px-5 py-2.5 border border-primary text-primary font-semibold rounded-xl hover:bg-primary/10 transition-colors text-sm"
                 />
               )}
@@ -153,7 +154,7 @@ export default async function DashboardPage() {
         {isExhausted && (
           <NudgeCard
             starterPriceId={starterPriceId}
-            impulsePriceId={impulsePriceId}
+            boostPackPriceId={boostPackPriceId}
             hasWrittenTestimonial={hasWrittenTestimonial}
             hasVideoTestimonial={hasVideoTestimonial}
           />

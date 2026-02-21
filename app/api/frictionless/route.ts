@@ -13,6 +13,7 @@ import { createServiceClient } from '@/lib/supabase/service-client'
 import { createReportRow, type ReportType } from '@/lib/entitlement'
 import { sendMagicLinkSetupEmail } from '@/lib/email'
 import { isDisposableEmail } from '@/lib/disposable-email'
+import { isValidPhone } from '@/lib/phone'
 
 // ============================================================================
 // n8n webhook URLs (same as /api/reports/generate — internal only)
@@ -93,6 +94,7 @@ function validateInput(body: FrictionlessRequest): string | null {
   if (isDisposableEmail(body.email)) return 'Please use a real email address to receive your report.'
   if (!body.name || body.name.trim().length < 1) return 'Name is required'
   if (body.name.length > MAX_STR_LEN) return 'Name is too long'
+  if (body.phone && !isValidPhone(body.phone)) return 'Enter a valid phone number'
 
   if (!body.reportType || !FREE_ALLOWED_TYPES.includes(body.reportType)) {
     return `This tool is not available for guest submissions`

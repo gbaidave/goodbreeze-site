@@ -8,13 +8,16 @@ import { z } from 'zod'
 import { createClient } from '@/lib/supabase/client'
 import { captureEvent } from '@/lib/analytics'
 import { isDisposableEmail } from '@/lib/disposable-email'
+import { isValidPhone } from '@/lib/phone'
 
 const schema = z.object({
   name: z.string().min(1, 'Name is required'),
   email: z.string().email('Enter a valid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
   company: z.string().optional(),
+  phone: z.string().optional().refine(val => !val || isValidPhone(val), { message: 'Enter a valid phone number' }),
   marketingOptIn: z.boolean(),
+  smsOptIn: z.boolean(),
 })
 type FormData = z.infer<typeof schema>
 
@@ -29,7 +32,7 @@ export default function SignupForm() {
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { marketingOptIn: true },
+    defaultValues: { marketingOptIn: true, smsOptIn: false },
   })
 
   async function onSubmit(data: FormData) {
@@ -47,7 +50,9 @@ export default function SignupForm() {
           data: {
             name: data.name,
             company: data.company || null,
+            phone: data.phone || null,
             marketing_opt_in: data.marketingOptIn,
+            sms_opt_in: data.smsOptIn,
             referred_by_affiliate_code: referralCode,
           },
           emailRedirectTo: `${window.location.origin}/auth/callback?returnUrl=${returnUrl}`,
@@ -140,9 +145,20 @@ export default function SignupForm() {
           {errors.password && <p className="text-red-400 text-xs mt-1">{errors.password.message}</p>}
         </div>
 
+        <div>
+          <label className="block text-sm font-medium text-zinc-300 mb-1.5">Phone <span className="text-zinc-500">(optional)</span></label>
+          <input {...register('phone')} type="tel" autoComplete="tel" className="w-full bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-500 rounded-lg px-4 py-3 focus:outline-none focus:border-cyan-500 transition-colors" placeholder="+1 555 000 0000" />
+          {errors.phone && <p className="text-red-400 text-xs mt-1">{errors.phone.message}</p>}
+        </div>
+
         <label className="flex items-start gap-3 cursor-pointer">
           <input {...register('marketingOptIn')} type="checkbox" className="mt-0.5 accent-cyan-500" />
           <span className="text-sm text-zinc-400">Send me tips, product updates, and occasional offers. Unsubscribe anytime.</span>
+        </label>
+
+        <label className="flex items-start gap-3 cursor-pointer">
+          <input {...register('smsOptIn')} type="checkbox" className="mt-0.5 accent-cyan-500" />
+          <span className="text-sm text-zinc-400">Text me occasional tips and offers. Standard rates may apply. Requires phone number above.</span>
         </label>
 
         <button type="submit" disabled={isSubmitting} className="w-full bg-cyan-500 hover:bg-cyan-400 text-zinc-950 font-semibold py-3 px-4 rounded-lg transition-colors disabled:opacity-60">

@@ -44,7 +44,7 @@ export function GuestFields({
       <div>
         <p className="text-sm font-semibold text-white">Where should we send your report?</p>
         <p className="text-xs text-gray-400 mt-0.5">
-          We'll create a free account and email you a link to access your results.{' '}
+          We'll email your report and set up account access so you can view it anytime.{' '}
           <Link href="/login" className="text-primary hover:underline">
             Already have an account? Sign in →
           </Link>

@@ -115,17 +115,17 @@ export default function Hero() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
           >
-            {/* Result-focused headline */}
+            {/* Brand headline */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 text-white leading-tight">
               <span className="block bg-gradient-to-r from-primary via-accent-blue to-accent-purple bg-clip-text text-transparent">
-                Know Exactly Why
+                Good Breeze AI
               </span>
-              Your Competitors Are Winning — and How to Beat Them
+              Business Intelligence for Small Businesses That Compete
             </h1>
 
-            {/* Empathy + outcome, 2 sentences */}
+            {/* Value statement */}
             <p className="text-xl sm:text-2xl text-gray-300 mb-8 leading-relaxed">
-              Good Breeze AI analyzes your pages, keywords, and competitors — then delivers a complete PDF report to your inbox in minutes. No spreadsheets. No guesswork.
+              Good Breeze AI finds exactly where you are losing to competitors and what to fix. Get clear, actionable intelligence delivered as a PDF straight to your inbox.
             </p>
 
             {/* Specific outcomes */}
@@ -136,7 +136,7 @@ export default function Hero() {
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
                 </div>
-                <p className="text-gray-300">See which keywords your competitors rank for — and you don't</p>
+                <p className="text-gray-300">Find the keywords your competitors rank for that you are missing</p>
               </div>
               <div className="flex items-start gap-3">
                 <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-1">
@@ -144,7 +144,7 @@ export default function Hero() {
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
                 </div>
-                <p className="text-gray-300">Get a full SEO audit with specific fixes — not vague advice</p>
+                <p className="text-gray-300">Get specific SEO and landing page fixes, not vague recommendations</p>
               </div>
               <div className="flex items-start gap-3">
                 <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-1">
@@ -152,11 +152,11 @@ export default function Hero() {
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
                 </div>
-                <p className="text-gray-300">Understand your competitive position before your next content move</p>
+                <p className="text-gray-300">Know your competitive position before you make your next move</p>
               </div>
             </div>
 
-            {/* CTAs */}
+            {/* Single CTA */}
             <div className="flex flex-col sm:flex-row gap-4 mb-8 items-center">
               <motion.div
                 whileHover={{ scale: 1.05 }}
@@ -167,7 +167,7 @@ export default function Hero() {
                   className="group relative flex items-center justify-center px-10 py-5 bg-gradient-to-r from-primary via-accent-blue to-primary text-white text-lg font-bold rounded-full overflow-hidden shadow-2xl shadow-primary/50"
                   style={{ backgroundSize: "200% 100%" }}
                 >
-                  <span className="relative z-10">Run Your First Free Report</span>
+                  <span className="relative z-10">Get My Free Report</span>
                   <motion.div
                     className="absolute inset-0 bg-gradient-to-r from-accent-blue via-primary to-accent-blue"
                     initial={{ x: "-100%" }}
@@ -177,23 +177,11 @@ export default function Hero() {
                   />
                 </Link>
               </motion.div>
-
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <Link
-                  href="/tools"
-                  className="flex items-center justify-center px-10 py-5 border-2 border-primary/40 text-gray-300 text-lg font-semibold rounded-full hover:border-primary hover:text-white transition-all duration-300"
-                >
-                  See All Tools
-                </Link>
-              </motion.div>
             </div>
 
             {/* Trust indicator */}
             <p className="text-gray-400 text-sm">
-              Free to try. No account needed. Report in your inbox in 2–3 minutes.
+              Free to try. No credit card needed, get business insights fast!
             </p>
           </motion.div>
 
@@ -229,20 +217,7 @@ export default function Hero() {
               <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 to-accent-purple/10 group-hover:from-primary/20 group-hover:to-accent-purple/20 transition-all duration-500" />
             </div>
 
-            {/* Results cards with animated glow */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.6 }}
-              className="absolute -bottom-4 -left-4 bg-dark-700/95 backdrop-blur-lg border border-primary/30 rounded-xl p-5 shadow-lg hover:shadow-primary/50 hover:scale-110 transition-all duration-300 cursor-pointer group/card"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/0 to-primary/0 group-hover/card:from-primary/10 group-hover/card:to-transparent rounded-xl transition-all duration-300" />
-              <div className="relative z-10">
-                <div className="text-3xl font-bold text-primary mb-1">2–3 min</div>
-                <div className="text-sm text-gray-300">PDF delivered by email</div>
-              </div>
-            </motion.div>
-
+            {/* Results card */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}

@@ -56,30 +56,34 @@ export async function POST(request: NextRequest) {
 
         if (!userId || !priceId) break
 
-        const starterPriceId = process.env.STRIPE_STARTER_PRICE_ID
-        const impulsePriceId = process.env.STRIPE_IMPULSE_PRICE_ID
+        // Subscription price IDs — handled by customer.subscription.created/updated
+        const subscriptionPriceIds = [
+          process.env.STRIPE_STARTER_PLAN_PRICE_ID,
+          process.env.STRIPE_GROWTH_PLAN_PRICE_ID,
+          process.env.STRIPE_PRO_PLAN_PRICE_ID,
+        ]
+        if (subscriptionPriceIds.includes(priceId)) break
 
-        if (priceId === starterPriceId) {
-          // Subscription handled by customer.subscription.created/updated
-          break
+        // One-time credit packs
+        const packMap: Record<string, { credits: number; amount: string; label: string }> = {
+          [process.env.STRIPE_SPARK_PACK_PRICE_ID!]: { credits: 3,  amount: '$5.00',  label: 'Spark Pack' },
+          [process.env.STRIPE_BOOST_PACK_PRICE_ID!]: { credits: 10, amount: '$10.00', label: 'Boost Pack' },
         }
-
-        if (priceId === impulsePriceId) {
-          // One-time credit pack — add 3 credits (1 report each)
+        const pack = priceId ? packMap[priceId] : undefined
+        if (pack) {
           await supabase.from('credits').insert({
             user_id: userId,
-            balance: 3,
+            balance: pack.credits,
             stripe_payment_intent_id: session.payment_intent as string,
             purchased_at: new Date().toISOString(),
             expires_at: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(), // 90 days
           })
 
-          // Send payment confirmation email
           const { data: profile } = await supabase
             .from('profiles').select('name, email').eq('id', userId).single()
           if (profile?.email) {
             await sendPaymentConfirmationEmail(
-              profile.email, profile.name || profile.email, 'impulse', '$10.00', userId
+              profile.email, profile.name || profile.email, pack.label, pack.amount, userId
             ).catch(console.error)
           }
         }
@@ -101,12 +105,24 @@ export async function POST(request: NextRequest) {
         if (!profile) break
 
         const priceId = sub.items.data[0]?.price.id
-        const plan = priceId === process.env.STRIPE_STARTER_PRICE_ID ? 'starter' : 'free'
+        const planMap: Record<string, string> = {
+          [process.env.STRIPE_STARTER_PLAN_PRICE_ID!]: 'starter',
+          [process.env.STRIPE_GROWTH_PLAN_PRICE_ID!]:  'growth',
+          [process.env.STRIPE_PRO_PLAN_PRICE_ID!]:     'pro',
+        }
+        const planAmountMap: Record<string, string> = {
+          [process.env.STRIPE_STARTER_PLAN_PRICE_ID!]: '$20.00',
+          [process.env.STRIPE_GROWTH_PLAN_PRICE_ID!]:  '$30.00',
+          [process.env.STRIPE_PRO_PLAN_PRICE_ID!]:     '$40.00',
+        }
+        const plan = (priceId ? planMap[priceId] : undefined) ?? 'free'
 
         // Send confirmation email on new subscription
         if (event.type === 'customer.subscription.created' && sub.status === 'active' && profile.email) {
+          const planLabel = priceId ? planMap[priceId] ?? 'starter' : 'starter'
+          const planAmount = priceId ? planAmountMap[priceId] ?? '$20.00' : '$20.00'
           await sendPaymentConfirmationEmail(
-            profile.email, profile.name || profile.email, 'starter', '$20.00', profile.id
+            profile.email, profile.name || profile.email, planLabel, planAmount, profile.id
           ).catch(console.error)
         }
 

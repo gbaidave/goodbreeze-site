@@ -44,15 +44,18 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
 
     // Only accept plan names — never raw priceIds from client (keeps price IDs server-side)
-    const VALID_PLANS = ['starter', 'impulse'] as const
+    const VALID_PLANS = ['starter', 'growth', 'pro', 'spark_pack', 'boost_pack'] as const
     type Plan = typeof VALID_PLANS[number]
     const planPriceMap: Record<Plan, string | undefined> = {
-      starter: process.env.STRIPE_STARTER_PRICE_ID,
-      impulse: process.env.STRIPE_IMPULSE_PRICE_ID,
+      starter:    process.env.STRIPE_STARTER_PLAN_PRICE_ID,
+      growth:     process.env.STRIPE_GROWTH_PLAN_PRICE_ID,
+      pro:        process.env.STRIPE_PRO_PLAN_PRICE_ID,
+      spark_pack: process.env.STRIPE_SPARK_PACK_PRICE_ID,
+      boost_pack: process.env.STRIPE_BOOST_PACK_PRICE_ID,
     }
     const plan = body.plan
     if (!plan || !VALID_PLANS.includes(plan)) {
-      return NextResponse.json({ error: 'Valid plan name is required (starter or impulse)' }, { status: 400 })
+      return NextResponse.json({ error: 'Valid plan name is required (starter, growth, pro, spark_pack, or boost_pack)' }, { status: 400 })
     }
     const priceId: string | undefined = planPriceMap[plan as Plan]
     if (!priceId) {

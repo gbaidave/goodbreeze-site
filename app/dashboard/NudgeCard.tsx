@@ -2,17 +2,17 @@ import { UpgradeButton } from './UpgradeButton'
 
 interface Props {
   starterPriceId: string
-  impulsePriceId: string
+  boostPackPriceId: string
   hasWrittenTestimonial: boolean
   hasVideoTestimonial: boolean
 }
 
 /**
  * Shown on the dashboard when a user has used all free reports AND has no credits.
- * Surfaced when: plan !== 'starter' && plan !== 'custom' && totalCredits === 0 && freeRemaining === 0.
+ * Surfaced when: not on a paid plan && totalCredits === 0 && freeRemaining === 0.
  * Uses UpgradeButton (client component) for direct Stripe checkout.
  */
-export function NudgeCard({ starterPriceId, impulsePriceId, hasWrittenTestimonial, hasVideoTestimonial }: Props) {
+export function NudgeCard({ starterPriceId, boostPackPriceId, hasWrittenTestimonial, hasVideoTestimonial }: Props) {
   const bothTestimonialsSubmitted = hasWrittenTestimonial && hasVideoTestimonial
 
   return (
@@ -34,8 +34,8 @@ export function NudgeCard({ starterPriceId, impulsePriceId, hasWrittenTestimonia
       {/* Upgrade CTAs */}
       <div className="flex flex-wrap gap-3 mb-5">
         <UpgradeButton
-          priceId={impulsePriceId}
-          label="Get 3 reports — $10"
+          priceId={boostPackPriceId}
+          label="Get 10 reports — $10"
           className="px-5 py-2.5 border border-primary text-primary font-semibold rounded-xl hover:bg-primary/10 transition-colors text-sm"
         />
         <UpgradeButton

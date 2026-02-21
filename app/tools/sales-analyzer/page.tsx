@@ -89,6 +89,7 @@ export default function SalesAnalyzer() {
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
   const [upgradePrompt, setUpgradePrompt] = useState('')
+  const [accountExists, setAccountExists] = useState(false)
 
   if (submitted) return <SuccessState isGuest={isGuest} onReset={() => setSubmitted(false)} />
   if (upgradePrompt) return <ExhaustedState error={error} upgradePrompt={upgradePrompt} />
@@ -96,6 +97,7 @@ export default function SalesAnalyzer() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError('')
+    setAccountExists(false)
 
     // Guests can only run h2h (freeAllowed)
     if (isGuest && reportType !== 'h2h') {
@@ -148,7 +150,7 @@ export default function SalesAnalyzer() {
           }),
         })
         const data = await res.json()
-        if (res.status === 409) { setError('You already have an account. Sign in to continue.'); return }
+        if (res.status === 409) { setAccountExists(true); return }
         if (!res.ok) { setError(data.error || 'Something went wrong. Please try again.'); return }
       }
       captureEvent('tool_form_submit', { reportType })
@@ -188,6 +190,14 @@ export default function SalesAnalyzer() {
           onSubmit={handleSubmit}
           className="bg-dark-700 border border-primary/20 rounded-2xl p-8 space-y-6"
         >
+          {accountExists && (
+            <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl text-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <p className="text-amber-300">You already have a Good Breeze AI account.</p>
+              <a href="/login" className="px-4 py-2 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primary/80 transition-colors whitespace-nowrap text-center">
+                Sign in to continue
+              </a>
+            </div>
+          )}
           {error && !upgradePrompt && (
             <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm">
               {error}
