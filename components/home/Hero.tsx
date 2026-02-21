@@ -120,7 +120,7 @@ export default function Hero() {
               <span className="block bg-gradient-to-r from-primary via-accent-blue to-accent-purple bg-clip-text text-transparent">
                 Good Breeze AI
               </span>
-              Competitor Analysis and SEO Audit Reports for Small Business Owners
+              Competitor Analysis Reports
             </h1>
 
             {/* Value statement */}
