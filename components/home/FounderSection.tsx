@@ -36,9 +36,9 @@ export default function FounderSection() {
           >
             <div className="relative rounded-2xl overflow-hidden border-2 border-primary/30 shadow-2xl shadow-primary/20">
               <Image
-                src="/images/dave-profile.jpg"
+                src="/images/dave-headshot.webp"
                 alt="Dave Silverstein, Founder of Good Breeze AI"
-                width={600}
+                width={800}
                 height={600}
                 className="w-full h-auto"
               />
