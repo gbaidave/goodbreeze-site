@@ -247,27 +247,53 @@ export async function POST(request: NextRequest) {
         user_metadata: { name },
       })
 
-      if (createError || !newUser.user) {
-        // status 422 = Supabase still has this email in auth (orphaned after deletion or cooldown)
-        // Treat it the same as ACCOUNT_EXISTS rather than a generic 500
+      let authUser = newUser?.user ?? null
+
+      if (createError || !authUser) {
         if (createError?.status === 422) {
+          // 422 = Supabase still holds this email in auth.users after a dashboard deletion
+          // (soft-delete left a ghost row). Force-purge it and retry once.
+          const { data: forceDeleted } = await supabase.rpc('force_delete_auth_user_by_email', {
+            p_email: email,
+          })
+
+          if (forceDeleted) {
+            const { data: retryUser, error: retryError } = await supabase.auth.admin.createUser({
+              email,
+              email_confirm: true,
+              user_metadata: { name },
+            })
+
+            if (retryError || !retryUser?.user) {
+              console.error('Failed to create user after force-delete:', retryError)
+              return NextResponse.json(
+                { error: 'Failed to create account. Please try again.', code: 'CREATE_FAILED' },
+                { status: 500 }
+              )
+            }
+
+            authUser = retryUser.user
+          } else {
+            // force_delete returned false = no stale row found. Genuine live account.
+            return NextResponse.json(
+              {
+                error: 'You already have a Good Breeze AI account. Sign in to run more reports.',
+                code: 'ACCOUNT_EXISTS',
+                signInUrl: '/login',
+              },
+              { status: 409 }
+            )
+          }
+        } else {
+          console.error('Failed to create frictionless user:', createError)
           return NextResponse.json(
-            {
-              error: 'You already have a Good Breeze AI account. Sign in to run more reports.',
-              code: 'ACCOUNT_EXISTS',
-              signInUrl: '/login',
-            },
-            { status: 409 }
+            { error: 'Failed to create account. Please try again.', code: 'CREATE_FAILED' },
+            { status: 500 }
           )
         }
-        console.error('Failed to create frictionless user:', createError)
-        return NextResponse.json(
-          { error: 'Failed to create account. Please try again.', code: 'CREATE_FAILED' },
-          { status: 500 }
-        )
       }
 
-      userId = newUser.user.id
+      userId = authUser!.id
       isNewUser = true
 
       // Update profile name (handle_new_user trigger creates the row; set name from metadata)

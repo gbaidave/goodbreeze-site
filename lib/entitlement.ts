@@ -175,7 +175,11 @@ export async function checkEntitlement(
     return { allowed: true, deductFrom: 'subscription' }
   }
 
-  // 6. Free plan — check per-system free slot using free_reports_used JSONB
+  // 6. Free plan — atomically check + reserve per-system free slot
+  //    Uses check_and_reserve_free_slot RPC (migration 003) which:
+  //    - Locks the profile row to prevent race conditions (T1-ATOMIC-CHECK)
+  //    - Checks if the slot was used by a non-failed report (T1-CREDIT-COUNT)
+  //    - Reserves the slot atomically if available
   if (plan === 'free') {
     const freeSystem = meta.freeSystem
 
@@ -188,10 +192,28 @@ export async function checkEntitlement(
       }
     }
 
-    // Check if user has already consumed their free slot for this system
-    const freeUsed = (profile.free_reports_used ?? {}) as Record<string, string>
+    // Atomically check + reserve the free slot
+    const { data: slotResult, error: slotError } = await supabase.rpc(
+      'check_and_reserve_free_slot',
+      {
+        p_user_id:     userId,
+        p_free_system: freeSystem,
+        p_report_type: reportType,
+      }
+    )
 
-    if (freeUsed[freeSystem]) {
+    if (slotError) {
+      // RPC not yet deployed — fall back to read-only check (non-atomic)
+      const freeUsed = (profile.free_reports_used ?? {}) as Record<string, string>
+      if (freeUsed[freeSystem]) {
+        const systemLabel = FREE_SYSTEM_LABELS[freeSystem]
+        return {
+          allowed: false,
+          reason: `You've already used your free ${systemLabel} report. Get a credit pack or upgrade to a monthly plan for more.`,
+          upgradePrompt: 'impulse',
+        }
+      }
+    } else if (slotResult === 'already_used') {
       const systemLabel = FREE_SYSTEM_LABELS[freeSystem]
       return {
         allowed: false,
@@ -200,6 +222,8 @@ export async function checkEntitlement(
       }
     }
 
+    // Slot is now reserved atomically — freeSystemConsumed tells generate/route.ts
+    // to trigger the nudge email check (but NOT to write free_reports_used again)
     return {
       allowed: true,
       deductFrom: 'subscription',
@@ -254,7 +278,10 @@ export async function recordUsage(
   reportType: ReportType,
   deductFrom: 'subscription' | 'credits',
   creditRowId?: string,
-  freeSystemConsumed?: FreeSystem
+  // freeSystemConsumed is kept for backward compatibility but the free slot is now
+  // written atomically inside checkEntitlement() via check_and_reserve_free_slot RPC.
+  // Passing it here is a no-op — the write is skipped to avoid double-writing.
+  _freeSystemConsumed?: FreeSystem
 ): Promise<void> {
   const meta = REPORT_META[reportType]
   const supabase = getServiceClient()
@@ -263,7 +290,7 @@ export async function recordUsage(
   const periodStart = new Date(now.getFullYear(), now.getMonth(), 1)
     .toISOString().split('T')[0]
 
-  // Increment usage counters (used for starter limits)
+  // Increment usage counters (for starter plan monthly cap tracking)
   await supabase.rpc('increment_usage', {
     p_user_id: userId,
     p_period_start: periodStart,
@@ -271,27 +298,16 @@ export async function recordUsage(
     p_seo_delta: meta.product === 'seo_auditor' ? 1 : 0,
   })
 
-  // Decrement credit balance (impulse pack)
+  // Decrement credit balance (impulse/credit pack)
   if (deductFrom === 'credits' && creditRowId) {
     await supabase.rpc('decrement_credit', {
       p_credit_id: creditRowId,
     })
   }
 
-  // Mark free system slot as consumed (free plan only)
-  if (freeSystemConsumed) {
-    const { data: prof } = await supabase
-      .from('profiles')
-      .select('free_reports_used')
-      .eq('id', userId)
-      .single()
-
-    const current = (prof?.free_reports_used ?? {}) as Record<string, string>
-    await supabase
-      .from('profiles')
-      .update({ free_reports_used: { ...current, [freeSystemConsumed]: reportType } })
-      .eq('id', userId)
-  }
+  // NOTE: free_reports_used is no longer written here.
+  // It is atomically written by check_and_reserve_free_slot() inside checkEntitlement().
+  // See: lib/entitlement.ts free plan section + migrations/003_atomic_entitlement_rpcs.sql
 }
 
 // ============================================================================
