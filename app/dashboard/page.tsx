@@ -26,7 +26,7 @@ export default async function DashboardPage({
 
   // Fetch profile, subscription, credits, reports, referral data, and testimonials in parallel
   const [profileRes, subRes, creditsRes, reportsRes, referralRes, testimonialsRes] = await Promise.all([
-    supabase.from('profiles').select('name, email, free_reports_used, plan_override_type, plan_override_until').eq('id', user.id).single(),
+    supabase.from('profiles').select('name, email, role, free_reports_used, plan_override_type, plan_override_until').eq('id', user.id).single(),
     supabase.from('subscriptions').select('plan, status, current_period_end')
       .eq('user_id', user.id).in('status', ['active', 'trialing']).order('created_at', { ascending: false }).limit(1).single(),
     supabase.from('credits').select('balance, expires_at').eq('user_id', user.id).gt('balance', 0).order('purchased_at', { ascending: true }),
@@ -68,6 +68,7 @@ export default async function DashboardPage({
 
   const totalCredits = credits.reduce((sum, c) => sum + (c.balance ?? 0), 0)
   const firstName = profile?.name?.split(' ')[0] || profile?.email?.split('@')[0] || 'there'
+  const isAdmin = profile?.role === 'admin' || profile?.role === 'tester'
 
   // Free reports remaining (free plan only — 1 per system)
   const freeUsed = (profile?.free_reports_used ?? {}) as Record<string, string>
@@ -130,11 +131,16 @@ export default async function DashboardPage({
           {/* Plan */}
           <div className="bg-dark-700 border border-primary/20 rounded-2xl p-6">
             <p className="text-gray-400 text-sm mb-1">Current plan</p>
-            <p className="text-2xl font-bold text-white capitalize">{plan}</p>
-            {sub?.current_period_end && (
+            <p className="text-2xl font-bold text-white capitalize">
+              {isAdmin ? 'Admin Account' : plan}
+            </p>
+            {!isAdmin && sub?.current_period_end && (
               <p className="text-gray-500 text-xs mt-1">
                 Renews {new Date(sub.current_period_end).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
               </p>
+            )}
+            {isAdmin && (
+              <p className="text-gray-500 text-xs mt-1">Full access — no billing required</p>
             )}
           </div>
 
@@ -142,16 +148,18 @@ export default async function DashboardPage({
           <div className="bg-dark-700 border border-primary/20 rounded-2xl p-6">
             <p className="text-gray-400 text-sm mb-1">Report credits</p>
             <p className="text-2xl font-bold text-white">
-              {PAID_PLANS.includes(plan) ? plan.charAt(0).toUpperCase() + plan.slice(1) : totalCredits > 0 ? totalCredits : freeRemaining > 0 ? `${freeRemaining} free` : '0'}
+              {isAdmin ? 'Unlimited' : PAID_PLANS.includes(plan) ? plan.charAt(0).toUpperCase() + plan.slice(1) : totalCredits > 0 ? totalCredits : freeRemaining > 0 ? `${freeRemaining} free` : '0'}
             </p>
             <p className="text-gray-500 text-xs mt-1">
-              {PAID_PLANS.includes(plan)
-                ? 'Monthly plan — see pricing for report caps'
-                : totalCredits > 0
-                  ? `${totalCredits} paid credit${totalCredits !== 1 ? 's' : ''} available`
-                  : freeRemaining > 0
-                    ? `${freeRemaining} free report${freeRemaining !== 1 ? 's' : ''} remaining`
-                    : 'No credits remaining'}
+              {isAdmin
+                ? 'Admin account — no report limits'
+                : PAID_PLANS.includes(plan)
+                  ? 'Monthly plan — see pricing for report caps'
+                  : totalCredits > 0
+                    ? `${totalCredits} paid credit${totalCredits !== 1 ? 's' : ''} available`
+                    : freeRemaining > 0
+                      ? `${freeRemaining} free report${freeRemaining !== 1 ? 's' : ''} remaining`
+                      : 'No credits remaining'}
             </p>
           </div>
 
@@ -163,8 +171,8 @@ export default async function DashboardPage({
           </div>
         </div>
 
-        {/* Upgrade banner — only show if not on a paid plan */}
-        {!PAID_PLANS.includes(plan) && (
+        {/* Upgrade banner — only show if not on a paid plan and not admin/tester */}
+        {!isAdmin && !PAID_PLANS.includes(plan) && (
           <div className="bg-gradient-to-r from-primary/10 to-accent-blue/10 border border-primary/30 rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <p className="text-white font-semibold text-lg">Get more reports</p>
@@ -187,8 +195,8 @@ export default async function DashboardPage({
           </div>
         )}
 
-        {/* Exhausted nudge — shown only when all free + paid credits consumed */}
-        {isExhausted && (
+        {/* Exhausted nudge — shown only when all free + paid credits consumed, never for admin/tester */}
+        {isExhausted && !isAdmin && (
           <NudgeCard
             starterPriceId={starterPriceId}
             boostPackPriceId={boostPackPriceId}
@@ -212,6 +220,16 @@ export default async function DashboardPage({
         <div>
           <h2 className="text-xl font-bold text-white mb-4">Report history</h2>
           <ReportList initialReports={reports} />
+        </div>
+
+        {/* Support footer */}
+        <div className="pt-4 text-center">
+          <p className="text-gray-600 text-sm">
+            Having an issue?{' '}
+            <a href="/support" className="text-cyan-400 hover:text-cyan-300 transition-colors">
+              Get help
+            </a>
+          </p>
         </div>
 
       </div>

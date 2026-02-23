@@ -120,9 +120,9 @@ function SuccessState({
         </div>
         {isGuest ? (
           <>
-            <h2 className="text-2xl font-bold text-white mb-3">Report running — check your inbox!</h2>
+            <h2 className="text-2xl font-bold text-white mb-3">Check your inbox. Your account is ready.</h2>
             <p className="text-gray-400 mb-2">
-              We&apos;ve started your {config.label} report and emailed you a link to access your account and results.
+              We created your Good Breeze AI account and started your {config.label} report. A sign-in link and your PDF results are on their way to your inbox.
             </p>
             <p className="text-gray-500 text-sm mb-8">The PDF will be ready in 2–3 minutes.</p>
           </>
@@ -137,7 +137,14 @@ function SuccessState({
           </>
         )}
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          {!isGuest && (
+          {isGuest ? (
+            <Link
+              href="/login"
+              className="px-6 py-3 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full hover:shadow-lg hover:shadow-primary/30 transition-all"
+            >
+              Sign in to your account
+            </Link>
+          ) : (
             <Link
               href="/dashboard"
               className="px-6 py-3 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full hover:shadow-lg hover:shadow-primary/30 transition-all"

@@ -15,7 +15,7 @@ export function TestimonialForm({ submittedTypes }: Props) {
   const [content, setContent] = useState('')
   const [videoUrl, setVideoUrl] = useState('')
   const [pullQuote, setPullQuote] = useState('')
-  const [consent, setConsent] = useState(false)
+  const [consent, setConsent] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<{ creditsGranted: number } | null>(null)
@@ -233,9 +233,10 @@ export function TestimonialForm({ submittedTypes }: Props) {
                 className="mt-0.5 w-4 h-4 rounded border-gray-600 bg-dark text-primary focus:ring-primary/30"
               />
               <label htmlFor="ca-consent" className="text-gray-400 text-xs leading-relaxed cursor-pointer">
+                I have read the Media Release Authorization below and agree to its terms.
                 I authorize Good Breeze AI LLC to use my testimonial, name, and/or video for marketing purposes
-                as described in the Media Release Authorization below. I confirm I am 18 or older and that this
-                reflects my genuine experience with the product.
+                as described therein. I confirm I am 18 or older and that this reflects my genuine experience
+                with the product.
               </label>
             </div>
 
@@ -301,8 +302,8 @@ export function TestimonialForm({ submittedTypes }: Props) {
           <button
             type="submit"
             disabled={submitting || !consent}
-            className="w-full py-3 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-xl
-              hover:shadow-lg hover:shadow-primary/30 transition-all
+            className="w-full py-3 border border-white text-white font-semibold rounded-xl
+              hover:bg-white/10 transition-all
               disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {submitting

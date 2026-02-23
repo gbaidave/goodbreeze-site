@@ -168,13 +168,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 5. Grant credits immediately
+    // 5. Grant credits immediately (product=null means usable on any report type)
     const { error: creditError } = await serviceSupabase
       .from('credits')
       .insert({
         user_id: user.id,
         balance: creditsToGrant,
-        product: 'testimonial_reward',
+        product: null,
         expires_at: null,
       })
 
