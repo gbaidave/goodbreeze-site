@@ -127,8 +127,8 @@ export default function SocialProof() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl sm:text-5xl font-bold mb-4">
-            Real Results from Real Businesses
+          <h2 className="text-4xl sm:text-5xl font-bold mb-4 text-white">
+            See What Our Clients Are Saying
           </h2>
           <p className="text-xl text-gray-400 max-w-3xl mx-auto">
             See how we've helped businesses like yours reclaim time and eliminate busywork

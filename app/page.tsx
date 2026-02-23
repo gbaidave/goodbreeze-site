@@ -27,9 +27,9 @@ export default function Home() {
       <Problem />
       <Services />
       <HowItWorks />
-      <Tools />
       <SocialProof />
       <FounderSection />
+      <Tools />
       <FinalCTA />
     </main>
   );

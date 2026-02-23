@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service-client'
-import { UpgradeButton } from './UpgradeButton'
 import ReportList from './ReportList'
 import { ReferralSection } from './ReferralSection'
 import { NudgeCard } from './NudgeCard'
@@ -176,21 +175,15 @@ export default async function DashboardPage({
           <div className="bg-gradient-to-r from-primary/10 to-accent-blue/10 border border-primary/30 rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <p className="text-white font-semibold text-lg">Get more reports</p>
-              <p className="text-gray-400 text-sm mt-1">Monthly plans from $20/month. All report types. Cancel anytime.</p>
+              <p className="text-gray-400 text-sm mt-1">Credit packs from $5 or monthly plans from $20/mo. All report types, cancel anytime.</p>
             </div>
-            <div className="flex gap-3 flex-shrink-0">
-              {totalCredits === 0 && (
-                <UpgradeButton
-                  priceId={boostPackPriceId}
-                  label="Get 10 reports — $10"
-                  className="px-5 py-2.5 border border-primary text-primary font-semibold rounded-xl hover:bg-primary/10 transition-colors text-sm"
-                />
-              )}
-              <UpgradeButton
-                priceId={starterPriceId}
-                label="Upgrade to Starter"
-                className="px-5 py-2.5 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-primary/30 transition-all text-sm"
-              />
+            <div className="flex-shrink-0">
+              <a
+                href="/pricing"
+                className="inline-block px-5 py-2.5 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-primary/30 transition-all text-sm"
+              >
+                Get More Reports
+              </a>
             </div>
           </div>
         )}

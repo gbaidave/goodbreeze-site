@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 const problems = [
   {
     title: "You're Flying Blind on SEO",
-    description: "Your competitors are ranking for keywords you don't even know exist. Every content decision is a shot in the dark — and you have no idea what's actually working for them.",
+    description: "Your competitors are ranking for keywords you don't even know exist. Every content decision is a shot in the dark, and you have no idea what's actually working for them.",
     iconPath: "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z",
     gradient: "from-primary to-accent-blue",
   },
@@ -34,7 +34,7 @@ export default function Problem() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl sm:text-5xl font-bold mb-4">
+          <h2 className="text-4xl sm:text-5xl font-bold mb-4 text-white">
             Sound Familiar?
           </h2>
           <p className="text-xl text-gray-400 max-w-3xl mx-auto">

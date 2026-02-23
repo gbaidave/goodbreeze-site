@@ -8,7 +8,7 @@ const tools = [
     name: "Competitive Analyzer",
     description: "AI-powered competitive intelligence — head-to-head, top 3 competitors, or full market positioning.",
     href: "/tools/sales-analyzer",
-    tier: "1 free",
+    tier: "1 Free",
     tierStyle: "bg-primary/10 text-primary border-primary/30",
     features: [
       "Head-to-Head competitor analysis",
@@ -22,7 +22,7 @@ const tools = [
     name: "SEO Intelligence Suite",
     description: "Five AI-powered SEO reports in one place — from AI visibility audits to full keyword research and competitor benchmarking.",
     href: "/tools/seo-intelligence",
-    tier: "1 free + credits/plan",
+    tier: "1 Free",
     tierStyle: "bg-primary/10 text-primary border-primary/30",
     features: [
       "AI SEO Optimizer (1 free)",
@@ -31,7 +31,7 @@ const tools = [
       "Landing Page Optimizer — conversions + SEO",
       "SEO Comprehensive — our most complete report",
     ],
-    badge: "5 Reports",
+    badge: null,
   },
 ];
 
@@ -62,7 +62,7 @@ export default function ToolsDirectory() {
           className="flex flex-wrap items-center justify-center gap-4 mb-12 text-xs"
         >
           <div className="flex items-center gap-1.5">
-            <span className="px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/30 font-semibold">1 free</span>
+            <span className="px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/30 font-semibold">1 Free</span>
             <span className="text-gray-500">— one free report per tool, no account needed</span>
           </div>
           <div className="flex items-center gap-1.5">
@@ -117,9 +117,9 @@ export default function ToolsDirectory() {
 
                   <Link
                     href={tool.href}
-                    className="block text-center px-6 py-3 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full hover:shadow-lg hover:shadow-primary/30 transition-all duration-300 text-sm"
+                    className="block text-center px-6 py-3 bg-transparent border-2 border-white text-white font-semibold rounded-full hover:bg-white/10 transition-all duration-300 text-base"
                   >
-                    Open Tool →
+                    Get My Report
                   </Link>
                 </div>
               </div>

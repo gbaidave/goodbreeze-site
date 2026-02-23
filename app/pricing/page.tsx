@@ -222,15 +222,18 @@ export default function PricingPage() {
               transition={{ delay: 0.1 + idx * 0.05 }}
               className={`relative flex flex-col p-8 rounded-2xl transition-all duration-300 ${
                 plan.highlighted
-                  ? "bg-dark-700 border-2 border-primary md:scale-105 shadow-xl shadow-primary/20"
+                  ? "bg-dark-700 border-2 border-primary shadow-xl shadow-primary/20"
                   : "bg-dark-700 border border-primary/20 hover:border-primary/40"
               }`}
             >
               {plan.badge && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                  <span className="px-4 py-1 bg-gradient-to-r from-primary to-accent-blue text-white text-xs font-bold rounded-full uppercase tracking-wider">
+                <div className="absolute top-0 right-0 overflow-hidden rounded-tr-2xl w-24 h-24 pointer-events-none z-10">
+                  <div
+                    className="absolute bg-gradient-to-r from-primary to-accent-blue text-white text-[10px] font-bold uppercase tracking-wide text-center"
+                    style={{ right: '-20px', top: '18px', transform: 'rotate(45deg)', width: '100px', padding: '4px 0' }}
+                  >
                     {plan.badge}
-                  </span>
+                  </div>
                 </div>
               )}
 
@@ -259,14 +262,14 @@ export default function PricingPage() {
                 disabled={loading === plan.key}
                 className={`w-full px-6 py-3 font-semibold rounded-full transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed ${
                   plan.highlighted
-                    ? "bg-gradient-to-r from-primary to-accent-blue text-white hover:shadow-lg hover:shadow-primary/50 transform hover:scale-105 disabled:transform-none"
+                    ? "bg-gradient-to-r from-primary to-accent-blue text-white border-2 border-white/60 hover:shadow-lg hover:shadow-primary/50 disabled:transform-none"
                     : "border-2 border-primary text-primary hover:bg-primary hover:text-white"
                 }`}
               >
                 {loading === plan.key
                   ? "Redirecting…"
                   : user
-                  ? `Get ${plan.name}`
+                  ? `Get ${plan.name} Plan`
                   : "Start Subscription"}
               </button>
 

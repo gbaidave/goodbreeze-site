@@ -8,7 +8,7 @@ export default function FinalCTA() {
     <section className="relative py-32 px-6 sm:px-8 lg:px-12 overflow-hidden bg-dark">
       {/* Multiple animated gradient blobs */}
       <motion.div
-        className="absolute top-10 right-10 w-96 h-96 bg-primary rounded-full blur-3xl opacity-30"
+        className="absolute top-10 right-10 w-96 h-96 bg-primary rounded-full blur-3xl opacity-10"
         animate={{
           scale: [1, 1.3, 1],
           rotate: [0, 90, 0],
@@ -20,7 +20,7 @@ export default function FinalCTA() {
         }}
       />
       <motion.div
-        className="absolute bottom-10 left-10 w-96 h-96 bg-accent-purple rounded-full blur-3xl opacity-25"
+        className="absolute bottom-10 left-10 w-96 h-96 bg-accent-purple rounded-full blur-3xl opacity-10"
         animate={{
           scale: [1, 1.2, 1],
           rotate: [0, -90, 0],
@@ -32,7 +32,7 @@ export default function FinalCTA() {
         }}
       />
       <motion.div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-accent-blue rounded-full blur-3xl opacity-15"
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-accent-blue rounded-full blur-3xl opacity-10"
         animate={{
           scale: [1, 1.1, 1],
         }}

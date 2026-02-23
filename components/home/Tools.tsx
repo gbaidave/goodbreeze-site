@@ -7,7 +7,7 @@ const tools = [
   {
     name: "Head-to-Head Analyzer",
     description: "AI Competitor Intelligence",
-    detail: "See exactly how you stack up against a direct competitor — keywords, SEO, content, and positioning — in one PDF.",
+    detail: "See exactly how you stack up against a direct competitor: keywords, SEO, content, and positioning, all in one PDF.",
     href: "/tools/sales-analyzer",
     gradientFrom: "#00adb5",
     gradientTo: "#3b82f6",
@@ -49,7 +49,7 @@ export default function Tools() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl sm:text-5xl font-bold mb-4">
+          <h2 className="text-4xl sm:text-5xl font-bold mb-4 text-white">
             Free Intelligence Reports
           </h2>
           <p className="text-xl text-gray-400 max-w-3xl mx-auto">

@@ -77,6 +77,14 @@ interface GenerateRequest {
 const MAX_URL_LEN = 500
 const MAX_STR_LEN = 200
 
+function normalizeUrl(str: string): string {
+  const trimmed = str.trim()
+  if (!trimmed) return trimmed
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed
+  if (trimmed.startsWith('//')) return 'https:' + trimmed
+  return 'https://' + trimmed
+}
+
 function isValidHttpUrl(str: string): boolean {
   try {
     const url = new URL(str)
@@ -159,6 +167,12 @@ export async function POST(request: NextRequest) {
         { error: 'Invalid report type', code: 'INVALID_REPORT_TYPE' },
         { status: 400 }
       )
+    }
+
+    // Normalize URL fields — prepend https:// if user omitted the protocol
+    const urlFields = ['url', 'targetWebsite', 'competitor1Website', 'competitor2Website', 'competitor3Website'] as const
+    for (const field of urlFields) {
+      if (body[field]) body[field] = normalizeUrl(body[field]!)
     }
 
     const validationError = validateInput(body)

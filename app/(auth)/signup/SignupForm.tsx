@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -85,6 +85,18 @@ export default function SignupForm() {
       },
     })
   }
+
+  // When the user clicks the confirmation link in another tab, detect auth state change and redirect
+  useEffect(() => {
+    if (!success) return
+    const supabase = createClient()
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_IN') {
+        router.push('/dashboard?welcome=1')
+      }
+    })
+    return () => subscription.unsubscribe()
+  }, [success, router])
 
   if (success) {
     return (

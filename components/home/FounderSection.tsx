@@ -25,7 +25,7 @@ export default function FounderSection() {
           </p>
         </motion.div>
 
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+        <div className="grid lg:grid-cols-2 gap-12 items-start">
           {/* Left: Image */}
           <motion.div
             initial={{ opacity: 0, x: -50 }}
@@ -34,7 +34,7 @@ export default function FounderSection() {
             transition={{ duration: 0.8 }}
             className="relative"
           >
-            <div className="relative rounded-2xl overflow-hidden border-2 border-primary/30 shadow-2xl shadow-primary/20 max-w-xs lg:max-w-sm mx-auto">
+            <div className="relative rounded-2xl overflow-hidden border-2 border-primary/30 shadow-2xl shadow-primary/20 max-w-[280px] lg:max-w-[340px] mx-auto">
               <Image
                 src="/images/dave-silverstein-good-breeze-ai-founder.webp"
                 alt="Dave Silverstein, founder of Good Breeze AI"
@@ -69,12 +69,6 @@ export default function FounderSection() {
               </p>
             </div>
 
-            {/* Quote */}
-            <div className="border-l-4 border-primary pl-6 py-2">
-              <p className="text-lg italic text-gray-300">
-                "I build systems I wish existed when I was drowning in manual work. It saves me time and makes me money, it'll do the same for you."
-              </p>
-            </div>
           </motion.div>
         </div>
       </div>
