@@ -17,6 +17,8 @@ import { paymentFailedEmail } from './emails/payment-failed'
 import { magicLinkSetupEmail } from './emails/magic-link-setup'
 import { reportsExhaustedEmail } from './emails/reports-exhausted'
 import { supportNotificationEmail } from './emails/support-notification'
+import { supportReplyEmail } from './emails/support-reply'
+import { supportResolvedEmail } from './emails/support-resolved'
 import { logEmail } from './email-logger'
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -96,6 +98,27 @@ export async function sendReportsExhaustedEmail(to: string, name: string, userId
   return sendAndLog(
     () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject, html }),
     { userId, toEmail: to, type: 'nudge_exhausted', subject }
+  )
+}
+
+export async function sendSupportReplyEmail(
+  to: string,
+  name: string,
+  replyMessage: string,
+  userId?: string
+) {
+  const { subject, html } = supportReplyEmail(name, replyMessage)
+  return sendAndLog(
+    () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject, html }),
+    { userId, toEmail: to, type: 'support_reply', subject }
+  )
+}
+
+export async function sendSupportResolvedEmail(to: string, name: string, userId?: string) {
+  const { subject, html } = supportResolvedEmail(name)
+  return sendAndLog(
+    () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject, html }),
+    { userId, toEmail: to, type: 'support_resolved', subject }
   )
 }
 

@@ -265,7 +265,7 @@ export default function SalesAnalyzer() {
           <div>
             <label className={labelClass}>Your Website</label>
             <input
-              type="url"
+              type="text"
               value={targetWebsite}
               onChange={e => setTargetWebsite(e.target.value)}
               className={inputClass}
@@ -284,7 +284,7 @@ export default function SalesAnalyzer() {
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
                   <label className={labelClass}>Competitor 1 Website *</label>
-                  <input type="url" value={competitor1Website} onChange={e => setCompetitor1Website(e.target.value)}
+                  <input type="text" value={competitor1Website} onChange={e => setCompetitor1Website(e.target.value)}
                     className={inputClass} placeholder="https://competitor.com" required />
                 </div>
                 <div>
@@ -299,7 +299,7 @@ export default function SalesAnalyzer() {
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div>
                       <label className={labelClass}>Competitor 2 Website</label>
-                      <input type="url" value={competitor2Website} onChange={e => setCompetitor2Website(e.target.value)}
+                      <input type="text" value={competitor2Website} onChange={e => setCompetitor2Website(e.target.value)}
                         className={inputClass} placeholder="https://competitor2.com" />
                     </div>
                     <div>
@@ -311,7 +311,7 @@ export default function SalesAnalyzer() {
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div>
                       <label className={labelClass}>Competitor 3 Website</label>
-                      <input type="url" value={competitor3Website} onChange={e => setCompetitor3Website(e.target.value)}
+                      <input type="text" value={competitor3Website} onChange={e => setCompetitor3Website(e.target.value)}
                         className={inputClass} placeholder="https://competitor3.com" />
                     </div>
                     <div>

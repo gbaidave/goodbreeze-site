@@ -95,16 +95,20 @@ export async function POST(request: NextRequest) {
       ? `${lastReport.report_type} (${lastReport.status})`
       : 'No reports yet'
 
-    // 4. Insert support request
-    const { error: insertError } = await svc.from('support_requests').insert({
-      user_id: user.id,
-      email: userEmail,
-      plan_at_time: plan,
-      last_report_context: lastReportContext,
-      message,
-    })
+    // 4. Insert support request — select id back for thread creation
+    const { data: insertedRequest, error: insertError } = await svc
+      .from('support_requests')
+      .insert({
+        user_id: user.id,
+        email: userEmail,
+        plan_at_time: plan,
+        last_report_context: lastReportContext,
+        message,
+      })
+      .select('id')
+      .single()
 
-    if (insertError) {
+    if (insertError || !insertedRequest) {
       console.error('Support request insert error:', insertError)
       return NextResponse.json(
         { error: 'Failed to submit request. Please try again.' },
@@ -112,9 +116,40 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 5. Notify support (fire and forget — don't fail the user if email fails)
+    // 5. Notify support email (fire and forget)
     sendSupportNotificationEmail({ userName, userEmail, planAtTime: plan, lastReportContext, message }, user.id)
       .catch((err) => console.error('Support notification email failed:', err))
+
+    // 5b. Create initial message in support_messages thread (so thread is complete)
+    void svc.from('support_messages').insert({
+      request_id: insertedRequest.id,
+      sender_id: user.id,
+      sender_role: 'user',
+      message,
+    }).then(({ error }) => {
+      if (error) console.error('Support initial message insert error:', error)
+    })
+
+    // 5c. Bell notification for all admin users (fire and forget)
+    void (async () => {
+      try {
+        const { data: admins } = await svc
+          .from('profiles')
+          .select('id')
+          .eq('role', 'admin')
+        if (admins?.length) {
+          await svc.from('notifications').insert(
+            admins.map((a) => ({
+              user_id: a.id,
+              type: 'support_request',
+              message: `New support request from ${userName} (${userEmail})`,
+            }))
+          )
+        }
+      } catch (e) {
+        console.error('Admin support notification error:', e)
+      }
+    })()
 
     // 6. Return success
     return NextResponse.json({ success: true })

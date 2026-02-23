@@ -150,7 +150,7 @@ export default function CustomSolutionsServices() {
               href="/tools"
               className="px-8 py-4 border-2 border-primary text-primary font-semibold rounded-full hover:bg-primary hover:text-white transition-all duration-300"
             >
-              Try Free Tools First
+              Try Free Reports First
             </Link>
           </div>
         </div>

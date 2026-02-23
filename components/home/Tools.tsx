@@ -83,7 +83,7 @@ export default function Tools() {
                   </div>
 
                   <div className="relative z-10 flex-1 flex flex-col">
-                    <h3 className="text-2xl font-semibold mb-2 text-center">{tool.name}</h3>
+                    <h3 className="text-2xl font-semibold mb-2 text-center text-balance">{tool.name}</h3>
                     <p className="text-primary font-medium mb-4 text-lg">{tool.description}</p>
                     <p className="text-gray-400 mb-6 flex-1">{tool.detail}</p>
 
@@ -117,7 +117,7 @@ export default function Tools() {
                     </div>
 
                     <div className="relative z-10 flex-1 flex flex-col">
-                      <h3 className="text-2xl font-semibold mb-2 group-hover:text-primary transition-colors duration-300 text-center">{tool.name}</h3>
+                      <h3 className="text-2xl font-semibold mb-2 group-hover:text-primary transition-colors duration-300 text-center text-balance">{tool.name}</h3>
                       <p className="text-primary font-medium mb-4 text-lg">{tool.description}</p>
                       <p className="text-gray-400 mb-6 flex-1">{tool.detail}</p>
 

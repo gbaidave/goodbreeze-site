@@ -87,6 +87,13 @@ function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
 }
 
+function normalizeUrl(url: string): string {
+  const trimmed = url.trim()
+  if (!trimmed) return trimmed
+  if (/^https?:\/\//i.test(trimmed)) return trimmed
+  return 'https://' + trimmed
+}
+
 function validateInput(body: FrictionlessRequest): string | null {
   if (!body.email || !isValidEmail(body.email)) return 'Valid email address is required'
   if (isDisposableEmail(body.email)) return 'Please use a real email address to receive your report.'
@@ -165,7 +172,12 @@ export async function POST(request: NextRequest) {
   try {
     const body: FrictionlessRequest = await request.json()
 
-    // 1. Validate input
+    // 1. Normalize URL fields (prepend https:// if missing)
+    if (body.targetWebsite)       body.targetWebsite       = normalizeUrl(body.targetWebsite)
+    if (body.competitor1Website)  body.competitor1Website  = normalizeUrl(body.competitor1Website)
+    if (body.url)                 body.url                 = normalizeUrl(body.url)
+
+    // 2. Validate input
     const validationError = validateInput(body)
     if (validationError) {
       return NextResponse.json(
@@ -220,25 +232,15 @@ export async function POST(request: NextRequest) {
     }
 
     if (liveProfile) {
-      userId = liveProfile.id
-      isNewUser = false
-
-      // Check if they've already used this frictionless report type.
-      // h2h is tracked under "analyzer" key (shared with authenticated free tier — prevents double-dipping).
-      // ai_seo is tracked under "ai_seo_frictionless" key (separate from the authenticated brand_visibility slot).
-      const freeUsed = (liveProfile.free_reports_used ?? {}) as Record<string, string | boolean>
-      const frictionlessKey = body.reportType === 'h2h' ? 'analyzer' : 'ai_seo_frictionless'
-
-      if (freeUsed[frictionlessKey]) {
-        return NextResponse.json(
-          {
-            error: 'You already have a Good Breeze AI account. Sign in to run more reports.',
-            code: 'ACCOUNT_EXISTS',
-            signInUrl: '/login',
-          },
-          { status: 409 }
-        )
-      }
+      // Any existing user should sign in — frictionless is for new users only
+      return NextResponse.json(
+        {
+          error: 'You already have a Good Breeze AI account. Sign in to run more reports.',
+          code: 'ACCOUNT_EXISTS',
+          signInUrl: '/login',
+        },
+        { status: 409 }
+      )
     } else {
       // New user: create with email already confirmed (no confirmation email sent)
       const { data: newUser, error: createError } = await supabase.auth.admin.createUser({

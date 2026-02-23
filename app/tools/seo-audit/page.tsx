@@ -98,7 +98,7 @@ export default function SeoAuditPage() {
 
           <div>
             <label className={labelClass}>Website URL to Audit *</label>
-            <input type="url" value={url} onChange={e => setUrl(e.target.value)}
+            <input type="text" value={url} onChange={e => setUrl(e.target.value)}
               className={inputClass} placeholder="https://yoursite.com" required />
           </div>
 

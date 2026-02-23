@@ -37,10 +37,11 @@ const REPORT_TYPE_LABELS: Record<string, string> = {
 }
 
 const STATUS_STYLES: Record<string, string> = {
-  pending:    'bg-yellow-900/40 text-yellow-400 border-yellow-800',
-  processing: 'bg-blue-900/40 text-blue-400 border-blue-800',
-  complete:   'bg-green-900/40 text-green-400 border-green-800',
-  failed:     'bg-red-900/40 text-red-400 border-red-800',
+  pending:             'bg-yellow-900/40 text-yellow-400 border-yellow-800',
+  processing:          'bg-blue-900/40 text-blue-400 border-blue-800',
+  complete:            'bg-green-900/40 text-green-400 border-green-800',
+  failed:              'bg-red-900/40 text-red-400 border-red-800',
+  failed_site_blocked: 'bg-red-900/40 text-red-400 border-red-800',
 }
 
 const POLL_INTERVAL_MS = 5000
@@ -103,7 +104,7 @@ function ReportCard({ report }: { report: Report }) {
         )}
 
         <span className={`text-xs font-medium px-3 py-1 rounded-full border capitalize ${STATUS_STYLES[report.status] ?? STATUS_STYLES.pending}`}>
-          {report.status === 'pending' ? 'queued' : report.status}
+          {report.status === 'pending' ? 'queued' : report.status === 'failed_site_blocked' ? 'site blocked' : report.status}
         </span>
 
         {report.status === 'complete' && !isExpired && (
@@ -129,6 +130,10 @@ function ReportCard({ report }: { report: Report }) {
 
         {report.status === 'failed' && (
           <span className="text-sm text-red-400">Check email or retry</span>
+        )}
+
+        {report.status === 'failed_site_blocked' && (
+          <span className="text-sm text-red-400">Site blocked — check email</span>
         )}
       </div>
     </div>

@@ -78,7 +78,7 @@ export default function Partners() {
             Built on Enterprise Grade Technology
           </h2>
           <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-            We leverage the best tools in the industry to deliver reliable, scalable automation
+            We use the best tools in the industry to deliver reliable, scalable automation
           </p>
         </motion.div>
 

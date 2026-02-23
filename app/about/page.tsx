@@ -165,7 +165,7 @@ export default function About() {
                 href="/tools/sales-analyzer"
                 className="px-8 py-4 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full hover:shadow-lg hover:shadow-primary/50 transition-all duration-300"
               >
-                Try Free Tools
+                Try Free Reports
               </Link>
               <Link
                 href="/contact"

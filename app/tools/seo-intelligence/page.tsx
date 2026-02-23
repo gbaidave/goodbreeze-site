@@ -341,7 +341,7 @@ export default function SeoIntelligencePage() {
           <div>
             <label className={labelClass}>{config.urlLabel} *</label>
             <input
-              type="url"
+              type="text"
               value={url}
               onChange={e => setUrl(e.target.value)}
               className={inputClass}

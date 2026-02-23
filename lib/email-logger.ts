@@ -16,6 +16,8 @@ export type EmailType =
   | 'magic_link'
   | 'nudge_exhausted'
   | 'support_confirmation'
+  | 'support_reply'
+  | 'support_resolved'
   | 'referral_credit'
   | 'testimonial_credit'
   | 'welcome'

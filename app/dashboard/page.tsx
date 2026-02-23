@@ -70,6 +70,7 @@ export default async function DashboardPage({
   const totalCredits = credits.reduce((sum, c) => sum + (c.balance ?? 0), 0)
   const firstName = profile?.name?.split(' ')[0] || profile?.email?.split('@')[0] || 'there'
   const isAdmin = profile?.role === 'admin' || profile?.role === 'tester'
+  const isTester = profile?.role === 'tester'
 
   // Free reports remaining (free plan only — 1 per system)
   const freeUsed = (profile?.free_reports_used ?? {}) as Record<string, string>
@@ -116,6 +117,14 @@ export default async function DashboardPage({
             >
               Get help
             </a>
+            {isAdmin && (
+              <a
+                href="/admin"
+                className="text-sm text-gray-500 hover:text-gray-300 transition-colors"
+              >
+                Admin Panel →
+              </a>
+            )}
             <a
               href="/tools"
               className="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold px-6 py-3 rounded-xl hover:shadow-lg hover:shadow-primary/30 transition-all"
@@ -133,7 +142,7 @@ export default async function DashboardPage({
           <div className="bg-dark-700 border border-primary/20 rounded-2xl p-6">
             <p className="text-gray-400 text-sm mb-1">Current plan</p>
             <p className="text-2xl font-bold text-white capitalize">
-              {isAdmin ? 'Admin Account' : plan}
+              {isTester ? 'Tester Account' : isAdmin ? 'Admin Account' : plan}
             </p>
             {!isAdmin && sub?.current_period_end && (
               <p className="text-gray-500 text-xs mt-1">

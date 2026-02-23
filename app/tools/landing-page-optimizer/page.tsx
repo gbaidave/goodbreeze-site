@@ -98,7 +98,7 @@ export default function LandingPageOptimizerPage() {
 
           <div>
             <label className={labelClass}>Landing Page URL *</label>
-            <input type="url" value={url} onChange={e => setUrl(e.target.value)}
+            <input type="text" value={url} onChange={e => setUrl(e.target.value)}
               className={inputClass} placeholder="https://yoursite.com/your-landing-page" required />
           </div>
 

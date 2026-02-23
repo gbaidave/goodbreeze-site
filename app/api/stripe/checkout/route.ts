@@ -11,6 +11,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { stripe } from '@/lib/stripe'
+import { createServiceClient } from '@/lib/supabase/service-client'
 
 export async function POST(request: NextRequest) {
   try {
@@ -88,8 +89,9 @@ export async function POST(request: NextRequest) {
       })
       customerId = customer.id
 
-      // Save customer ID to profile
-      await supabase
+      // Save customer ID to profile — use service client to bypass RLS on this column
+      const svc = createServiceClient()
+      await svc
         .from('profiles')
         .update({ stripe_customer_id: customerId })
         .eq('id', user.id)

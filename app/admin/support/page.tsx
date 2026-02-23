@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { createServiceClient } from '@/lib/supabase/service-client'
+import { AdminReplyPanel } from './AdminReplyPanel'
 
 const STATUS_STYLES: Record<string, string> = {
   open:        'bg-yellow-900/40 text-yellow-400 border-yellow-800',
@@ -31,6 +32,23 @@ export default async function AdminSupportPage({
 
   const { data: requests } = await query.limit(100)
 
+  // Load all messages for the fetched requests in one query
+  const requestIds = requests?.map((r) => r.id) ?? []
+  const { data: allMessages } = requestIds.length
+    ? await supabase
+        .from('support_messages')
+        .select('id, request_id, sender_role, message, created_at')
+        .in('request_id', requestIds)
+        .order('created_at', { ascending: true })
+    : { data: [] }
+
+  // Group messages by request_id
+  const messagesByRequest: Record<string, typeof allMessages> = {}
+  for (const msg of allMessages ?? []) {
+    if (!messagesByRequest[msg.request_id]) messagesByRequest[msg.request_id] = []
+    messagesByRequest[msg.request_id]!.push(msg)
+  }
+
   return (
     <div className="p-8 space-y-6">
       <div>
@@ -39,7 +57,7 @@ export default async function AdminSupportPage({
       </div>
 
       {/* Filter tabs */}
-      <div className="flex gap-2">
+      <div className="flex gap-2 flex-wrap">
         {['open', 'in_progress', 'resolved', 'closed', 'all'].map((s) => (
           <Link
             key={s}
@@ -77,15 +95,23 @@ export default async function AdminSupportPage({
                   </span>
                 </div>
               </div>
-              <p className="text-gray-300 text-sm">{r.message}</p>
+
               {r.user_id && (
-                <div className="mt-3">
+                <div className="mb-3">
                   <Link href={`/admin/users/${r.user_id}`}
                     className="text-primary text-xs hover:underline">
                     View user →
                   </Link>
                 </div>
               )}
+
+              {/* Reply panel with thread + reply form */}
+              <AdminReplyPanel
+                requestId={r.id}
+                userEmail={r.email}
+                status={r.status}
+                messages={(messagesByRequest[r.id] ?? []) as any}
+              />
             </div>
           ))}
         </div>

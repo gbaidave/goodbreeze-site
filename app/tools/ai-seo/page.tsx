@@ -164,7 +164,7 @@ export default function AiSeoPage() {
 
           <div>
             <label className={labelClass}>Page URL to Analyze *</label>
-            <input type="url" value={url} onChange={e => setUrl(e.target.value)}
+            <input type="text" value={url} onChange={e => setUrl(e.target.value)}
               className={inputClass} placeholder="https://yoursite.com/your-page" required />
             <p className="text-xs text-gray-600 mt-1.5">Enter the specific page you want analyzed — homepage, landing page, blog post, etc.</p>
           </div>

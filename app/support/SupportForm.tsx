@@ -4,11 +4,34 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 
+interface Message {
+  id: string
+  sender_role: 'user' | 'admin'
+  message: string
+  created_at: string
+}
+
+interface Ticket {
+  id: string
+  message: string
+  status: string
+  created_at: string
+  messages: Message[]
+}
+
 interface Props {
   userName: string
   userEmail: string
   plan: string
   lastReportContext: string | null
+  tickets?: Ticket[]
+}
+
+const STATUS_STYLES: Record<string, string> = {
+  open:        'bg-yellow-900/40 text-yellow-400',
+  in_progress: 'bg-blue-900/40 text-blue-400',
+  resolved:    'bg-green-900/40 text-green-400',
+  closed:      'bg-gray-800 text-gray-400',
 }
 
 function SuccessState() {
@@ -42,7 +65,69 @@ function SuccessState() {
   )
 }
 
-export default function SupportForm({ userName, userEmail, plan, lastReportContext }: Props) {
+function TicketThread({ ticket, userEmail }: { ticket: Ticket; userEmail: string }) {
+  const [open, setOpen] = useState(false)
+
+  return (
+    <div className="bg-dark border border-gray-800 rounded-xl overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-dark-700 transition-colors"
+      >
+        <div className="flex items-center gap-3 min-w-0">
+          <span className={`text-xs px-2 py-0.5 rounded-full capitalize shrink-0 ${STATUS_STYLES[ticket.status] ?? STATUS_STYLES.open}`}>
+            {ticket.status.replace('_', ' ')}
+          </span>
+          <span className="text-gray-300 text-sm truncate">
+            {ticket.message.slice(0, 80)}{ticket.message.length > 80 ? '…' : ''}
+          </span>
+        </div>
+        <div className="flex items-center gap-3 shrink-0 ml-3">
+          <span className="text-gray-600 text-xs">
+            {new Date(ticket.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+          </span>
+          <svg className={`w-4 h-4 text-gray-500 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
+      </button>
+
+      {open && (
+        <div className="border-t border-gray-800 px-4 py-3 space-y-2">
+          {ticket.messages.length === 0 ? (
+            <p className="text-gray-600 text-sm">No messages yet.</p>
+          ) : (
+            ticket.messages.map((msg) => (
+              <div
+                key={msg.id}
+                className={`rounded-xl p-3 text-sm ${
+                  msg.sender_role === 'admin'
+                    ? 'bg-primary/10 border border-primary/20 text-white ml-6'
+                    : 'bg-dark-700 border border-gray-700 text-gray-300'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className={`text-xs font-medium ${msg.sender_role === 'admin' ? 'text-primary' : 'text-gray-400'}`}>
+                    {msg.sender_role === 'admin' ? 'Good Breeze AI Support' : userEmail}
+                  </span>
+                  <span className="text-xs text-gray-600">
+                    {new Date(msg.created_at).toLocaleString('en-US', {
+                      month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
+                    })}
+                  </span>
+                </div>
+                <p className="whitespace-pre-wrap">{msg.message}</p>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default function SupportForm({ userName, userEmail, plan, lastReportContext, tickets = [] }: Props) {
   const [message, setMessage] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
@@ -70,16 +155,16 @@ export default function SupportForm({ userName, userEmail, plan, lastReportConte
     }
   }
 
-  const planLabel = plan === 'starter' ? 'Starter' : plan === 'impulse' ? 'Impulse' : 'Free'
+  const planLabel = plan === 'starter' ? 'Starter' : plan === 'growth' ? 'Growth' : plan === 'pro' ? 'Pro' : 'Free'
 
   return (
     <div className="min-h-screen bg-dark py-24 px-6">
-      <div className="max-w-2xl mx-auto">
+      <div className="max-w-2xl mx-auto space-y-8">
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-10"
+          className="text-center"
         >
           <Link href="/dashboard" className="text-gray-500 hover:text-primary text-sm transition-colors">
             ← Back to Dashboard
@@ -90,6 +175,22 @@ export default function SupportForm({ userName, userEmail, plan, lastReportConte
           </p>
         </motion.div>
 
+        {/* Previous tickets */}
+        {tickets.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+            className="space-y-3"
+          >
+            <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wide">Your Previous Requests</h2>
+            {tickets.map((ticket) => (
+              <TicketThread key={ticket.id} ticket={ticket} userEmail={userEmail} />
+            ))}
+          </motion.div>
+        )}
+
+        {/* New request form */}
         <motion.form
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -97,6 +198,10 @@ export default function SupportForm({ userName, userEmail, plan, lastReportConte
           onSubmit={handleSubmit}
           className="bg-dark-700 border border-primary/20 rounded-2xl p-8 space-y-6"
         >
+          {tickets.length > 0 && (
+            <h2 className="text-lg font-semibold text-white">Submit a New Request</h2>
+          )}
+
           {error && (
             <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm">
               {error}
@@ -131,10 +236,11 @@ export default function SupportForm({ userName, userEmail, plan, lastReportConte
 
           {/* Message */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1.5">
+            <label htmlFor="support-message" className="block text-sm font-medium text-gray-300 mb-1.5">
               How can we help? *
             </label>
             <textarea
+              id="support-message"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               rows={6}

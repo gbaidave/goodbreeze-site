@@ -52,7 +52,7 @@ export default function FinalCTA() {
           transition={{ duration: 0.6 }}
           className="relative bg-dark-800 backdrop-blur-xl rounded-3xl px-12 pt-8 pb-12 shadow-2xl overflow-hidden"
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-accent-blue/15 to-accent-purple/20 rounded-3xl" />
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-accent-blue/10 to-accent-purple/10 rounded-3xl" />
           <div className="relative z-10">
             <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 text-center text-white">
               Your First Report Is Free

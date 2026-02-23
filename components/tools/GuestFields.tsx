@@ -54,8 +54,9 @@ export function GuestFields({
       <div className="grid sm:grid-cols-2 gap-3">
         {/* Name */}
         <div className="space-y-1">
-          <label className="text-xs text-gray-400">Your name</label>
+          <label htmlFor="guest-name" className="text-xs text-gray-400">Your name</label>
           <input
+            id="guest-name"
             type="text"
             value={name}
             onChange={(e) => onNameChange(e.target.value)}
@@ -69,8 +70,9 @@ export function GuestFields({
 
         {/* Email */}
         <div className="space-y-1">
-          <label className="text-xs text-gray-400">Email address</label>
+          <label htmlFor="guest-email" className="text-xs text-gray-400">Email address</label>
           <input
+            id="guest-email"
             type="email"
             value={email}
             onChange={(e) => onEmailChange(e.target.value)}
@@ -86,8 +88,9 @@ export function GuestFields({
       {/* Phone (optional) */}
       {showPhone && (
         <div className="space-y-1">
-          <label className="text-xs text-gray-400">Phone <span className="text-gray-600">(optional)</span></label>
+          <label htmlFor="guest-phone" className="text-xs text-gray-400">Phone <span className="text-gray-600">(optional)</span></label>
           <input
+            id="guest-phone"
             type="tel"
             value={phone}
             onChange={(e) => onPhoneChange?.(e.target.value)}

@@ -40,7 +40,7 @@ export default function FounderSection() {
                 alt="Dave Silverstein, founder of Good Breeze AI"
                 width={600}
                 height={800}
-                className="w-full h-auto"
+                className="w-full max-h-[400px] object-cover object-top"
               />
               {/* Gradient overlay */}
               <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 to-accent-purple/10" />

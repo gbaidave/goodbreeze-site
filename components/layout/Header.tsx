@@ -83,7 +83,7 @@ export default function Header() {
             </div>
 
             <Link href="/tools" className="text-gray-300 hover:text-primary transition-colors">
-              Free Tools
+              Free Reports
             </Link>
 
             {/* Resources Dropdown */}
@@ -202,7 +202,7 @@ export default function Header() {
             </div>
 
             <Link href="/tools" className="block text-gray-300 hover:text-primary transition-colors">
-              Free Tools
+              Free Reports
             </Link>
 
             {/* Mobile Resources */}

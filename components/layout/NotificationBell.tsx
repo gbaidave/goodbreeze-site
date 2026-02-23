@@ -79,10 +79,12 @@ export function NotificationBell() {
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
 
-  // Fetch on mount
+  // Fetch on mount + poll every 30s while logged in
   useEffect(() => {
     if (!user) return
     fetchNotifications()
+    const interval = setInterval(fetchNotifications, 30000)
+    return () => clearInterval(interval)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user])
 
