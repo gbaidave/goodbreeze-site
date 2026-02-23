@@ -343,7 +343,7 @@ export async function POST(request: NextRequest) {
     // 5. Mark free report as used on profile.
     // h2h: stored as { "analyzer": "h2h" } — shared key with authenticated free tier (prevents double-dipping).
     // ai_seo: stored as { "ai_seo_frictionless": true } — separate from the authenticated brand_visibility free slot.
-    const freeUsed = (liveProfile?.free_reports_used ?? {}) as Record<string, string | boolean>
+    const freeUsed = ((liveProfile as any)?.free_reports_used ?? {}) as Record<string, string | boolean>
     const freeUsedUpdate =
       body.reportType === 'h2h'
         ? { ...freeUsed, analyzer: 'h2h' }

@@ -43,7 +43,7 @@ export default async function AdminSupportPage({
     : { data: [] }
 
   // Group messages by request_id
-  const messagesByRequest: Record<string, typeof allMessages> = {}
+  const messagesByRequest: Record<string, any[]> = {}
   for (const msg of allMessages ?? []) {
     if (!messagesByRequest[msg.request_id]) messagesByRequest[msg.request_id] = []
     messagesByRequest[msg.request_id]!.push(msg)
