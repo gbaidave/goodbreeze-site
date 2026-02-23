@@ -253,7 +253,16 @@ export async function POST(request: NextRequest) {
     const inputData = { ...body, userEmail, userName }
     delete (inputData as any).reportType
 
-    const reportId = await createReportRow(user.id, reportType, inputData, plan)
+    const usageType =
+      entitlement.deductFrom === 'credits' ? 'credits' :
+      entitlement.freeSystemConsumed       ? 'free'    :
+      'subscription'  // covers subscription plans, custom, and admin bypass
+
+    const reportId = await createReportRow(user.id, reportType, inputData, plan, {
+      usageType,
+      creditRowId: entitlement.creditRowId,
+      freeSystem: entitlement.freeSystemConsumed,
+    })
 
     // 6. Build n8n payload
     const n8nPayload = buildN8nPayload(reportType, body, {

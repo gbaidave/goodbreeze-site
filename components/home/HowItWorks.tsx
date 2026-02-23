@@ -5,18 +5,18 @@ import { motion } from "framer-motion";
 const steps = [
   {
     number: "1",
-    title: "Tell Us What's Broken",
-    description: "We start with a conversation about your business — where time and money are going, what keeps slipping, where the real bottlenecks are. We ask the right questions and put together a clear proposal for what we'll build and what it will cost.",
+    title: "Start for Free",
+    description: "Run a free Brand Visibility or Competitive Analysis report. See where your business stands in the marketplace, what your competitors are doing better, and where the biggest gaps are.",
   },
   {
     number: "2",
-    title: "We Build It",
-    description: "Once we're aligned on the plan, we get to work. Built for your business, your team, and your actual processes. Not templates. You stay in the loop. We do the heavy lifting.",
+    title: "Go Deeper",
+    description: "Targeted, low-cost reports let you dig into specific areas — keyword gaps, landing page performance, competitor moves. Find the improvements that make the biggest difference.",
   },
   {
     number: "3",
-    title: "Up and Running",
-    description: "We hand everything off with training and documentation your team can follow. It works the way we scoped it. You're off and moving.",
+    title: "Build With Us",
+    description: "When you're ready for custom work, we build the systems. AI-powered automations designed around your real processes, your team, and your goals. GBAI as your partner through the build and beyond.",
   },
 ];
 
@@ -32,10 +32,10 @@ export default function HowItWorks() {
           className="text-center mb-16"
         >
           <h2 className="text-4xl sm:text-5xl font-bold mb-4 text-white">
-            How We Work
+            How It Works
           </h2>
           <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-            Custom work, clear process, nothing left to figure out on your own.
+            Start free. Dig deeper when you need to. Bring us in to build.
           </p>
         </motion.div>
 

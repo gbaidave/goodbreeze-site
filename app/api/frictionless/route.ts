@@ -332,7 +332,11 @@ export async function POST(request: NextRequest) {
     // Remove undefined fields
     Object.keys(inputData).forEach((k) => inputData[k] === undefined && delete inputData[k])
 
-    const reportId = await createReportRow(userId, body.reportType, inputData, 'free')
+    const frictionlessFreeSystem = body.reportType === 'h2h' ? 'analyzer' : 'ai_seo_frictionless'
+    const reportId = await createReportRow(userId, body.reportType, inputData, 'free', {
+      usageType: 'free',
+      freeSystem: frictionlessFreeSystem,
+    })
 
     // 5. Mark free report as used on profile.
     // h2h: stored as { "analyzer": "h2h" } — shared key with authenticated free tier (prevents double-dipping).

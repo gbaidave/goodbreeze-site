@@ -318,7 +318,12 @@ export async function createReportRow(
   userId: string,
   reportType: ReportType,
   inputData: Record<string, unknown>,
-  plan: Plan
+  plan: Plan,
+  usageInfo?: {
+    usageType: 'free' | 'credits' | 'subscription' | 'admin'
+    creditRowId?: string
+    freeSystem?: string
+  }
 ): Promise<string> {
   const meta = REPORT_META[reportType]
   const supabase = getServiceClient()
@@ -337,6 +342,11 @@ export async function createReportRow(
       status: 'pending',
       input_data: inputData,
       expires_at: expiresAt.toISOString(),
+      ...(usageInfo && {
+        usage_type: usageInfo.usageType,
+        credit_row_id: usageInfo.creditRowId ?? null,
+        free_system: usageInfo.freeSystem ?? null,
+      }),
     })
     .select('id')
     .single()

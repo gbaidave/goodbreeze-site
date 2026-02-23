@@ -30,6 +30,8 @@ export default async function DashboardPage({
       .eq('user_id', user.id).in('status', ['active', 'trialing']).order('created_at', { ascending: false }).limit(1).single(),
     supabase.from('credits').select('balance, expires_at').eq('user_id', user.id).gt('balance', 0).order('purchased_at', { ascending: true }),
     supabase.from('reports').select('id, report_type, status, created_at, pdf_url, expires_at').eq('user_id', user.id)
+      .not('status', 'in', '("failed","failed_site_blocked")')
+      .gte('created_at', new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString())
       .order('created_at', { ascending: false }).limit(20),
     supabase.from('referral_codes').select('code, referral_uses(reward_granted)').eq('user_id', user.id).single(),
     supabase.from('testimonials').select('type').eq('user_id', user.id),
