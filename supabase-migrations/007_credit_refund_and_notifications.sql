@@ -9,6 +9,16 @@
 
 
 -- ============================================================================
+-- Fix: add 'failed_site_blocked' to report_status ENUM
+-- This value is used by n8n when a site blocks our analysis.
+-- Must be added before any trigger WHEN clause can reference it.
+-- (ENUM values cannot be removed once added — safe to re-run: IF NOT EXISTS)
+-- ============================================================================
+
+ALTER TYPE report_status ADD VALUE IF NOT EXISTS 'failed_site_blocked';
+
+
+-- ============================================================================
 -- T3-NOTIFICATIONS: Add credits_low to notification_type ENUM
 -- ============================================================================
 
@@ -109,6 +119,7 @@ BEGIN
 END;
 $$;
 
+DROP TRIGGER IF EXISTS trg_refund_on_report_failure ON reports;
 CREATE TRIGGER trg_refund_on_report_failure
   AFTER UPDATE ON reports
   FOR EACH ROW
@@ -160,6 +171,7 @@ BEGIN
 END;
 $$;
 
+DROP TRIGGER IF EXISTS trg_notify_report_status_change ON reports;
 CREATE TRIGGER trg_notify_report_status_change
   AFTER UPDATE ON reports
   FOR EACH ROW
@@ -194,6 +206,7 @@ BEGIN
 END;
 $$;
 
+DROP TRIGGER IF EXISTS trg_notify_credits_low ON credits;
 CREATE TRIGGER trg_notify_credits_low
   AFTER UPDATE ON credits
   FOR EACH ROW
