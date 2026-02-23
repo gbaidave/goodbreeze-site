@@ -6,9 +6,10 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/client'
+import PasswordStrengthMeter from '@/components/auth/PasswordStrengthMeter'
 
 const schema = z.object({
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+  password: z.string().min(12, 'Password must be at least 12 characters'),
   confirm: z.string(),
 }).refine(d => d.password === d.confirm, { message: 'Passwords do not match', path: ['confirm'] })
 
@@ -17,6 +18,7 @@ type FormData = z.infer<typeof schema>
 export default function ResetPasswordPage() {
   const router = useRouter()
   const [error, setError] = useState<string | null>(null)
+  const [passwordValue, setPasswordValue] = useState('')
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({ resolver: zodResolver(schema) })
 
@@ -36,7 +38,8 @@ export default function ResetPasswordPage() {
         {error && <div className="bg-red-950 border border-red-800 text-red-400 text-sm px-4 py-3 rounded-lg">{error}</div>}
         <div>
           <label className="block text-sm font-medium text-zinc-300 mb-1.5">New password</label>
-          <input {...register('password')} type="password" className="w-full bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-500 rounded-lg px-4 py-3 focus:outline-none focus:border-cyan-500 transition-colors" placeholder="At least 8 characters" />
+          <input {...register('password')} type="password" onChange={(e) => setPasswordValue(e.target.value)} className="w-full bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-500 rounded-lg px-4 py-3 focus:outline-none focus:border-cyan-500 transition-colors" placeholder="At least 12 characters" />
+          <PasswordStrengthMeter password={passwordValue} />
           {errors.password && <p className="text-red-400 text-xs mt-1">{errors.password.message}</p>}
         </div>
         <div>

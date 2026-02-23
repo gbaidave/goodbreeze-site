@@ -88,14 +88,15 @@ export function NotificationBell() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user])
 
-  async function fetchNotifications() {
+  async function fetchNotifications(): Promise<number> {
     setFetching(true)
     try {
       const res = await fetch('/api/notifications')
-      if (!res.ok) return
+      if (!res.ok) return 0
       const data = await res.json()
       setNotifications(data.notifications ?? [])
       setUnreadCount(data.unreadCount ?? 0)
+      return data.unreadCount ?? 0
     } finally {
       setFetching(false)
     }
@@ -115,9 +116,9 @@ export function NotificationBell() {
     const next = !open
     setOpen(next)
     if (next) {
-      await fetchNotifications()
+      const freshCount = await fetchNotifications()
       // Auto-mark all as read shortly after opening
-      if (unreadCount > 0) {
+      if (freshCount > 0) {
         setTimeout(() => markAllRead(), 800)
       }
     }

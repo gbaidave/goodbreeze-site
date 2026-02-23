@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/client'
+import TurnstileWidget from '@/components/auth/TurnstileWidget'
 
 const schema = z.object({
   email: z.string().email('Enter a valid email address'),
@@ -20,6 +21,7 @@ export default function LoginForm() {
   const sessionExpired = searchParams.get('reason') === 'timeout'
   const [serverError, setServerError] = useState<string | null>(null)
   const [oauthLoading, setOauthLoading] = useState(false)
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null)
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -27,19 +29,22 @@ export default function LoginForm() {
 
   async function onSubmit(data: FormData) {
     setServerError(null)
-    const supabase = createClient()
-    const { error } = await supabase.auth.signInWithPassword({
-      email: data.email,
-      password: data.password,
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: data.email,
+        password: data.password,
+        captchaToken: captchaToken ?? undefined,
+      }),
     })
-    if (error) {
-      setServerError(error.message === 'Invalid login credentials'
-        ? 'Incorrect email or password.'
-        : error.message)
+    if (res.ok) {
+      router.push(returnUrl)
+      router.refresh()
       return
     }
-    router.push(returnUrl)
-    router.refresh()
+    const body = await res.json()
+    setServerError(body.error ?? 'Sign in failed. Please try again.')
   }
 
   async function signInWithGoogle() {
@@ -115,6 +120,8 @@ export default function LoginForm() {
           {errors.password && <p className="text-red-400 text-xs mt-1">{errors.password.message}</p>}
         </div>
 
+        <TurnstileWidget onVerify={(token) => setCaptchaToken(token)} />
+
         <button
           type="submit"
           disabled={isSubmitting}
@@ -125,7 +132,7 @@ export default function LoginForm() {
       </form>
 
       <p className="text-center text-sm text-zinc-500 mt-6">
-        Don't have an account?{' '}
+        Don&apos;t have an account?{' '}
         <a href="/signup" className="text-cyan-400 hover:text-cyan-300">Start for free</a>
       </p>
     </div>

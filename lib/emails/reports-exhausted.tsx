@@ -1,7 +1,7 @@
 export function reportsExhaustedEmail(name: string): { subject: string; html: string } {
   const firstName = name.split(' ')[0]
   return {
-    subject: `You've used your free Good Breeze AI reports — here's what's next`,
+    subject: `You've used your free Good Breeze AI reports. Here's what's next.`,
     html: `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -17,16 +17,16 @@ export function reportsExhaustedEmail(name: string): { subject: string; html: st
 
         <!-- Hero -->
         <tr><td style="background:#18181b;border:1px solid #27272a;border-radius:16px;padding:40px;">
-          <h1 style="margin:0 0 12px;font-size:28px;font-weight:700;color:#ffffff;">You've used your free reports, ${firstName}</h1>
+          <h1 style="margin:0 0 12px;font-size:28px;font-weight:700;color:#ffffff;">Your free reports are done, ${firstName}</h1>
           <p style="margin:0 0 24px;font-size:16px;color:#a1a1aa;line-height:1.6;">
-            Great work running your first reports. Here's how to keep the momentum going.
+            You ran your first reports. Here's how to keep going.
           </p>
 
           <!-- Options -->
           <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
             <tr>
               <td style="background:#1d1d1f;border:1px solid #27272a;border-radius:12px;padding:20px 24px;margin-bottom:12px;">
-                <p style="margin:0 0 4px;font-size:13px;color:#22d3ee;font-weight:600;">MONTHLY PLANS — from $20/month</p>
+                <p style="margin:0 0 4px;font-size:13px;color:#22d3ee;font-weight:600;">MONTHLY PLANS from $20/month</p>
                 <p style="margin:0 0 8px;font-size:16px;font-weight:700;color:#ffffff;">Starter / Growth / Pro</p>
                 <p style="margin:0;font-size:14px;color:#a1a1aa;line-height:1.5;">25 to 50 reports per month across all tools. Pick the plan that fits your volume.</p>
               </td>
@@ -34,7 +34,7 @@ export function reportsExhaustedEmail(name: string): { subject: string; html: st
             <tr><td style="height:8px;"></td></tr>
             <tr>
               <td style="background:#1d1d1f;border:1px solid #27272a;border-radius:12px;padding:20px 24px;">
-                <p style="margin:0 0 4px;font-size:13px;color:#71717a;font-weight:600;">FLEXIBLE — $10 one-time</p>
+                <p style="margin:0 0 4px;font-size:13px;color:#71717a;font-weight:600;">FLEXIBLE, $10 one-time</p>
                 <p style="margin:0 0 8px;font-size:16px;font-weight:700;color:#ffffff;">3-Report Credit Pack</p>
                 <p style="margin:0;font-size:14px;color:#a1a1aa;line-height:1.5;">Pay once, use when you need them. No subscription required.</p>
               </td>

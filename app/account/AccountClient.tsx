@@ -39,19 +39,32 @@ export default function AccountClient({
   const [phone, setPhone] = useState(initialPhone)
   const [smsOk, setSmsOk] = useState(initialSmsOk)
   const [phoneError, setPhoneError] = useState('')
+  const [phonePassword, setPhonePassword] = useState('')
+  const [phonePasswordError, setPhonePasswordError] = useState('')
   const [saving, setSaving] = useState(false)
   const [saveMsg, setSaveMsg] = useState('')
   const [portalLoading, setPortalLoading] = useState(false)
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
   const [resetSent, setResetSent] = useState(false)
   const [resetLoading, setResetLoading] = useState(false)
+  // Email change
+  const [newEmail, setNewEmail] = useState(email)
+  const [emailSaving, setEmailSaving] = useState(false)
+  const [emailMsg, setEmailMsg] = useState('')
+  const [emailError, setEmailError] = useState('')
 
   const hasChanges = name !== initialName || phone !== initialPhone || smsOk !== initialSmsOk
+  const phoneChanged = phone !== initialPhone
 
   async function saveProfile() {
     setPhoneError('')
+    setPhonePasswordError('')
     if (phone.trim() && !isValidPhone(phone)) {
       setPhoneError('Enter a valid phone number (e.g. +1 555 000 0000)')
+      return
+    }
+    if (phoneChanged && !phonePassword) {
+      setPhonePasswordError('Enter your current password to change your phone number.')
       return
     }
     setSaving(true)
@@ -68,22 +81,25 @@ export default function AccountClient({
         .eq('id', user.id)
       if (error) throw error
 
-      // Save phone via server route (runs dedup check across all profiles)
-      if (phone !== initialPhone) {
+      // Save phone via server route (runs dedup check + password verification)
+      if (phoneChanged) {
         const res = await fetch('/api/account/save-phone', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ phone: phone.trim() }),
+          body: JSON.stringify({ phone: phone.trim(), currentPassword: phonePassword }),
         })
         const data = await res.json()
         if (!res.ok) {
           if (data.code === 'PHONE_DUPLICATE') {
             setPhoneError(data.error)
+          } else if (data.code === 'WRONG_PASSWORD') {
+            setPhonePasswordError('Current password is incorrect.')
           } else {
             throw new Error(data.error || 'Phone save failed')
           }
           return
         }
+        setPhonePassword('')
       }
 
       setSaveMsg('Saved!')
@@ -92,6 +108,33 @@ export default function AccountClient({
     } finally {
       setSaving(false)
       setTimeout(() => setSaveMsg(''), 3000)
+    }
+  }
+
+  async function saveEmail() {
+    setEmailError('')
+    setEmailMsg('')
+    if (!newEmail || !newEmail.includes('@')) {
+      setEmailError('Enter a valid email address.')
+      return
+    }
+    if (newEmail === email) {
+      setEmailError('This is already your current email.')
+      return
+    }
+    setEmailSaving(true)
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.auth.updateUser({ email: newEmail })
+      if (error) {
+        setEmailError(error.message)
+        return
+      }
+      setEmailMsg('Confirmation emails sent. Check both your old and new inbox and click the links in each to complete the change.')
+    } catch {
+      setEmailError('Failed to request email change. Try again.')
+    } finally {
+      setEmailSaving(false)
     }
   }
 
@@ -172,12 +215,32 @@ export default function AccountClient({
             <label className="block text-sm text-gray-400 mb-1.5">Email address</label>
             <input
               type="email"
-              value={email}
-              readOnly
-              className="w-full bg-dark/50 border border-gray-800 text-gray-500 rounded-xl px-4 py-2.5 text-sm cursor-not-allowed"
+              value={newEmail}
+              onChange={(e) => { setNewEmail(e.target.value); setEmailError(''); setEmailMsg('') }}
+              className="w-full bg-dark border border-gray-700 text-white rounded-xl px-4 py-2.5 focus:outline-none focus:border-primary transition-colors text-sm"
+              placeholder="your@email.com"
             />
+            {emailError && <p className="text-xs text-red-400 mt-1">{emailError}</p>}
+            {emailMsg && <p className="text-xs text-green-400 mt-1">{emailMsg}</p>}
+            {newEmail !== email && !emailMsg && (
+              <div className="mt-2 flex items-center gap-3">
+                <button
+                  onClick={saveEmail}
+                  disabled={emailSaving}
+                  className="px-4 py-1.5 bg-gradient-to-r from-primary to-accent-blue text-white text-xs font-medium rounded-lg disabled:opacity-40 hover:shadow-lg hover:shadow-primary/20 transition-all"
+                >
+                  {emailSaving ? 'Sending…' : 'Change email'}
+                </button>
+                <button
+                  onClick={() => { setNewEmail(email); setEmailError(''); setEmailMsg('') }}
+                  className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
             <p className="text-xs text-gray-600 mt-1">
-              Email is managed through your login provider and cannot be changed here.
+              Both your old and new email must confirm the change.
             </p>
           </div>
 
@@ -200,6 +263,23 @@ export default function AccountClient({
               : <p className="text-xs text-gray-600 mt-1">Used for account identification and future SMS notifications.</p>
             }
           </div>
+
+          {/* Current password — required only when changing phone */}
+          {phoneChanged && (
+            <div>
+              <label className="block text-sm text-gray-400 mb-1.5">Current password <span className="text-gray-600">(required to change phone)</span></label>
+              <input
+                type="password"
+                value={phonePassword}
+                onChange={(e) => { setPhonePassword(e.target.value); setPhonePasswordError('') }}
+                autoComplete="current-password"
+                className={`w-full bg-dark border rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-primary transition-colors
+                  ${phonePasswordError ? 'border-red-500' : 'border-gray-700'}`}
+                placeholder="Your current password"
+              />
+              {phonePasswordError && <p className="text-xs text-red-400 mt-1">{phonePasswordError}</p>}
+            </div>
+          )}
 
           {/* SMS opt-in */}
           <label className="flex items-center gap-3 cursor-pointer select-none">

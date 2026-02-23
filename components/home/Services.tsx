@@ -70,7 +70,7 @@ export default function Services() {
               {/* Card header */}
               <div className="px-8 pt-8 pb-6 border-b border-primary/20">
                 <h3 className="text-xl font-bold text-white mb-2">{service.title}</h3>
-                <p className="text-sm text-primary leading-snug">{service.qualifier}</p>
+                <p className="text-sm text-primary leading-snug min-h-[2.5rem]">{service.qualifier}</p>
               </div>
 
               {/* Outcomes */}

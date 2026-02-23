@@ -1,11 +1,12 @@
 /**
  * POST /api/account/save-phone
  *
- * Server-side phone save with deduplication check.
+ * Server-side phone save with deduplication check + password verification (T4-3).
  * Used by AccountClient (account settings) and PhoneGatePrompt (report gate).
  *
  * Checks that no OTHER profile already has this phone number before saving.
- * Client-side Supabase can't do this (RLS restricts cross-user queries).
+ * When currentPassword is provided, verifies it matches the account password.
+ * Client-side Supabase can't do cross-user queries (RLS restricts them).
  */
 
 import { NextRequest, NextResponse } from 'next/server'
@@ -16,7 +17,7 @@ import { isValidPhone, normalizePhone } from '@/lib/phone'
 
 export async function POST(request: NextRequest) {
   try {
-    const { phone } = await request.json()
+    const { phone, currentPassword } = await request.json()
 
     // 1. Authenticate
     const cookieStore = await cookies()
@@ -40,14 +41,28 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
 
-    // 2. Allow clearing phone (empty string = remove)
+    // 2. Verify current password when provided (T4-3)
+    if (currentPassword) {
+      const { error: pwError } = await supabase.auth.signInWithPassword({
+        email: user.email!,
+        password: currentPassword,
+      })
+      if (pwError) {
+        return NextResponse.json(
+          { error: 'Current password is incorrect.', code: 'WRONG_PASSWORD' },
+          { status: 401 }
+        )
+      }
+    }
+
+    // 4. Allow clearing phone (empty string = remove)
     if (!phone || !phone.trim()) {
       const svc = createServiceClient()
       await svc.from('profiles').update({ phone: null }).eq('id', user.id)
       return NextResponse.json({ success: true })
     }
 
-    // 3. Validate format
+    // 5. Validate format
     if (!isValidPhone(phone)) {
       return NextResponse.json(
         { error: 'Enter a valid phone number (e.g. +1 555 000 0000)', code: 'INVALID_PHONE' },
@@ -57,7 +72,7 @@ export async function POST(request: NextRequest) {
 
     const normalized = normalizePhone(phone)
 
-    // 4. Dedup check — service client bypasses RLS to check all profiles
+    // 6. Dedup check — service client bypasses RLS to check all profiles
     const svc = createServiceClient()
     const { data: existing } = await svc
       .from('profiles')
@@ -76,7 +91,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 5. Save
+    // 7. Save
     const { error: updateError } = await svc
       .from('profiles')
       .update({ phone: normalized })

@@ -9,11 +9,13 @@ import { createClient } from '@/lib/supabase/client'
 import { captureEvent } from '@/lib/analytics'
 import { isDisposableEmail } from '@/lib/disposable-email'
 import { isValidPhone } from '@/lib/phone'
+import PasswordStrengthMeter from '@/components/auth/PasswordStrengthMeter'
+import TurnstileWidget from '@/components/auth/TurnstileWidget'
 
 const schema = z.object({
   name: z.string().min(1, 'Name is required'),
   email: z.string().email('Enter a valid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+  password: z.string().min(12, 'Password must be at least 12 characters'),
   company: z.string().optional(),
   phone: z.string().optional().refine(val => !val || isValidPhone(val), { message: 'Enter a valid phone number' }),
   marketingOptIn: z.boolean(),
@@ -29,6 +31,8 @@ export default function SignupForm() {
   const [serverError, setServerError] = useState<string | null>(null)
   const [oauthLoading, setOauthLoading] = useState(false)
   const [success, setSuccess] = useState(false)
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null)
+  const [passwordValue, setPasswordValue] = useState('')
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -47,6 +51,7 @@ export default function SignupForm() {
         email: data.email,
         password: data.password,
         options: {
+          captchaToken: captchaToken ?? undefined,
           data: {
             name: data.name,
             company: data.company || null,
@@ -153,7 +158,8 @@ export default function SignupForm() {
 
         <div>
           <label className="block text-sm font-medium text-zinc-300 mb-1.5">Password</label>
-          <input {...register('password')} type="password" autoComplete="new-password" className="w-full bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-500 rounded-lg px-4 py-3 focus:outline-none focus:border-cyan-500 transition-colors" placeholder="At least 8 characters" />
+          <input {...register('password')} type="password" autoComplete="new-password" onChange={(e) => setPasswordValue(e.target.value)} className="w-full bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-500 rounded-lg px-4 py-3 focus:outline-none focus:border-cyan-500 transition-colors" placeholder="At least 12 characters" />
+          <PasswordStrengthMeter password={passwordValue} />
           {errors.password && <p className="text-red-400 text-xs mt-1">{errors.password.message}</p>}
         </div>
 
@@ -172,6 +178,8 @@ export default function SignupForm() {
           <input {...register('smsOptIn')} type="checkbox" className="mt-0.5 accent-cyan-500" />
           <span className="text-sm text-zinc-400">Text me occasional tips and offers. Standard rates may apply. Requires phone number above.</span>
         </label>
+
+        <TurnstileWidget onVerify={(token) => setCaptchaToken(token)} />
 
         <button type="submit" disabled={isSubmitting} className="w-full bg-cyan-500 hover:bg-cyan-400 text-zinc-950 font-semibold py-3 px-4 rounded-lg transition-colors disabled:opacity-60">
           {isSubmitting ? 'Creating account...' : 'Create free account'}
