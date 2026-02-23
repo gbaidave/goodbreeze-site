@@ -17,7 +17,7 @@ export default function FounderSection() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl sm:text-5xl font-bold mb-4 bg-gradient-to-r from-primary via-accent-blue to-accent-purple bg-clip-text text-transparent">
+          <h2 className="text-4xl sm:text-5xl font-bold mb-4 text-white">
             Meet Your Automation Partner
           </h2>
           <p className="text-xl text-gray-300 max-w-3xl mx-auto">

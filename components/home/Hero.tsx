@@ -123,7 +123,7 @@ export default function Hero() {
 
             {/* Value statement */}
             <p className="text-xl sm:text-2xl text-gray-300 mb-8 leading-relaxed">
-              If your business isn&apos;t growing the way it should, the problems are usually in the systems, not the effort. We surface what&apos;s holding you back. Then we fix it. Start with a free report.
+              If your business isn&apos;t growing the way it should, the problems are usually in the systems, not the effort. Good Breeze AI surfaces what&apos;s holding you back. Then we fix it. Start with a free report.
             </p>
 
             {/* Specific outcomes */}

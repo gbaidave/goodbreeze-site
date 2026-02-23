@@ -3,7 +3,7 @@ export function magicLinkSetupEmail(
   reportTypeLabel: string
 ): { subject: string; html: string } {
   return {
-    subject: `Your ${reportTypeLabel} report is running — access your account`,
+    subject: `Your Good Breeze AI account is ready`,
     html: `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -19,21 +19,10 @@ export function magicLinkSetupEmail(
 
         <!-- Hero -->
         <tr><td style="background:#18181b;border:1px solid #27272a;border-radius:16px;padding:40px;">
-          <h1 style="margin:0 0 12px;font-size:28px;font-weight:700;color:#ffffff;">Your report is running</h1>
+          <h1 style="margin:0 0 12px;font-size:28px;font-weight:700;color:#ffffff;">Your account is ready</h1>
           <p style="margin:0 0 24px;font-size:16px;color:#a1a1aa;line-height:1.6;">
-            We've started your <strong style="color:#ffffff;">${reportTypeLabel}</strong> report.
-            We also created a Good Breeze AI account for you so you can access it when it's ready.
+            We created your Good Breeze AI account. Your <strong style="color:#ffffff;">${reportTypeLabel}</strong> report is being processed — we'll email you when it's ready to download.
           </p>
-
-          <!-- Status pill -->
-          <table cellpadding="0" cellspacing="0" style="margin-bottom:32px;">
-            <tr>
-              <td style="background:#0c2a2a;border:1px solid #1a4a4a;border-radius:12px;padding:16px 20px;">
-                <p style="margin:0 0 4px;font-size:12px;color:#22d3ee;font-weight:600;letter-spacing:0.05em;">REPORT STATUS</p>
-                <p style="margin:0;font-size:15px;color:#ffffff;">Processing — usually ready in a few minutes</p>
-              </td>
-            </tr>
-          </table>
 
           <p style="margin:0 0 20px;font-size:15px;color:#a1a1aa;line-height:1.6;">
             Click below to access your account. This link signs you in automatically — no password needed.

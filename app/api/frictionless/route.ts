@@ -401,7 +401,7 @@ export async function POST(request: NextRequest) {
       user_id: userId,
       to_email: email,
       type: 'magic_link',
-      subject: `Your ${REPORT_TYPE_LABELS[body.reportType] ?? body.reportType} report is running`,
+      subject: `Your Good Breeze AI account is ready`,
       status: emailStatus,
       error: emailError,
     })

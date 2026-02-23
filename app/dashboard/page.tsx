@@ -147,7 +147,7 @@ export default async function DashboardPage({
           <div className="bg-dark-700 border border-primary/20 rounded-2xl p-6">
             <p className="text-gray-400 text-sm mb-1">Report credits</p>
             <p className="text-2xl font-bold text-white">
-              {isAdmin ? 'Unlimited' : PAID_PLANS.includes(plan) ? plan.charAt(0).toUpperCase() + plan.slice(1) : totalCredits > 0 ? totalCredits : freeRemaining > 0 ? `${freeRemaining} free` : '0'}
+              {isAdmin ? '∞' : PAID_PLANS.includes(plan) ? plan.charAt(0).toUpperCase() + plan.slice(1) : totalCredits > 0 ? totalCredits : freeRemaining > 0 ? `${freeRemaining} free` : '0'}
             </p>
             <p className="text-gray-500 text-xs mt-1">
               {isAdmin

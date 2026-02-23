@@ -42,9 +42,13 @@ function getGDriveDownloadUrl(url: string): string | null {
 // Expiry helpers
 // ============================================================================
 
-function daysRemaining(expiresAt: string | null): number | null {
-  if (!expiresAt) return null
-  const ms = new Date(expiresAt).getTime() - Date.now()
+function daysRemaining(expiresAt: string | null, createdAt: string): number | null {
+  const effectiveExpiry = expiresAt
+    ? new Date(expiresAt)
+    : new Date(new Date(createdAt).getTime() + 30 * 24 * 60 * 60 * 1000)
+  const ms = effectiveExpiry.getTime() - Date.now()
+  // Old reports (null expires_at) past the 30-day fallback window: no badge, not expired
+  if (!expiresAt && ms <= 0) return null
   return Math.max(0, Math.ceil(ms / (1000 * 60 * 60 * 24)))
 }
 
@@ -79,7 +83,7 @@ export default async function ReportViewerPage({
   if (error || !report) return notFound()
 
   const label = REPORT_TYPE_LABELS[report.report_type] ?? report.report_type
-  const days = daysRemaining(report.expires_at)
+  const days = daysRemaining(report.expires_at, report.created_at)
   const isExpired = days !== null && days === 0
 
   // Expired report
