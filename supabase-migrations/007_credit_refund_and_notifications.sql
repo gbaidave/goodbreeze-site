@@ -6,12 +6,20 @@
 --   T3-PENDING-ENTITLEMENT: Refund credits/free-slots when report fails
 --   T3-NOTIFICATIONS: In-app notifications for report completion/failure/credits low
 -- ============================================================================
+--
+-- NOTE: No WHEN clauses on triggers that reference 'failed_site_blocked'.
+-- ALTER TYPE ... ADD VALUE commits the new ENUM value, but PostgreSQL will
+-- not allow the new value to be used in a trigger WHEN clause in the same
+-- transaction. Conditions are instead enforced inside the function bodies,
+-- which are validated lazily (at execution time, not at creation time).
+-- Behavior is identical — the WHEN clause is just a performance hint.
+-- ============================================================================
 
 
 -- ============================================================================
 -- Fix: add 'failed_site_blocked' to report_status ENUM
 -- This value is used by n8n when a site blocks our analysis.
--- Must be added before any trigger WHEN clause can reference it.
+-- Must be added before any function body can reference it.
 -- (ENUM values cannot be removed once added — safe to re-run: IF NOT EXISTS)
 -- ============================================================================
 
@@ -64,8 +72,14 @@ CREATE INDEX IF NOT EXISTS idx_reports_credit_row_id ON reports(credit_row_id);
 
 -- ============================================================================
 -- T3-PENDING-ENTITLEMENT: Refund trigger on report failure
--- Fires AFTER UPDATE on reports when status changes to 'failed' or 'failed_site_blocked'.
+-- Fires AFTER UPDATE on reports when any row is updated.
+-- Function body checks: status must change TO a failure state.
 -- Reverses whatever entitlement was consumed at submission time.
+--
+-- NOTE: No WHEN clause — 'failed_site_blocked' was added to the ENUM above
+-- in the same migration. PostgreSQL requires the ENUM ADD VALUE to be in a
+-- separate committed transaction before it can be used in a WHEN clause.
+-- The function body enforces identical conditions.
 -- ============================================================================
 
 CREATE OR REPLACE FUNCTION refund_on_report_failure()
@@ -123,15 +137,16 @@ DROP TRIGGER IF EXISTS trg_refund_on_report_failure ON reports;
 CREATE TRIGGER trg_refund_on_report_failure
   AFTER UPDATE ON reports
   FOR EACH ROW
-  WHEN (OLD.status IS DISTINCT FROM NEW.status
-        AND NEW.status IN ('failed', 'failed_site_blocked'))
   EXECUTE FUNCTION refund_on_report_failure();
 
 
 -- ============================================================================
 -- T3-NOTIFICATIONS: In-app notification on report status change
--- Fires when report status changes to 'complete' (success) or failed states.
+-- Fires when any report row is updated.
+-- Function body checks: status must change to 'complete' or a failed state.
 -- Inserts a notification row for the user — shows up in nav bell dropdown.
+--
+-- NOTE: No WHEN clause — same ENUM issue as above.
 -- ============================================================================
 
 CREATE OR REPLACE FUNCTION notify_on_report_status_change()
@@ -145,6 +160,9 @@ DECLARE
   v_message TEXT;
   v_label   TEXT;
 BEGIN
+  -- Only fire when status actually changes
+  IF OLD.status IS NOT DISTINCT FROM NEW.status THEN RETURN NEW; END IF;
+
   -- Build human-readable report type label
   v_label := replace(replace(NEW.report_type, '_', ' '), 'seo', 'SEO');
 
@@ -175,14 +193,13 @@ DROP TRIGGER IF EXISTS trg_notify_report_status_change ON reports;
 CREATE TRIGGER trg_notify_report_status_change
   AFTER UPDATE ON reports
   FOR EACH ROW
-  WHEN (OLD.status IS DISTINCT FROM NEW.status
-        AND NEW.status IN ('complete', 'failed', 'failed_site_blocked'))
   EXECUTE FUNCTION notify_on_report_status_change();
 
 
 -- ============================================================================
 -- T3-NOTIFICATIONS: In-app notification when credits drop to 1
--- Fires AFTER UPDATE on credits when balance transitions from >1 to exactly 1.
+-- Fires when any credits row is updated.
+-- Function body checks: balance must transition from >1 to exactly 1.
 -- Gives users a heads-up before their last credit is gone.
 -- ============================================================================
 
@@ -210,7 +227,6 @@ DROP TRIGGER IF EXISTS trg_notify_credits_low ON credits;
 CREATE TRIGGER trg_notify_credits_low
   AFTER UPDATE ON credits
   FOR EACH ROW
-  WHEN (NEW.balance = 1 AND OLD.balance > 1)
   EXECUTE FUNCTION notify_credits_low();
 
 
