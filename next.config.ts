@@ -35,7 +35,7 @@ const nextConfig: NextConfig = {
           "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
           "font-src 'self' https://fonts.gstatic.com",
           "img-src 'self' data: blob: https:",
-          "connect-src 'self' https://ktvomvlweyqxxewuqubw.supabase.co https://www.google-analytics.com https://api.stripe.com https://n8n.goodbreeze.ai https://us.i.posthog.com https://app.posthog.com",
+          "connect-src 'self' https://ktvomvlweyqxxewuqubw.supabase.co https://www.google-analytics.com https://api.stripe.com https://n8n.goodbreeze.ai https://us.i.posthog.com https://us-assets.i.posthog.com https://app.posthog.com",
           "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
           "object-src 'none'",
           "base-uri 'self'",
