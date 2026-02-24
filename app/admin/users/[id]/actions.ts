@@ -46,17 +46,30 @@ export async function setPlanOverride(userId: string, overrideType: string | nul
 
 // ---- Credits ------------------------------------------------------------
 
-export async function grantCredits(userId: string, amount: number) {
-  await requireAdmin()
+export async function grantCredits(userId: string, amount: number, note: string) {
+  const { adminId } = await requireAdmin()
   if (amount <= 0 || amount > 100) throw new Error('Amount must be 1–100')
+  if (!note.trim()) throw new Error('Note is required for credit grants')
   const supabase = createServiceClient()
-  const { error } = await supabase.from('credits').insert({
+
+  // Insert the credit row with source tracking
+  const { error: creditsError } = await supabase.from('credits').insert({
     user_id: userId,
     balance: amount,
+    source: 'admin_grant',
     product: null,      // usable on any product
     expires_at: null,   // no expiry for admin grants
   })
-  if (error) throw new Error(error.message)
+  if (creditsError) throw new Error(creditsError.message)
+
+  // Create an admin_notes entry so there is always a paper trail
+  const { error: noteError } = await supabase.from('admin_notes').insert({
+    user_id: userId,
+    note: `[Credit grant: ${amount} credit${amount !== 1 ? 's' : ''}] ${note.trim()}`,
+    created_by: adminId,
+  })
+  if (noteError) throw new Error(noteError.message)
+
   revalidatePath(`/admin/users/${userId}`)
 }
 

@@ -24,7 +24,7 @@ export default async function AccountPage() {
       .single(),
     supabase
       .from('subscriptions')
-      .select('plan, status, current_period_end, cancel_at_period_end')
+      .select('plan, status, current_period_end, cancel_at_period_end, credits_remaining')
       .eq('user_id', user.id)
       .in('status', ['active', 'trialing', 'past_due'])
       .order('created_at', { ascending: false })
@@ -41,7 +41,8 @@ export default async function AccountPage() {
   const profile = profileRes.data
   const sub = subRes.data
   const credits = creditsRes.data ?? []
-  const totalCredits = credits.reduce((sum, c) => sum + (c.balance ?? 0), 0)
+  const packCredits = credits.reduce((sum, c) => sum + (c.balance ?? 0), 0)
+  const creditsRemaining = sub?.credits_remaining ?? 0
 
   return (
     <AccountClient
@@ -55,7 +56,8 @@ export default async function AccountPage() {
       currentPeriodEnd={sub?.current_period_end}
       cancelAtPeriodEnd={sub?.cancel_at_period_end ?? false}
       hasStripeCustomer={!!profile?.stripe_customer_id}
-      totalCredits={totalCredits}
+      totalCredits={packCredits}
+      creditsRemaining={creditsRemaining}
       creditExpiry={credits[0]?.expires_at}
     />
   )

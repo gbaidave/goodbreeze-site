@@ -105,7 +105,7 @@ export async function checkEntitlement(
   // 2. Fetch active subscription
   const { data: sub } = await supabase
     .from('subscriptions')
-    .select('plan, status, current_period_start, current_period_end')
+    .select('plan, status, credits_remaining, current_period_start, current_period_end')
     .eq('user_id', userId)
     .in('status', ['active', 'trialing'])
     .order('created_at', { ascending: false })
@@ -127,28 +127,17 @@ export async function checkEntitlement(
     return { allowed: true, deductFrom: 'subscription' }
   }
 
-  // 5. Subscription plans (starter / growth / pro) — check combined monthly cap.
-  //    If within cap, allow via subscription. If over cap, fall through to credit check.
+  // 5. Subscription plans (starter / growth / pro) — check credits_remaining.
+  //    credits_remaining is the single source of truth, managed by the webhook
+  //    (provisioned on created, decremented on usage, reset on renewal,
+  //    adjusted on upgrade/downgrade).
+  //    If credits_remaining > 0, allow via subscription.
+  //    If at zero, fall through to credit pack check below.
   if (plan === 'starter' || plan === 'growth' || plan === 'pro') {
-    const cap = PLAN_MONTHLY_CAPS[plan]
-    const now = new Date()
-    const periodStart = sub?.current_period_start
-      ? new Date(sub.current_period_start).toISOString().split('T')[0]
-      : new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
-
-    const { data: usageRow } = await supabase
-      .from('usage')
-      .select('analyzer_reports_used, seo_reports_used')
-      .eq('user_id', userId)
-      .eq('period_start', periodStart)
-      .single()
-
-    const totalUsed = (usageRow?.analyzer_reports_used ?? 0) + (usageRow?.seo_reports_used ?? 0)
-
-    if (totalUsed < cap) {
+    if ((sub?.credits_remaining ?? 0) > 0) {
       return { allowed: true, deductFrom: 'subscription' }
     }
-    // Over monthly cap — fall through to credit check below
+    // No subscription credits left — fall through to credit pack check below
   }
 
   // 6. Credits — universal fallback for all non-subscription users.
@@ -203,26 +192,17 @@ export async function recordUsage(
   deductFrom: 'subscription' | 'credits',
   creditRowId?: string
 ): Promise<void> {
-  const meta = REPORT_META[reportType]
   const supabase = getServiceClient()
 
-  const now = new Date()
-  const periodStart = new Date(now.getFullYear(), now.getMonth(), 1)
-    .toISOString().split('T')[0]
+  if (deductFrom === 'subscription') {
+    // Decrement credits_remaining on the subscription row.
+    // Managed by decrement_subscription_credits() DB function (GREATEST(0, n-1) floor).
+    await supabase.rpc('decrement_subscription_credits', { p_user_id: userId })
+  }
 
-  // Increment usage counters (for starter plan monthly cap tracking)
-  await supabase.rpc('increment_usage', {
-    p_user_id: userId,
-    p_period_start: periodStart,
-    p_analyzer_delta: meta.product === 'analyzer' ? 1 : 0,
-    p_seo_delta: meta.product === 'seo_auditor' ? 1 : 0,
-  })
-
-  // Decrement credit balance
   if (deductFrom === 'credits' && creditRowId) {
-    await supabase.rpc('decrement_credit', {
-      p_credit_id: creditRowId,
-    })
+    // Decrement the specific credit pack row.
+    await supabase.rpc('decrement_credit', { p_credit_id: creditRowId })
   }
 }
 

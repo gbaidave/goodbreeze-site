@@ -108,6 +108,9 @@ const ENTRY_OPTIONS = [
 
 type PaidPlan = "starter" | "growth" | "pro" | "spark_pack" | "boost_pack";
 
+const SUBSCRIPTION_PLAN_KEYS = new Set(["starter", "growth", "pro"]);
+const PLAN_CREDITS: Record<string, number> = { starter: 25, growth: 40, pro: 50 };
+
 // ============================================================================
 // Checkmark icon
 // ============================================================================
@@ -131,9 +134,27 @@ export default function PricingPage() {
   const [error, setError] = useState("");
   const [phoneRequired, setPhoneRequired] = useState(false);
   const [pendingPlan, setPendingPlan] = useState<PaidPlan | null>(null);
+  const [pendingAcknowledged, setPendingAcknowledged] = useState(false);
+  const [ackModal, setAckModal] = useState<{ planKey: PaidPlan; planName: string; credits: number } | null>(null);
+  const [ackChecked, setAckChecked] = useState(true);
   const { user } = useAuth();
 
-  async function handleCheckout(plan: PaidPlan) {
+  // For subscription plans, show the acknowledgment modal before proceeding.
+  // For credit packs, go straight to checkout.
+  function requestCheckout(planKey: PaidPlan, planName?: string) {
+    if (!user) {
+      window.location.href = `/signup?redirect=/pricing`;
+      return;
+    }
+    if (SUBSCRIPTION_PLAN_KEYS.has(planKey)) {
+      setAckChecked(true);
+      setAckModal({ planKey, planName: planName ?? planKey, credits: PLAN_CREDITS[planKey] ?? 0 });
+    } else {
+      handleCheckout(planKey);
+    }
+  }
+
+  async function handleCheckout(plan: PaidPlan, acknowledged?: boolean) {
     if (!user) {
       window.location.href = `/signup?redirect=/pricing`;
       return;
@@ -142,16 +163,19 @@ export default function PricingPage() {
     setError("");
     setPhoneRequired(false);
     try {
+      const body: Record<string, unknown> = { plan };
+      if (acknowledged !== undefined) body.acknowledged = acknowledged;
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan }),
+        body: JSON.stringify(body),
       });
       const data = await res.json();
       if (data.url) {
         window.location.href = data.url;
       } else if (data.code === "PHONE_REQUIRED") {
         setPendingPlan(plan);
+        setPendingAcknowledged(acknowledged ?? false);
         setPhoneRequired(true);
       } else {
         setError(data.error ?? "Failed to start checkout. Please try again.");
@@ -195,9 +219,51 @@ export default function PricingPage() {
             <PhoneGatePrompt
               onPhoneSaved={() => {
                 setPhoneRequired(false);
-                handleCheckout(pendingPlan);
+                if (pendingPlan) handleCheckout(pendingPlan, pendingAcknowledged || undefined);
               }}
             />
+          </div>
+        )}
+
+        {/* ── Acknowledgment modal (subscription plans only) ─────────────── */}
+        {ackModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-6">
+            <div className="bg-dark-700 border border-primary/30 rounded-2xl p-8 max-w-md w-full shadow-xl shadow-primary/10">
+              <h3 className="text-xl font-bold text-white mb-2">Before You Continue</h3>
+              <p className="text-gray-400 text-sm mb-5">
+                You're subscribing to the <strong className="text-white">{ackModal.planName}</strong> plan — {ackModal.credits} credits per billing period.
+              </p>
+              <div className="bg-dark border border-primary/20 rounded-xl p-4 mb-5 space-y-2 text-sm text-gray-400">
+                <p>Your credits reset to <strong className="text-white">{ackModal.credits}</strong> at the start of each billing period.</p>
+                <p>Unused credits do not roll over. Any credit pack credits you hold will also reset at renewal.</p>
+              </div>
+              <label className="flex items-start gap-3 cursor-pointer mb-6 select-none">
+                <input
+                  type="checkbox"
+                  checked={ackChecked}
+                  onChange={(e) => setAckChecked(e.target.checked)}
+                  className="mt-0.5 w-4 h-4 rounded accent-primary"
+                />
+                <span className="text-sm text-gray-300">
+                  I understand that credits reset each billing period and unused credits do not roll over.
+                </span>
+              </label>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => { handleCheckout(ackModal.planKey, true); setAckModal(null); }}
+                  disabled={!ackChecked || loading === ackModal.planKey}
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-primary/40"
+                >
+                  {loading === ackModal.planKey ? "Redirecting…" : "Proceed to Checkout"}
+                </button>
+                <button
+                  onClick={() => setAckModal(null)}
+                  className="px-6 py-3 border border-primary/30 text-gray-400 font-semibold rounded-full hover:text-white hover:border-primary/60 transition-all"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
@@ -323,7 +389,7 @@ export default function PricingPage() {
               </ul>
 
               <button
-                onClick={() => handleCheckout(plan.key)}
+                onClick={() => requestCheckout(plan.key, plan.name)}
                 disabled={loading === plan.key}
                 className={`w-full px-6 py-3 font-semibold rounded-full transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed ${
                   plan.highlighted
@@ -339,7 +405,7 @@ export default function PricingPage() {
               </button>
 
               <p className="text-center text-xs text-gray-500 mt-3">
-                Access until billing period ends if cancelled
+                Access until billing period ends if cancelled. Credits reset each billing period.
               </p>
             </motion.div>
           ))}
@@ -365,7 +431,7 @@ export default function PricingPage() {
               },
               {
                 q: "Do monthly report credits roll over?",
-                a: "Monthly plan reports reset each billing period — unused reports don't roll over. Credit pack reports (Spark and Boost) never expire.",
+                a: "Monthly plan credits reset at the start of each billing period and unused credits do not roll over. Any credit pack credits you hold also reset at renewal. Credit packs purchased when you are not on a subscription plan have no expiry.",
               },
               {
                 q: "What's in the free tier exactly?",

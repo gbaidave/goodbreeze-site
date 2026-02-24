@@ -17,7 +17,8 @@ interface Props {
   currentPeriodEnd?: string
   cancelAtPeriodEnd: boolean
   hasStripeCustomer: boolean
-  totalCredits: number
+  totalCredits: number    // pack credits (credits table)
+  creditsRemaining: number  // subscription credits (subscriptions.credits_remaining)
   creditExpiry?: string
 }
 
@@ -33,6 +34,7 @@ export default function AccountClient({
   cancelAtPeriodEnd,
   hasStripeCustomer,
   totalCredits,
+  creditsRemaining,
   creditExpiry,
 }: Props) {
   const [name, setName] = useState(initialName)
@@ -354,31 +356,48 @@ export default function AccountClient({
             </span>
           </div>
 
-          {/* Credit balance — show for all non-subscription, non-privileged users */}
-          {!isPrivileged && !isSubscription && (
+          {/* Credit balance — show for all non-privileged users */}
+          {!isPrivileged && (
             <div className="bg-dark/50 border border-gray-800 rounded-xl px-4 py-3 flex items-center justify-between">
               <div>
-                <p className="text-sm text-white font-medium">
-                  {totalCredits > 0
-                    ? `${totalCredits} report credit${totalCredits !== 1 ? 's' : ''} remaining`
-                    : 'No credits remaining'}
-                </p>
-                {totalCredits > 0 && creditExpiry && (
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    Expires {new Date(creditExpiry).toLocaleDateString('en-US', {
-                      month: 'short', day: 'numeric', year: 'numeric',
-                    })}
-                  </p>
-                )}
-                {totalCredits === 0 && (
-                  <p className="text-xs text-gray-500 mt-0.5">Buy credits or earn them via referrals.</p>
+                {isSubscription ? (
+                  <>
+                    <p className="text-sm text-white font-medium">
+                      {creditsRemaining + totalCredits} report credit{creditsRemaining + totalCredits !== 1 ? 's' : ''} remaining
+                    </p>
+                    {totalCredits > 0 ? (
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        {creditsRemaining} plan + {totalCredits} pack — resets each billing period
+                      </p>
+                    ) : (
+                      <p className="text-xs text-gray-500 mt-0.5">Resets to plan cap each billing period</p>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm text-white font-medium">
+                      {totalCredits > 0
+                        ? `${totalCredits} report credit${totalCredits !== 1 ? 's' : ''} remaining`
+                        : 'No credits remaining'}
+                    </p>
+                    {totalCredits > 0 && creditExpiry && (
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        Expires {new Date(creditExpiry).toLocaleDateString('en-US', {
+                          month: 'short', day: 'numeric', year: 'numeric',
+                        })}
+                      </p>
+                    )}
+                    {totalCredits === 0 && (
+                      <p className="text-xs text-gray-500 mt-0.5">Buy credits or earn them via referrals.</p>
+                    )}
+                  </>
                 )}
               </div>
               <Link
-                href={totalCredits > 0 ? '/tools' : '/pricing'}
+                href="/tools"
                 className="text-xs text-primary hover:text-primary/80 font-medium transition-colors"
               >
-                {totalCredits > 0 ? 'Use credits →' : 'Get credits →'}
+                Run a report →
               </Link>
             </div>
           )}

@@ -6,8 +6,8 @@ import { useAuth } from '@/components/auth/AuthProvider'
 import { createClient } from '@/lib/supabase/client'
 
 /**
- * Shows a logged-in user's credit balance with a link to buy more.
- * Renders nothing for guests or while loading.
+ * Shows a logged-in user's total credit balance (subscription + pack credits).
+ * Renders nothing for guests, admins/testers, or while loading.
  */
 export function CreditsDisplay() {
   const { user, loading: authLoading } = useAuth()
@@ -16,15 +16,29 @@ export function CreditsDisplay() {
   useEffect(() => {
     if (!user) return
     const supabase = createClient()
-    supabase
-      .from('credits')
-      .select('balance')
-      .eq('user_id', user.id)
-      .gt('balance', 0)
-      .then(({ data }) => {
-        const total = (data ?? []).reduce((sum, c) => sum + ((c.balance as number) ?? 0), 0)
-        setCredits(total)
-      })
+
+    Promise.all([
+      supabase
+        .from('credits')
+        .select('balance')
+        .eq('user_id', user.id)
+        .gt('balance', 0),
+      supabase
+        .from('subscriptions')
+        .select('plan, credits_remaining')
+        .eq('user_id', user.id)
+        .in('status', ['active', 'trialing'])
+        .limit(1)
+        .maybeSingle(),
+    ]).then(([creditsRes, subRes]) => {
+      const packTotal = (creditsRes.data ?? []).reduce(
+        (sum, c) => sum + ((c.balance as number) ?? 0), 0
+      )
+      const subPlan = subRes.data?.plan ?? 'free'
+      const isSubscription = ['starter', 'growth', 'pro'].includes(subPlan)
+      const subCredits = isSubscription ? (subRes.data?.credits_remaining ?? 0) : 0
+      setCredits(packTotal + subCredits)
+    })
   }, [user])
 
   if (authLoading || !user || credits === null) return null

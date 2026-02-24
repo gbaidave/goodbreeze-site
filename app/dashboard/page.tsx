@@ -28,7 +28,7 @@ export default async function DashboardPage({
   const serviceClient = createServiceClient()
   const [profileRes, subRes, creditsRes, reportsRes, referralRes, testimonialsRes, ticketsRes] = await Promise.all([
     supabase.from('profiles').select('name, email, role, plan_override_type, plan_override_until').eq('id', user.id).single(),
-    supabase.from('subscriptions').select('plan, status, current_period_end')
+    supabase.from('subscriptions').select('plan, status, current_period_end, credits_remaining')
       .eq('user_id', user.id).in('status', ['active', 'trialing']).order('created_at', { ascending: false }).limit(1).single(),
     supabase.from('credits').select('balance, expires_at').eq('user_id', user.id).gt('balance', 0).order('purchased_at', { ascending: true }),
     supabase.from('reports').select('id, report_type, status, created_at, pdf_url, expires_at').eq('user_id', user.id)
@@ -86,13 +86,23 @@ export default async function DashboardPage({
   const rawPlan = sub?.plan ?? 'free'
   const plan = overrideActive ? (profile!.plan_override_type as string) : rawPlan
 
-  const totalCredits = credits.reduce((sum, c) => sum + (c.balance ?? 0), 0)
   const firstName = profile?.name?.split(' ')[0] || profile?.email?.split('@')[0] || 'there'
   const isAdmin = profile?.role === 'admin' || profile?.role === 'tester'
   const isTester = profile?.role === 'tester'
 
   const PAID_PLANS = ['starter', 'growth', 'pro', 'custom']
-  const isExhausted = !PAID_PLANS.includes(plan) && totalCredits === 0
+  const SUBSCRIPTION_PLANS = ['starter', 'growth', 'pro']
+  const isSubscription = SUBSCRIPTION_PLANS.includes(plan)
+
+  // Credits available for reports:
+  // Subscription users: subscription credits (credits_remaining) + pack credits (credits table)
+  // Free/impulse users: pack credits only
+  const packCredits = credits.reduce((sum, c) => sum + (c.balance ?? 0), 0)
+  const subscriptionCredits = isSubscription ? (sub?.credits_remaining ?? 0) : 0
+  const totalCredits = packCredits  // legacy alias used by NudgeCard / exhaustion check
+  const totalAvailableCredits = isSubscription ? subscriptionCredits + packCredits : packCredits
+
+  const isExhausted = !PAID_PLANS.includes(plan) && !isAdmin && packCredits === 0
 
 
   return (
@@ -153,18 +163,28 @@ export default async function DashboardPage({
         <div className="grid sm:grid-cols-3 gap-4">
 
           {/* Plan */}
-          <div className="bg-dark-700 border border-primary/20 rounded-2xl p-6">
-            <p className="text-gray-400 text-sm mb-1">Current plan</p>
-            <p className="text-2xl font-bold text-white capitalize">
-              {isTester ? 'Tester Account' : isAdmin ? 'Admin Account' : plan}
-            </p>
-            {!isAdmin && sub?.current_period_end && (
-              <p className="text-gray-500 text-xs mt-1">
-                Renews {new Date(sub.current_period_end).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+          <div className="bg-dark-700 border border-primary/20 rounded-2xl p-6 flex flex-col justify-between">
+            <div>
+              <p className="text-gray-400 text-sm mb-1">Current plan</p>
+              <p className="text-2xl font-bold text-white capitalize">
+                {isTester ? 'Tester Account' : isAdmin ? 'Admin Account' : plan}
               </p>
-            )}
-            {isAdmin && (
-              <p className="text-gray-500 text-xs mt-1">Full access — no billing required</p>
+              {!isAdmin && sub?.current_period_end && (
+                <p className="text-gray-500 text-xs mt-1">
+                  Renews {new Date(sub.current_period_end).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                </p>
+              )}
+              {isAdmin && (
+                <p className="text-gray-500 text-xs mt-1">Full access — no billing required</p>
+              )}
+            </div>
+            {isSubscription && !isAdmin && (
+              <a
+                href="/account"
+                className="mt-3 text-xs text-primary hover:text-primary/80 transition-colors font-medium"
+              >
+                Manage Plan →
+              </a>
             )}
           </div>
 
@@ -172,16 +192,18 @@ export default async function DashboardPage({
           <div className="bg-dark-700 border border-primary/20 rounded-2xl p-6">
             <p className="text-gray-400 text-sm mb-1">Report credits</p>
             <p className="text-2xl font-bold text-white">
-              {isAdmin ? '∞' : PAID_PLANS.includes(plan) ? plan.charAt(0).toUpperCase() + plan.slice(1) : totalCredits}
+              {isAdmin ? '∞' : totalAvailableCredits}
             </p>
             <p className="text-gray-500 text-xs mt-1">
               {isAdmin
                 ? 'Full access — no billing required.'
-                : PAID_PLANS.includes(plan)
-                  ? 'Monthly plan — see pricing for report caps'
-                  : totalCredits > 0
-                    ? `${totalCredits} credit${totalCredits !== 1 ? 's' : ''} available`
-                    : <>No credits remaining. <a href="/pricing" className="text-primary hover:text-primary/80 transition-colors">Buy or earn more →</a></>}
+                : isSubscription && packCredits > 0
+                  ? `${subscriptionCredits} plan + ${packCredits} pack`
+                  : isSubscription
+                    ? `${subscriptionCredits} plan credits remaining`
+                    : totalAvailableCredits > 0
+                      ? `${totalAvailableCredits} credit${totalAvailableCredits !== 1 ? 's' : ''} available`
+                      : <>No credits remaining. <a href="/pricing" className="text-primary hover:text-primary/80 transition-colors">Buy or earn more →</a></>}
             </p>
           </div>
 
@@ -193,20 +215,48 @@ export default async function DashboardPage({
           </div>
         </div>
 
-        {/* Upgrade banner — only show if not on a paid plan and not admin/tester */}
+        {/* Upgrade banner — show for free/impulse users */}
         {!isAdmin && !PAID_PLANS.includes(plan) && (
           <div className="bg-gradient-to-r from-primary/10 to-accent-blue/10 border border-primary/30 rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <p className="text-white font-semibold text-lg">Get more reports</p>
               <p className="text-gray-400 text-sm mt-1">Credit packs from $5 or monthly plans from $20/mo. All report types, cancel anytime.</p>
             </div>
-            <div className="flex-shrink-0">
+            <div className="flex items-center gap-3 flex-shrink-0 flex-wrap">
               <a
                 href="/pricing"
                 className="inline-block px-5 py-2.5 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-primary/30 transition-all text-sm"
               >
                 Get More Reports
               </a>
+            </div>
+          </div>
+        )}
+
+        {/* Buy credits — Spark & Boost packs for all non-admin users */}
+        {!isAdmin && (
+          <div className="bg-dark-700 border border-primary/20 rounded-2xl p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <p className="text-white font-semibold">Buy report credits</p>
+                <p className="text-gray-400 text-sm mt-0.5">One-time packs — no subscription needed.</p>
+              </div>
+              <div className="flex gap-3 flex-wrap">
+                <a
+                  href="/pricing"
+                  className="inline-flex flex-col items-center px-5 py-3 border border-primary/40 text-primary rounded-xl hover:bg-primary/10 transition-all text-sm font-semibold"
+                >
+                  <span>Spark Pack</span>
+                  <span className="text-xs text-gray-400 font-normal mt-0.5">3 credits · $5</span>
+                </a>
+                <a
+                  href="/pricing"
+                  className="inline-flex flex-col items-center px-5 py-3 border border-primary/40 text-primary rounded-xl hover:bg-primary/10 transition-all text-sm font-semibold"
+                >
+                  <span>Boost Pack</span>
+                  <span className="text-xs text-gray-400 font-normal mt-0.5">10 credits · $10</span>
+                </a>
+              </div>
             </div>
           </div>
         )}

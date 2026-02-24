@@ -13,6 +13,9 @@ import { cookies } from 'next/headers'
 import { stripe } from '@/lib/stripe'
 import { createServiceClient } from '@/lib/supabase/service-client'
 
+// Credits granted per billing period — must match PLAN_MONTHLY_CAPS in entitlement.ts
+const PLAN_CREDITS_PER_PERIOD: Record<string, number> = { starter: 25, growth: 40, pro: 50 }
+
 export async function POST(request: NextRequest) {
   try {
     // 1. Authenticate
@@ -47,6 +50,7 @@ export async function POST(request: NextRequest) {
     // Only accept plan names — never raw priceIds from client (keeps price IDs server-side)
     const VALID_PLANS = ['starter', 'growth', 'pro', 'spark_pack', 'boost_pack'] as const
     type Plan = typeof VALID_PLANS[number]
+    const SUBSCRIPTION_PLANS = new Set(['starter', 'growth', 'pro'])
     const planPriceMap: Record<Plan, string | undefined> = {
       starter:    process.env.STRIPE_STARTER_PLAN_PRICE_ID,
       growth:     process.env.STRIPE_GROWTH_PLAN_PRICE_ID,
@@ -61,6 +65,14 @@ export async function POST(request: NextRequest) {
     const priceId: string | undefined = planPriceMap[plan as Plan]
     if (!priceId) {
       return NextResponse.json({ error: 'Plan not configured' }, { status: 500 })
+    }
+
+    // Subscription plans require explicit acknowledgment of the credit reset policy
+    if (SUBSCRIPTION_PLANS.has(plan) && body.acknowledged !== true) {
+      return NextResponse.json(
+        { error: 'You must acknowledge the credit reset policy before subscribing.', code: 'ACK_REQUIRED' },
+        { status: 400 }
+      )
     }
 
     // 3. Get or create Stripe customer (also fetch phone for gate check)
@@ -97,11 +109,25 @@ export async function POST(request: NextRequest) {
         .eq('id', user.id)
     }
 
-    // 4. Determine if subscription or one-time
+    // 4. Save subscription acknowledgment (consent audit trail)
+    if (SUBSCRIPTION_PLANS.has(plan)) {
+      const svc = createServiceClient()
+      const creditsPerPeriod = PLAN_CREDITS_PER_PERIOD[plan] ?? 0
+      const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? null
+      await svc.from('subscription_acknowledgments').insert({
+        user_id: user.id,
+        plan,
+        credits_per_period: creditsPerPeriod,
+        ip_address: ip,
+      })
+      // Non-fatal: if this fails we still proceed — Stripe is the payment authority
+    }
+
+    // 5. Determine if subscription or one-time
     const price = await stripe.prices.retrieve(priceId)
     const isSubscription = price.type === 'recurring'
 
-    // 5. Create checkout session
+    // 6. Create checkout session
     const ALLOWED_ORIGINS = ['https://goodbreeze.ai', 'https://goodbreeze-site.vercel.app', 'http://localhost:3000']
     const rawOrigin = request.headers.get('origin') || ''
     const origin = ALLOWED_ORIGINS.includes(rawOrigin) ? rawOrigin : 'https://goodbreeze.ai'

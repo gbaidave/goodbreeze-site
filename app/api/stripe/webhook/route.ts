@@ -93,6 +93,7 @@ export async function POST(request: NextRequest) {
           const { error: creditsError } = await supabase.from('credits').insert({
             user_id: userId,
             balance: pack.credits,
+            source: 'pack',
             stripe_payment_intent_id: session.payment_intent as string,
             purchased_at: new Date().toISOString(),
             expires_at: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
@@ -150,7 +151,11 @@ export async function POST(request: NextRequest) {
         }
         const plan = (priceId ? planMap[priceId] : undefined) ?? 'free'
 
-        console.log('[webhook] priceId:', priceId, 'resolved plan:', plan)
+        // Per-plan monthly credit caps — must match PLAN_MONTHLY_CAPS in entitlement.ts
+        const PLAN_CAPS: Record<string, number> = { starter: 25, growth: 40, pro: 50 }
+        const newCap = PLAN_CAPS[plan] ?? 0
+
+        console.log('[webhook] priceId:', priceId, 'resolved plan:', plan, 'cap:', newCap)
 
         // Stripe API 2026-01-28.clover moved current_period_start/end from the
         // subscription root to sub.items.data[0]. Read from item first, fall back
@@ -175,9 +180,10 @@ export async function POST(request: NextRequest) {
         // Every user has exactly one subscription row (created on signup as 'free' plan).
         // Look up by user_id — the free plan row has stripe_subscription_id = NULL so
         // looking up by stripe_subscription_id would never find it on first upgrade.
+        // Fetch current plan + credits_remaining + period to compute credit changes.
         const { data: existing, error: lookupError } = await supabase
           .from('subscriptions')
-          .select('id')
+          .select('id, plan, credits_remaining, current_period_start')
           .eq('user_id', profile.id)
           .maybeSingle()
 
@@ -186,8 +192,73 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ error: 'Failed to look up subscription' }, { status: 500 })
         }
 
+        // ── Compute new credits_remaining ──────────────────────────────────────
+        //
+        // created: Always provision full plan cap.
+        //
+        // updated (plan change):
+        //   upgrade (new cap > old cap) → additive: current + new cap
+        //   downgrade (new cap < old cap) → top off only: max(current, new cap)
+        //   same plan → keep existing (handled below as renewal or no-op)
+        //
+        // updated (renewal = same plan, new billing period):
+        //   Reset credits_remaining to plan cap.
+        //   Zero all credit pack rows for this user — subscriptions reset everything.
+        //   "Use em or lose em while a subscription is active."
+        //
+        // updated (neither plan change nor new period): keep credits_remaining as-is.
+        let creditsRemaining: number
+
+        if (event.type === 'customer.subscription.created') {
+          creditsRemaining = newCap
+
+        } else {
+          // customer.subscription.updated
+          const oldPlan = existing?.plan ?? 'free'
+          const oldCap = PLAN_CAPS[oldPlan] ?? 0
+          const currentCredits = existing?.credits_remaining ?? 0
+          const oldPeriodStart = existing?.current_period_start
+
+          const isRenewal =
+            oldPeriodStart != null &&
+            new Date(periodStartIso).getTime() !== new Date(oldPeriodStart).getTime()
+
+          if (plan !== oldPlan) {
+            // Plan change
+            if (newCap > oldCap) {
+              // Upgrade: additive — reward the user for paying more
+              creditsRemaining = currentCredits + newCap
+              console.log('[webhook] Upgrade from', oldPlan, 'to', plan, '— credits:', currentCredits, '+', newCap, '=', creditsRemaining)
+            } else {
+              // Downgrade: top off only — don't take away credits already earned
+              creditsRemaining = Math.max(currentCredits, newCap)
+              console.log('[webhook] Downgrade from', oldPlan, 'to', plan, '— credits: max(', currentCredits, ',', newCap, ') =', creditsRemaining)
+            }
+          } else if (isRenewal) {
+            // Same plan, new billing period = renewal
+            // Reset to plan cap and zero all credit packs ("use em or lose em")
+            creditsRemaining = newCap
+            console.log('[webhook] Renewal for plan', plan, '— resetting credits to', newCap, 'and zeroing pack credits')
+
+            const { error: zeroError } = await supabase
+              .from('credits')
+              .update({ balance: 0 })
+              .eq('user_id', profile.id)
+              .gt('balance', 0)
+
+            if (zeroError) {
+              console.error('[webhook] Failed to zero credits on renewal:', zeroError)
+              // Non-fatal: continue with subscription update
+            }
+          } else {
+            // No plan change, no new period — just a Stripe metadata sync (e.g. cancel_at_period_end toggle)
+            creditsRemaining = currentCredits
+            console.log('[webhook] No plan/period change — keeping credits_remaining:', creditsRemaining)
+          }
+        }
+
         if (existing) {
-          console.log('[webhook] Updating subscription row id:', existing.id, 'for user:', profile.id)
+          console.log('[webhook] Updating subscription row id:', existing.id, 'for user:', profile.id, 'credits_remaining:', creditsRemaining)
           const { error: updateError } = await supabase
             .from('subscriptions')
             .update({
@@ -195,6 +266,7 @@ export async function POST(request: NextRequest) {
               stripe_customer_id: customerId,
               plan,
               status: sub.status,
+              credits_remaining: creditsRemaining,
               current_period_start: periodStartIso,
               current_period_end:   periodEndIso,
               cancel_at_period_end: sub.cancel_at_period_end,
@@ -218,6 +290,7 @@ export async function POST(request: NextRequest) {
               stripe_customer_id: customerId,
               plan,
               status: sub.status,
+              credits_remaining: creditsRemaining,
               current_period_start: periodStartIso,
               current_period_end:   periodEndIso,
               cancel_at_period_end: sub.cancel_at_period_end,

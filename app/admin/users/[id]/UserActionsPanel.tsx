@@ -184,25 +184,35 @@ export function UserActionsPanel({
               e.preventDefault()
               const fd = new FormData(e.currentTarget)
               const amount = parseInt(fd.get('grant_amount') as string, 10)
-              act(() => grantCredits(userId, amount))
+              const note = fd.get('grant_note') as string
+              act(() => grantCredits(userId, amount, note))
             }}
-            className="flex gap-2 items-center"
+            className="flex flex-col gap-2 w-full"
           >
-            <input
-              name="grant_amount"
-              type="number"
-              min="1"
-              max="100"
-              defaultValue="1"
-              className="w-20 bg-dark border border-primary/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary"
+            <div className="flex gap-2 items-center">
+              <input
+                name="grant_amount"
+                type="number"
+                min="1"
+                max="100"
+                defaultValue="1"
+                className="w-20 bg-dark border border-primary/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary"
+              />
+              <button
+                type="submit"
+                disabled={pending}
+                className="px-4 py-2 bg-green-900/40 text-green-400 border border-green-800 rounded-lg text-sm font-medium hover:bg-green-900/60 transition-colors disabled:opacity-50"
+              >
+                + Grant
+              </button>
+            </div>
+            <textarea
+              name="grant_note"
+              required
+              placeholder="Reason for grant (required — logged to admin notes)"
+              rows={2}
+              className="w-full bg-dark border border-primary/20 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-primary resize-none"
             />
-            <button
-              type="submit"
-              disabled={pending}
-              className="px-4 py-2 bg-green-900/40 text-green-400 border border-green-800 rounded-lg text-sm font-medium hover:bg-green-900/60 transition-colors disabled:opacity-50"
-            >
-              + Grant
-            </button>
           </form>
           <form
             onSubmit={(e) => {
