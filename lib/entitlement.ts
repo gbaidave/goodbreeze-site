@@ -147,7 +147,8 @@ export async function checkEntitlement(
     return { allowed: true, deductFrom: 'subscription' }
   }
 
-  // 5. Subscription plans (starter / growth / pro) — check combined monthly cap
+  // 5. Subscription plans (starter / growth / pro) — check combined monthly cap.
+  //    If within cap, allow via subscription. If over cap, fall through to credit check.
   if (plan === 'starter' || plan === 'growth' || plan === 'pro') {
     const cap = PLAN_MONTHLY_CAPS[plan]
     const now = new Date()
@@ -164,35 +165,18 @@ export async function checkEntitlement(
 
     const totalUsed = (usageRow?.analyzer_reports_used ?? 0) + (usageRow?.seo_reports_used ?? 0)
 
-    if (totalUsed >= cap) {
-      return {
-        allowed: false,
-        reason: `You've used all ${cap} reports included in your ${plan.charAt(0).toUpperCase() + plan.slice(1)} plan this month. Upgrade your plan or wait until your next billing period.`,
-        upgradePrompt: 'starter',
-      }
+    if (totalUsed < cap) {
+      return { allowed: true, deductFrom: 'subscription' }
     }
-
-    return { allowed: true, deductFrom: 'subscription' }
+    // Over monthly cap — fall through to credit check below
   }
 
-  // 6. Free plan — atomically check + reserve per-system free slot
-  //    Uses check_and_reserve_free_slot RPC (migration 003) which:
-  //    - Locks the profile row to prevent race conditions (T1-ATOMIC-CHECK)
-  //    - Checks if the slot was used by a non-failed report (T1-CREDIT-COUNT)
-  //    - Reserves the slot atomically if available
-  if (plan === 'free') {
+  // 6. Free plan — try per-system free slot first.
+  //    If slot is available, reserve it atomically and return early.
+  //    If slot is used OR the report type has no free slot, fall through to credit check.
+  if (plan === 'free' && meta.freeSystem) {
     const freeSystem = meta.freeSystem
 
-    if (!freeSystem) {
-      // This report type is never free for authenticated users
-      return {
-        allowed: false,
-        reason: `This report type requires a paid plan or credit pack.`,
-        upgradePrompt: 'impulse',
-      }
-    }
-
-    // Atomically check + reserve the free slot
     const { data: slotResult, error: slotError } = await supabase.rpc(
       'check_and_reserve_free_slot',
       {
@@ -205,34 +189,44 @@ export async function checkEntitlement(
     if (slotError) {
       // RPC not yet deployed — fall back to read-only check (non-atomic)
       const freeUsed = (profile.free_reports_used ?? {}) as Record<string, string>
-      if (freeUsed[freeSystem]) {
-        const systemLabel = FREE_SYSTEM_LABELS[freeSystem]
+      if (!freeUsed[freeSystem]) {
+        // Slot available — use it (non-atomic best-effort fallback)
         return {
-          allowed: false,
-          reason: `You've already used your free ${systemLabel} report. Get a credit pack or upgrade to a monthly plan for more.`,
-          upgradePrompt: 'impulse',
+          allowed: true,
+          deductFrom: 'subscription',
+          freeSystemConsumed: freeSystem,
         }
       }
-    } else if (slotResult === 'already_used') {
-      const systemLabel = FREE_SYSTEM_LABELS[freeSystem]
+      // Slot already used — fall through to credit check
+    } else if (slotResult !== 'already_used') {
+      // Slot reserved atomically — freeSystemConsumed tells generate/route.ts
+      // to trigger the nudge email check
       return {
-        allowed: false,
-        reason: `You've already used your free ${systemLabel} report. Get a credit pack or upgrade to a monthly plan for more.`,
-        upgradePrompt: 'impulse',
+        allowed: true,
+        deductFrom: 'subscription',
+        freeSystemConsumed: freeSystem,
       }
     }
+    // 'already_used' — fall through to credit check
+  }
+  // free plan with freeSystem = null also falls through here
 
-    // Slot is now reserved atomically — freeSystemConsumed tells generate/route.ts
-    // to trigger the nudge email check (but NOT to write free_reports_used again)
+  // 7. Credits — universal fallback.
+  //    Reached by: free plan (no free slot or slot exhausted), impulse plan,
+  //    or paid plan over its monthly cap.
+  //    Credits work regardless of plan — they are the single source of truth
+  //    for whether a user can run a report outside their primary entitlement.
+
+  // Gate: some report types require at least a Starter subscription (not credit-eligible)
+  if (!meta.impulseAllowed) {
     return {
-      allowed: true,
-      deductFrom: 'subscription',
-      freeSystemConsumed: freeSystem,
+      allowed: false,
+      reason: `This report type requires a Starter subscription.`,
+      upgradePrompt: 'starter',
     }
   }
 
-  // 7. Impulse plan (credit pack) — check credits
-  // Find oldest non-expired credit row with balance > 0, matching product (or universal)
+  // Find the oldest non-expired credit row with balance > 0, matching product or universal
   const { data: creditRows } = await supabase
     .from('credits')
     .select('id, balance, expires_at, product')
@@ -249,16 +243,7 @@ export async function checkEntitlement(
     return {
       allowed: false,
       reason: `You have no remaining reports. Get a credit pack or upgrade to a monthly plan.`,
-      upgradePrompt: meta.impulseAllowed ? 'impulse' : 'starter',
-    }
-  }
-
-  // Check if this report type is allowed on impulse (some require starter)
-  if (!meta.impulseAllowed) {
-    return {
-      allowed: false,
-      reason: `This report type requires a Starter subscription.`,
-      upgradePrompt: 'starter',
+      upgradePrompt: 'impulse',
     }
   }
 
