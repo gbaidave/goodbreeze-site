@@ -6,6 +6,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import { PostHogProvider } from "@/providers/PostHogProvider";
+import { BugReportButton } from "@/components/tester/BugReportButton";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -121,6 +122,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <Header />
             <main className="pt-16">{children}</main>
             <Footer />
+            <BugReportButton />
           </AuthProvider>
         </PostHogProvider>
       </body>

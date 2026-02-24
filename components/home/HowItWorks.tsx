@@ -70,7 +70,7 @@ export default function HowItWorks() {
                   aria-hidden="true"
                 />
                 <span
-                  className="relative text-base font-bold bg-gradient-to-br from-primary to-accent-blue"
+                  className="relative text-xl font-bold bg-gradient-to-br from-primary to-accent-blue"
                   style={{
                     WebkitBackgroundClip: "text",
                     WebkitTextFillColor: "transparent",

@@ -122,6 +122,36 @@ export async function sendSupportResolvedEmail(to: string, name: string, userId?
   )
 }
 
+export async function sendBugReportNotificationEmail(
+  data: {
+    userName: string
+    userEmail: string
+    planAtTime: string
+    lastReportContext: string
+    message: string
+  },
+  userId?: string
+) {
+  const { subject, html } = supportNotificationEmail(data)
+  const bugReportEmail = process.env.BUG_REPORT_EMAIL || 'dave@goodbreeze.ai'
+  return sendAndLog(
+    () => resend.emails.send({
+      from: `${FROM_NAME} <${FROM}>`,
+      to: bugReportEmail,
+      replyTo: data.userEmail,
+      subject: `[Bug Report] ${subject}`,
+      html,
+    }),
+    {
+      userId,
+      toEmail: bugReportEmail,
+      type: 'support_confirmation',
+      subject: `[Bug Report] ${subject}`,
+      notifyOnFail: false,
+    }
+  )
+}
+
 export async function sendSupportNotificationEmail(
   data: {
     userName: string

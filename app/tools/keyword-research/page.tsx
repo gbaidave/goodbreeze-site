@@ -6,32 +6,7 @@ import Link from 'next/link'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { captureEvent } from '@/lib/analytics'
 import { ExhaustedState } from '@/components/ExhaustedState'
-
-function SuccessState({ onReset }: { onReset: () => void }) {
-  return (
-    <div className="min-h-screen bg-dark flex items-center justify-center px-6">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-        className="max-w-lg w-full p-10 rounded-2xl bg-dark-700 border border-primary text-center">
-        <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-6">
-          <svg className="w-8 h-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-          </svg>
-        </div>
-        <h2 className="text-2xl font-bold text-white mb-3">Research underway!</h2>
-        <p className="text-gray-400 mb-2">Your keyword research report is being generated. The PDF will arrive by email in <strong className="text-white">2–3 minutes</strong>.</p>
-        <p className="text-gray-500 text-sm mb-8">Track progress in your dashboard.</p>
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Link href="/dashboard" className="px-6 py-3 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full hover:shadow-lg hover:shadow-primary/30 transition-all">
-            Go to Dashboard
-          </Link>
-          <button onClick={onReset} className="px-6 py-3 border border-primary/40 text-gray-300 rounded-full hover:border-primary hover:text-white transition-all">
-            Run Another
-          </button>
-        </div>
-      </motion.div>
-    </div>
-  )
-}
+import { ReportSubmittedModal } from '@/components/tools/ReportSubmittedModal'
 
 export default function KeywordResearchPage() {
   const { user, loading: authLoading } = useAuth()
@@ -44,7 +19,6 @@ export default function KeywordResearchPage() {
   const [error, setError] = useState('')
   const [upgradePrompt, setUpgradePrompt] = useState('')
 
-  if (submitted) return <SuccessState onReset={() => setSubmitted(false)} />
   if (upgradePrompt) return <ExhaustedState error={error} upgradePrompt={upgradePrompt} />
 
   async function handleSubmit(e: React.FormEvent) {
@@ -74,6 +48,15 @@ export default function KeywordResearchPage() {
   const labelClass = 'block text-sm font-medium text-gray-300 mb-1.5'
 
   return (
+    <>
+      {submitted && (
+        <ReportSubmittedModal
+          heading="Research underway!"
+          body={<>Your keyword research report is being generated. The PDF will arrive by email in <strong className="text-white">2–3 minutes</strong>.</>}
+          detail="Track progress in your dashboard."
+          onRunAnother={() => setSubmitted(false)}
+        />
+      )}
     <div className="min-h-screen bg-dark py-24 px-6">
       <div className="max-w-2xl mx-auto">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-10">
@@ -130,5 +113,6 @@ export default function KeywordResearchPage() {
         </motion.form>
       </div>
     </div>
+    </>
   )
 }

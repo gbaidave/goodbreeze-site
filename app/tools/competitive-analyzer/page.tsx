@@ -10,6 +10,7 @@ import { ExhaustedState } from '@/components/ExhaustedState'
 import { PhoneGatePrompt } from '@/components/tools/PhoneGatePrompt'
 import { isValidPhone, normalizePhone } from '@/lib/phone'
 import { CreditsDisplay } from '@/components/tools/CreditsDisplay'
+import { ReportSubmittedModal } from '@/components/tools/ReportSubmittedModal'
 
 type ReportType = 'h2h' | 't3c' | 'cp'
 
@@ -17,64 +18,6 @@ const REPORT_LABELS: Record<ReportType, string> = {
   h2h: 'Head to Head',
   t3c: 'Top 3 Competitors',
   cp: 'Competitive Position',
-}
-
-function SuccessState({ isGuest, onReset }: { isGuest: boolean; onReset: () => void }) {
-  return (
-    <div className="min-h-screen bg-dark flex items-center justify-center px-6">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="max-w-lg w-full p-10 rounded-2xl bg-dark-700 border border-primary text-center"
-      >
-        <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-6">
-          <svg className="w-8 h-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-          </svg>
-        </div>
-        {isGuest ? (
-          <>
-            <h2 className="text-2xl font-bold text-white mb-3">Check your inbox. Your account is ready.</h2>
-            <p className="text-gray-400 mb-2">
-              We created your Good Breeze AI account and started your competitive analysis. A sign-in link and your PDF results are on their way to your inbox.
-            </p>
-            <p className="text-gray-500 text-sm mb-8">The PDF will be ready in 2–4 minutes.</p>
-          </>
-        ) : (
-          <>
-            <h2 className="text-2xl font-bold text-white mb-3">Report on its way!</h2>
-            <p className="text-gray-400 mb-2">
-              Your competitive analysis is being generated. You&apos;ll receive the PDF in your inbox within <strong className="text-white">2–4 minutes</strong>.
-            </p>
-            <p className="text-gray-500 text-sm mb-8">Check your dashboard to track progress or view past reports.</p>
-          </>
-        )}
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          {isGuest ? (
-            <Link
-              href="/login"
-              className="px-6 py-3 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full hover:shadow-lg hover:shadow-primary/30 transition-all"
-            >
-              Sign in to your account
-            </Link>
-          ) : (
-            <Link
-              href="/dashboard"
-              className="px-6 py-3 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full hover:shadow-lg hover:shadow-primary/30 transition-all"
-            >
-              Go to Dashboard
-            </Link>
-          )}
-          <button
-            onClick={onReset}
-            className="px-6 py-3 border border-primary/40 text-gray-300 rounded-full hover:border-primary hover:text-white transition-all"
-          >
-            Run Another Report
-          </button>
-        </div>
-      </motion.div>
-    </div>
-  )
 }
 
 export default function SalesAnalyzer() {
@@ -101,7 +44,6 @@ export default function SalesAnalyzer() {
   const [accountExists, setAccountExists] = useState(false)
   const [phoneRequired, setPhoneRequired] = useState(false)
 
-  if (submitted) return <SuccessState isGuest={isGuest} onReset={() => setSubmitted(false)} />
   if (upgradePrompt) return <ExhaustedState error={error} upgradePrompt={upgradePrompt} />
 
   async function doSubmitAuthenticated() {
@@ -194,6 +136,19 @@ export default function SalesAnalyzer() {
   const labelClass = 'block text-sm font-medium text-gray-300 mb-1.5'
 
   return (
+    <>
+      {submitted && (
+        <ReportSubmittedModal
+          heading={isGuest ? 'Check your inbox. Your account is ready.' : 'Report on its way!'}
+          body={isGuest
+            ? 'We created your Good Breeze AI account and started your competitive analysis. A sign-in link and your PDF results are on their way to your inbox.'
+            : <>Your competitive analysis is being generated. You&apos;ll receive the PDF in your inbox within <strong className="text-white">2–4 minutes</strong>.</>
+          }
+          detail={isGuest ? 'The PDF will be ready in 2–4 minutes.' : 'Check your dashboard to track progress or view past reports.'}
+          isGuest={isGuest}
+          onRunAnother={() => setSubmitted(false)}
+        />
+      )}
     <div className="min-h-screen bg-dark py-24 px-6">
       <div className="max-w-3xl mx-auto">
 
@@ -369,5 +324,6 @@ export default function SalesAnalyzer() {
 
       </div>
     </div>
+    </>
   )
 }
