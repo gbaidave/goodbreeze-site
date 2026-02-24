@@ -12,20 +12,12 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
-import { createClient } from '@supabase/supabase-js'
+import { createServiceClient } from '@/lib/supabase/service-client'
 import Stripe from 'stripe'
 import {
   sendPaymentConfirmationEmail,
   sendPaymentFailedEmail,
 } from '@/lib/email'
-
-function getServiceClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { persistSession: false } }
-  )
-}
 
 export async function POST(request: NextRequest) {
   const body = await request.text()
@@ -40,6 +32,7 @@ export async function POST(request: NextRequest) {
   ].filter(Boolean) as string[]
 
   if (!sig || secrets.length === 0) {
+    console.error('[webhook] Missing stripe-signature or no secrets configured')
     return NextResponse.json({ error: 'Missing signature' }, { status: 400 })
   }
 
@@ -55,11 +48,19 @@ export async function POST(request: NextRequest) {
   }
 
   if (!event) {
-    console.error('Webhook signature verification failed: no matching secret')
+    console.error('[webhook] Signature verification failed — no matching secret. sig:', sig?.slice(0, 20))
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
-  const supabase = getServiceClient()
+  console.log('[webhook] Received event:', event.type, event.id)
+
+  let supabase: ReturnType<typeof createServiceClient>
+  try {
+    supabase = createServiceClient()
+  } catch (e) {
+    console.error('[webhook] Failed to create Supabase service client:', e)
+    return NextResponse.json({ error: 'Service client unavailable' }, { status: 500 })
+  }
 
   try {
     switch (event.type) {
@@ -69,7 +70,10 @@ export async function POST(request: NextRequest) {
         const userId = session.metadata?.supabase_user_id
         const priceId = session.metadata?.price_id
 
-        if (!userId || !priceId) break
+        if (!userId || !priceId) {
+          console.error('[webhook] checkout.session.completed missing metadata — userId:', userId, 'priceId:', priceId)
+          break
+        }
 
         // Subscription price IDs — handled by customer.subscription.created/updated
         const subscriptionPriceIds = [
@@ -86,13 +90,18 @@ export async function POST(request: NextRequest) {
         }
         const pack = priceId ? packMap[priceId] : undefined
         if (pack) {
-          await supabase.from('credits').insert({
+          const { error: creditsError } = await supabase.from('credits').insert({
             user_id: userId,
             balance: pack.credits,
             stripe_payment_intent_id: session.payment_intent as string,
             purchased_at: new Date().toISOString(),
-            expires_at: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(), // 90 days
+            expires_at: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
           })
+
+          if (creditsError) {
+            console.error('[webhook] Failed to insert credits for userId:', userId, creditsError)
+            return NextResponse.json({ error: 'Failed to provision credits' }, { status: 500 })
+          }
 
           const { data: profile } = await supabase
             .from('profiles').select('name, email').eq('id', userId).single()
@@ -110,14 +119,21 @@ export async function POST(request: NextRequest) {
         const sub = event.data.object as Stripe.Subscription
         const customerId = sub.customer as string
 
+        console.log('[webhook]', event.type, '— customerId:', customerId, 'subscriptionId:', sub.id, 'status:', sub.status)
+
         // Look up user by Stripe customer ID
-        const { data: profile } = await supabase
+        const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('id, name, email')
           .eq('stripe_customer_id', customerId)
           .single()
 
-        if (!profile) break
+        if (profileError || !profile) {
+          console.error('[webhook] Profile not found for customerId:', customerId, 'error:', profileError)
+          return NextResponse.json({ error: 'Profile not found for customer' }, { status: 500 })
+        }
+
+        console.log('[webhook] Found profile id:', profile.id, 'email:', profile.email)
 
         const item = sub.items.data[0]
         const priceId = item?.price.id
@@ -134,6 +150,8 @@ export async function POST(request: NextRequest) {
         }
         const plan = (priceId ? planMap[priceId] : undefined) ?? 'free'
 
+        console.log('[webhook] priceId:', priceId, 'resolved plan:', plan)
+
         // Stripe API 2026-01-28.clover moved current_period_start/end from the
         // subscription root to sub.items.data[0]. Read from item first, fall back
         // to root for older API versions.
@@ -149,7 +167,7 @@ export async function POST(request: NextRequest) {
           ).catch(console.error)
         }
 
-        await supabase.from('subscriptions').upsert({
+        const upsertPayload = {
           user_id: profile.id,
           stripe_subscription_id: sub.id,
           stripe_customer_id: customerId,
@@ -159,17 +177,35 @@ export async function POST(request: NextRequest) {
           current_period_end:   periodEnd   != null ? new Date(periodEnd   * 1000).toISOString() : null,
           cancel_at_period_end: sub.cancel_at_period_end,
           updated_at: new Date().toISOString(),
-        }, { onConflict: 'stripe_subscription_id' })
+        }
+
+        console.log('[webhook] Upserting subscription:', JSON.stringify(upsertPayload))
+
+        const { error: upsertError } = await supabase
+          .from('subscriptions')
+          .upsert(upsertPayload, { onConflict: 'stripe_subscription_id' })
+
+        if (upsertError) {
+          console.error('[webhook] Subscription upsert failed:', upsertError)
+          return NextResponse.json({ error: 'Failed to upsert subscription' }, { status: 500 })
+        }
+
+        console.log('[webhook] Subscription upsert succeeded for user:', profile.id)
         break
       }
 
       case 'customer.subscription.deleted': {
         const sub = event.data.object as Stripe.Subscription
 
-        await supabase
+        const { error: deleteError } = await supabase
           .from('subscriptions')
           .update({ status: 'cancelled', updated_at: new Date().toISOString() })
           .eq('stripe_subscription_id', sub.id)
+
+        if (deleteError) {
+          console.error('[webhook] Failed to mark subscription cancelled:', deleteError)
+          return NextResponse.json({ error: 'Failed to cancel subscription' }, { status: 500 })
+        }
         break
       }
 
@@ -178,12 +214,16 @@ export async function POST(request: NextRequest) {
         const subId = (invoice as any).subscription as string
 
         if (subId) {
-          await supabase
+          const { error: pastDueError } = await supabase
             .from('subscriptions')
             .update({ status: 'past_due', updated_at: new Date().toISOString() })
             .eq('stripe_subscription_id', subId)
 
-          // Send payment failed email
+          if (pastDueError) {
+            console.error('[webhook] Failed to mark subscription past_due:', pastDueError)
+            return NextResponse.json({ error: 'Failed to update subscription status' }, { status: 500 })
+          }
+
           const { data: sub } = await supabase
             .from('subscriptions')
             .select('user_id')
@@ -211,7 +251,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ received: true })
 
   } catch (error) {
-    console.error('Webhook handler error:', error)
+    console.error('[webhook] Unhandled exception:', error)
     return NextResponse.json({ error: 'Webhook handler failed' }, { status: 500 })
   }
 }
