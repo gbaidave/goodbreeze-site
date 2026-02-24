@@ -88,7 +88,7 @@ function ReportCard({ report }: { report: Report }) {
           <p className="text-gray-500 text-sm">
             {new Date(report.created_at).toLocaleDateString('en-US', {
               month: 'short', day: 'numeric', year: 'numeric',
-              hour: '2-digit', minute: '2-digit',
+              hour: '2-digit', minute: '2-digit', timeZone: 'UTC',
             })}
           </p>
         </div>
