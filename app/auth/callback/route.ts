@@ -3,6 +3,7 @@ import { cookies } from 'next/headers'
 import { NextResponse, type NextRequest } from 'next/server'
 import { sendWelcomeEmail } from '@/lib/email'
 import { processReferral } from '@/lib/referral'
+import { createServiceClient } from '@/lib/supabase/service-client'
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
@@ -36,6 +37,16 @@ export async function GET(request: NextRequest) {
       // Send welcome email + process referral for new users
       // New user = created within 2 hours (email confirmation links expire in 1 hour)
       const { data: { user } } = await supabase.auth.getUser()
+
+      // Sync profiles.email to auth.users.email — covers email change confirmations
+      // (Supabase auth updates auth.users directly; DB triggers don't fire reliably)
+      if (user?.id && user?.email) {
+        createServiceClient()
+          .from('profiles')
+          .update({ email: user.email })
+          .eq('id', user.id)
+          .then(() => {}) // fire-and-forget, non-blocking
+      }
       if (user?.email) {
         const createdAt = new Date(user.created_at).getTime()
         const isNewUser = Date.now() - createdAt < 2 * 60 * 60 * 1000
