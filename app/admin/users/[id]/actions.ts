@@ -106,3 +106,56 @@ export async function deleteNote(noteId: string, userId: string) {
   if (error) throw new Error(error.message)
   revalidatePath(`/admin/users/${userId}`)
 }
+
+// ---- Account management -------------------------------------------------
+
+export async function updateEmail(userId: string, email: string) {
+  await requireAdmin()
+  if (!email.trim()) throw new Error('Email cannot be empty')
+  const supabase = createServiceClient()
+  const { error } = await supabase.auth.admin.updateUserById(userId, {
+    email: email.trim(),
+    email_confirm: true,
+  })
+  if (error) throw new Error(error.message)
+  revalidatePath(`/admin/users/${userId}`)
+}
+
+export async function updatePhone(userId: string, phone: string) {
+  await requireAdmin()
+  const supabase = createServiceClient()
+  const { error } = await supabase
+    .from('profiles')
+    .update({ phone: phone.trim() || null, updated_at: new Date().toISOString() })
+    .eq('id', userId)
+  if (error) throw new Error(error.message)
+  revalidatePath(`/admin/users/${userId}`)
+}
+
+export async function suspendAccount(userId: string) {
+  await requireAdmin()
+  const supabase = createServiceClient()
+  const { error } = await supabase.auth.admin.updateUserById(userId, {
+    ban_duration: '876000h', // ~100 years
+  })
+  if (error) throw new Error(error.message)
+  revalidatePath(`/admin/users/${userId}`)
+}
+
+export async function unsuspendAccount(userId: string) {
+  await requireAdmin()
+  const supabase = createServiceClient()
+  const { error } = await supabase.auth.admin.updateUserById(userId, {
+    ban_duration: 'none',
+  })
+  if (error) throw new Error(error.message)
+  revalidatePath(`/admin/users/${userId}`)
+}
+
+export async function deleteAccount(userId: string) {
+  await requireAdmin()
+  const supabase = createServiceClient()
+  const { error } = await supabase.auth.admin.deleteUser(userId)
+  if (error) throw new Error(error.message)
+  // Profile/reports cascade-deleted via FK or RLS — no revalidatePath needed
+}

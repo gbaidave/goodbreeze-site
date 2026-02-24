@@ -60,11 +60,25 @@ function daysRemaining(expiresAt: string | null): number | null {
 // ReportCard
 // ============================================================================
 
-function ReportCard({ report }: { report: Report }) {
+function ReportCard({ report, onDelete }: { report: Report; onDelete: (id: string) => void }) {
+  const [confirming, setConfirming] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+
   const days = daysRemaining(report.expires_at)
   const isExpiringSoon = days !== null && days <= 7 && days > 0
   const isExpired = days !== null && days === 0
   const isActive = report.status === 'pending' || report.status === 'processing'
+
+  async function handleDelete() {
+    setDeleting(true)
+    try {
+      const res = await fetch(`/api/reports/${report.id}`, { method: 'DELETE' })
+      if (res.ok) onDelete(report.id)
+    } finally {
+      setDeleting(false)
+      setConfirming(false)
+    }
+  }
 
   return (
     <div className="bg-dark-700 border border-primary/20 rounded-xl px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -135,6 +149,37 @@ function ReportCard({ report }: { report: Report }) {
         {report.status === 'failed_site_blocked' && (
           <span className="text-sm text-red-400">Site blocked — check email</span>
         )}
+
+        {/* Delete control */}
+        {confirming ? (
+          <span className="flex items-center gap-2 text-sm">
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              className="text-red-400 hover:text-red-300 font-medium disabled:opacity-50"
+            >
+              {deleting ? 'Deleting…' : 'Yes'}
+            </button>
+            <span className="text-gray-600">/</span>
+            <button
+              onClick={() => setConfirming(false)}
+              className="text-gray-400 hover:text-gray-300"
+            >
+              No
+            </button>
+          </span>
+        ) : (
+          <button
+            onClick={() => setConfirming(true)}
+            title="Delete report"
+            className="text-gray-600 hover:text-red-400 transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </button>
+        )}
       </div>
     </div>
   )
@@ -146,6 +191,8 @@ function ReportCard({ report }: { report: Report }) {
 
 export default function ReportList({ initialReports }: ReportListProps) {
   const [reports, setReports] = useState<Report[]>(initialReports)
+  const [confirmDeleteAll, setConfirmDeleteAll] = useState(false)
+  const [deletingAll, setDeletingAll] = useState(false)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   useEffect(() => {
@@ -192,6 +239,25 @@ export default function ReportList({ initialReports }: ReportListProps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reports.filter(r => r.status === 'pending' || r.status === 'processing').map(r => r.id).join(',')])
 
+  function handleDelete(id: string) {
+    setReports(prev => prev.filter(r => r.id !== id))
+  }
+
+  async function handleDeleteAll() {
+    setDeletingAll(true)
+    try {
+      const res = await fetch('/api/reports/bulk-delete', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ all: true }),
+      })
+      if (res.ok) setReports([])
+    } finally {
+      setDeletingAll(false)
+      setConfirmDeleteAll(false)
+    }
+  }
+
   if (reports.length === 0) {
     return (
       <div className="bg-dark-700 border border-primary/20 rounded-2xl p-12 text-center">
@@ -208,8 +274,38 @@ export default function ReportList({ initialReports }: ReportListProps) {
 
   return (
     <div className="space-y-3">
+      {/* Delete all row */}
+      <div className="flex justify-end">
+        {confirmDeleteAll ? (
+          <span className="flex items-center gap-2 text-sm">
+            <span className="text-gray-400">Delete all {reports.length} reports?</span>
+            <button
+              onClick={handleDeleteAll}
+              disabled={deletingAll}
+              className="text-red-400 hover:text-red-300 font-medium disabled:opacity-50"
+            >
+              {deletingAll ? 'Deleting…' : 'Yes, delete all'}
+            </button>
+            <span className="text-gray-600">/</span>
+            <button
+              onClick={() => setConfirmDeleteAll(false)}
+              className="text-gray-400 hover:text-gray-300"
+            >
+              Cancel
+            </button>
+          </span>
+        ) : (
+          <button
+            onClick={() => setConfirmDeleteAll(true)}
+            className="text-xs text-gray-600 hover:text-red-400 transition-colors"
+          >
+            Delete all reports
+          </button>
+        )}
+      </div>
+
       {reports.map((report) => (
-        <ReportCard key={report.id} report={report} />
+        <ReportCard key={report.id} report={report} onDelete={handleDelete} />
       ))}
     </div>
   )

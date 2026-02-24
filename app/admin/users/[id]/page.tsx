@@ -20,6 +20,11 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
   const { id } = await params
   const supabase = createServiceClient()
 
+  // Fetch ban status from auth
+  const { data: authUserData } = await supabase.auth.admin.getUserById(id)
+  const bannedUntil = authUserData?.user?.banned_until ?? null
+  const isSuspended = !!bannedUntil && new Date(bannedUntil) > new Date()
+
   // Fetch all user data in parallel
   const [profileRes, subRes, creditsRes, reportsRes, emailLogsRes, supportRes, notesRes, testimonialsRes] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', id).single(),
@@ -106,6 +111,9 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
             currentOverrideType={profile.plan_override_type ?? null}
             currentOverrideUntil={profile.plan_override_until ?? null}
             stripeCustomerId={profile.stripe_customer_id ?? null}
+            currentEmail={profile.email ?? ''}
+            currentPhone={profile.phone ?? ''}
+            isSuspended={isSuspended}
           />
 
           {/* Notes */}
