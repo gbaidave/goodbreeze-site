@@ -220,6 +220,26 @@ export default async function DashboardPage({
           )}
         </div>
 
+        {/* Testimonial CTA — show until user has submitted both types */}
+        {(!hasWrittenTestimonial || !hasVideoTestimonial) && (
+          <div className="bg-dark-700 border border-zinc-700 rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <p className="text-white font-semibold">Share your experience</p>
+              <p className="text-gray-400 text-sm mt-1">
+                {hasWrittenTestimonial
+                  ? 'Got a minute for a quick video testimonial? It helps us a lot.'
+                  : 'A quick written or video testimonial goes a long way — and we really appreciate it.'}
+              </p>
+            </div>
+            <a
+              href="/testimonials/submit"
+              className="flex-shrink-0 inline-block px-5 py-2.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-600 text-white font-medium rounded-xl transition-colors text-sm"
+            >
+              Submit a testimonial →
+            </a>
+          </div>
+        )}
+
         {/* Report history */}
         <div>
           <h2 className="text-xl font-bold text-white mb-4">Report history</h2>
