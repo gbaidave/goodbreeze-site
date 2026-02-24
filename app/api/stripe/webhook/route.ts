@@ -204,7 +204,7 @@ export async function POST(request: NextRequest) {
 
           if (updateError) {
             console.error('[webhook] Subscription update failed:', updateError)
-            return NextResponse.json({ error: 'Failed to update subscription' }, { status: 500 })
+            return NextResponse.json({ error: 'Failed to update subscription', details: updateError.message, code: (updateError as any).code, hint: (updateError as any).hint }, { status: 500 })
           }
         } else {
           // Safety fallback: no subscription row found for this user (shouldn't happen
