@@ -142,7 +142,7 @@ export default function ToolsDirectory() {
           </p>
           <Link
             href="/pricing"
-            className="inline-block px-8 py-4 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full hover:shadow-lg hover:shadow-primary/50 transition-all duration-300"
+            className="inline-block px-8 py-4 bg-transparent border-2 border-white text-white font-semibold rounded-full hover:bg-white/10 transition-all duration-300"
           >
             See Pricing
           </Link>

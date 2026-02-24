@@ -75,8 +75,6 @@ export default async function DashboardPage({
   const PAID_PLANS = ['starter', 'growth', 'pro', 'custom']
   const isExhausted = !PAID_PLANS.includes(plan) && totalCredits === 0
 
-  const starterPriceId = process.env.STRIPE_STARTER_PLAN_PRICE_ID!
-  const boostPackPriceId = process.env.STRIPE_BOOST_PACK_PRICE_ID!
 
   return (
     <div className="min-h-screen bg-dark py-12 px-6">
@@ -164,7 +162,7 @@ export default async function DashboardPage({
                   ? 'Monthly plan — see pricing for report caps'
                   : totalCredits > 0
                     ? `${totalCredits} credit${totalCredits !== 1 ? 's' : ''} available`
-                    : 'No credits remaining — buy or earn more'}
+                    : <>No credits remaining. <a href="/pricing" className="text-primary hover:text-primary/80 transition-colors">Buy or earn more →</a></>}
             </p>
           </div>
 
@@ -197,8 +195,6 @@ export default async function DashboardPage({
         {/* Exhausted nudge — shown only when all free + paid credits consumed, never for admin/tester */}
         {isExhausted && !isAdmin && (
           <NudgeCard
-            starterPriceId={starterPriceId}
-            boostPackPriceId={boostPackPriceId}
             hasWrittenTestimonial={hasWrittenTestimonial}
             hasVideoTestimonial={hasVideoTestimonial}
           />

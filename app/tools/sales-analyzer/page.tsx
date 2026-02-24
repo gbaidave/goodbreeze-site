@@ -9,6 +9,7 @@ import { captureEvent } from '@/lib/analytics'
 import { ExhaustedState } from '@/components/ExhaustedState'
 import { PhoneGatePrompt } from '@/components/tools/PhoneGatePrompt'
 import { isValidPhone, normalizePhone } from '@/lib/phone'
+import { CreditsDisplay } from '@/components/tools/CreditsDisplay'
 
 type ReportType = 'h2h' | 't3c' | 'cp'
 
@@ -356,11 +357,14 @@ export default function SalesAnalyzer() {
             </button>
           )}
 
-          <p className="text-center text-xs text-gray-600">
-            {isGuest && reportType === 'h2h'
-              ? 'First report free — no account needed. Report delivered in 2–4 minutes.'
-              : 'Report delivered to your email in 2–4 minutes. Saved to your dashboard.'}
-          </p>
+          <div className="text-center space-y-1">
+            <CreditsDisplay />
+            <p className="text-xs text-gray-600">
+              {isGuest && reportType === 'h2h'
+                ? 'First report free — no account needed. Report delivered in 2–4 minutes.'
+                : 'Report delivered to your email in 2–4 minutes. Saved to your dashboard.'}
+            </p>
+          </div>
         </motion.form>
 
       </div>

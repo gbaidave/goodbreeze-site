@@ -9,6 +9,7 @@ import { captureEvent } from '@/lib/analytics'
 import { ExhaustedState } from '@/components/ExhaustedState'
 import { PhoneGatePrompt } from '@/components/tools/PhoneGatePrompt'
 import { isValidPhone, normalizePhone } from '@/lib/phone'
+import { CreditsDisplay } from '@/components/tools/CreditsDisplay'
 
 type BVReportType = 'ai_seo' | 'seo_audit' | 'keyword_research' | 'landing_page' | 'seo_comprehensive'
 
@@ -31,7 +32,7 @@ interface ReportConfig {
 const REPORT_CONFIG: Record<BVReportType, ReportConfig> = {
   ai_seo: {
     label: 'AI SEO Optimizer',
-    tier: 'Free — no login',
+    tier: '1 credit',
     tierStyle: 'text-primary',
     description: 'AI & LLM visibility analysis + on-page SEO gaps and prioritized fixes.',
     showKeyword: false,
@@ -82,7 +83,7 @@ const REPORT_CONFIG: Record<BVReportType, ReportConfig> = {
   },
   seo_comprehensive: {
     label: 'SEO Comprehensive',
-    tier: 'Starter Only',
+    tier: '1 credit',
     tierStyle: 'text-primary',
     description: 'Our most powerful report — technical audit + keyword research + competitor analysis combined.',
     showKeyword: true,
@@ -92,7 +93,6 @@ const REPORT_CONFIG: Record<BVReportType, ReportConfig> = {
     frictionless: false,
     urlLabel: 'Website URL',
     urlPlaceholder: 'https://yoursite.com',
-    badge: 'Most Complete',
   },
 }
 
@@ -424,11 +424,14 @@ export default function SeoIntelligencePage() {
             </button>
           )}
 
-          <p className="text-center text-xs text-gray-600">
-            {isGuest && config.frictionless
-              ? 'Free for new users — no account needed. Report delivered by email in 2–3 minutes.'
-              : 'Report delivered to your email in 2–3 minutes. Saved to your dashboard.'}
-          </p>
+          <div className="text-center space-y-1">
+            <CreditsDisplay />
+            <p className="text-xs text-gray-600">
+              {isGuest && config.frictionless
+                ? 'Free for new users — no account needed. Report delivered by email in 2–3 minutes.'
+                : 'Report delivered to your email in 2–3 minutes. Saved to your dashboard.'}
+            </p>
+          </div>
         </motion.form>
 
       </div>
