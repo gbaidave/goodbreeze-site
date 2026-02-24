@@ -18,7 +18,7 @@ interface Props {
 
 export default function TurnstileWidget({ onVerify, onError }: Props) {
   const ref = useRef<HTMLDivElement>(null)
-  const widgetId = useRef<string | undefined>()
+  const widgetId = useRef<string | undefined>(undefined)
 
   useEffect(() => {
     const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
