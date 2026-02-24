@@ -48,7 +48,7 @@ export default async function AccountPage() {
       initialName={profile?.name || ''}
       initialPhone={profile?.phone || ''}
       initialSmsOk={profile?.sms_ok ?? false}
-      email={profile?.email || user.email || ''}
+      email={user.email || profile?.email || ''}
       role={profile?.role ?? 'user'}
       plan={sub?.plan ?? 'free'}
       status={sub?.status}
