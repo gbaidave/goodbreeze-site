@@ -9,11 +9,12 @@
 --
 -- Changes:
 --   1. subscriptions: Add credits_remaining column
---   2. subscriptions: Initialize credits_remaining for existing subscribers
---   3. New table: subscription_acknowledgments (consent audit trail)
---   4. credits: Add source column for grant traceability
---   5. handle_new_user(): Set source='signup' on signup credit insert
---   6. New function: decrement_subscription_credits() for entitlement.ts
+--   2. plan_type ENUM: Add 'growth' value if missing
+--   3. subscriptions: Initialize credits_remaining for existing subscribers
+--   4. New table: subscription_acknowledgments (consent audit trail)
+--   5. credits: Add source column for grant traceability
+--   6. handle_new_user(): Set source='signup' on signup credit insert
+--   7. New function: decrement_subscription_credits() for entitlement.ts
 --
 -- All ALTER TABLE statements use IF NOT EXISTS — safe to re-run.
 -- ============================================================================
@@ -35,7 +36,18 @@ COMMENT ON COLUMN subscriptions.credits_remaining IS
 
 
 -- ============================================================================
--- 2. Initialize credits_remaining for existing subscription users
+-- 2. Ensure 'growth' is in the plan_type ENUM
+--
+-- The plan_type ENUM was created in migration 002. If 'growth' was not added
+-- then, the UPDATE below will fail with "invalid input value for enum".
+-- ADD VALUE IF NOT EXISTS is safe to re-run and is transactional in PG 14+.
+-- ============================================================================
+
+ALTER TYPE plan_type ADD VALUE IF NOT EXISTS 'growth';
+
+
+-- ============================================================================
+-- 3. Initialize credits_remaining for existing subscription users
 --
 -- For each active subscriber, set credits_remaining to:
 --   max(0, plan_cap - reports_used_this_period)
@@ -66,7 +78,7 @@ WHERE s.plan IN ('starter', 'growth', 'pro')
 
 
 -- ============================================================================
--- 3. subscription_acknowledgments
+-- 4. subscription_acknowledgments
 --
 -- Stores a record each time a user confirms the pre-checkout consent checkbox
 -- before purchasing a subscription plan. This is the audit trail for:
@@ -106,7 +118,7 @@ CREATE POLICY "Service role full access on subscription_acknowledgments"
 
 
 -- ============================================================================
--- 4. Add source column to credits
+-- 5. Add source column to credits
 --
 -- Tracks where each credit row came from. Used for:
 --   - Admin grant traceability (why does this user have extra credits?)
@@ -139,7 +151,7 @@ CREATE INDEX IF NOT EXISTS idx_credits_source ON credits(source);
 
 
 -- ============================================================================
--- 5. Update handle_new_user() to include source='signup' on credit insert
+-- 6. Update handle_new_user() to include source='signup' on credit insert
 --
 -- Full function body included — replaces migration 016 version.
 -- Adds source='signup' to the signup credit row.
@@ -195,7 +207,7 @@ $$;
 
 
 -- ============================================================================
--- 6. decrement_subscription_credits()
+-- 7. decrement_subscription_credits()
 --
 -- Called by entitlement.ts recordUsage() when deductFrom='subscription'.
 -- Decrements credits_remaining by 1 with a safety floor of 0.
