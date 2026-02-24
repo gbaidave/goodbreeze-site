@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -15,7 +15,6 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>
 
 export default function LoginForm() {
-  const router = useRouter()
   const searchParams = useSearchParams()
   const returnUrl = searchParams.get('returnUrl') || '/dashboard'
   const sessionExpired = searchParams.get('reason') === 'timeout'
@@ -39,8 +38,10 @@ export default function LoginForm() {
       }),
     })
     if (res.ok) {
-      router.push(returnUrl)
-      router.refresh()
+      // Full page navigation so AuthProvider re-mounts and reads the session
+      // cookie set by the server. router.push() keeps AuthProvider mounted with
+      // stale null state because onAuthStateChange never fires for server-side logins.
+      window.location.href = returnUrl
       return
     }
     const body = await res.json()

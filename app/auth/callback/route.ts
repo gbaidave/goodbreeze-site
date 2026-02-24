@@ -29,9 +29,11 @@ export async function GET(request: NextRequest) {
     const type = searchParams.get('type')
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error) {
-      // Password reset — skip welcome email + referral, go straight to reset page
+      // Password reset — always go to the reset password page.
+      // Supabase recovery emails don't include a returnUrl param, so returnUrl
+      // would default to /dashboard. Hardcode /auth/reset-password instead.
       if (type === 'recovery') {
-        return NextResponse.redirect(`${origin}${returnUrl}`)
+        return NextResponse.redirect(`${origin}/auth/reset-password`)
       }
 
       // Send welcome email + process referral for new users
