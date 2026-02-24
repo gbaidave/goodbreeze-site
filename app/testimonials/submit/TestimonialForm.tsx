@@ -81,7 +81,7 @@ export function TestimonialForm({ submittedTypes }: Props) {
         <h2 className="text-white font-bold text-xl mb-2">Thank you!</h2>
         <p className="text-gray-400 text-sm mb-1">Your testimonial has been submitted for review.</p>
         <p className="text-green-400 font-semibold text-sm">
-          +{success.creditsGranted} free report credit{success.creditsGranted !== 1 ? 's' : ''} added to your account.
+          +{success.creditsGranted} credit{success.creditsGranted !== 1 ? 's' : ''} added to your account.
         </p>
         <a href="/dashboard" className="inline-block mt-6 text-primary text-sm hover:underline">← Back to dashboard</a>
       </div>

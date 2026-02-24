@@ -1,7 +1,7 @@
 export function reportsExhaustedEmail(name: string): { subject: string; html: string } {
   const firstName = name.split(' ')[0]
   return {
-    subject: `You've used your free Good Breeze AI reports. Here's what's next.`,
+    subject: `Your Good Breeze AI credits are done — here's what's next.`,
     html: `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -17,9 +17,9 @@ export function reportsExhaustedEmail(name: string): { subject: string; html: st
 
         <!-- Hero -->
         <tr><td style="background:#18181b;border:1px solid #27272a;border-radius:16px;padding:40px;">
-          <h1 style="margin:0 0 12px;font-size:28px;font-weight:700;color:#ffffff;">Your free reports are done, ${firstName}</h1>
+          <h1 style="margin:0 0 12px;font-size:28px;font-weight:700;color:#ffffff;">You're out of credits, ${firstName}</h1>
           <p style="margin:0 0 24px;font-size:16px;color:#a1a1aa;line-height:1.6;">
-            You ran your first reports. Here's how to keep going.
+            You've used your credits. Here's how to get more.
           </p>
 
           <!-- Options -->
@@ -35,7 +35,7 @@ export function reportsExhaustedEmail(name: string): { subject: string; html: st
             <tr>
               <td style="background:#1d1d1f;border:1px solid #27272a;border-radius:12px;padding:20px 24px;">
                 <p style="margin:0 0 4px;font-size:13px;color:#71717a;font-weight:600;">FLEXIBLE, $10 one-time</p>
-                <p style="margin:0 0 8px;font-size:16px;font-weight:700;color:#ffffff;">3-Report Credit Pack</p>
+                <p style="margin:0 0 8px;font-size:16px;font-weight:700;color:#ffffff;">10-Credit Pack</p>
                 <p style="margin:0;font-size:14px;color:#a1a1aa;line-height:1.5;">Pay once, use when you need them. No subscription required.</p>
               </td>
             </tr>
@@ -48,13 +48,13 @@ export function reportsExhaustedEmail(name: string): { subject: string; html: st
 
         <!-- Free credit options -->
         <tr><td style="padding:28px 0 0;">
-          <h2 style="margin:0 0 4px;font-size:16px;font-weight:700;color:#ffffff;">Or earn free credits</h2>
-          <p style="margin:0 0 16px;font-size:14px;color:#71717a;">Two easy ways to get more reports at no cost:</p>
+          <h2 style="margin:0 0 4px;font-size:16px;font-weight:700;color:#ffffff;">Or earn credits</h2>
+          <p style="margin:0 0 16px;font-size:14px;color:#71717a;">Two easy ways to get more credits:</p>
           <table width="100%" cellpadding="0" cellspacing="0">
             <tr>
               <td style="background:#18181b;border:1px solid #27272a;border-radius:12px;padding:20px;width:48%;vertical-align:top;">
                 <p style="margin:0 0 6px;font-size:14px;font-weight:600;color:#22d3ee;">Refer a friend</p>
-                <p style="margin:0 0 12px;font-size:13px;color:#a1a1aa;line-height:1.5;">Share your referral link. Earn 1 free report credit for every person who signs up.</p>
+                <p style="margin:0 0 12px;font-size:13px;color:#a1a1aa;line-height:1.5;">Share your referral link. Earn 1 credit for every person who signs up.</p>
                 <a href="https://goodbreeze.ai/dashboard" style="font-size:13px;color:#22d3ee;text-decoration:none;">Get your link →</a>
               </td>
               <td style="width:4%;"></td>

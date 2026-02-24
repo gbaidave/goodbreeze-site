@@ -42,7 +42,7 @@ export function ExhaustedState({ error, upgradePrompt }: Props) {
 
         {/* Free credit paths */}
         <div className="border-t border-gray-800 pt-6">
-          <p className="text-gray-500 text-xs uppercase tracking-wide mb-4">Or earn free credits</p>
+          <p className="text-gray-500 text-xs uppercase tracking-wide mb-4">Or earn credits</p>
           <div className="space-y-3">
             <Link
               href="/dashboard"

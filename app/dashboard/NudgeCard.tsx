@@ -24,9 +24,9 @@ export function NudgeCard({ starterPriceId, boostPackPriceId, hasWrittenTestimon
           </svg>
         </div>
         <div>
-          <p className="text-white font-semibold">You've used all your free reports</p>
+          <p className="text-white font-semibold">You&apos;re out of credits</p>
           <p className="text-gray-400 text-sm mt-0.5">
-            Upgrade to keep running reports — or earn more for free.
+            Get more credits — buy a pack or earn them.
           </p>
         </div>
       </div>
@@ -48,7 +48,7 @@ export function NudgeCard({ starterPriceId, boostPackPriceId, hasWrittenTestimon
       {/* Free credit paths */}
       {!bothTestimonialsSubmitted && (
         <div className="border-t border-primary/20 pt-4">
-          <p className="text-gray-500 text-xs uppercase tracking-wide mb-3">Or earn free credits</p>
+          <p className="text-gray-500 text-xs uppercase tracking-wide mb-3">Or earn credits</p>
           <div className="space-y-2">
             {!hasWrittenTestimonial && (
               <a

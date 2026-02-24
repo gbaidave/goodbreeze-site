@@ -38,7 +38,7 @@ export function ReferralSection({ code, signups, creditsEarned }: Props) {
         <div>
           <h3 className="text-white font-semibold text-lg">Refer a friend, earn credits</h3>
           <p className="text-gray-400 text-sm mt-1">
-            Share your link! You earn 1 free report credit for every person who signs up using your referral link.
+            Share your link! You earn 1 credit for every person who signs up using your referral link.
           </p>
         </div>
         {/* Stats */}

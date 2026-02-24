@@ -8,7 +8,7 @@ const tools = [
     name: "Competitive Analyzer",
     description: "AI-powered competitive intelligence — head-to-head, top 3 competitors, or full market positioning.",
     href: "/tools/sales-analyzer",
-    tier: "1 Free",
+    tier: "1 Credit",
     tierStyle: "bg-primary/10 text-primary border-primary/30",
     features: [
       "Head-to-Head competitor analysis",
@@ -22,11 +22,11 @@ const tools = [
     name: "SEO Intelligence Suite",
     description: "Five AI-powered SEO reports in one place — from AI visibility audits to full keyword research and competitor benchmarking.",
     href: "/tools/seo-intelligence",
-    tier: "1 Free",
+    tier: "1 Credit",
     tierStyle: "bg-primary/10 text-primary border-primary/30",
     features: [
-      "AI SEO Optimizer (free, no login)",
-      "SEO Audit (1 free) — technical + keyword opportunities",
+      "AI SEO Optimizer (no login required)",
+      "SEO Audit — technical + keyword opportunities",
       "Keyword Research — seed to content strategy",
       "Landing Page Optimizer — conversions + SEO",
       "SEO Comprehensive — our most complete report",
@@ -50,7 +50,7 @@ export default function ToolsDirectory() {
             AI-Powered Business Intelligence Tools
           </h1>
           <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-            Get instant competitive and SEO insights — delivered as a full PDF to your inbox. Start free, upgrade for more.
+            Get instant competitive and SEO insights — delivered as a full PDF to your inbox. First report free, no card needed.
           </p>
         </motion.div>
 
@@ -62,8 +62,8 @@ export default function ToolsDirectory() {
           className="flex flex-wrap items-center justify-center gap-4 mb-12 text-xs"
         >
           <div className="flex items-center gap-1.5">
-            <span className="px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/30 font-semibold">1 Free</span>
-            <span className="text-gray-500">— one free report per tool, no account needed</span>
+            <span className="px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/30 font-semibold">1 Credit</span>
+            <span className="text-gray-500">— 1 credit per report · first report free, no card needed</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="px-2.5 py-1 rounded-full bg-accent-blue/10 text-accent-blue border border-accent-blue/30 font-semibold">Credits / Plan</span>

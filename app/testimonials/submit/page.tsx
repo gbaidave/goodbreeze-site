@@ -4,7 +4,7 @@ import { TestimonialForm } from './TestimonialForm'
 
 export const metadata = {
   title: 'Share Your Experience | Good Breeze AI',
-  description: 'Submit a testimonial and earn free report credits.',
+  description: 'Submit a testimonial and earn credits.',
 }
 
 export default async function TestimonialSubmitPage() {
@@ -30,7 +30,7 @@ export default async function TestimonialSubmitPage() {
           </a>
           <h1 className="text-3xl font-bold text-white mt-3">Share your experience</h1>
           <p className="text-gray-400 mt-2">
-            Help others discover Good Breeze AI — and earn free report credits for doing it.
+            Help others discover Good Breeze AI — and earn credits for doing it.
           </p>
 
           {/* Credit incentives */}
@@ -43,7 +43,7 @@ export default async function TestimonialSubmitPage() {
               </div>
               <div>
                 <p className="text-white font-semibold text-sm">Written testimonial</p>
-                <p className="text-gray-400 text-xs mt-0.5">Earn 1 free report credit</p>
+                <p className="text-gray-400 text-xs mt-0.5">Earn 1 credit</p>
               </div>
             </div>
             <div className="bg-dark-700 border border-primary/20 rounded-xl p-4 flex items-start gap-3">
@@ -54,7 +54,7 @@ export default async function TestimonialSubmitPage() {
               </div>
               <div>
                 <p className="text-white font-semibold text-sm">Video testimonial</p>
-                <p className="text-gray-400 text-xs mt-0.5">Earn 5 free report credits</p>
+                <p className="text-gray-400 text-xs mt-0.5">Earn 5 credits</p>
               </div>
             </div>
           </div>

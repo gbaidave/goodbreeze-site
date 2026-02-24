@@ -75,8 +75,8 @@ const ENTRY_OPTIONS = [
     subtitle: "No credit card required",
     description: "Try before you buy",
     features: [
-      "1 free Competitor Analysis report",
-      "1 free AI SEO Optimizer report",
+      "1 report credit included — no card needed",
+      "All report types available",
       "PDF delivered to your email",
     ],
   },
@@ -369,7 +369,7 @@ export default function PricingPage() {
               },
               {
                 q: "What's in the free tier exactly?",
-                a: "You get one free Competitor Analysis report and one free AI SEO Optimizer report. No credit card needed. Full PDFs delivered to your email — not a demo.",
+                a: "You get 1 report credit when you sign up — no credit card needed. Run any report type. Full PDF delivered to your email — not a demo.",
               },
               {
                 q: "What's the difference between credit packs and monthly plans?",
@@ -377,7 +377,7 @@ export default function PricingPage() {
               },
               {
                 q: "Which plan is best for my business?",
-                a: "Start free to see the value. If you need more than 2 reports, a credit pack is the easiest next step. If you need regular reporting for SEO, competitive tracking, or client work — the Growth plan at $30/month covers most businesses at 40 reports/month.",
+                a: "Start free to see the value. If you need more reports, a credit pack is the easiest next step. If you need regular reporting for SEO, competitive tracking, or client work — the Growth plan at $30/month covers most businesses at 40 reports/month.",
               },
             ].map(({ q, a }, i) => (
               <div key={i} className="p-6 rounded-xl bg-dark-700 border border-primary/10">

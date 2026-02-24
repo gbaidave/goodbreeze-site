@@ -19,17 +19,8 @@ export function welcomeEmail(name: string): { subject: string; html: string } {
         <tr><td style="background:#18181b;border:1px solid #27272a;border-radius:16px;padding:40px;">
           <h1 style="margin:0 0 12px;font-size:28px;font-weight:700;color:#ffffff;">Welcome, ${firstName} 👋</h1>
           <p style="margin:0 0 24px;font-size:16px;color:#a1a1aa;line-height:1.6;">
-            You're in. Your Good Breeze AI account is ready and your first report is on us.
+            You're in. Your Good Breeze AI account is ready — run your first report for free, no card needed.
           </p>
-
-          <table cellpadding="0" cellspacing="0" style="margin-bottom:32px;">
-            <tr>
-              <td style="background:#1d1d1f;border:1px solid #27272a;border-radius:12px;padding:20px 24px;margin-bottom:12px;">
-                <p style="margin:0 0 4px;font-size:13px;color:#71717a;font-weight:500;">YOUR FREE REPORT</p>
-                <p style="margin:0;font-size:15px;color:#ffffff;">Run any free report — Head to Head Analyzer or AI SEO Optimizer. No credit card needed.</p>
-              </td>
-            </tr>
-          </table>
 
           <a href="https://goodbreeze.ai/tools" style="display:inline-block;background:linear-gradient(135deg,#22d3ee,#3b82f6);color:#09090b;font-weight:700;font-size:15px;padding:14px 28px;border-radius:10px;text-decoration:none;">
             Run your first report →

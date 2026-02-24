@@ -31,19 +31,15 @@ export const helpArticles: HelpArticle[] = [
 
 Your report is processed in the background (usually 3–5 minutes) and delivered to your email as a PDF. You can also track the status in your dashboard and view the report directly once it's complete.
 
-If you're on the Free plan, you get one report from the Analyzer tools (Head-to-Head or Top 3 Competitors) and one from the Brand Visibility tools (SEO Audit or Landing Page Optimizer) — no credit card required.`,
+New accounts include 1 report credit — run any report type for free, no credit card required.`,
   },
   {
     slug: 'what-free-reports-do-i-get',
-    title: 'What free reports do I get?',
+    title: 'How many credits do I start with?',
     topic: 'Getting Started',
-    content: `Every account gets two free reports — one per system.
+    content: `Every new account starts with 1 report credit — no credit card required. Use it on any report type across the Analyzer or Brand Visibility tools.
 
-Analyzer system: one free report from either the Head-to-Head Analyzer or the Top 3 Competitors report. You choose which one to use.
-
-Brand Visibility system: one free report from either the SEO Audit or the Landing Page Optimizer.
-
-Once you've used both free reports, you can purchase a credit pack (Spark Pack: 3 reports for $5, Boost Pack: 10 reports for $10) or upgrade to a monthly plan (Starter $20/mo, Growth $30/mo, or Pro $40/mo). You can also earn additional free credits by submitting a testimonial or referring a friend.`,
+Once your credit is used, you can purchase a credit pack (Spark Pack: 3 credits for $5, Boost Pack: 10 credits for $10) or upgrade to a monthly plan (Starter $20/mo, Growth $30/mo, or Pro $40/mo). You can also earn additional credits by submitting a testimonial or referring a friend.`,
   },
   {
     slug: 'how-long-does-a-report-take',
@@ -125,23 +121,21 @@ The output includes: recommended content topics, keyword clusters, suggested pag
 
   {
     slug: 'whats-included-in-free-plan',
-    title: "What's included in the Free plan?",
+    title: "What's included when I sign up?",
     topic: 'Billing & Plans',
-    content: `The Free plan gives you access to all report types, with one free report from the Analyzer system and one from the Brand Visibility system (2 reports total).
+    content: `Every new account includes 1 report credit — no credit card required. You have access to all report types and the full dashboard from day one.
 
-You can sign up with just an email address — no credit card required. Your dashboard, report history, and account features are all fully available on the Free plan.
-
-Once your two free reports are used, you can earn more by submitting a testimonial (1–5 credits) or referring a friend (1 credit per signup). Or you can upgrade to an Impulse credit pack or the Starter plan.`,
+Once your credit is used, you can earn more by submitting a testimonial (1–5 credits) or referring a friend (1 credit per signup). Or purchase a credit pack (Spark: 3 credits for $5, Boost: 10 credits for $10) or upgrade to a monthly plan.`,
   },
   {
     slug: 'what-are-impulse-credits',
-    title: 'What are Impulse credits?',
+    title: 'What are the credit packs?',
     topic: 'Billing & Plans',
-    content: `Impulse is a one-time credit pack: $10 for 3 report credits. There's no subscription — you pay once and use the credits whenever you need them.
+    content: `Credit packs are one-time purchases with no subscription. Spark Pack: $5 for 3 credits. Boost Pack: $10 for 10 credits.
 
-Each credit runs one report of any type. Credits expire 90 days after purchase.
+Each credit runs one report of any type. Credits from packs don't expire.
 
-This is the right option if you only need reports occasionally or want to try the full tool set before committing to a monthly subscription. If you find yourself running reports regularly, a monthly plan is better value — starting at $20/month for 25 reports.`,
+This is the right option if you only need reports occasionally or want to try the full tool set before committing to a monthly plan. If you find yourself running reports regularly, a monthly plan is better value — starting at $20/month for 25 reports.`,
   },
   {
     slug: 'what-is-starter-plan',
@@ -157,19 +151,17 @@ Your subscription renews monthly. You can cancel at any time from the Account pa
     slug: 'how-to-cancel-subscription',
     title: 'How do I cancel my subscription?',
     topic: 'Billing & Plans',
-    content: `You can cancel your Starter subscription at any time from the Account page. Click "Manage billing, invoices & payment method" to open the Stripe billing portal, then select "Cancel subscription."
+    content: `You can cancel your subscription at any time from the Account page. Click "Manage billing, invoices & payment method" to open the Stripe billing portal, then select "Cancel subscription."
 
 Your access continues until the end of the current billing period — you won't be charged again after cancelling.
 
-If you cancel and want to continue running occasional reports, you can purchase Impulse credits ($10 for 3 reports) without a subscription.`,
+If you cancel and want to continue running occasional reports, you can purchase a credit pack (Spark: $5 / Boost: $10) without a subscription.`,
   },
   {
     slug: 'do-credits-expire',
     title: 'Do report credits expire?',
     topic: 'Billing & Plans',
-    content: `Yes. Impulse credit packs expire 90 days after purchase. Your dashboard shows your credit balance and expiry date on the Account page.
-
-Free reports (the ones included with your Free plan) don't expire — they're a permanent entitlement, one per system.
+    content: `Credits from purchases (Spark Pack, Boost Pack) don't expire. The 1 credit included when you sign up also doesn't expire.
 
 Credits earned from testimonials and referrals don't have a set expiry, though we reserve the right to apply a policy in the future with reasonable notice.
 
@@ -182,7 +174,7 @@ Monthly plan subscribers don't use credits — reports count against your monthl
     slug: 'how-does-referral-program-work',
     title: 'How does the referral program work?',
     topic: 'Referrals',
-    content: `When someone signs up using your referral link, you automatically receive 1 free report credit. The credit is granted immediately — no minimum purchase required from the person you referred.
+    content: `When someone signs up using your referral link, you automatically receive 1 credit. The credit is granted immediately — no minimum purchase required from the person you referred.
 
 There's no cap on how many credits you can earn. If 10 people sign up through your link, you get 10 credits.
 

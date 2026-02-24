@@ -198,11 +198,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 3. Get user profile BEFORE entitlement check
-    //    (free_reports_used must be read before checkEntitlement atomically writes the free slot)
+    // 3. Get user profile
     const { data: profile } = await supabase
       .from('profiles')
-      .select('name, email, phone, free_reports_used, subscriptions(plan)')
+      .select('name, email, subscriptions(plan)')
       .eq('id', user.id)
       .single()
 
@@ -210,13 +209,7 @@ export async function POST(request: NextRequest) {
     const userName = body.userName || profile?.name || userEmail.split('@')[0]
     const plan = (profile as any)?.subscriptions?.[0]?.plan ?? 'free'
 
-    // Capture free_reports_used BEFORE the atomic slot reservation in checkEntitlement
-    // (phone gate needs the pre-write count, not the post-write count)
-    const priorFreeUsed = (profile?.free_reports_used ?? {}) as Record<string, string>
-
     // 4. Check entitlement
-    //    For free plan: checkEntitlement atomically reserves the free slot via
-    //    check_and_reserve_free_slot RPC (T1-CREDIT-COUNT + T1-ATOMIC-CHECK fix).
     const entitlement = await checkEntitlement(user.id, reportType)
 
     if (!entitlement.allowed) {
@@ -230,38 +223,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 4b. Phone gate (Anti-abuse Tier 2): free-plan users must add a phone number
-    // before running their second free report. Gate triggers when:
-    //   - This run consumes a free system slot (not credits or subscription)
-    //   - At least one other free system has already been used (priorFreeUsed, pre-atomic)
-    //   - No phone number is on file
-    if (entitlement.freeSystemConsumed) {
-      const priorFreeCount = Object.keys(priorFreeUsed).length
-      const hasPhone = profile?.phone && (profile.phone as string).trim().length > 0
-      if (priorFreeCount > 0 && !hasPhone) {
-        return NextResponse.json(
-          {
-            error: 'Add a phone number to your account before running more reports.',
-            code: 'PHONE_REQUIRED',
-          },
-          { status: 402 }
-        )
-      }
-    }
-
     // 5. Create report row in DB
     const inputData = { ...body, userEmail, userName }
     delete (inputData as any).reportType
 
-    const usageType =
-      entitlement.deductFrom === 'credits' ? 'credits' :
-      entitlement.freeSystemConsumed       ? 'free'    :
-      'subscription'  // covers subscription plans, custom, and admin bypass
+    const usageType = entitlement.deductFrom === 'credits' ? 'credits' : 'subscription'
 
     const reportId = await createReportRow(user.id, reportType, inputData, plan, {
       usageType,
       creditRowId: entitlement.creditRowId,
-      freeSystem: entitlement.freeSystemConsumed,
     })
 
     // 6. Build n8n payload
@@ -288,18 +258,18 @@ export async function POST(request: NextRequest) {
     //    reserved inside checkEntitlement() via check_and_reserve_free_slot RPC.
     await recordUsage(user.id, reportType, entitlement.deductFrom!, entitlement.creditRowId)
 
-    // 8b. If this was the last free slot, check if both systems are now exhausted — fire nudge email
-    if (entitlement.freeSystemConsumed) {
+    // 8b. If this was a credit deduction, check if user is now out of credits — fire nudge email
+    if (entitlement.deductFrom === 'credits') {
       void (async () => {
         try {
           const svc = createServiceClient()
-          const { data: prof } = await svc
-            .from('profiles')
-            .select('free_reports_used')
-            .eq('id', user.id)
-            .single()
-          const freeUsed = (prof?.free_reports_used ?? {}) as Record<string, string>
-          if (freeUsed.analyzer && freeUsed.brand_visibility) {
+          const { data: creditRows } = await svc
+            .from('credits')
+            .select('balance')
+            .eq('user_id', user.id)
+            .gt('balance', 0)
+          const remaining = (creditRows ?? []).reduce((sum: number, c: { balance: number }) => sum + (c.balance ?? 0), 0)
+          if (remaining === 0) {
             await sendReportsExhaustedEmail(userEmail, userName, user.id)
           }
         } catch (e) {

@@ -25,7 +25,7 @@ export default async function DashboardPage({
 
   // Fetch profile, subscription, credits, reports, referral data, and testimonials in parallel
   const [profileRes, subRes, creditsRes, reportsRes, referralRes, testimonialsRes] = await Promise.all([
-    supabase.from('profiles').select('name, email, role, free_reports_used, plan_override_type, plan_override_until').eq('id', user.id).single(),
+    supabase.from('profiles').select('name, email, role, plan_override_type, plan_override_until').eq('id', user.id).single(),
     supabase.from('subscriptions').select('plan, status, current_period_end')
       .eq('user_id', user.id).in('status', ['active', 'trialing']).order('created_at', { ascending: false }).limit(1).single(),
     supabase.from('credits').select('balance, expires_at').eq('user_id', user.id).gt('balance', 0).order('purchased_at', { ascending: true }),
@@ -72,11 +72,8 @@ export default async function DashboardPage({
   const isAdmin = profile?.role === 'admin' || profile?.role === 'tester'
   const isTester = profile?.role === 'tester'
 
-  // Free reports remaining (free plan only — 1 per system)
-  const freeUsed = (profile?.free_reports_used ?? {}) as Record<string, string>
-  const freeRemaining = (freeUsed.analyzer ? 0 : 1) + (freeUsed.brand_visibility ? 0 : 1)
   const PAID_PLANS = ['starter', 'growth', 'pro', 'custom']
-  const isExhausted = !PAID_PLANS.includes(plan) && totalCredits === 0 && freeRemaining === 0
+  const isExhausted = !PAID_PLANS.includes(plan) && totalCredits === 0
 
   const starterPriceId = process.env.STRIPE_STARTER_PLAN_PRICE_ID!
   const boostPackPriceId = process.env.STRIPE_BOOST_PACK_PRICE_ID!
@@ -96,9 +93,9 @@ export default async function DashboardPage({
             <div>
               <p className="text-white font-semibold">Account created — you&apos;re in.</p>
               <p className="text-gray-400 text-sm mt-0.5">
-                You have {freeRemaining} free report{freeRemaining !== 1 ? 's' : ''} ready to use. Head to{' '}
+                You have 1 credit ready to use. Head to{' '}
                 <a href="/tools" className="text-primary hover:text-primary/80 transition-colors font-medium">Tools</a>{' '}
-                to run your first one.
+                to run your first report.
               </p>
             </div>
           </div>
@@ -158,7 +155,7 @@ export default async function DashboardPage({
           <div className="bg-dark-700 border border-primary/20 rounded-2xl p-6">
             <p className="text-gray-400 text-sm mb-1">Report credits</p>
             <p className="text-2xl font-bold text-white">
-              {isAdmin ? '∞' : PAID_PLANS.includes(plan) ? plan.charAt(0).toUpperCase() + plan.slice(1) : totalCredits > 0 ? totalCredits : freeRemaining > 0 ? `${freeRemaining} free` : '0'}
+              {isAdmin ? '∞' : PAID_PLANS.includes(plan) ? plan.charAt(0).toUpperCase() + plan.slice(1) : totalCredits}
             </p>
             <p className="text-gray-500 text-xs mt-1">
               {isAdmin
@@ -166,10 +163,8 @@ export default async function DashboardPage({
                 : PAID_PLANS.includes(plan)
                   ? 'Monthly plan — see pricing for report caps'
                   : totalCredits > 0
-                    ? `${totalCredits} paid credit${totalCredits !== 1 ? 's' : ''} available`
-                    : freeRemaining > 0
-                      ? `${freeRemaining} free report${freeRemaining !== 1 ? 's' : ''} remaining`
-                      : 'No credits remaining'}
+                    ? `${totalCredits} credit${totalCredits !== 1 ? 's' : ''} available`
+                    : 'No credits remaining — buy or earn more'}
             </p>
           </div>
 
