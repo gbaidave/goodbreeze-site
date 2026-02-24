@@ -31,7 +31,7 @@ interface ReportConfig {
 const REPORT_CONFIG: Record<BVReportType, ReportConfig> = {
   ai_seo: {
     label: 'AI SEO Optimizer',
-    tier: '1 free',
+    tier: 'Free — no login',
     tierStyle: 'text-primary',
     description: 'AI & LLM visibility analysis + on-page SEO gaps and prioritized fixes.',
     showKeyword: false,
@@ -42,8 +42,8 @@ const REPORT_CONFIG: Record<BVReportType, ReportConfig> = {
   },
   seo_audit: {
     label: 'SEO Audit',
-    tier: 'Impulse / Starter',
-    tierStyle: 'text-accent-blue',
+    tier: '1 free',
+    tierStyle: 'text-primary',
     description: 'Full technical SEO audit with keyword opportunities, backlink signals, and actionable fixes.',
     showKeyword: true,
     keywordLabel: 'Focus Keyword (optional)',

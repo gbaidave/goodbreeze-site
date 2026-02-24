@@ -60,7 +60,7 @@ const REPORT_META: Record<ReportType, {
   cp:                { product: 'analyzer',    freeSystem: null,               impulseAllowed: true,  usesMoz: false, usesSerp: false },
   // SEO Auditor — only seo_audit + landing_page are free for authenticated users
   ai_seo:            { product: 'seo_auditor', freeSystem: null,               impulseAllowed: true,  usesMoz: false, usesSerp: false },
-  landing_page:      { product: 'seo_auditor', freeSystem: 'brand_visibility', impulseAllowed: true,  usesMoz: false, usesSerp: false },
+  landing_page:      { product: 'seo_auditor', freeSystem: null,               impulseAllowed: true,  usesMoz: false, usesSerp: false },
   keyword_research:  { product: 'seo_auditor', freeSystem: null,               impulseAllowed: true,  usesMoz: false, usesSerp: true  },
   seo_audit:         { product: 'seo_auditor', freeSystem: 'brand_visibility', impulseAllowed: true,  usesMoz: true,  usesSerp: true  },
   seo_comprehensive: { product: 'seo_auditor', freeSystem: null,               impulseAllowed: false, usesMoz: true,  usesSerp: true  },

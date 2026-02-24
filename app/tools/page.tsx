@@ -25,8 +25,8 @@ const tools = [
     tier: "1 Free",
     tierStyle: "bg-primary/10 text-primary border-primary/30",
     features: [
-      "AI SEO Optimizer (1 free)",
-      "SEO Audit — technical + keyword opportunities",
+      "AI SEO Optimizer (free, no login)",
+      "SEO Audit (1 free) — technical + keyword opportunities",
       "Keyword Research — seed to content strategy",
       "Landing Page Optimizer — conversions + SEO",
       "SEO Comprehensive — our most complete report",
