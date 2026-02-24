@@ -250,12 +250,7 @@ export default function SalesAnalyzer() {
                   }`}
                 >
                   {label}
-                  {type !== 'h2h' && (
-                    <span className="block text-xs font-normal mt-0.5 opacity-70">Paid</span>
-                  )}
-                  {type === 'h2h' && (
-                    <span className="block text-xs font-normal mt-0.5 opacity-70">1 free</span>
-                  )}
+                  <span className="block text-xs font-normal mt-0.5 opacity-70">1 credit</span>
                 </button>
               ))}
             </div>
@@ -340,7 +335,7 @@ export default function SalesAnalyzer() {
           {isGuest && reportType !== 'h2h' ? (
             <div className="border border-primary/20 rounded-xl p-5 text-center space-y-3">
               <p className="text-sm text-gray-400">
-                {REPORT_LABELS[reportType]} requires a paid plan. Sign in or create an account, then upgrade to run this report.
+                {REPORT_LABELS[reportType]} requires an account. Sign in or create a free account — your first report credit is included.
               </p>
               <div className="flex flex-col sm:flex-row gap-2 justify-center">
                 <Link href="/signup" className="px-5 py-2.5 bg-gradient-to-r from-primary to-accent-blue text-white text-sm font-semibold rounded-full hover:shadow-lg transition-all">
@@ -363,7 +358,7 @@ export default function SalesAnalyzer() {
 
           <p className="text-center text-xs text-gray-600">
             {isGuest && reportType === 'h2h'
-              ? 'Free for new users — no account needed. Report delivered by email in 2–4 minutes.'
+              ? 'First report free — no account needed. Report delivered in 2–4 minutes.'
               : 'Report delivered to your email in 2–4 minutes. Saved to your dashboard.'}
           </p>
         </motion.form>

@@ -42,7 +42,7 @@ const REPORT_CONFIG: Record<BVReportType, ReportConfig> = {
   },
   seo_audit: {
     label: 'SEO Audit',
-    tier: '1 free',
+    tier: '1 credit',
     tierStyle: 'text-primary',
     description: 'Full technical SEO audit with keyword opportunities, backlink signals, and actionable fixes.',
     showKeyword: true,
@@ -55,7 +55,7 @@ const REPORT_CONFIG: Record<BVReportType, ReportConfig> = {
   },
   keyword_research: {
     label: 'Keyword Research',
-    tier: 'Impulse / Starter',
+    tier: '1 credit',
     tierStyle: 'text-accent-blue',
     description: 'Discover high-value keywords with difficulty scores, search volume, and content opportunity mapping.',
     showKeyword: true,
@@ -69,7 +69,7 @@ const REPORT_CONFIG: Record<BVReportType, ReportConfig> = {
   },
   landing_page: {
     label: 'Landing Page Optimizer',
-    tier: 'Impulse / Starter',
+    tier: '1 credit',
     tierStyle: 'text-accent-blue',
     description: 'Optimize your landing page for conversions, search ranking, and messaging clarity.',
     showKeyword: true,
@@ -397,7 +397,7 @@ export default function SeoIntelligencePage() {
           {isGuest && !config.frictionless ? (
             <div className="border border-primary/20 rounded-xl p-5 text-center space-y-3">
               <p className="text-sm text-gray-400">
-                {config.label} requires a paid plan. Sign in or create an account, then upgrade to run this report.
+                {config.label} requires an account. Sign in or create a free account — your first report credit is included.
               </p>
               <div className="flex flex-col sm:flex-row gap-2 justify-center">
                 <Link

@@ -213,7 +213,7 @@ export async function POST(request: NextRequest) {
     // 3. Find or create user
     const { data: existingProfile } = await supabase
       .from('profiles')
-      .select('id, free_reports_used')
+      .select('id')
       .eq('email', email)
       .single()
 
@@ -334,21 +334,27 @@ export async function POST(request: NextRequest) {
     // Remove undefined fields
     Object.keys(inputData).forEach((k) => inputData[k] === undefined && delete inputData[k])
 
-    const frictionlessFreeSystem = body.reportType === 'h2h' ? 'analyzer' : 'ai_seo_frictionless'
+    // 4a. Find the seeded credit row for this new user (created by handle_new_user trigger)
+    const { data: creditRows } = await supabase
+      .from('credits')
+      .select('id')
+      .eq('user_id', userId)
+      .gt('balance', 0)
+      .order('purchased_at', { ascending: true })
+      .limit(1)
+    const frictionlessCreditId = creditRows?.[0]?.id
+
     const reportId = await createReportRow(userId, body.reportType, inputData, 'free', {
-      usageType: 'free',
-      freeSystem: frictionlessFreeSystem,
+      usageType: 'credits',
+      creditRowId: frictionlessCreditId,
     })
 
-    // 5. Mark free report as used on profile.
-    // h2h: stored as { "analyzer": "h2h" } — shared key with authenticated free tier (prevents double-dipping).
-    // ai_seo: stored as { "ai_seo_frictionless": true } — separate from the authenticated brand_visibility free slot.
-    const freeUsed = ((liveProfile as any)?.free_reports_used ?? {}) as Record<string, string | boolean>
-    const freeUsedUpdate =
-      body.reportType === 'h2h'
-        ? { ...freeUsed, analyzer: 'h2h' }
-        : { ...freeUsed, ai_seo_frictionless: true }
-    const updates: Record<string, unknown> = { free_reports_used: freeUsedUpdate }
+    // 5. Deduct the credit and update profile
+    if (frictionlessCreditId) {
+      await supabase.rpc('decrement_credit', { p_credit_id: frictionlessCreditId })
+    }
+
+    const updates: Record<string, unknown> = {}
     if (body.phone) updates.phone = body.phone
     if (isNewUser && ip) updates.signup_ip = ip
 

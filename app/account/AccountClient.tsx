@@ -354,26 +354,31 @@ export default function AccountClient({
             </span>
           </div>
 
-          {/* Credit balance — show for non-starter, non-privileged users who have credits */}
-          {!isPrivileged && totalCredits > 0 && plan !== 'starter' && (
+          {/* Credit balance — show for all non-subscription, non-privileged users */}
+          {!isPrivileged && !isSubscription && (
             <div className="bg-dark/50 border border-gray-800 rounded-xl px-4 py-3 flex items-center justify-between">
               <div>
                 <p className="text-sm text-white font-medium">
-                  {totalCredits} report credit{totalCredits !== 1 ? 's' : ''} remaining
+                  {totalCredits > 0
+                    ? `${totalCredits} report credit${totalCredits !== 1 ? 's' : ''} remaining`
+                    : 'No credits remaining'}
                 </p>
-                {creditExpiry && (
+                {totalCredits > 0 && creditExpiry && (
                   <p className="text-xs text-gray-500 mt-0.5">
                     Expires {new Date(creditExpiry).toLocaleDateString('en-US', {
                       month: 'short', day: 'numeric', year: 'numeric',
                     })}
                   </p>
                 )}
+                {totalCredits === 0 && (
+                  <p className="text-xs text-gray-500 mt-0.5">Buy credits or earn them via referrals.</p>
+                )}
               </div>
               <Link
-                href="/tools"
+                href={totalCredits > 0 ? '/tools' : '/pricing'}
                 className="text-xs text-primary hover:text-primary/80 font-medium transition-colors"
               >
-                Use credits →
+                {totalCredits > 0 ? 'Use credits →' : 'Get credits →'}
               </Link>
             </div>
           )}
