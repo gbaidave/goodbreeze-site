@@ -170,13 +170,15 @@ export async function POST(request: NextRequest) {
         const periodStartIso = periodStart != null ? new Date(periodStart * 1000).toISOString() : new Date().toISOString()
         const periodEndIso   = periodEnd   != null ? new Date(periodEnd   * 1000).toISOString() : null
 
-        console.log('[webhook] Looking up existing subscription:', sub.id)
+        console.log('[webhook] Looking up subscription for user:', profile.id)
 
-        // Explicit check → update or insert to avoid relying on a UNIQUE constraint for ON CONFLICT
+        // Every user has exactly one subscription row (created on signup as 'free' plan).
+        // Look up by user_id — the free plan row has stripe_subscription_id = NULL so
+        // looking up by stripe_subscription_id would never find it on first upgrade.
         const { data: existing, error: lookupError } = await supabase
           .from('subscriptions')
           .select('id')
-          .eq('stripe_subscription_id', sub.id)
+          .eq('user_id', profile.id)
           .maybeSingle()
 
         if (lookupError) {
@@ -185,26 +187,29 @@ export async function POST(request: NextRequest) {
         }
 
         if (existing) {
-          console.log('[webhook] Updating existing subscription row id:', existing.id)
+          console.log('[webhook] Updating subscription row id:', existing.id, 'for user:', profile.id)
           const { error: updateError } = await supabase
             .from('subscriptions')
             .update({
+              stripe_subscription_id: sub.id,
+              stripe_customer_id: customerId,
               plan,
               status: sub.status,
-              stripe_customer_id: customerId,
               current_period_start: periodStartIso,
               current_period_end:   periodEndIso,
               cancel_at_period_end: sub.cancel_at_period_end,
               updated_at: new Date().toISOString(),
             })
-            .eq('stripe_subscription_id', sub.id)
+            .eq('user_id', profile.id)
 
           if (updateError) {
             console.error('[webhook] Subscription update failed:', updateError)
             return NextResponse.json({ error: 'Failed to update subscription' }, { status: 500 })
           }
         } else {
-          console.log('[webhook] Inserting new subscription row for user:', profile.id)
+          // Safety fallback: no subscription row found for this user (shouldn't happen
+          // since handle_new_user() creates one on signup, but handle gracefully).
+          console.log('[webhook] No subscription row found — inserting for user:', profile.id)
           const { error: insertError } = await supabase
             .from('subscriptions')
             .insert({
