@@ -167,30 +167,65 @@ export async function POST(request: NextRequest) {
           ).catch(console.error)
         }
 
-        const upsertPayload = {
-          user_id: profile.id,
-          stripe_subscription_id: sub.id,
-          stripe_customer_id: customerId,
-          plan,
-          status: sub.status,
-          current_period_start: periodStart != null ? new Date(periodStart * 1000).toISOString() : new Date().toISOString(),
-          current_period_end:   periodEnd   != null ? new Date(periodEnd   * 1000).toISOString() : null,
-          cancel_at_period_end: sub.cancel_at_period_end,
-          updated_at: new Date().toISOString(),
-        }
+        const periodStartIso = periodStart != null ? new Date(periodStart * 1000).toISOString() : new Date().toISOString()
+        const periodEndIso   = periodEnd   != null ? new Date(periodEnd   * 1000).toISOString() : null
 
-        console.log('[webhook] Upserting subscription:', JSON.stringify(upsertPayload))
+        console.log('[webhook] Looking up existing subscription:', sub.id)
 
-        const { error: upsertError } = await supabase
+        // Explicit check → update or insert to avoid relying on a UNIQUE constraint for ON CONFLICT
+        const { data: existing, error: lookupError } = await supabase
           .from('subscriptions')
-          .upsert(upsertPayload, { onConflict: 'stripe_subscription_id' })
+          .select('id')
+          .eq('stripe_subscription_id', sub.id)
+          .maybeSingle()
 
-        if (upsertError) {
-          console.error('[webhook] Subscription upsert failed:', upsertError)
-          return NextResponse.json({ error: 'Failed to upsert subscription' }, { status: 500 })
+        if (lookupError) {
+          console.error('[webhook] Subscription lookup failed:', lookupError)
+          return NextResponse.json({ error: 'Failed to look up subscription' }, { status: 500 })
         }
 
-        console.log('[webhook] Subscription upsert succeeded for user:', profile.id)
+        if (existing) {
+          console.log('[webhook] Updating existing subscription row id:', existing.id)
+          const { error: updateError } = await supabase
+            .from('subscriptions')
+            .update({
+              plan,
+              status: sub.status,
+              stripe_customer_id: customerId,
+              current_period_start: periodStartIso,
+              current_period_end:   periodEndIso,
+              cancel_at_period_end: sub.cancel_at_period_end,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('stripe_subscription_id', sub.id)
+
+          if (updateError) {
+            console.error('[webhook] Subscription update failed:', updateError)
+            return NextResponse.json({ error: 'Failed to update subscription' }, { status: 500 })
+          }
+        } else {
+          console.log('[webhook] Inserting new subscription row for user:', profile.id)
+          const { error: insertError } = await supabase
+            .from('subscriptions')
+            .insert({
+              user_id: profile.id,
+              stripe_subscription_id: sub.id,
+              stripe_customer_id: customerId,
+              plan,
+              status: sub.status,
+              current_period_start: periodStartIso,
+              current_period_end:   periodEndIso,
+              cancel_at_period_end: sub.cancel_at_period_end,
+              updated_at: new Date().toISOString(),
+            })
+
+          if (insertError) {
+            console.error('[webhook] Subscription insert failed:', insertError)
+            return NextResponse.json({ error: 'Failed to insert subscription' }, { status: 500 })
+          }
+        }
+
+        console.log('[webhook] Subscription saved successfully for user:', profile.id)
         break
       }
 
