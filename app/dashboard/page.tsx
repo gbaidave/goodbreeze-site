@@ -4,6 +4,7 @@ import { createServiceClient } from '@/lib/supabase/service-client'
 import ReportList from './ReportList'
 import { ReferralSection } from './ReferralSection'
 import { NudgeCard } from './NudgeCard'
+import SupportSection from './SupportSection'
 
 export default async function DashboardPage({
   searchParams,
@@ -23,8 +24,9 @@ export default async function DashboardPage({
   }
   if (!user) redirect('/login')
 
-  // Fetch profile, subscription, credits, reports, referral data, and testimonials in parallel
-  const [profileRes, subRes, creditsRes, reportsRes, referralRes, testimonialsRes] = await Promise.all([
+  // Fetch profile, subscription, credits, reports, referral data, testimonials, and support in parallel
+  const serviceClient = createServiceClient()
+  const [profileRes, subRes, creditsRes, reportsRes, referralRes, testimonialsRes, ticketsRes] = await Promise.all([
     supabase.from('profiles').select('name, email, role, plan_override_type, plan_override_until').eq('id', user.id).single(),
     supabase.from('subscriptions').select('plan, status, current_period_end')
       .eq('user_id', user.id).in('status', ['active', 'trialing']).order('created_at', { ascending: false }).limit(1).single(),
@@ -35,6 +37,7 @@ export default async function DashboardPage({
       .order('created_at', { ascending: false }).limit(20),
     supabase.from('referral_codes').select('code, referral_uses(reward_granted)').eq('user_id', user.id).single(),
     supabase.from('testimonials').select('type').eq('user_id', user.id),
+    serviceClient.from('support_requests').select('id, message, status, created_at').eq('user_id', user.id).order('created_at', { ascending: false }).limit(10),
   ])
 
   const profile = profileRes.data
@@ -45,7 +48,6 @@ export default async function DashboardPage({
   if (!referralCode) {
     // Auto-generate a referral code for users who don't have one yet
     const code = 'gb' + Math.random().toString(36).slice(2, 8).toUpperCase()
-    const serviceClient = createServiceClient()
     const { data: newCodeRow } = await serviceClient
       .from('referral_codes')
       .insert({ user_id: user.id, code })
@@ -59,6 +61,23 @@ export default async function DashboardPage({
   const submittedTestimonialTypes = (testimonialsRes.data ?? []).map((t: { type: string }) => t.type)
   const hasWrittenTestimonial = submittedTestimonialTypes.includes('written')
   const hasVideoTestimonial = submittedTestimonialTypes.includes('video')
+
+  // Support tickets + messages
+  const rawTickets = ticketsRes.data ?? []
+  const ticketIds = rawTickets.map((t) => t.id)
+  const { data: allMessages } = ticketIds.length
+    ? await serviceClient
+        .from('support_messages')
+        .select('id, request_id, sender_role, message, created_at')
+        .in('request_id', ticketIds)
+        .order('created_at', { ascending: true })
+    : { data: [] }
+  const msgByTicket: Record<string, Array<{ id: string; sender_role: 'user' | 'admin'; message: string; created_at: string }>> = {}
+  for (const msg of allMessages ?? []) {
+    if (!msgByTicket[msg.request_id]) msgByTicket[msg.request_id] = []
+    msgByTicket[msg.request_id]!.push(msg as any)
+  }
+  const tickets = rawTickets.map((t) => ({ ...t, messages: msgByTicket[t.id] ?? [] }))
 
   // Plan: check for active override
   const overrideActive =
@@ -237,15 +256,11 @@ export default async function DashboardPage({
           <ReportList initialReports={reports} />
         </div>
 
-        {/* Support footer */}
-        <div className="pt-4 text-center">
-          <p className="text-gray-600 text-sm">
-            Having an issue or want to view your support requests?{' '}
-            <a href="/support" className="text-cyan-400 hover:text-cyan-300 transition-colors">
-              Go to Support
-            </a>
-          </p>
-        </div>
+        {/* Support requests */}
+        <SupportSection
+          tickets={tickets}
+          userEmail={profile?.email || user.email!}
+        />
 
       </div>
     </div>
