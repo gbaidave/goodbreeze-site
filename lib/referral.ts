@@ -48,6 +48,7 @@ export async function processReferral(
         balance: 1,
         product: null,
         expires_at: null,
+        purchased_at: new Date().toISOString(),
       })
 
     if (creditError) {

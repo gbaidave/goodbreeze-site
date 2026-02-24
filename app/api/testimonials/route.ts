@@ -176,6 +176,7 @@ export async function POST(request: NextRequest) {
         balance: creditsToGrant,
         product: null,
         expires_at: null,
+        purchased_at: new Date().toISOString(),
       })
 
     if (creditError) {
