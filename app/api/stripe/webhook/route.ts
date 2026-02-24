@@ -104,7 +104,9 @@ export async function POST(request: NextRequest) {
 
         if (!profile) break
 
-        const priceId = sub.items.data[0]?.price.id
+        const item = sub.items.data[0]
+        const priceId = item?.price.id
+
         const planMap: Record<string, string> = {
           [process.env.STRIPE_STARTER_PLAN_PRICE_ID!]: 'starter',
           [process.env.STRIPE_GROWTH_PLAN_PRICE_ID!]:  'growth',
@@ -116,6 +118,12 @@ export async function POST(request: NextRequest) {
           [process.env.STRIPE_PRO_PLAN_PRICE_ID!]:     '$40.00',
         }
         const plan = (priceId ? planMap[priceId] : undefined) ?? 'free'
+
+        // Stripe API 2026-01-28.clover moved current_period_start/end from the
+        // subscription root to sub.items.data[0]. Read from item first, fall back
+        // to root for older API versions.
+        const periodStart = item?.current_period_start ?? (sub as any).current_period_start ?? sub.start_date
+        const periodEnd   = item?.current_period_end   ?? (sub as any).current_period_end
 
         // Send confirmation email on new subscription
         if (event.type === 'customer.subscription.created' && sub.status === 'active' && profile.email) {
@@ -132,8 +140,8 @@ export async function POST(request: NextRequest) {
           stripe_customer_id: customerId,
           plan,
           status: sub.status,
-          current_period_start: new Date((sub as any).current_period_start * 1000).toISOString(),
-          current_period_end: new Date((sub as any).current_period_end * 1000).toISOString(),
+          current_period_start: periodStart != null ? new Date(periodStart * 1000).toISOString() : new Date().toISOString(),
+          current_period_end:   periodEnd   != null ? new Date(periodEnd   * 1000).toISOString() : null,
           cancel_at_period_end: sub.cancel_at_period_end,
           updated_at: new Date().toISOString(),
         }, { onConflict: 'stripe_subscription_id' })
