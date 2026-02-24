@@ -64,13 +64,16 @@ export default async function AdminEmailLogsPage({
         <form method="GET" action="/admin/email-logs" className="flex gap-2">
           <input type="hidden" name="status" value={statusFilter} />
           <select name="type" defaultValue={typeFilter}
-            onChange={(e) => (e.currentTarget.form as HTMLFormElement)?.submit()}
             className="bg-dark-700 border border-primary/20 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-primary">
             <option value="all">All types</option>
             {emailTypes.map((t) => (
               <option key={t} value={t}>{t.replace(/_/g, ' ')}</option>
             ))}
           </select>
+          <button type="submit"
+            className="px-3 py-1.5 rounded-lg text-sm border border-primary/20 text-gray-400 hover:text-white transition-colors">
+            Filter
+          </button>
         </form>
       </div>
 
