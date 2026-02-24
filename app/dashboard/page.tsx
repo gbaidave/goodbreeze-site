@@ -117,7 +117,7 @@ export default async function DashboardPage({
             >
               Get help
             </a>
-            {isAdmin && (
+            {profile?.role === 'admin' && (
               <a
                 href="/admin"
                 className="text-sm text-gray-500 hover:text-gray-300 transition-colors"
@@ -162,7 +162,7 @@ export default async function DashboardPage({
             </p>
             <p className="text-gray-500 text-xs mt-1">
               {isAdmin
-                ? 'Admin account — no report limits'
+                ? 'Full access — no billing required.'
                 : PAID_PLANS.includes(plan)
                   ? 'Monthly plan — see pricing for report caps'
                   : totalCredits > 0
