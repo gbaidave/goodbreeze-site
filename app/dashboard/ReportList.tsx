@@ -75,7 +75,7 @@ function ReportCard({ report }: { report: Report }) {
               {REPORT_TYPE_LABELS[report.report_type] ?? report.report_type}
             </p>
             {isExpiringSoon && !isExpired && (
-              <span className="text-xs px-2 py-0.5 rounded-full bg-orange-900/40 text-orange-400 border border-orange-800">
+              <span suppressHydrationWarning className="text-xs px-2 py-0.5 rounded-full bg-orange-900/40 text-orange-400 border border-orange-800">
                 {days}d left
               </span>
             )}
@@ -85,10 +85,10 @@ function ReportCard({ report }: { report: Report }) {
               </span>
             )}
           </div>
-          <p className="text-gray-500 text-sm">
+          <p suppressHydrationWarning className="text-gray-500 text-sm">
             {new Date(report.created_at).toLocaleDateString('en-US', {
               month: 'short', day: 'numeric', year: 'numeric',
-              hour: '2-digit', minute: '2-digit', timeZone: 'UTC',
+              hour: '2-digit', minute: '2-digit',
             })}
           </p>
         </div>
