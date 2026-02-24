@@ -47,6 +47,8 @@ export default function ForgotPasswordPage() {
         </button>
       </form>
       <p className="text-center text-sm text-zinc-500 mt-6">
+        <a href="/forgot-password/by-phone" className="text-cyan-400 hover:text-cyan-300">Use phone number instead</a>
+        {' · '}
         <a href="/login" className="text-cyan-400 hover:text-cyan-300">Back to login</a>
       </p>
     </div>

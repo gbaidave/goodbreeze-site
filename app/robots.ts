@@ -13,6 +13,7 @@ export default function robots(): MetadataRoute.Robots {
           '/login',
           '/signup',
           '/forgot-password',
+          '/forgot-password/by-phone',
           '/reset-password',
           '/auth/',
           '/tools/competitive-analyzer',

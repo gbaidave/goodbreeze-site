@@ -31,16 +31,31 @@ export async function POST(request: NextRequest) {
   const body = await request.text()
   const sig = request.headers.get('stripe-signature')
 
-  if (!sig || !process.env.STRIPE_WEBHOOK_SECRET_VERCEL) {
+  // Try all configured webhook secrets — we have two Stripe destinations:
+  // goodbreeze.ai (STRIPE_WEBHOOK_SECRET) and goodbreeze-site.vercel.app (STRIPE_WEBHOOK_SECRET_VERCEL).
+  // Both route to the same Vercel deployment so we must accept both signing secrets.
+  const secrets = [
+    process.env.STRIPE_WEBHOOK_SECRET,
+    process.env.STRIPE_WEBHOOK_SECRET_VERCEL,
+  ].filter(Boolean) as string[]
+
+  if (!sig || secrets.length === 0) {
     return NextResponse.json({ error: 'Missing signature' }, { status: 400 })
   }
 
-  let event: Stripe.Event
+  let event: Stripe.Event | undefined
 
-  try {
-    event = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET_VERCEL)
-  } catch (err) {
-    console.error('Webhook signature verification failed:', err)
+  for (const secret of secrets) {
+    try {
+      event = stripe.webhooks.constructEvent(body, sig, secret)
+      break
+    } catch {
+      // Try next secret
+    }
+  }
+
+  if (!event) {
+    console.error('Webhook signature verification failed: no matching secret')
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 

@@ -292,10 +292,13 @@ export default function PricingPage() {
               }`}
             >
               {plan.badge && (
-                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-10">
-                  <span className="px-4 py-1 bg-gradient-to-r from-primary to-accent-blue text-white text-xs font-bold rounded-full whitespace-nowrap shadow-lg shadow-primary/30">
-                    {plan.badge}
-                  </span>
+                <div className="absolute top-4 right-4 flex flex-col items-center gap-1">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent-blue flex items-center justify-center shadow-lg shadow-primary/40">
+                    <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                  </div>
+                  <span className="text-[10px] font-bold text-primary uppercase tracking-wide whitespace-nowrap">{plan.badge}</span>
                 </div>
               )}
 

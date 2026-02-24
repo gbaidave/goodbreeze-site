@@ -383,8 +383,8 @@ export default function AccountClient({
             </div>
           )}
 
-          {/* Billing portal — for users with a Stripe customer on paid plans */}
-          {!isPrivileged && hasStripeCustomer && isPaid && (
+          {/* Billing portal — for all users with a Stripe customer ID */}
+          {!isPrivileged && hasStripeCustomer && (
             <div className="space-y-2">
               <button
                 onClick={openBillingPortal}
