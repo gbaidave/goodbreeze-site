@@ -178,7 +178,7 @@ Monthly plan subscribers don't use credits — reports count against your monthl
 
 There's no cap on how many credits you can earn. If 10 people sign up through your link, you get 10 credits.
 
-The person you refer gets access to their two free reports just like any new user. Your referral credit is separate and doesn't come at their expense.`,
+The person you refer gets their 1 included credit just like any new user. Your referral credit is separate and doesn't come at their expense.`,
   },
   {
     slug: 'where-is-my-referral-link',
