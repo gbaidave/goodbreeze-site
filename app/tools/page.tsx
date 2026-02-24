@@ -7,7 +7,7 @@ const tools = [
   {
     name: "Competitive Analyzer",
     description: "AI-powered competitive intelligence — head-to-head, top 3 competitors, or full market positioning.",
-    href: "/tools/sales-analyzer",
+    href: "/tools/competitive-analyzer",
     features: [
       "Head-to-Head competitor analysis",
       "Top 3 Competitors breakdown",

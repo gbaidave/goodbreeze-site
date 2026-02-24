@@ -11,9 +11,11 @@ interface UpgradeButtonProps {
 
 export function UpgradeButton({ plan, label, className }: UpgradeButtonProps) {
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   async function handleClick() {
     setLoading(true)
+    setError('')
     captureEvent('upgrade_cta_clicked', { label })
     try {
       captureEvent('checkout_started', { label, plan })
@@ -22,22 +24,34 @@ export function UpgradeButton({ plan, label, className }: UpgradeButtonProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ plan }),
       })
-      const { url, error } = await res.json()
-      if (error) throw new Error(error)
-      window.location.href = url
+      const data = await res.json()
+      if (data.url) {
+        window.location.href = data.url
+      } else if (data.code === 'PHONE_REQUIRED') {
+        setError('A phone number is required before purchasing. Add one in account settings.')
+      } else {
+        setError(data.error ?? 'Something went wrong. Please try again.')
+      }
     } catch (err) {
       console.error('Checkout error:', err)
+      setError('Something went wrong. Please try again.')
+    } finally {
       setLoading(false)
     }
   }
 
   return (
-    <button
-      onClick={handleClick}
-      disabled={loading}
-      className={className}
-    >
-      {loading ? 'Redirecting...' : label}
-    </button>
+    <div>
+      <button
+        onClick={handleClick}
+        disabled={loading}
+        className={className}
+      >
+        {loading ? 'Redirecting...' : label}
+      </button>
+      {error && (
+        <p className="text-xs text-red-400 mt-1.5">{error}</p>
+      )}
+    </div>
   )
 }

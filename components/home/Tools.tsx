@@ -8,7 +8,7 @@ const tools = [
     name: "Head-to-Head Analyzer",
     description: "AI Competitor Intelligence",
     detail: "See exactly how you stack up against a direct competitor: keywords, SEO, content, and positioning, all in one PDF.",
-    href: "/tools/sales-analyzer",
+    href: "/tools/competitive-analyzer",
     gradientFrom: "#00adb5",
     gradientTo: "#3b82f6",
     iconPath: "M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z",

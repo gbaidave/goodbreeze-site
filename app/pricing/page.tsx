@@ -292,13 +292,10 @@ export default function PricingPage() {
               }`}
             >
               {plan.badge && (
-                <div className="absolute top-0 right-0 overflow-hidden rounded-tr-2xl w-28 h-28 pointer-events-none z-10">
-                  <div
-                    className="absolute bg-gradient-to-r from-primary to-accent-blue text-white text-[10px] font-bold uppercase tracking-wide text-center"
-                    style={{ right: '-28px', top: '22px', transform: 'rotate(45deg)', width: '120px', padding: '4px 0' }}
-                  >
+                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-10">
+                  <span className="px-4 py-1 bg-gradient-to-r from-primary to-accent-blue text-white text-xs font-bold rounded-full whitespace-nowrap shadow-lg shadow-primary/30">
                     {plan.badge}
-                  </div>
+                  </span>
                 </div>
               )}
 

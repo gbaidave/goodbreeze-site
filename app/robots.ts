@@ -15,7 +15,7 @@ export default function robots(): MetadataRoute.Robots {
           '/forgot-password',
           '/reset-password',
           '/auth/',
-          '/tools/sales-analyzer',
+          '/tools/competitive-analyzer',
           '/tools/ai-seo',
           '/tools/seo-audit',
           '/tools/keyword-research',
