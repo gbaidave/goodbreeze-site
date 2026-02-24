@@ -110,7 +110,7 @@ export default async function DashboardPage({
               href="/support"
               className="text-sm text-gray-500 hover:text-gray-300 transition-colors"
             >
-              Get help
+              Support & requests
             </a>
             {profile?.role === 'admin' && (
               <a
@@ -240,9 +240,9 @@ export default async function DashboardPage({
         {/* Support footer */}
         <div className="pt-4 text-center">
           <p className="text-gray-600 text-sm">
-            Having an issue?{' '}
+            Having an issue or want to view your support requests?{' '}
             <a href="/support" className="text-cyan-400 hover:text-cyan-300 transition-colors">
-              Get help
+              Go to Support
             </a>
           </p>
         </div>

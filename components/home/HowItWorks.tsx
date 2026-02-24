@@ -69,14 +69,7 @@ export default function HowItWorks() {
                   className="absolute inset-0.5 rounded-full bg-dark-800"
                   aria-hidden="true"
                 />
-                <span
-                  className="relative text-xl font-bold bg-gradient-to-br from-primary to-accent-blue"
-                  style={{
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                    backgroundClip: "text",
-                  }}
-                >
+                <span className="relative text-xl font-bold bg-gradient-to-br from-primary to-accent-blue bg-clip-text text-transparent">
                   {step.label}
                 </span>
               </div>
