@@ -348,10 +348,10 @@ function buildN8nPayload(
   if (reportType === 'h2h') {
     return {
       reportType: 'Head to Head',
-      companyA: extractDomain(body.targetWebsite!),
-      websiteA: body.targetWebsite,
-      companyB: body.competitor1 || extractDomain(body.competitor1Website!),
-      websiteB: body.competitor1Website,
+      targetCompany: extractDomain(body.targetWebsite!),
+      targetWebsite: body.targetWebsite,
+      competitor1: body.competitor1 || extractDomain(body.competitor1Website!),
+      competitor1Website: body.competitor1Website,
       userEmail,
       userName,
       sessionId,
@@ -360,14 +360,14 @@ function buildN8nPayload(
   if (reportType === 't3c') {
     return {
       reportType: 'Top 3 Competitors',
-      yourCompany: extractDomain(body.targetWebsite!),
-      yourWebsite: body.targetWebsite,
-      companyA: body.competitor1 || extractDomain(body.competitor1Website!),
-      websiteA: body.competitor1Website,
-      companyB: body.competitor2 || extractDomain(body.competitor2Website!),
-      websiteB: body.competitor2Website,
-      companyC: body.competitor3 || extractDomain(body.competitor3Website!),
-      websiteC: body.competitor3Website,
+      targetCompany: extractDomain(body.targetWebsite!),
+      targetWebsite: body.targetWebsite,
+      competitor1: body.competitor1 || extractDomain(body.competitor1Website!),
+      competitor1Website: body.competitor1Website,
+      competitor2: body.competitor2 || extractDomain(body.competitor2Website!),
+      competitor2Website: body.competitor2Website,
+      competitor3: body.competitor3 || extractDomain(body.competitor3Website!),
+      competitor3Website: body.competitor3Website,
       userEmail,
       userName,
       sessionId,
@@ -376,8 +376,8 @@ function buildN8nPayload(
   if (reportType === 'cp') {
     return {
       reportType: 'Competitive Position',
-      companyA: extractDomain(body.targetWebsite!),
-      websiteA: body.targetWebsite,
+      targetCompany: extractDomain(body.targetWebsite!),
+      targetWebsite: body.targetWebsite,
       userEmail,
       userName,
       sessionId,
