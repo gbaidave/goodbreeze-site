@@ -17,6 +17,12 @@
 --   7. New function: decrement_subscription_credits() for entitlement.ts
 --
 -- All ALTER TABLE statements use IF NOT EXISTS — safe to re-run.
+--
+-- !! TWO-STEP EXECUTION REQUIRED !!
+-- Step 1: Run this query ALONE first (must commit before step 2):
+--   ALTER TYPE plan_type ADD VALUE IF NOT EXISTS 'growth';
+-- Step 2: Run the rest of this migration (everything below the step 1 comment).
+-- PostgreSQL requires the new enum value to be committed before use in a query.
 -- ============================================================================
 
 
@@ -36,14 +42,14 @@ COMMENT ON COLUMN subscriptions.credits_remaining IS
 
 
 -- ============================================================================
--- 2. Ensure 'growth' is in the plan_type ENUM
+-- 2. (PREREQUISITE — run separately BEFORE this migration)
 --
--- The plan_type ENUM was created in migration 002. If 'growth' was not added
--- then, the UPDATE below will fail with "invalid input value for enum".
--- ADD VALUE IF NOT EXISTS is safe to re-run and is transactional in PG 14+.
+--   ALTER TYPE plan_type ADD VALUE IF NOT EXISTS 'growth';
+--
+-- This must be committed in its own transaction before step 3 can reference
+-- the 'growth' value. PostgreSQL error 55P04 "unsafe use of new enum value"
+-- occurs if ADD VALUE and a query using it are in the same transaction.
 -- ============================================================================
-
-ALTER TYPE plan_type ADD VALUE IF NOT EXISTS 'growth';
 
 
 -- ============================================================================
