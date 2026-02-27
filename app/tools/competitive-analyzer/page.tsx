@@ -158,7 +158,7 @@ export default function SalesAnalyzer() {
           className="text-center mb-10"
         >
           <Link href="/tools" className="text-gray-500 hover:text-primary text-sm transition-colors">
-            ← All Tools
+            ← All Reports
           </Link>
           <h1 className="text-4xl font-bold text-white mt-4 mb-3">Competitive Analyzer</h1>
           <p className="text-gray-400 max-w-xl mx-auto">

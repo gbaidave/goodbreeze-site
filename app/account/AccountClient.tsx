@@ -393,12 +393,21 @@ export default function AccountClient({
                   </>
                 )}
               </div>
-              <Link
-                href="/tools"
-                className="text-xs text-primary hover:text-primary/80 font-medium transition-colors"
-              >
-                Run a report →
-              </Link>
+              {!isSubscription && totalCredits === 0 ? (
+                <Link
+                  href="/pricing"
+                  className="text-xs text-primary hover:text-primary/80 font-medium transition-colors"
+                >
+                  Buy credits →
+                </Link>
+              ) : (
+                <Link
+                  href="/tools"
+                  className="text-xs text-primary hover:text-primary/80 font-medium transition-colors"
+                >
+                  Run a report →
+                </Link>
+              )}
             </div>
           )}
 

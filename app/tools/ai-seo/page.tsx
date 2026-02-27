@@ -99,7 +99,7 @@ export default function AiSeoPage() {
     <div className="min-h-screen bg-dark py-24 px-6">
       <div className="max-w-2xl mx-auto">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-10">
-          <Link href="/tools" className="text-gray-500 hover:text-primary text-sm transition-colors">← All Tools</Link>
+          <Link href="/tools" className="text-gray-500 hover:text-primary text-sm transition-colors">← All Reports</Link>
           <div className="mt-4 mb-3 flex items-center justify-center gap-3">
             <h1 className="text-4xl font-bold text-white">AI SEO Optimizer</h1>
             <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/30">1 Free</span>

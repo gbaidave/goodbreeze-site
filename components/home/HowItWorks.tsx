@@ -59,7 +59,20 @@ export default function HowItWorks() {
               transition={{ duration: 0.6, delay: index * 0.15 }}
               className="relative text-center"
             >
-              {/* Step label circle */}
+              {/* Step label */}
+              <p
+                className="text-xs font-semibold tracking-widest uppercase mb-3"
+                style={{
+                  background: 'linear-gradient(135deg, #00adb5, #3b82f6)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                }}
+              >
+                {step.label}
+              </p>
+
+              {/* Number circle */}
               <div className="relative inline-flex items-center justify-center w-20 h-20 mb-6 mx-auto">
                 <div
                   className="absolute inset-0 rounded-full bg-gradient-to-br from-primary to-accent-blue opacity-20"
@@ -70,7 +83,7 @@ export default function HowItWorks() {
                   aria-hidden="true"
                 />
                 <span
-                  className="relative text-xl font-bold"
+                  className="relative text-3xl font-bold"
                   style={{
                     background: 'linear-gradient(135deg, #00adb5, #3b82f6)',
                     WebkitBackgroundClip: 'text',
@@ -78,7 +91,7 @@ export default function HowItWorks() {
                     backgroundClip: 'text',
                   }}
                 >
-                  {step.label}
+                  {index + 1}
                 </span>
               </div>
 
