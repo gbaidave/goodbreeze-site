@@ -168,7 +168,7 @@ export default function ToolsDirectory() {
                 Run any report for free. No account required, no credit card.
               </p>
               <Link
-                href="/tools/sales-analyzer"
+                href="/tools/competitive-analyzer"
                 className="inline-block px-12 py-6 bg-transparent border-2 border-white text-white text-xl font-bold rounded-full shadow-2xl hover:bg-white/10 transition-all duration-300"
               >
                 Run Your First Free Report

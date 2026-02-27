@@ -18,6 +18,8 @@ export type EmailType =
   | 'support_confirmation'
   | 'support_reply'
   | 'support_resolved'
+  | 'support_closed'
+  | 'support_followup'
   | 'referral_credit'
   | 'testimonial_credit'
   | 'welcome'
