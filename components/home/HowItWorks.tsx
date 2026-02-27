@@ -7,19 +7,19 @@ const steps = [
     label: "Step 1",
     title: "Stabilize",
     description:
-      "Start with a free report to see where your business stands in the marketplace. Add low-cost targeted reports to find the specific improvements that put your business on the right track. No big commitment. No risk.",
+      "Start with a free report to see where your business stands. Add targeted paid reports to find the specific improvements that get you on the right track.",
   },
   {
     label: "Step 2",
     title: "Grow",
     description:
-      "We work with you to find the specific challenges holding your business back and keeping it from growing. Then we help you work through them, one by one, so you can start growing instead of managing the same problems every day.",
+      "We find the specific challenges holding your business back, then help you work through them one by one. So you can start growing instead of managing the same problems.",
   },
   {
     label: "Step 3",
     title: "Scale",
     description:
-      "When you're ready to build, we work with you to create the systems your business needs to handle more volume, do more with the team you have, and grow without constant hiring. Built around your actual processes, your team, and your goals.",
+      "When you're ready to build, we create the systems your business needs to handle more volume and do more with the team you have. Built around your actual processes and goals.",
   },
 ];
 
