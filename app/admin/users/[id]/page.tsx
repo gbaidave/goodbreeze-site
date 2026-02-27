@@ -3,6 +3,15 @@ import { createServiceClient } from '@/lib/supabase/service-client'
 import { UserActionsPanel } from './UserActionsPanel'
 import { AdminNotesPanel } from './AdminNotesPanel'
 
+const CREDIT_PRODUCT_LABELS: Record<string, string> = {
+  spark_pack: 'Spark Pack',
+  boost_pack: 'Boost Pack',
+  impulse: 'Impulse Pack',
+  signup_credit: 'Signup bonus',
+  testimonial_reward: 'Testimonial reward',
+  referral_credit: 'Referral credit',
+}
+
 const REPORT_LABELS: Record<string, string> = {
   h2h: 'Head to Head', t3c: 'Top 3 Competitors', cp: 'Competitive Position',
   ai_seo: 'AI SEO', landing_page: 'Landing Page Optimizer',
@@ -88,7 +97,15 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
             {sub?.current_period_end && (
               <Row label="Renews" value={new Date(sub.current_period_end).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} />
             )}
-            <Row label="Credits" value={String(totalCredits)} />
+            {sub ? (
+              <>
+                <Row label="Plan credits" value={String(sub.credits_remaining ?? 0)} />
+                <Row label="Pack credits" value={String(totalCredits)} />
+                <Row label="Total credits" value={String((sub.credits_remaining ?? 0) + totalCredits)} />
+              </>
+            ) : (
+              <Row label="Credits" value={String(totalCredits)} />
+            )}
             <Row label="Marketing opt-in" value={profile.marketing_opt_in ? 'Yes' : 'No'} />
             {profile.plan_override_type && (
               <Row
@@ -103,6 +120,39 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
               </div>
             )}
           </div>
+
+          {/* Credit rows */}
+          {credits.length > 0 && (
+            <div className="bg-dark-700 border border-primary/20 rounded-2xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-primary/10">
+                <h2 className="text-sm font-semibold text-white">Credit Rows ({credits.length})</h2>
+              </div>
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="border-b border-primary/10">
+                    <th className="text-left px-4 py-2 text-gray-400 font-medium">Source</th>
+                    <th className="text-left px-4 py-2 text-gray-400 font-medium">Bal</th>
+                    <th className="text-left px-4 py-2 text-gray-400 font-medium">Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {credits.map((c: any, i: number) => (
+                    <tr key={i} className="border-b border-primary/10 last:border-0">
+                      <td className="px-4 py-2 text-gray-300">
+                        {CREDIT_PRODUCT_LABELS[c.product ?? ''] ?? 'Credit grant'}
+                      </td>
+                      <td className={`px-4 py-2 font-medium ${c.balance > 0 ? 'text-white' : 'text-gray-600'}`}>
+                        {c.balance}
+                      </td>
+                      <td className="px-4 py-2 text-gray-500">
+                        {new Date(c.purchased_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' })}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
 
           {/* Actions */}
           <UserActionsPanel

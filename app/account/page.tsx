@@ -16,7 +16,7 @@ export default async function AccountPage() {
   }
   if (!user) redirect('/login')
 
-  const [profileRes, subRes, creditsRes] = await Promise.all([
+  const [profileRes, subRes, creditsRes, creditHistoryRes] = await Promise.all([
     supabase
       .from('profiles')
       .select('name, email, phone, sms_ok, stripe_customer_id, role')
@@ -36,11 +36,18 @@ export default async function AccountPage() {
       .eq('user_id', user.id)
       .gt('balance', 0)
       .order('purchased_at', { ascending: true }),
+    supabase
+      .from('credits')
+      .select('id, balance, product, purchased_at')
+      .eq('user_id', user.id)
+      .order('purchased_at', { ascending: false })
+      .limit(20),
   ])
 
   const profile = profileRes.data
   const sub = subRes.data
   const credits = creditsRes.data ?? []
+  const creditHistory = creditHistoryRes.data ?? []
   const packCredits = credits.reduce((sum, c) => sum + (c.balance ?? 0), 0)
   const creditsRemaining = sub?.credits_remaining ?? 0
 
@@ -59,6 +66,7 @@ export default async function AccountPage() {
       totalCredits={packCredits}
       creditsRemaining={creditsRemaining}
       creditExpiry={credits[0]?.expires_at}
+      creditHistory={creditHistory}
     />
   )
 }

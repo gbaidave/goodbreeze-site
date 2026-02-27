@@ -6,6 +6,22 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { isValidPhone, normalizePhone } from '@/lib/phone'
 
+const CREDIT_PRODUCT_LABELS: Record<string, string> = {
+  spark_pack: 'Spark Pack',
+  boost_pack: 'Boost Pack',
+  impulse: 'Impulse Pack',
+  signup_credit: 'Signup bonus',
+  testimonial_reward: 'Testimonial reward',
+  referral_credit: 'Referral credit',
+}
+
+interface CreditHistoryItem {
+  id: string
+  balance: number
+  product: string | null
+  purchased_at: string
+}
+
 interface Props {
   initialName: string
   initialPhone: string
@@ -20,6 +36,7 @@ interface Props {
   totalCredits: number    // pack credits (credits table)
   creditsRemaining: number  // subscription credits (subscriptions.credits_remaining)
   creditExpiry?: string
+  creditHistory?: CreditHistoryItem[]
 }
 
 export default function AccountClient({
@@ -36,6 +53,7 @@ export default function AccountClient({
   totalCredits,
   creditsRemaining,
   creditExpiry,
+  creditHistory,
 }: Props) {
   const [name, setName] = useState(initialName)
   const [phone, setPhone] = useState(initialPhone)
@@ -408,6 +426,32 @@ export default function AccountClient({
                   Run a report →
                 </Link>
               )}
+            </div>
+          )}
+
+          {/* Credit history */}
+          {!isPrivileged && creditHistory && creditHistory.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Credit history</p>
+              <div className="divide-y divide-primary/10 border border-gray-800 rounded-xl overflow-hidden">
+                {creditHistory.map((c) => (
+                  <div key={c.id} className="flex items-center justify-between px-4 py-2.5">
+                    <div>
+                      <p className="text-sm text-white">
+                        {CREDIT_PRODUCT_LABELS[c.product ?? ''] ?? 'Credit grant'}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {new Date(c.purchased_at).toLocaleDateString('en-US', {
+                          month: 'short', day: 'numeric', year: 'numeric',
+                        })}
+                      </p>
+                    </div>
+                    <span className={`text-sm font-medium ${c.balance > 0 ? 'text-white' : 'text-gray-600'}`}>
+                      {c.balance > 0 ? `${c.balance} remaining` : 'Used'}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
