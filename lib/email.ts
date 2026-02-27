@@ -19,6 +19,8 @@ import { reportsExhaustedEmail } from './emails/reports-exhausted'
 import { supportNotificationEmail } from './emails/support-notification'
 import { supportReplyEmail } from './emails/support-reply'
 import { supportResolvedEmail } from './emails/support-resolved'
+import { supportClosedEmail } from './emails/support-closed'
+import { supportAdminNotificationEmail } from './emails/support-admin-notification'
 import { logEmail } from './email-logger'
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -149,6 +151,44 @@ export async function sendBugReportNotificationEmail(
       subject: `[Bug Report] ${subject}`,
       notifyOnFail: false,
     }
+  )
+}
+
+export async function sendSupportClosedEmail(
+  to: string,
+  name: string,
+  closeReason: string,
+  userId?: string
+) {
+  const { subject, html } = supportClosedEmail({ userName: name, closeReason })
+  return sendAndLog(
+    () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject, html }),
+    { userId, toEmail: to, type: 'support_closed', subject }
+  )
+}
+
+export async function sendSupportAdminNotificationEmail(
+  data: {
+    userName: string
+    userEmail: string
+    action: 'sent a follow-up on' | 'closed' | 'reopened'
+    requestId: string
+    message?: string
+    reason?: string
+  },
+  userId?: string
+) {
+  const { subject, html } = supportAdminNotificationEmail(data)
+  const supportEmail = process.env.SUPPORT_EMAIL || 'support@goodbreeze.ai'
+  return sendAndLog(
+    () => resend.emails.send({
+      from: `${FROM_NAME} <${FROM}>`,
+      to: supportEmail,
+      replyTo: data.userEmail,
+      subject,
+      html,
+    }),
+    { userId, toEmail: supportEmail, type: 'support_followup', subject, notifyOnFail: false }
   )
 }
 

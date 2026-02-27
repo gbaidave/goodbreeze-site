@@ -52,7 +52,7 @@ function SuccessState() {
           We&apos;ve received your request and will be in touch shortly.
         </p>
         <p className="text-gray-500 text-sm mb-8">
-          Expect a reply to your email within 1 business day.
+          Expect a reply within 1 business day. We&apos;ll reply here in your dashboard and via email.
         </p>
         <Link
           href="/dashboard"
@@ -67,6 +67,54 @@ function SuccessState() {
 
 function TicketThread({ ticket, userEmail }: { ticket: Ticket; userEmail: string }) {
   const [open, setOpen] = useState(false)
+  const [ticketStatus, setTicketStatus] = useState(ticket.status)
+  const [showCloseForm, setShowCloseForm] = useState(false)
+  const [closeReason, setCloseReason] = useState('')
+  const [closing, setClosing] = useState(false)
+  const [reopening, setReopening] = useState(false)
+  const [actionError, setActionError] = useState('')
+
+  const isClosed = ticketStatus === 'resolved' || ticketStatus === 'closed'
+
+  async function handleClose(e: React.FormEvent) {
+    e.preventDefault()
+    if (closeReason.trim().length < 10) {
+      setActionError('Please provide a reason (at least 10 characters).')
+      return
+    }
+    setClosing(true)
+    setActionError('')
+    try {
+      const res = await fetch(`/api/support/${ticket.id}/close`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: closeReason.trim() }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setActionError(data.error || 'Failed to close.'); return }
+      setTicketStatus('closed')
+      setShowCloseForm(false)
+    } catch {
+      setActionError('Something went wrong. Please try again.')
+    } finally {
+      setClosing(false)
+    }
+  }
+
+  async function handleReopen() {
+    setReopening(true)
+    setActionError('')
+    try {
+      const res = await fetch(`/api/support/${ticket.id}/reopen`, { method: 'PATCH' })
+      const data = await res.json()
+      if (!res.ok) { setActionError(data.error || 'Failed to reopen.'); return }
+      setTicketStatus('open')
+    } catch {
+      setActionError('Something went wrong. Please try again.')
+    } finally {
+      setReopening(false)
+    }
+  }
 
   return (
     <div className="bg-dark border border-gray-800 rounded-xl overflow-hidden">
@@ -76,8 +124,8 @@ function TicketThread({ ticket, userEmail }: { ticket: Ticket; userEmail: string
         className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-dark-700 transition-colors"
       >
         <div className="flex items-center gap-3 min-w-0">
-          <span className={`text-xs px-2 py-0.5 rounded-full capitalize shrink-0 ${STATUS_STYLES[ticket.status] ?? STATUS_STYLES.open}`}>
-            {ticket.status.replace('_', ' ')}
+          <span className={`text-xs px-2 py-0.5 rounded-full capitalize shrink-0 ${STATUS_STYLES[ticketStatus] ?? STATUS_STYLES.open}`}>
+            {ticketStatus.replace('_', ' ')}
           </span>
           <span className="text-gray-300 text-sm truncate">
             {ticket.message.slice(0, 80)}{ticket.message.length > 80 ? '…' : ''}
@@ -94,7 +142,8 @@ function TicketThread({ ticket, userEmail }: { ticket: Ticket; userEmail: string
       </button>
 
       {open && (
-        <div className="border-t border-gray-800 px-4 py-3 space-y-2">
+        <div className="border-t border-gray-800 px-4 py-3 space-y-3">
+          {/* Thread messages */}
           {ticket.messages.length === 0 ? (
             <p className="text-gray-600 text-sm">No messages yet.</p>
           ) : (
@@ -120,6 +169,75 @@ function TicketThread({ ticket, userEmail }: { ticket: Ticket; userEmail: string
                 <p className="whitespace-pre-wrap">{msg.message}</p>
               </div>
             ))
+          )}
+
+          {/* Action error */}
+          {actionError && (
+            <p className="text-xs text-red-400">{actionError}</p>
+          )}
+
+          {/* Closed/resolved: show reopen option */}
+          {isClosed && (
+            <div className="pt-1">
+              <p className="text-sm text-gray-500">
+                This request is {ticketStatus}.{' '}
+                <button
+                  type="button"
+                  onClick={handleReopen}
+                  disabled={reopening}
+                  className="text-primary hover:text-primary/80 font-medium transition-colors disabled:opacity-50"
+                >
+                  {reopening ? 'Reopening…' : 'Reopen to add a message'}
+                </button>
+              </p>
+            </div>
+          )}
+
+          {/* Active ticket: close option */}
+          {!isClosed && (
+            <div className="pt-1 space-y-2">
+              {!showCloseForm ? (
+                <button
+                  type="button"
+                  onClick={() => { setShowCloseForm(true); setActionError('') }}
+                  className="text-xs text-gray-600 hover:text-gray-400 transition-colors"
+                >
+                  Close this request
+                </button>
+              ) : (
+                <form onSubmit={handleClose} className="bg-dark-700 border border-gray-700 rounded-xl p-4 space-y-3">
+                  <p className="text-xs text-gray-400 font-medium">
+                    Why are you closing this request?
+                  </p>
+                  <textarea
+                    value={closeReason}
+                    onChange={(e) => setCloseReason(e.target.value)}
+                    rows={3}
+                    required
+                    minLength={10}
+                    placeholder="e.g. I figured it out — the report came through after a few minutes."
+                    className="w-full px-3 py-2 bg-dark border border-gray-700 text-white text-sm rounded-xl focus:outline-none focus:border-primary transition-colors resize-none placeholder-gray-600"
+                  />
+                  <p className="text-xs text-gray-600 text-right">{closeReason.length} / 500</p>
+                  <div className="flex gap-2">
+                    <button
+                      type="submit"
+                      disabled={closing || closeReason.trim().length < 10}
+                      className="px-3 py-1.5 bg-gray-700 text-gray-200 text-sm font-medium rounded-lg hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {closing ? 'Closing…' : 'Close Request'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setShowCloseForm(false); setCloseReason(''); setActionError('') }}
+                      className="px-3 py-1.5 text-gray-500 text-sm hover:text-gray-300 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
           )}
         </div>
       )}
@@ -264,7 +382,7 @@ export default function SupportForm({ userName, userEmail, plan, lastReportConte
           </button>
 
           <p className="text-center text-xs text-gray-600">
-            We respond within 1 business day. Reply will be sent to {userEmail}.
+            We respond within 1 business day. Reply will be sent to {userEmail} and will appear here.
           </p>
         </motion.form>
 

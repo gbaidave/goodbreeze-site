@@ -58,7 +58,7 @@ export function supportNotificationEmail(data: SupportEmailData): { subject: str
 
           <!-- Reply CTA -->
           <p style="margin:24px 0 0;font-size:13px;color:#71717a;">
-            Reply directly to this email to respond to ${userName}. This message was submitted through the Good Breeze AI support form.
+            Reply through the admin panel — do not reply to this email directly, as replies won't be captured in the system. This message was submitted through the Good Breeze AI support form.
           </p>
         </td></tr>
 

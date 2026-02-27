@@ -1,7 +1,14 @@
 /**
- * POST /api/support/[id]/user-reply
+ * PATCH /api/support/[id]/reopen
  *
- * Authenticated user adds a follow-up message to their own support ticket.
+ * Authenticated user reopens their own closed or resolved support ticket.
+ *
+ * Flow:
+ * 1. Authenticate user + verify ownership
+ * 2. Verify ticket is closed or resolved
+ * 3. Update status → open, clear close_reason + closed_by
+ * 4. Notify all admins via bell (type=support_followup)
+ * 5. Email support@ (fire and forget)
  */
 
 import { NextRequest, NextResponse } from 'next/server'
@@ -10,7 +17,7 @@ import { cookies } from 'next/headers'
 import { createServiceClient } from '@/lib/supabase/service-client'
 import { sendSupportAdminNotificationEmail } from '@/lib/email'
 
-export async function POST(
+export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -38,18 +45,9 @@ export async function POST(
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
 
-    const body = await request.json()
-    const message = (body.message ?? '').trim()
-    if (message.length < 1) {
-      return NextResponse.json({ error: 'Message is required.' }, { status: 400 })
-    }
-    if (message.length > 2000) {
-      return NextResponse.json({ error: 'Message too long (max 2000 characters).' }, { status: 400 })
-    }
-
     const svc = createServiceClient()
 
-    // Ownership check — user can only reply to their own tickets
+    // Ownership check
     const { data: ticket } = await svc
       .from('support_requests')
       .select('id, user_id, status')
@@ -61,19 +59,24 @@ export async function POST(
       return NextResponse.json({ error: 'Ticket not found.' }, { status: 404 })
     }
 
-    if (ticket.status === 'resolved' || ticket.status === 'closed') {
-      return NextResponse.json({ error: 'This ticket is closed. Reopen it to add a message.' }, { status: 400 })
+    if (ticket.status !== 'closed' && ticket.status !== 'resolved') {
+      return NextResponse.json({ error: 'Only closed or resolved tickets can be reopened.' }, { status: 400 })
     }
 
-    const { error: msgError } = await svc.from('support_messages').insert({
-      request_id: requestId,
-      sender_id: user.id,
-      sender_role: 'user',
-      message,
-    })
+    // Reopen the ticket
+    const { error: updateError } = await svc
+      .from('support_requests')
+      .update({
+        status: 'open',
+        close_reason: null,
+        closed_by: null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', requestId)
 
-    if (msgError) {
-      return NextResponse.json({ error: 'Failed to send reply.' }, { status: 500 })
+    if (updateError) {
+      console.error('Support reopen update error:', updateError)
+      return NextResponse.json({ error: 'Failed to reopen ticket.' }, { status: 500 })
     }
 
     // Fetch user profile for notification context
@@ -94,20 +97,20 @@ export async function POST(
             admins.map((a) => ({
               user_id: a.id,
               type: 'support_followup',
-              message: `${userName} sent a follow-up on their support request.`,
+              message: `${userName} reopened their support request.`,
             }))
           )
         }
       } catch (e) {
-        console.error('Support followup admin notification error:', e)
+        console.error('Support reopen admin notification error:', e)
       }
     })()
 
     // Email support@ (fire and forget)
     sendSupportAdminNotificationEmail(
-      { userName, userEmail, action: 'sent a follow-up on', requestId, message },
+      { userName, userEmail, action: 'reopened', requestId },
       user.id
-    ).catch((err) => console.error('Support followup admin email failed:', err))
+    ).catch((err) => console.error('Support reopen admin email failed:', err))
 
     return NextResponse.json({ success: true })
 
