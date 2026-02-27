@@ -2,15 +2,7 @@ import { notFound } from 'next/navigation'
 import { createServiceClient } from '@/lib/supabase/service-client'
 import { UserActionsPanel } from './UserActionsPanel'
 import { AdminNotesPanel } from './AdminNotesPanel'
-
-const CREDIT_PRODUCT_LABELS: Record<string, string> = {
-  spark_pack: 'Spark Pack',
-  boost_pack: 'Boost Pack',
-  impulse: 'Impulse Pack',
-  signup_credit: 'Signup bonus',
-  testimonial_reward: 'Testimonial reward',
-  referral_credit: 'Referral credit',
-}
+import { CreditRowsPanel } from './CreditRowsPanel'
 
 const REPORT_LABELS: Record<string, string> = {
   h2h: 'Head to Head', t3c: 'Top 3 Competitors', cp: 'Competitive Position',
@@ -122,37 +114,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
           </div>
 
           {/* Credit rows */}
-          {credits.length > 0 && (
-            <div className="bg-dark-700 border border-primary/20 rounded-2xl overflow-hidden">
-              <div className="px-4 py-3 border-b border-primary/10">
-                <h2 className="text-sm font-semibold text-white">Credit Rows ({credits.length})</h2>
-              </div>
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="border-b border-primary/10">
-                    <th className="text-left px-4 py-2 text-gray-400 font-medium">Source</th>
-                    <th className="text-left px-4 py-2 text-gray-400 font-medium">Bal</th>
-                    <th className="text-left px-4 py-2 text-gray-400 font-medium">Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {credits.map((c: any, i: number) => (
-                    <tr key={i} className="border-b border-primary/10 last:border-0">
-                      <td className="px-4 py-2 text-gray-300">
-                        {CREDIT_PRODUCT_LABELS[c.product ?? ''] ?? 'Credit grant'}
-                      </td>
-                      <td className={`px-4 py-2 font-medium ${c.balance > 0 ? 'text-white' : 'text-gray-600'}`}>
-                        {c.balance}
-                      </td>
-                      <td className="px-4 py-2 text-gray-500">
-                        {new Date(c.purchased_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' })}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+          {credits.length > 0 && <CreditRowsPanel credits={credits} />}
 
           {/* Actions */}
           <UserActionsPanel
