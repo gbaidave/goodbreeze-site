@@ -6,6 +6,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { UserMenu } from "@/components/auth/UserMenu";
 import { NotificationBell } from "@/components/layout/NotificationBell";
+import { CreditsPill } from "@/components/layout/CreditsPill";
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -131,6 +132,7 @@ export default function Header() {
             </a>
 
             <NotificationBell />
+            <CreditsPill />
             <UserMenu />
 
             {/* Social Icons — hidden on md, visible from lg to avoid crowding nav */}
@@ -229,6 +231,7 @@ export default function Header() {
 
             <div className="pt-2 flex items-center gap-3">
               <NotificationBell />
+              <CreditsPill />
               <UserMenu />
             </div>
 

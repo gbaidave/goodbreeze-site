@@ -215,13 +215,15 @@ export default function PricingPage() {
         )}
 
         {phoneRequired && pendingPlan && (
-          <div className="mb-8 max-w-md mx-auto">
-            <PhoneGatePrompt
-              onPhoneSaved={() => {
-                setPhoneRequired(false);
-                if (pendingPlan) handleCheckout(pendingPlan, pendingAcknowledged || undefined);
-              }}
-            />
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-6">
+            <div className="max-w-md w-full">
+              <PhoneGatePrompt
+                onPhoneSaved={() => {
+                  setPhoneRequired(false);
+                  if (pendingPlan) handleCheckout(pendingPlan, pendingAcknowledged || undefined);
+                }}
+              />
+            </div>
           </div>
         )}
 
@@ -229,13 +231,12 @@ export default function PricingPage() {
         {ackModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-6">
             <div className="bg-dark-700 border border-primary/30 rounded-2xl p-8 max-w-md w-full shadow-xl shadow-primary/10">
-              <h3 className="text-xl font-bold text-white mb-2">Before You Continue</h3>
+              <h3 className="text-xl font-bold text-white mb-2">One thing to know</h3>
               <p className="text-gray-400 text-sm mb-5">
-                You're subscribing to the <strong className="text-white">{ackModal.planName}</strong> plan — {ackModal.credits} credits per billing period.
+                You&apos;re subscribing to the <strong className="text-white">{ackModal.planName}</strong> plan ({ackModal.credits} reports per month).
               </p>
-              <div className="bg-dark border border-primary/20 rounded-xl p-4 mb-5 space-y-2 text-sm text-gray-400">
-                <p>Your credits reset to <strong className="text-white">{ackModal.credits}</strong> at the start of each billing period.</p>
-                <p>Unused credits do not roll over. Any credit pack credits you hold will also reset at renewal.</p>
+              <div className="bg-zinc-900 border border-primary/20 rounded-xl p-4 mb-5 text-sm text-gray-400">
+                <p>Your report credits reset at the start of each billing period. Unused credits don&apos;t carry over.</p>
               </div>
               <label className="flex items-start gap-3 cursor-pointer mb-6 select-none">
                 <input
@@ -245,7 +246,7 @@ export default function PricingPage() {
                   className="mt-0.5 w-4 h-4 rounded accent-primary"
                 />
                 <span className="text-sm text-gray-300">
-                  I understand that credits reset each billing period and unused credits do not roll over.
+                  I understand that credits reset each billing period.
                 </span>
               </label>
               <div className="flex gap-3">
@@ -254,7 +255,7 @@ export default function PricingPage() {
                   disabled={!ackChecked || loading === ackModal.planKey}
                   className="flex-1 px-6 py-3 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-primary/40"
                 >
-                  {loading === ackModal.planKey ? "Redirecting…" : "Proceed to Checkout"}
+                  {loading === ackModal.planKey ? "Redirecting…" : "Continue to Checkout"}
                 </button>
                 <button
                   onClick={() => setAckModal(null)}
@@ -280,12 +281,41 @@ export default function PricingPage() {
         </motion.div>
 
         <div className="grid md:grid-cols-3 gap-6 mb-20">
-          {ENTRY_OPTIONS.map((option, idx) => (
+          {/* Report Credits info card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="flex flex-col p-6 rounded-2xl bg-dark-700 border border-primary/10 hover:border-primary/30 transition-all duration-300"
+          >
+            <div className="mb-4">
+              <p className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-1">
+                Report Credits
+              </p>
+              <p className="text-xl font-bold text-white">One report, one credit</p>
+            </div>
+            <ul className="space-y-2 flex-grow">
+              {[
+                "New accounts get 1 free credit. No card needed.",
+                "Credit packs have no expiry. Use them whenever.",
+                "Plan credits reset at the start of each billing period.",
+                "All report types use 1 credit each.",
+              ].map((f, i) => (
+                <li key={i} className="flex items-start gap-2">
+                  <Check />
+                  <span className="text-gray-400 text-sm">{f}</span>
+                </li>
+              ))}
+            </ul>
+          </motion.div>
+
+          {/* Credit pack cards */}
+          {ENTRY_OPTIONS.filter((o) => o.key !== "free").map((option, idx) => (
             <motion.div
               key={option.key}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 + idx * 0.05 }}
+              transition={{ delay: 0.15 + idx * 0.05 }}
               className="flex flex-col p-6 rounded-2xl bg-dark-700 border border-primary/10 hover:border-primary/30 transition-all duration-300"
             >
               <div className="mb-4">
@@ -308,26 +338,17 @@ export default function PricingPage() {
                 ))}
               </ul>
 
-              {option.key === "free" ? (
-                <Link
-                  href={user ? "/tools" : "/signup"}
-                  className="block text-center px-5 py-2.5 border border-primary/50 text-primary font-semibold rounded-full hover:bg-primary/10 transition-all duration-300 text-sm"
-                >
-                  {user ? "Go to Tools" : "Get Started Free"}
-                </Link>
-              ) : (
-                <button
-                  onClick={() => handleCheckout(option.key as PaidPlan)}
-                  disabled={loading === option.key}
-                  className="w-full px-5 py-2.5 border border-primary/50 text-primary font-semibold rounded-full hover:bg-primary/10 transition-all duration-300 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  {loading === option.key
-                    ? "Redirecting…"
-                    : user
-                    ? `Buy ${option.name}`
-                    : "Get Started"}
-                </button>
-              )}
+              <button
+                onClick={() => handleCheckout(option.key as PaidPlan)}
+                disabled={loading === option.key}
+                className="w-full px-5 py-2.5 border border-primary/50 text-primary font-semibold rounded-full hover:bg-primary/10 transition-all duration-300 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {loading === option.key
+                  ? "Redirecting…"
+                  : user
+                  ? `Buy ${option.name}`
+                  : "Get Started"}
+              </button>
             </motion.div>
           ))}
         </div>
@@ -358,13 +379,10 @@ export default function PricingPage() {
               }`}
             >
               {plan.badge && (
-                <div className="absolute top-4 right-4 flex flex-col items-center gap-1">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent-blue flex items-center justify-center shadow-lg shadow-primary/40">
-                    <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
-                  </div>
-                  <span className="text-[10px] font-bold text-primary uppercase tracking-wide whitespace-nowrap">{plan.badge}</span>
+                <div className="absolute top-4 right-4">
+                  <span className="inline-block px-2.5 py-1 rounded-full bg-gradient-to-r from-primary to-accent-blue text-white text-xs font-bold uppercase tracking-wide shadow-lg shadow-primary/30 whitespace-nowrap">
+                    {plan.badge}
+                  </span>
                 </div>
               )}
 

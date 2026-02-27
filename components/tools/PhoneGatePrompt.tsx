@@ -53,7 +53,7 @@ export function PhoneGatePrompt({ onPhoneSaved }: Props) {
       <div>
         <p className="text-amber-300 font-semibold text-sm">Phone number required</p>
         <p className="text-gray-400 text-sm mt-1">
-          Add a phone number to your account to keep running reports. We use it for account identification only — no spam.
+          Add a phone number to your account to verify your identity and secure your account.
         </p>
       </div>
       <div className="flex gap-2">

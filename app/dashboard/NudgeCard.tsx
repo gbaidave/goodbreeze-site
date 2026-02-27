@@ -1,5 +1,3 @@
-import { UpgradeButton } from './UpgradeButton'
-
 interface Props {
   hasWrittenTestimonial: boolean
   hasVideoTestimonial: boolean
@@ -8,7 +6,6 @@ interface Props {
 /**
  * Shown on the dashboard when a user has no credits remaining.
  * Surfaced when: not on a paid plan && totalCredits === 0.
- * Uses UpgradeButton (client component) for direct Stripe checkout.
  */
 export function NudgeCard({ hasWrittenTestimonial, hasVideoTestimonial }: Props) {
   const bothTestimonialsSubmitted = hasWrittenTestimonial && hasVideoTestimonial
@@ -22,25 +19,21 @@ export function NudgeCard({ hasWrittenTestimonial, hasVideoTestimonial }: Props)
           </svg>
         </div>
         <div>
-          <p className="text-white font-semibold">You&apos;re out of credits</p>
+          <p className="text-white font-semibold">You&apos;re out of report credits</p>
           <p className="text-gray-400 text-sm mt-0.5">
-            Get more credits — buy a pack or earn them.
+            Pick up a credit pack or choose a monthly plan to keep running reports.
           </p>
         </div>
       </div>
 
-      {/* Upgrade CTAs */}
-      <div className="flex flex-wrap gap-3 mb-5">
-        <UpgradeButton
-          plan="spark_pack"
-          label="Get 3 reports — $5"
-          className="px-5 py-2.5 border border-primary text-primary font-semibold rounded-xl hover:bg-primary/10 transition-colors text-sm"
-        />
-        <UpgradeButton
-          plan="starter"
-          label="25 reports — $20/mo"
-          className="px-5 py-2.5 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-primary/30 transition-all text-sm"
-        />
+      {/* See pricing CTA */}
+      <div className="mb-5">
+        <a
+          href="/pricing"
+          className="inline-block px-5 py-2.5 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-primary/30 transition-all text-sm"
+        >
+          See pricing
+        </a>
       </div>
 
       {/* Free credit paths */}
@@ -56,7 +49,7 @@ export function NudgeCard({ hasWrittenTestimonial, hasVideoTestimonial }: Props)
                 <svg className="w-4 h-4 text-primary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                 </svg>
-                Submit a written testimonial — earn 1 credit
+                Submit a written testimonial (+1 credit)
               </a>
             )}
             {!hasVideoTestimonial && (
@@ -67,7 +60,7 @@ export function NudgeCard({ hasWrittenTestimonial, hasVideoTestimonial }: Props)
                 <svg className="w-4 h-4 text-accent-blue flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15 10l4.553-2.069A1 1 0 0121 8.845v6.31a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                 </svg>
-                Submit a video testimonial — earn 5 credits
+                Submit a video testimonial (+5 credits)
               </a>
             )}
             <a
@@ -77,7 +70,7 @@ export function NudgeCard({ hasWrittenTestimonial, hasVideoTestimonial }: Props)
               <svg className="w-4 h-4 text-primary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
               </svg>
-              Refer a friend — earn 1 credit per signup
+              Refer a friend (+1 credit per signup)
             </a>
           </div>
         </div>

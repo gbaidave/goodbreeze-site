@@ -88,6 +88,11 @@ function ReportCard({ report, onDelete }: { report: Report; onDelete: (id: strin
             <p className="text-white font-medium">
               {REPORT_TYPE_LABELS[report.report_type] ?? report.report_type}
             </p>
+            {days !== null && days > 7 && (
+              <span suppressHydrationWarning className="text-xs px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-500 border border-zinc-700">
+                {days}d left
+              </span>
+            )}
             {isExpiringSoon && !isExpired && (
               <span suppressHydrationWarning className="text-xs px-2 py-0.5 rounded-full bg-orange-900/40 text-orange-400 border border-orange-800">
                 {days}d left
