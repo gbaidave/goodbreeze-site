@@ -43,7 +43,7 @@ const N8N_WEBHOOKS: Record<ReportType, string> = {
   ai_seo:            `${N8N_BASE}/webhook/ai-seo-optimizer-pdf`,
   landing_page:      `${N8N_BASE}/webhook/landing-page-optimizer-pdf`,
   keyword_research:  `${N8N_BASE}/webhook/keyword-research-pdf`,
-  seo_audit:         `${N8N_BASE}/webhook/seo-audit-pdf`,
+  seo_audit:         `${N8N_BASE}/webhook/seo-audit-v4-pdf`,
   seo_comprehensive: `${N8N_BASE}/webhook/seo-comprehensive-pdf`,
 }
 
@@ -201,13 +201,16 @@ export async function POST(request: NextRequest) {
     // 3. Get user profile
     const { data: profile } = await supabase
       .from('profiles')
-      .select('name, email, subscriptions(plan)')
+      .select('name, email, subscriptions(plan, status)')
       .eq('id', user.id)
       .single()
 
     const userEmail = body.userEmail || profile?.email || user.email!
     const userName = body.userName || profile?.name || userEmail.split('@')[0]
-    const plan = (profile as any)?.subscriptions?.[0]?.plan ?? 'free'
+    // Only count active/trialing subscriptions when determining report expiry
+    const activeSub = ((profile as any)?.subscriptions ?? [])
+      .find((s: { plan: string; status: string }) => s.status === 'active' || s.status === 'trialing')
+    const plan = activeSub?.plan ?? 'free'
 
     // 4. Check entitlement
     const entitlement = await checkEntitlement(user.id, reportType)

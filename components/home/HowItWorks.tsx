@@ -57,7 +57,7 @@ export default function HowItWorks() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: index * 0.15 }}
-              className="relative text-center"
+              className="relative text-center bg-dark-700 border border-primary/20 rounded-2xl p-6"
             >
               {/* Step label circle */}
               <div className="relative inline-flex items-center justify-center w-20 h-20 mb-6 mx-auto">

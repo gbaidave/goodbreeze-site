@@ -219,25 +219,35 @@ export function UserActionsPanel({
               e.preventDefault()
               const fd = new FormData(e.currentTarget)
               const amount = parseInt(fd.get('deduct_amount') as string, 10)
-              act(() => deductCredits(userId, amount))
+              const note = fd.get('deduct_note') as string
+              act(() => deductCredits(userId, amount, note))
             }}
-            className="flex gap-2 items-center"
+            className="flex flex-col gap-2 w-full"
           >
-            <input
-              name="deduct_amount"
-              type="number"
-              min="1"
-              max="100"
-              defaultValue="1"
-              className="w-20 bg-dark border border-primary/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary"
+            <div className="flex gap-2 items-center">
+              <input
+                name="deduct_amount"
+                type="number"
+                min="1"
+                max="100"
+                defaultValue="1"
+                className="w-20 bg-dark border border-primary/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary"
+              />
+              <button
+                type="submit"
+                disabled={pending}
+                className="px-4 py-2 bg-red-900/40 text-red-400 border border-red-800 rounded-lg text-sm font-medium hover:bg-red-900/60 transition-colors disabled:opacity-50"
+              >
+                − Deduct
+              </button>
+            </div>
+            <textarea
+              name="deduct_note"
+              required
+              placeholder="Reason for deduction (required — logged to admin notes)"
+              rows={2}
+              className="w-full bg-dark border border-primary/20 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-primary resize-none"
             />
-            <button
-              type="submit"
-              disabled={pending}
-              className="px-4 py-2 bg-red-900/40 text-red-400 border border-red-800 rounded-lg text-sm font-medium hover:bg-red-900/60 transition-colors disabled:opacity-50"
-            >
-              − Deduct
-            </button>
           </form>
         </div>
       </section>

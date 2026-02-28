@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { PhoneGatePrompt } from "@/components/tools/PhoneGatePrompt";
+import { isValidPhone } from "@/lib/phone";
 
 // ============================================================================
 // Plan data
@@ -137,7 +138,37 @@ export default function PricingPage() {
   const [pendingAcknowledged, setPendingAcknowledged] = useState(false);
   const [ackModal, setAckModal] = useState<{ planKey: PaidPlan; planName: string; credits: number } | null>(null);
   const [ackChecked, setAckChecked] = useState(true);
+  const [ackPhone, setAckPhone] = useState("");
+  const [ackPhoneError, setAckPhoneError] = useState("");
   const { user } = useAuth();
+
+  async function handleAckSubmit() {
+    if (!ackModal) return;
+    setAckPhoneError("");
+    if (ackPhone.trim() && !isValidPhone(ackPhone)) {
+      setAckPhoneError("Enter a valid phone number (e.g. +1 555 000 0000)");
+      return;
+    }
+    if (ackPhone.trim()) {
+      try {
+        const res = await fetch("/api/account/save-phone", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone: ackPhone.trim() }),
+        });
+        if (!res.ok) {
+          const data = await res.json();
+          setAckPhoneError(data.error || "Failed to save phone. Try again.");
+          return;
+        }
+      } catch {
+        setAckPhoneError("Failed to save phone. Try again.");
+        return;
+      }
+    }
+    handleCheckout(ackModal.planKey, true);
+    setAckModal(null);
+  }
 
   // For subscription plans, show the acknowledgment modal before proceeding.
   // For credit packs, go straight to checkout.
@@ -238,6 +269,21 @@ export default function PricingPage() {
               <div className="bg-zinc-900 border border-primary/20 rounded-xl p-4 mb-5 text-sm text-gray-400">
                 <p>Your report credits reset at the start of each billing period. Unused credits don&apos;t carry over.</p>
               </div>
+              <div className="mb-5">
+                <label htmlFor="ack-phone" className="block text-sm text-gray-400 mb-1.5">
+                  Phone number <span className="text-gray-600">(optional — saves time at checkout)</span>
+                </label>
+                <input
+                  id="ack-phone"
+                  type="tel"
+                  value={ackPhone}
+                  onChange={(e) => { setAckPhone(e.target.value); setAckPhoneError(""); }}
+                  placeholder="+1 555 000 0000"
+                  autoComplete="tel"
+                  className={`w-full px-4 py-2.5 bg-dark border rounded-xl text-sm text-white placeholder-gray-600 focus:outline-none focus:border-primary transition-colors ${ackPhoneError ? "border-red-500" : "border-gray-700"}`}
+                />
+                {ackPhoneError && <p className="text-xs text-red-400 mt-1">{ackPhoneError}</p>}
+              </div>
               <label className="flex items-start gap-3 cursor-pointer mb-6 select-none">
                 <input
                   type="checkbox"
@@ -251,7 +297,7 @@ export default function PricingPage() {
               </label>
               <div className="flex gap-3">
                 <button
-                  onClick={() => { handleCheckout(ackModal.planKey, true); setAckModal(null); }}
+                  onClick={handleAckSubmit}
                   disabled={!ackChecked || loading === ackModal.planKey}
                   className="flex-1 px-6 py-3 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-primary/40"
                 >
@@ -300,6 +346,7 @@ export default function PricingPage() {
                 "Credit packs have no expiry. Use them whenever.",
                 "Plan credits reset at the start of each billing period.",
                 "All report types use 1 credit each.",
+                "Earn free credits with referrals and testimonials.",
               ].map((f, i) => (
                 <li key={i} className="flex items-start gap-2">
                   <Check />
@@ -379,8 +426,8 @@ export default function PricingPage() {
               }`}
             >
               {plan.badge && (
-                <div className="absolute top-4 right-4">
-                  <span className="inline-block px-2.5 py-1 rounded-full bg-gradient-to-r from-primary to-accent-blue text-white text-xs font-bold uppercase tracking-wide shadow-lg shadow-primary/30 whitespace-nowrap">
+                <div className="absolute -top-3 right-4">
+                  <span className="inline-block px-3 py-1 rounded-full bg-gradient-to-r from-primary to-accent-blue text-white text-xs font-bold uppercase tracking-wide shadow-lg shadow-primary/30 whitespace-nowrap ring-1 ring-white/20">
                     {plan.badge}
                   </span>
                 </div>

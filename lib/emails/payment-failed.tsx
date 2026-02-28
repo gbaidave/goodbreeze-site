@@ -1,7 +1,7 @@
 export function paymentFailedEmail(name: string): { subject: string; html: string } {
   const firstName = name.split(' ')[0]
   return {
-    subject: `Action needed — payment failed for your Good Breeze AI subscription`,
+    subject: `Action needed: payment failed for your Good Breeze AI subscription`,
     html: `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -25,9 +25,11 @@ export function paymentFailedEmail(name: string): { subject: string; html: strin
           </a>
         </td></tr>
 
-        <tr><td style="padding:32px 0 0;">
-          <p style="margin:0;font-size:13px;color:#52525b;">
-            Good Breeze AI · <a href="https://goodbreeze.ai" style="color:#22d3ee;text-decoration:none;">goodbreeze.ai</a>
+        <tr><td style="padding:32px 0 0;border-top:1px solid #27272a;">
+          <p style="margin:0;font-size:13px;color:#52525b;line-height:1.6;">
+            Good Breeze AI · AI Operations That Scale Your Business<br>
+            <a href="https://goodbreeze.ai" style="color:#22d3ee;text-decoration:none;">goodbreeze.ai</a> ·
+            <a href="https://goodbreeze.ai/unsubscribe" style="color:#52525b;text-decoration:none;">Unsubscribe</a>
           </p>
         </td></tr>
 

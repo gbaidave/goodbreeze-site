@@ -14,6 +14,7 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { createServiceClient } from '@/lib/supabase/service-client'
 import { isValidPhone, normalizePhone } from '@/lib/phone'
+import { sendSecurityAlertEmail } from '@/lib/email'
 
 export async function POST(request: NextRequest) {
   try {
@@ -74,12 +75,10 @@ export async function POST(request: NextRequest) {
 
     // 6. Dedup check — service client bypasses RLS to check all profiles
     const svc = createServiceClient()
-    const { data: existing } = await svc
-      .from('profiles')
-      .select('id')
-      .eq('phone', normalized)
-      .neq('id', user.id)
-      .maybeSingle()
+    const [{ data: existing }, { data: profile }] = await Promise.all([
+      svc.from('profiles').select('id').eq('phone', normalized).neq('id', user.id).maybeSingle(),
+      svc.from('profiles').select('name').eq('id', user.id).single(),
+    ])
 
     if (existing) {
       return NextResponse.json(
@@ -98,6 +97,16 @@ export async function POST(request: NextRequest) {
       .eq('id', user.id)
 
     if (updateError) throw updateError
+
+    // 8. Security alert — fire-and-forget
+    if (user.email) {
+      void sendSecurityAlertEmail(
+        user.email,
+        profile?.name ?? 'there',
+        'phone_changed',
+        user.id
+      )
+    }
 
     return NextResponse.json({ success: true })
 

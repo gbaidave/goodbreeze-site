@@ -30,7 +30,7 @@ const N8N_WEBHOOKS: Record<string, string> = {
   ai_seo:            `${N8N_BASE}/webhook/ai-seo-optimizer-pdf`,
   landing_page:      `${N8N_BASE}/webhook/landing-page-optimizer-pdf`,
   keyword_research:  `${N8N_BASE}/webhook/keyword-research-pdf`,
-  seo_audit:         `${N8N_BASE}/webhook/seo-audit-pdf`,
+  seo_audit:         `${N8N_BASE}/webhook/seo-audit-v4-pdf`,
   seo_comprehensive: `${N8N_BASE}/webhook/seo-comprehensive-pdf`,
 }
 

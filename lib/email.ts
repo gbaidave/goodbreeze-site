@@ -21,6 +21,8 @@ import { supportReplyEmail } from './emails/support-reply'
 import { supportResolvedEmail } from './emails/support-resolved'
 import { supportClosedEmail } from './emails/support-closed'
 import { supportAdminNotificationEmail } from './emails/support-admin-notification'
+import { testimonialAdminNotificationEmail } from './emails/testimonial-admin-notification'
+import { securityAlertEmail } from './emails/security-alert'
 import { logEmail } from './email-logger'
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -219,5 +221,44 @@ export async function sendSupportNotificationEmail(
       subject,
       notifyOnFail: false, // admin-only email — don't notify the user if it fails
     }
+  )
+}
+
+export async function sendTestimonialAdminNotificationEmail(
+  data: {
+    userName: string
+    userEmail: string
+    type: 'written' | 'video'
+    pullQuote: string
+    content?: string
+    videoUrl?: string
+    creditsGranted: number
+  },
+  userId?: string
+) {
+  const { subject, html } = testimonialAdminNotificationEmail(data)
+  const adminEmail = process.env.ADMIN_EMAIL || 'dave@goodbreeze.ai'
+  return sendAndLog(
+    () => resend.emails.send({
+      from: `${FROM_NAME} <${FROM}>`,
+      to: adminEmail,
+      replyTo: data.userEmail,
+      subject,
+      html,
+    }),
+    { userId, toEmail: adminEmail, type: 'support_confirmation', subject, notifyOnFail: false }
+  )
+}
+
+export async function sendSecurityAlertEmail(
+  to: string,
+  name: string,
+  action: 'phone_changed',
+  userId?: string
+) {
+  const { subject, html } = securityAlertEmail(name, action)
+  return sendAndLog(
+    () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject, html }),
+    { userId, toEmail: to, type: 'security_alert', subject }
   )
 }

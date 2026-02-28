@@ -8,11 +8,19 @@ import { isValidPhone, normalizePhone } from '@/lib/phone'
 
 const CREDIT_PRODUCT_LABELS: Record<string, string> = {
   spark_pack: 'Spark Pack',
+  spark_pack_credits: 'Spark Pack',
   boost_pack: 'Boost Pack',
+  boost_pack_credits: 'Boost Pack',
   impulse: 'Impulse Pack',
+  impulse_pack: 'Impulse Pack',
+  impulse_pack_credits: 'Impulse Pack',
+  free_credit: 'Free credit',
   signup_credit: 'Signup bonus',
+  signup_bonus: 'Signup bonus',
   testimonial_reward: 'Testimonial reward',
   referral_credit: 'Referral credit',
+  admin_grant: 'Admin grant',
+  credit_grant: 'Credit added',
 }
 
 interface CreditHistoryItem {
@@ -438,7 +446,7 @@ export default function AccountClient({
                   <div key={c.id} className="flex items-center justify-between px-4 py-2.5">
                     <div>
                       <p className="text-sm text-white">
-                        {CREDIT_PRODUCT_LABELS[c.product ?? ''] ?? 'Credit grant'}
+                        {CREDIT_PRODUCT_LABELS[c.product ?? ''] ?? (c.product ? c.product.replace(/_/g, ' ').replace(/\b\w/g, ch => ch.toUpperCase()) : 'Credit added')}
                       </p>
                       <p className="text-xs text-gray-500">
                         {new Date(c.purchased_at).toLocaleDateString('en-US', {

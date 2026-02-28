@@ -24,6 +24,7 @@ export type EmailType =
   | 'testimonial_credit'
   | 'welcome'
   | 'plan_changed'
+  | 'security_alert'
 
 interface LogEmailParams {
   userId?: string         // undefined = no user association (e.g. internal admin emails)

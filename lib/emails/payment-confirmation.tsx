@@ -25,8 +25,8 @@ export function paymentConfirmationEmail(
   const priceLine = sub?.price ?? amount
 
   const subject = isSubscription
-    ? `You're on ${planLabel} — reports are ready`
-    : `Payment confirmed — your reports are ready`
+    ? `You're on ${planLabel}. Your reports are ready.`
+    : `Payment confirmed. Your reports are ready.`
 
   return {
     subject,
@@ -71,9 +71,11 @@ export function paymentConfirmationEmail(
           </a>
         </td></tr>
 
-        <tr><td style="padding:32px 0 0;">
+        <tr><td style="padding:32px 0 0;border-top:1px solid #27272a;">
           <p style="margin:0;font-size:13px;color:#52525b;line-height:1.6;">
-            Good Breeze AI · <a href="https://goodbreeze.ai" style="color:#22d3ee;text-decoration:none;">goodbreeze.ai</a>
+            Good Breeze AI · AI Operations That Scale Your Business<br>
+            <a href="https://goodbreeze.ai" style="color:#22d3ee;text-decoration:none;">goodbreeze.ai</a> ·
+            <a href="https://goodbreeze.ai/unsubscribe" style="color:#52525b;text-decoration:none;">Unsubscribe</a>
           </p>
         </td></tr>
 

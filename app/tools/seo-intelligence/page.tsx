@@ -301,7 +301,21 @@ export default function SeoIntelligencePage() {
           className="bg-dark-700 border border-primary/20 rounded-2xl p-8 space-y-6"
         >
           {phoneRequired && (
-            <PhoneGatePrompt onPhoneSaved={() => { setPhoneRequired(false); doSubmitAuthenticated() }} />
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-6">
+              <div className="max-w-md w-full relative">
+                <button
+                  type="button"
+                  onClick={() => setPhoneRequired(false)}
+                  className="absolute -top-3 -right-3 w-8 h-8 flex items-center justify-center rounded-full bg-zinc-800 border border-gray-700 text-gray-400 hover:text-white hover:bg-zinc-700 transition-colors"
+                  aria-label="Close"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+                <PhoneGatePrompt onPhoneSaved={() => { setPhoneRequired(false); doSubmitAuthenticated() }} />
+              </div>
+            </div>
           )}
           {error && !upgradePrompt && !phoneRequired && (
             <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm">{error}</div>

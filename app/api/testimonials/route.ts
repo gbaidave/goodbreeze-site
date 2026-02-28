@@ -15,6 +15,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { createServiceClient } from '@/lib/supabase/service-client'
+import { sendTestimonialAdminNotificationEmail } from '@/lib/email'
 
 const CREDIT_AMOUNTS: Record<string, number> = {
   written: 1,
@@ -184,13 +185,53 @@ export async function POST(request: NextRequest) {
       // Don't fail the request — testimonial is saved; credits can be manually granted
     }
 
-    // 6. Notify the user
+    // 6. Notify the user (bell) and admin (bell + email)
     const creditLabel = creditsToGrant === 1 ? '1 free report credit' : `${creditsToGrant} free report credits`
+
+    // Fetch profile for name (best-effort)
+    const { data: profile } = await serviceSupabase
+      .from('profiles')
+      .select('name')
+      .eq('id', user.id)
+      .single()
+    const userName = profile?.name ?? 'Unknown'
+    const userEmail = user.email ?? ''
+
+    // User bell notification
     await serviceSupabase.from('notifications').insert({
       user_id: user.id,
       type: 'testimonial_credit',
       message: `Thank you for your ${type} testimonial! You earned ${creditLabel}.`,
     })
+
+    // Admin bell notification — notify all admin users
+    const { data: admins } = await serviceSupabase
+      .from('profiles')
+      .select('id')
+      .eq('role', 'admin')
+    if (admins && admins.length > 0) {
+      await serviceSupabase.from('notifications').insert(
+        admins.map((a: { id: string }) => ({
+          user_id: a.id,
+          type: 'admin_message',
+          message: `New ${type} testimonial from ${userName} (${creditsToGrant} credit${creditsToGrant !== 1 ? 's' : ''} granted).`,
+        }))
+      )
+    }
+
+    // Admin email — fire-and-forget
+    void sendTestimonialAdminNotificationEmail(
+      {
+        userName,
+        userEmail,
+        type: type as 'written' | 'video',
+        pullQuote: pull_quote.trim(),
+        content: type === 'written' ? content?.trim() : undefined,
+        videoUrl: type === 'video' ? video_url?.trim() : undefined,
+        creditsGranted: creditsToGrant,
+      },
+      user.id
+    )
 
     return NextResponse.json({
       success: true,

@@ -1,7 +1,7 @@
 export function reportsExhaustedEmail(name: string): { subject: string; html: string } {
   const firstName = name.split(' ')[0]
   return {
-    subject: `Your Good Breeze AI credits are done — here's what's next.`,
+    subject: `Your Good Breeze AI credits are done. Here's what's next.`,
     html: `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>

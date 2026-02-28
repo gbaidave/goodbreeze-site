@@ -73,12 +73,13 @@ export async function grantCredits(userId: string, amount: number, note: string)
   revalidatePath(`/admin/users/${userId}`)
 }
 
-export async function deductCredits(userId: string, amount: number) {
-  await requireAdmin()
+export async function deductCredits(userId: string, amount: number, note: string) {
+  const { adminId } = await requireAdmin()
   if (amount <= 0 || amount > 100) throw new Error('Amount must be 1–100')
+  if (!note.trim()) throw new Error('Note is required for credit deductions')
   const supabase = createServiceClient()
 
-  // Deduct from oldest non-expired rows first
+  // Deduct from pack/earned credits first (oldest non-expired rows)
   const { data: rows } = await supabase
     .from('credits')
     .select('id, balance')
@@ -94,6 +95,34 @@ export async function deductCredits(userId: string, amount: number) {
     await supabase.from('credits').update({ balance: row.balance - take }).eq('id', row.id)
     remaining -= take
   }
+
+  // If pack credits were insufficient, deduct remainder from subscription plan credits
+  if (remaining > 0) {
+    const { data: sub } = await supabase
+      .from('subscriptions')
+      .select('id, credits_remaining')
+      .eq('user_id', userId)
+      .in('status', ['active', 'trialing'])
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single()
+    if (sub && (sub.credits_remaining ?? 0) > 0) {
+      const take = Math.min(sub.credits_remaining ?? 0, remaining)
+      await supabase
+        .from('subscriptions')
+        .update({ credits_remaining: (sub.credits_remaining ?? 0) - take })
+        .eq('id', sub.id)
+      remaining -= take
+    }
+  }
+
+  // Log to admin_notes for audit trail
+  await supabase.from('admin_notes').insert({
+    user_id: userId,
+    note: `[Credit deduction: ${amount} credit${amount !== 1 ? 's' : ''}] ${note.trim()}`,
+    created_by: adminId,
+  })
+
   revalidatePath(`/admin/users/${userId}`)
 }
 

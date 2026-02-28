@@ -38,14 +38,20 @@ export async function DELETE(
     }
 
     // Ownership check — users can only delete their own reports
-    const { error } = await supabase
+    const { data: deleted, error } = await supabase
       .from('reports')
       .delete()
       .eq('id', id)
       .eq('user_id', user.id)
+      .select('id')
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+
+    // If no rows returned, report didn't exist or RLS blocked the delete
+    if (!deleted || deleted.length === 0) {
+      return NextResponse.json({ error: 'Report not found' }, { status: 404 })
     }
 
     return NextResponse.json({ success: true })

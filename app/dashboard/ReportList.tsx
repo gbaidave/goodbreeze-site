@@ -45,6 +45,7 @@ const STATUS_STYLES: Record<string, string> = {
 }
 
 const POLL_INTERVAL_MS = 5000
+const STUCK_THRESHOLD_MS = 15 * 60 * 1000 // 15 minutes
 
 // ============================================================================
 // Helper: days remaining before expiry
@@ -68,6 +69,7 @@ function ReportCard({ report, onDelete }: { report: Report; onDelete: (id: strin
   const isExpiringSoon = days !== null && days <= 7 && days > 0
   const isExpired = days !== null && days === 0
   const isActive = report.status === 'pending' || report.status === 'processing'
+  const isStuck = isActive && Date.now() - new Date(report.created_at).getTime() > STUCK_THRESHOLD_MS
 
   async function handleDelete() {
     setDeleting(true)
@@ -115,11 +117,14 @@ function ReportCard({ report, onDelete }: { report: Report; onDelete: (id: strin
 
       <div className="flex items-center gap-3 flex-shrink-0">
         {/* Spinner for in-progress */}
-        {isActive && (
+        {isActive && !isStuck && (
           <svg className="w-4 h-4 text-blue-400 animate-spin" fill="none" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
           </svg>
+        )}
+        {isStuck && (
+          <span className="text-xs text-amber-400">Taking too long?</span>
         )}
 
         <span className={`text-xs font-medium px-3 py-1 rounded-full border capitalize ${STATUS_STYLES[report.status] ?? STATUS_STYLES.pending}`}>
@@ -141,7 +146,7 @@ function ReportCard({ report, onDelete }: { report: Report; onDelete: (id: strin
                 rel="noopener noreferrer"
                 className="text-sm text-gray-400 hover:text-gray-300 transition-colors whitespace-nowrap"
               >
-                PDF ↓
+                Download PDF
               </a>
             )}
           </>

@@ -182,7 +182,21 @@ export default function SalesAnalyzer() {
             </div>
           )}
           {phoneRequired && (
-            <PhoneGatePrompt onPhoneSaved={() => { setPhoneRequired(false); doSubmitAuthenticated() }} />
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-6">
+              <div className="max-w-md w-full relative">
+                <button
+                  type="button"
+                  onClick={() => setPhoneRequired(false)}
+                  className="absolute -top-3 -right-3 w-8 h-8 flex items-center justify-center rounded-full bg-zinc-800 border border-gray-700 text-gray-400 hover:text-white hover:bg-zinc-700 transition-colors"
+                  aria-label="Close"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+                <PhoneGatePrompt onPhoneSaved={() => { setPhoneRequired(false); doSubmitAuthenticated() }} />
+              </div>
+            </div>
           )}
           {error && !upgradePrompt && !phoneRequired && (
             <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm">
@@ -192,7 +206,7 @@ export default function SalesAnalyzer() {
 
           {/* Report Type */}
           <div>
-            <label className={labelClass}>Report Type</label>
+            <p className={labelClass}>Report Type</p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {(Object.entries(REPORT_LABELS) as [ReportType, string][]).map(([type, label]) => (
                 <button
@@ -214,8 +228,9 @@ export default function SalesAnalyzer() {
 
           {/* Your Website */}
           <div>
-            <label className={labelClass}>Your Website</label>
+            <label htmlFor="ca-target-website" className={labelClass}>Your Website</label>
             <input
+              id="ca-target-website"
               type="text"
               value={targetWebsite}
               onChange={e => setTargetWebsite(e.target.value)}
@@ -234,13 +249,13 @@ export default function SalesAnalyzer() {
 
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
-                  <label className={labelClass}>Competitor 1 Website *</label>
-                  <input type="text" value={competitor1Website} onChange={e => setCompetitor1Website(e.target.value)}
+                  <label htmlFor="ca-comp1-website" className={labelClass}>Competitor 1 Website *</label>
+                  <input id="ca-comp1-website" type="text" value={competitor1Website} onChange={e => setCompetitor1Website(e.target.value)}
                     className={inputClass} placeholder="https://competitor.com" required />
                 </div>
                 <div>
-                  <label className={labelClass}>Competitor 1 Name (optional)</label>
-                  <input type="text" value={competitor1} onChange={e => setCompetitor1(e.target.value)}
+                  <label htmlFor="ca-comp1-name" className={labelClass}>Competitor 1 Name (optional)</label>
+                  <input id="ca-comp1-name" type="text" value={competitor1} onChange={e => setCompetitor1(e.target.value)}
                     className={inputClass} placeholder="Competitor Inc" />
                 </div>
               </div>
@@ -249,25 +264,25 @@ export default function SalesAnalyzer() {
                 <>
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div>
-                      <label className={labelClass}>Competitor 2 Website</label>
-                      <input type="text" value={competitor2Website} onChange={e => setCompetitor2Website(e.target.value)}
+                      <label htmlFor="ca-comp2-website" className={labelClass}>Competitor 2 Website</label>
+                      <input id="ca-comp2-website" type="text" value={competitor2Website} onChange={e => setCompetitor2Website(e.target.value)}
                         className={inputClass} placeholder="https://competitor2.com" />
                     </div>
                     <div>
-                      <label className={labelClass}>Competitor 2 Name (optional)</label>
-                      <input type="text" value={competitor2} onChange={e => setCompetitor2(e.target.value)}
+                      <label htmlFor="ca-comp2-name" className={labelClass}>Competitor 2 Name (optional)</label>
+                      <input id="ca-comp2-name" type="text" value={competitor2} onChange={e => setCompetitor2(e.target.value)}
                         className={inputClass} placeholder="Competitor 2" />
                     </div>
                   </div>
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div>
-                      <label className={labelClass}>Competitor 3 Website</label>
-                      <input type="text" value={competitor3Website} onChange={e => setCompetitor3Website(e.target.value)}
+                      <label htmlFor="ca-comp3-website" className={labelClass}>Competitor 3 Website</label>
+                      <input id="ca-comp3-website" type="text" value={competitor3Website} onChange={e => setCompetitor3Website(e.target.value)}
                         className={inputClass} placeholder="https://competitor3.com" />
                     </div>
                     <div>
-                      <label className={labelClass}>Competitor 3 Name (optional)</label>
-                      <input type="text" value={competitor3} onChange={e => setCompetitor3(e.target.value)}
+                      <label htmlFor="ca-comp3-name" className={labelClass}>Competitor 3 Name (optional)</label>
+                      <input id="ca-comp3-name" type="text" value={competitor3} onChange={e => setCompetitor3(e.target.value)}
                         className={inputClass} placeholder="Competitor 3" />
                     </div>
                   </div>
