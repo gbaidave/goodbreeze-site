@@ -161,7 +161,7 @@ export default function Hero() {
                 whileTap={{ scale: 0.98 }}
               >
                 <Link
-                  href="/tools"
+                  href="/reports"
                   className="group relative flex items-center justify-center px-10 py-5 bg-gradient-to-r from-primary via-accent-blue to-primary text-white text-lg font-bold rounded-full overflow-hidden shadow-2xl shadow-primary/50 border-2 border-white/60"
                   style={{ backgroundSize: "200% 100%" }}
                 >

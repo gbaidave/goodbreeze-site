@@ -223,10 +223,9 @@ export async function createReportRow(
   const meta = REPORT_META[reportType]
   const supabase = getServiceClient()
 
-  // Expiry: 30 days for free/credit users, 12 months for paid subscriptions
-  const expiryDays = (plan === 'starter' || plan === 'growth' || plan === 'pro' || plan === 'custom') ? 365 : 30
+  // Expiry: flat 7 days for all reports (GDrive copy is permanent; dashboard link expires)
   const expiresAt = new Date()
-  expiresAt.setDate(expiresAt.getDate() + expiryDays)
+  expiresAt.setDate(expiresAt.getDate() + 7)
 
   const { data, error } = await supabase
     .from('reports')

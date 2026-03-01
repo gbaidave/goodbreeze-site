@@ -267,6 +267,7 @@ export default function SeoIntelligencePage() {
       if (res.status === 409) { setError('You already have an account. Sign in to continue.'); return }
       if (!res.ok) { setError(data.error || 'Something went wrong.'); return }
       captureEvent('tool_form_submit', { reportType })
+      if (data.signInUrl) { window.location.href = data.signInUrl; return }
       setSubmitted(true)
     } catch {
       setError('Something went wrong. Please try again.')
@@ -284,7 +285,7 @@ export default function SeoIntelligencePage() {
       <div className="max-w-3xl mx-auto">
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-10">
-          <Link href="/tools" className="text-gray-500 hover:text-primary text-sm transition-colors">
+          <Link href="/reports" className="text-gray-500 hover:text-primary text-sm transition-colors">
             ← All Reports
           </Link>
           <h1 className="text-4xl font-bold text-white mt-4 mb-3">SEO Intelligence Suite</h1>

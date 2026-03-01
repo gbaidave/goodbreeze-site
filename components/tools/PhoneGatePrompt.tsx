@@ -49,7 +49,7 @@ export function PhoneGatePrompt({ onPhoneSaved }: Props) {
   }
 
   return (
-    <div className="p-5 bg-amber-500/10 border border-amber-500/30 rounded-xl space-y-3">
+    <div className="p-5 bg-zinc-900 border border-amber-500/30 rounded-xl space-y-3">
       <div>
         <p className="text-amber-300 font-semibold text-sm">Phone number required</p>
         <p className="text-gray-400 text-sm mt-1">

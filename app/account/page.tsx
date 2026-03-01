@@ -19,7 +19,7 @@ export default async function AccountPage() {
   const [profileRes, subRes, creditsRes, creditHistoryRes] = await Promise.all([
     supabase
       .from('profiles')
-      .select('name, email, phone, sms_ok, stripe_customer_id, role')
+      .select('name, email, phone, sms_ok, stripe_customer_id, role, email_preferences')
       .eq('id', user.id)
       .single(),
     supabase
@@ -67,6 +67,11 @@ export default async function AccountPage() {
       creditsRemaining={creditsRemaining}
       creditExpiry={credits[0]?.expires_at}
       creditHistory={creditHistory}
+      initialEmailPrefs={{
+        nudge_emails: profile?.email_preferences?.nudge_emails !== false,
+        support_emails: profile?.email_preferences?.support_emails !== false,
+        referral_credit: profile?.email_preferences?.referral_credit !== false,
+      }}
     />
   )
 }

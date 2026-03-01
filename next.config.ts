@@ -56,8 +56,11 @@ const nextConfig: NextConfig = {
   // 301 redirects from old WordPress site (goodbreeze.ai) to new URLs
   async redirects() {
     return [
+      // /tools → /reports (URL rename — ACC3-K)
+      { source: '/tools', destination: '/reports', permanent: true },
+      { source: '/tools/:path*', destination: '/reports/:path*', permanent: true },
       // Route renames — old URL → new URL
-      { source: '/tools/sales-analyzer', destination: '/tools/competitive-analyzer', permanent: true },
+      { source: '/tools/sales-analyzer', destination: '/reports/competitive-analyzer', permanent: true },
 
       // Trailing slash → no trailing slash (WordPress used trailing slashes)
       { source: '/about/', destination: '/about', permanent: true },

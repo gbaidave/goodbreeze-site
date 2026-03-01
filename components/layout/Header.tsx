@@ -83,7 +83,7 @@ export default function Header() {
               </AnimatePresence>
             </div>
 
-            <Link href="/tools" className="text-gray-300 hover:text-primary transition-colors">
+            <Link href="/reports" className="text-gray-300 hover:text-primary transition-colors">
               Reports
             </Link>
 
@@ -175,7 +175,7 @@ export default function Header() {
               ))}
             </div>
 
-            <Link href="/tools" className="block text-gray-300 hover:text-primary transition-colors">
+            <Link href="/reports" className="block text-gray-300 hover:text-primary transition-colors">
               Reports
             </Link>
 

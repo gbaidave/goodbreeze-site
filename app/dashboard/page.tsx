@@ -121,7 +121,7 @@ export default async function DashboardPage({
               <p className="text-white font-semibold">Account created — you&apos;re in.</p>
               <p className="text-gray-400 text-sm mt-0.5">
                 You have 1 credit ready to use. Head to{' '}
-                <a href="/tools" className="text-primary hover:text-primary/80 transition-colors font-medium">Tools</a>{' '}
+                <a href="/reports" className="text-primary hover:text-primary/80 transition-colors font-medium">Reports</a>{' '}
                 to run your first report.
               </p>
             </div>
@@ -150,7 +150,7 @@ export default async function DashboardPage({
               </a>
             )}
             <a
-              href="/tools"
+              href="/reports"
               className="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold px-6 py-3 rounded-xl hover:shadow-lg hover:shadow-primary/30 transition-all"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
@@ -200,7 +200,7 @@ export default async function DashboardPage({
                 : isSubscription && packCredits > 0
                   ? `${subscriptionCredits} plan + ${packCredits} pack`
                   : isSubscription
-                    ? `${subscriptionCredits} plan credits remaining`
+                    ? `${subscriptionCredits} credits remaining`
                     : totalAvailableCredits > 0
                       ? `${totalAvailableCredits} credit${totalAvailableCredits !== 1 ? 's' : ''} available`
                       : <>No credits remaining. <a href="/pricing" className="text-primary hover:text-primary/80 transition-colors">Buy or earn more →</a></>}
@@ -233,30 +233,20 @@ export default async function DashboardPage({
           </div>
         )}
 
-        {/* Buy credits — Spark & Boost packs for all non-admin users */}
+        {/* Buy credits — link to pricing for all non-admin users */}
         {!isAdmin && (
           <div className="bg-dark-700 border border-primary/20 rounded-2xl p-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <p className="text-white font-semibold">Buy report credits</p>
-                <p className="text-gray-400 text-sm mt-0.5">One-time packs — no subscription needed.</p>
+                <p className="text-white font-semibold">Need more credits?</p>
+                <p className="text-gray-400 text-sm mt-0.5">Credit packs from $5. Monthly plans from $20/mo.</p>
               </div>
-              <div className="flex gap-3 flex-wrap">
-                <a
-                  href="/pricing"
-                  className="inline-flex flex-col items-center px-5 py-3 border border-primary/40 text-primary rounded-xl hover:bg-primary/10 transition-all text-sm font-semibold"
-                >
-                  <span>Spark Pack</span>
-                  <span className="text-xs text-gray-400 font-normal mt-0.5">3 credits · $5</span>
-                </a>
-                <a
-                  href="/pricing"
-                  className="inline-flex flex-col items-center px-5 py-3 border border-primary/40 text-primary rounded-xl hover:bg-primary/10 transition-all text-sm font-semibold"
-                >
-                  <span>Boost Pack</span>
-                  <span className="text-xs text-gray-400 font-normal mt-0.5">10 credits · $10</span>
-                </a>
-              </div>
+              <a
+                href="/pricing"
+                className="inline-block px-5 py-2.5 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-primary/30 transition-all text-sm flex-shrink-0"
+              >
+                See pricing
+              </a>
             </div>
           </div>
         )}

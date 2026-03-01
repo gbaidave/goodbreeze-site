@@ -43,49 +43,52 @@ export default function HowItWorks() {
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-3 gap-8 relative">
-          {/* Connector line (desktop) */}
-          <div
-            className="hidden md:block absolute top-10 left-1/6 right-1/6 h-0.5 bg-gradient-to-r from-primary via-accent-blue to-accent-purple opacity-30"
-            aria-hidden="true"
-          />
+        {/* Section border wraps all three cards */}
+        <div className="border border-primary/20 rounded-2xl p-6">
+          <div className="grid md:grid-cols-3 gap-8 relative">
+            {/* Connector line (desktop) */}
+            <div
+              className="hidden md:block absolute top-10 left-1/6 right-1/6 h-0.5 bg-gradient-to-r from-primary via-accent-blue to-accent-purple opacity-30"
+              aria-hidden="true"
+            />
 
-          {steps.map((step, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: index * 0.15 }}
-              className="relative text-center bg-dark-700 border border-primary/20 rounded-2xl p-6"
-            >
-              {/* Step label circle */}
-              <div className="relative inline-flex items-center justify-center w-20 h-20 mb-6 mx-auto">
-                <div
-                  className="absolute inset-0 rounded-full bg-gradient-to-br from-primary to-accent-blue opacity-20"
-                  aria-hidden="true"
-                />
-                <div
-                  className="absolute inset-0.5 rounded-full bg-dark-800"
-                  aria-hidden="true"
-                />
-                <span
-                  className="relative text-xl font-bold"
-                  style={{
-                    background: 'linear-gradient(135deg, #00adb5, #3b82f6)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
-                  }}
-                >
-                  {step.label}
-                </span>
-              </div>
+            {steps.map((step, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: index * 0.15 }}
+                className="relative text-center bg-dark-700 rounded-2xl p-6"
+              >
+                {/* Step label circle — w-28 (112px) is ~40% larger than w-20 (80px) */}
+                <div className="relative inline-flex items-center justify-center w-28 h-28 mb-6 mx-auto">
+                  <div
+                    className="absolute inset-0 rounded-full bg-gradient-to-br from-primary to-accent-blue opacity-20"
+                    aria-hidden="true"
+                  />
+                  <div
+                    className="absolute inset-0.5 rounded-full bg-dark-800"
+                    aria-hidden="true"
+                  />
+                  <span
+                    className="relative text-2xl font-bold"
+                    style={{
+                      background: 'linear-gradient(135deg, #00adb5, #3b82f6)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      backgroundClip: 'text',
+                    }}
+                  >
+                    {step.label}
+                  </span>
+                </div>
 
-              <h3 className="text-xl font-bold text-white mb-3">{step.title}</h3>
-              <p className="text-gray-400 leading-relaxed">{step.description}</p>
-            </motion.div>
-          ))}
+                <h3 className="text-xl font-bold text-white mb-3">{step.title}</h3>
+                <p className="text-gray-400 leading-relaxed line-clamp-3">{step.description}</p>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </div>
     </section>

@@ -128,7 +128,7 @@ function ReportCard({ report, onDelete }: { report: Report; onDelete: (id: strin
         )}
 
         <span className={`text-xs font-medium px-3 py-1 rounded-full border capitalize ${STATUS_STYLES[report.status] ?? STATUS_STYLES.pending}`}>
-          {report.status === 'pending' ? 'queued' : report.status === 'failed_site_blocked' ? 'site blocked' : report.status}
+          {report.status === 'pending' ? 'processing' : report.status === 'failed_site_blocked' ? 'site blocked' : report.status}
         </span>
 
         {report.status === 'complete' && !isExpired && (
@@ -273,7 +273,7 @@ export default function ReportList({ initialReports }: ReportListProps) {
       <div className="bg-dark-700 border border-primary/20 rounded-2xl p-12 text-center">
         <p className="text-gray-400 mb-4">No reports yet. Run your first one free.</p>
         <a
-          href="/tools"
+          href="/reports"
           className="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold px-6 py-3 rounded-xl hover:shadow-lg transition-all"
         >
           Get started

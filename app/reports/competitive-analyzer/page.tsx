@@ -124,6 +124,7 @@ export default function SalesAnalyzer() {
       if (res.status === 409) { setAccountExists(true); return }
       if (!res.ok) { setError(data.error || 'Something went wrong. Please try again.'); return }
       captureEvent('tool_form_submit', { reportType })
+      if (data.signInUrl) { window.location.href = data.signInUrl; return }
       setSubmitted(true)
     } catch {
       setError('Something went wrong. Please try again.')
@@ -157,7 +158,7 @@ export default function SalesAnalyzer() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-10"
         >
-          <Link href="/tools" className="text-gray-500 hover:text-primary text-sm transition-colors">
+          <Link href="/reports" className="text-gray-500 hover:text-primary text-sm transition-colors">
             ← All Reports
           </Link>
           <h1 className="text-4xl font-bold text-white mt-4 mb-3">Competitive Analyzer</h1>

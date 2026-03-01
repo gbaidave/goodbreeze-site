@@ -76,7 +76,9 @@ export async function POST(request: NextRequest) {
     }
 
     // 3. Get or create Stripe customer (also fetch phone for gate check)
-    const { data: profile } = await supabase
+    // Use service client to ensure phone is always readable regardless of RLS policy on the column
+    const svc = createServiceClient()
+    const { data: profile } = await svc
       .from('profiles')
       .select('stripe_customer_id, name, email, phone')
       .eq('id', user.id)

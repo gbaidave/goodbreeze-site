@@ -68,8 +68,7 @@ export function CreditsPill() {
           : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
       }`}
     >
-      <span className="font-bold text-xs leading-none">C</span>
-      <span suppressHydrationWarning>{credits}</span>
+      <span suppressHydrationWarning>Credits · {credits}</span>
     </Link>
   )
 }

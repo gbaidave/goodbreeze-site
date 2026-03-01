@@ -8,13 +8,13 @@ import { captureEvent } from '@/lib/analytics'
 import { ExhaustedState } from '@/components/ExhaustedState'
 import { ReportSubmittedModal } from '@/components/tools/ReportSubmittedModal'
 
-export default function LandingPageOptimizerPage() {
+export default function SeoComprehensivePage() {
   const { user, loading: authLoading } = useAuth()
   const isGuest = !authLoading && !user
 
   const [url, setUrl] = useState('')
-  const [focusKeyword, setFocusKeyword] = useState('')
   const [company, setCompany] = useState('')
+  const [focusKeyword, setFocusKeyword] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
@@ -30,12 +30,12 @@ export default function LandingPageOptimizerPage() {
       const res = await fetch('/api/reports/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reportType: 'landing_page', url, focusKeyword, company }),
+        body: JSON.stringify({ reportType: 'seo_comprehensive', url, company, focusKeyword }),
       })
       const data = await res.json()
-      if (res.status === 402) { setError(data.error); setUpgradePrompt(data.upgradePrompt ?? 'impulse'); return }
+      if (res.status === 402) { setError(data.error); setUpgradePrompt(data.upgradePrompt ?? 'starter'); return }
       if (!res.ok) { setError(data.error || 'Something went wrong.'); return }
-      captureEvent('tool_form_submit', { reportType: 'landing_page' })
+      captureEvent('tool_form_submit', { reportType: 'seo_comprehensive' })
       setSubmitted(true)
     } catch {
       setError('Something went wrong. Please try again.')
@@ -51,8 +51,8 @@ export default function LandingPageOptimizerPage() {
     <>
       {submitted && (
         <ReportSubmittedModal
-          heading="Optimization report on its way!"
-          body={<>Your landing page optimization report is being generated. PDF arrives by email in <strong className="text-white">2–3 minutes</strong>.</>}
+          heading="Comprehensive report started!"
+          body={<>This is our most thorough analysis. Allow <strong className="text-white">5–8 minutes</strong> — the PDF will arrive by email when complete.</>}
           detail="Track progress in your dashboard."
           onRunAnother={() => setSubmitted(false)}
         />
@@ -60,14 +60,30 @@ export default function LandingPageOptimizerPage() {
     <div className="min-h-screen bg-dark py-24 px-6">
       <div className="max-w-2xl mx-auto">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-10">
-          <Link href="/tools" className="text-gray-500 hover:text-primary text-sm transition-colors">← All Reports</Link>
+          <Link href="/reports" className="text-gray-500 hover:text-primary text-sm transition-colors">← All Reports</Link>
           <div className="mt-4 mb-3 flex items-center justify-center gap-3">
-            <h1 className="text-4xl font-bold text-white">Landing Page Optimizer</h1>
-            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-accent-blue/10 text-accent-blue border border-accent-blue/30">Impulse / Starter</span>
+            <h1 className="text-4xl font-bold text-white">SEO Comprehensive</h1>
+            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/30">Starter Only</span>
           </div>
           <p className="text-gray-400 max-w-lg mx-auto">
-            Optimize your landing page for conversions, search visibility, and messaging clarity.
+            Our most powerful report: technical SEO audit + keyword research + competitor analysis, combined into one definitive PDF.
           </p>
+        </motion.div>
+
+        {/* What's included */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
+          className="bg-dark-700/50 border border-primary/10 rounded-xl p-5 mb-6">
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">What&apos;s included</p>
+          <div className="grid sm:grid-cols-3 gap-3">
+            {['Full technical SEO audit', 'Keyword gap & opportunities', 'Competitor comparison'].map(item => (
+              <div key={item} className="flex items-center gap-2 text-sm text-gray-300">
+                <svg className="w-4 h-4 text-primary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                {item}
+              </div>
+            ))}
+          </div>
         </motion.div>
 
         <motion.form
@@ -80,16 +96,9 @@ export default function LandingPageOptimizerPage() {
           )}
 
           <div>
-            <label className={labelClass}>Landing Page URL *</label>
+            <label className={labelClass}>Website URL *</label>
             <input type="text" value={url} onChange={e => setUrl(e.target.value)}
-              className={inputClass} placeholder="https://yoursite.com/your-landing-page" required />
-          </div>
-
-          <div>
-            <label className={labelClass}>Target Keyword (optional)</label>
-            <input type="text" value={focusKeyword} onChange={e => setFocusKeyword(e.target.value)}
-              className={inputClass} placeholder="e.g. marketing automation software" />
-            <p className="text-xs text-gray-600 mt-1.5">The keyword you want this page to rank for.</p>
+              className={inputClass} placeholder="https://yoursite.com" required />
           </div>
 
           <div>
@@ -98,9 +107,15 @@ export default function LandingPageOptimizerPage() {
               className={inputClass} placeholder="Your Company Name" />
           </div>
 
+          <div>
+            <label className={labelClass}>Primary Focus Keyword (optional)</label>
+            <input type="text" value={focusKeyword} onChange={e => setFocusKeyword(e.target.value)}
+              className={inputClass} placeholder="e.g. ai automation for small business" />
+          </div>
+
           {isGuest ? (
             <div className="border border-primary/20 rounded-xl p-5 text-center space-y-3">
-              <p className="text-sm text-gray-400">Create a free account to access this tool. Requires Impulse credits or Starter subscription.</p>
+              <p className="text-sm text-gray-400">Create a free account to access this tool. Requires Starter subscription.</p>
               <div className="flex flex-col sm:flex-row gap-2 justify-center">
                 <Link href="/register" className="px-5 py-2.5 bg-gradient-to-r from-primary to-accent-blue text-white text-sm font-semibold rounded-full hover:shadow-lg transition-all">Create free account</Link>
                 <Link href="/login" className="px-5 py-2.5 border border-primary/30 text-gray-300 text-sm rounded-full hover:border-primary hover:text-white transition-colors">Sign in</Link>
@@ -109,12 +124,12 @@ export default function LandingPageOptimizerPage() {
           ) : (
             <button type="submit" disabled={submitting}
               className="w-full py-4 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full hover:shadow-lg hover:shadow-primary/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-              {submitting ? 'Analyzing page…' : 'Optimize My Landing Page'}
+              {submitting ? 'Starting comprehensive analysis…' : 'Generate Comprehensive Report'}
             </button>
           )}
 
           <p className="text-center text-xs text-gray-600">
-            Report delivered by email in 2–3 minutes. Requires Impulse credits or Starter subscription.
+            Our most thorough report — allow 5–8 minutes. Starter subscription required.
           </p>
         </motion.form>
       </div>

@@ -101,7 +101,7 @@ export default async function ReportViewerPage({
             This {label} report has expired. Run a new one to get fresh insights.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Link href="/tools" className="px-6 py-3 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full hover:shadow-lg transition-all">
+            <Link href="/reports" className="px-6 py-3 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full hover:shadow-lg transition-all">
               Run New Report
             </Link>
             <Link href="/dashboard" className="px-6 py-3 border border-gray-700 text-gray-400 rounded-full hover:border-gray-500 transition-all">
@@ -146,7 +146,7 @@ export default async function ReportViewerPage({
             Something went wrong generating your {label} report. If you didn&apos;t receive an email with your PDF, please contact support.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Link href="/tools" className="px-6 py-3 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full hover:shadow-lg transition-all">
+            <Link href="/reports" className="px-6 py-3 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full hover:shadow-lg transition-all">
               Try Again
             </Link>
             <Link href="/dashboard" className="px-6 py-3 border border-gray-700 text-gray-400 rounded-full hover:border-gray-500 transition-all">
@@ -195,6 +195,7 @@ export default async function ReportViewerPage({
             {downloadUrl && (
               <a
                 href={downloadUrl}
+                download={`Good Breeze AI - ${label} - ${new Date(report.created_at).toISOString().slice(0, 10)}.pdf`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-4 py-2 border border-primary/40 text-primary text-sm font-medium rounded-lg hover:bg-primary/10 transition-colors flex items-center gap-2"
@@ -208,7 +209,7 @@ export default async function ReportViewerPage({
 
             {/* Run another */}
             <Link
-              href="/tools"
+              href="/reports"
               className="px-4 py-2 bg-gradient-to-r from-primary to-accent-blue text-white text-sm font-semibold rounded-lg hover:shadow-lg hover:shadow-primary/30 transition-all"
             >
               Run Another

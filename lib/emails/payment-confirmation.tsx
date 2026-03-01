@@ -25,8 +25,8 @@ export function paymentConfirmationEmail(
   const priceLine = sub?.price ?? amount
 
   const subject = isSubscription
-    ? `You're on ${planLabel}. Your reports are ready.`
-    : `Payment confirmed. Your reports are ready.`
+    ? `You're on ${planLabel}. Your credits are ready.`
+    : `Payment confirmed. Your credits are ready.`
 
   return {
     subject,

@@ -19,7 +19,7 @@ export function NudgeCard({ hasWrittenTestimonial, hasVideoTestimonial }: Props)
           </svg>
         </div>
         <div>
-          <p className="text-white font-semibold">You&apos;re out of report credits</p>
+          <p className="text-white font-semibold">You&apos;re out of credits</p>
           <p className="text-gray-400 text-sm mt-0.5">
             Pick up a credit pack or choose a monthly plan to keep running reports.
           </p>

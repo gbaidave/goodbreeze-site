@@ -88,7 +88,7 @@ const ENTRY_OPTIONS = [
     subtitle: "One-time purchase",
     description: "3 reports, use anytime",
     features: [
-      "3 report credits (no expiry)",
+      "3 credits (no expiry)",
       "All standard report types",
       "PDF by email + dashboard access",
     ],
@@ -100,7 +100,7 @@ const ENTRY_OPTIONS = [
     subtitle: "One-time purchase",
     description: "10 reports, use anytime",
     features: [
-      "10 report credits (no expiry)",
+      "10 credits (no expiry)",
       "All standard report types",
       "PDF by email + dashboard access",
     ],
@@ -247,7 +247,17 @@ export default function PricingPage() {
 
         {phoneRequired && pendingPlan && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-6">
-            <div className="max-w-md w-full">
+            <div className="max-w-md w-full relative">
+              <button
+                type="button"
+                onClick={() => setPhoneRequired(false)}
+                className="absolute -top-3 -right-3 w-8 h-8 flex items-center justify-center rounded-full bg-zinc-800 border border-gray-700 text-gray-400 hover:text-white hover:bg-zinc-700 transition-colors"
+                aria-label="Close"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
               <PhoneGatePrompt
                 onPhoneSaved={() => {
                   setPhoneRequired(false);
@@ -267,7 +277,7 @@ export default function PricingPage() {
                 You&apos;re subscribing to the <strong className="text-white">{ackModal.planName}</strong> plan ({ackModal.credits} reports per month).
               </p>
               <div className="bg-zinc-900 border border-primary/20 rounded-xl p-4 mb-5 text-sm text-gray-400">
-                <p>Your report credits reset at the start of each billing period. Unused credits don&apos;t carry over.</p>
+                <p>Your credits reset at the start of each billing period. Unused credits don&apos;t carry over.</p>
               </div>
               <div className="mb-5">
                 <label htmlFor="ack-phone" className="block text-sm text-gray-400 mb-1.5">
@@ -336,7 +346,7 @@ export default function PricingPage() {
           >
             <div className="mb-4">
               <p className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-1">
-                Report Credits
+                Credits
               </p>
               <p className="text-xl font-bold text-white">One report, one credit</p>
             </div>
@@ -426,7 +436,7 @@ export default function PricingPage() {
               }`}
             >
               {plan.badge && (
-                <div className="absolute -top-3 right-4">
+                <div className="absolute top-8 right-6">
                   <span className="inline-block px-3 py-1 rounded-full bg-gradient-to-r from-primary to-accent-blue text-white text-xs font-bold uppercase tracking-wide shadow-lg shadow-primary/30 whitespace-nowrap ring-1 ring-white/20">
                     {plan.badge}
                   </span>
@@ -495,7 +505,7 @@ export default function PricingPage() {
                 a: "Your plan stays active until the end of your current billing period. You won't be charged again after that. You can cancel anytime from your account settings or by contacting us.",
               },
               {
-                q: "Do monthly report credits roll over?",
+                q: "Do monthly credits roll over?",
                 a: "Monthly plan credits reset at the start of each billing period and unused credits do not roll over. Any credit pack credits you hold also reset at renewal. Credit packs purchased when you are not on a subscription plan have no expiry.",
               },
               {

@@ -64,7 +64,7 @@ export default function FinalCTA() {
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
                 <Link
-                  href="/tools"
+                  href="/reports"
                   className="block px-12 py-6 bg-transparent border-2 border-white text-white text-xl font-bold rounded-full shadow-2xl hover:bg-white/10 transition-all duration-300"
                 >
                   Run Your First Free Report

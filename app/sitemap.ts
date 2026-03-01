@@ -21,8 +21,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${base}/services/process-optimization`,     lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
     { url: `${base}/services/custom-solutions`,         lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
 
-    // Tools (public pages only — individual tools require auth)
-    { url: `${base}/tools`,               lastModified: now, changeFrequency: 'weekly',  priority: 0.9 },
+    // Reports (public pages only — individual report forms require auth or free credit)
+    { url: `${base}/reports`,             lastModified: now, changeFrequency: 'weekly',  priority: 0.9 },
     { url: `${base}/seo-audit`,           lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
 
     // Case studies

@@ -128,7 +128,7 @@ export default function ServicesPage() {
               Book a Strategy Call
             </Link>
             <Link
-              href="/tools"
+              href="/reports"
               className="px-8 py-4 border-2 border-primary text-primary font-semibold rounded-full hover:bg-primary hover:text-white transition-all duration-300"
             >
               Try a Free Report

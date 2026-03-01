@@ -7,7 +7,7 @@ const tools = [
   {
     name: "Competitive Analyzer",
     description: "AI-powered competitive intelligence — head-to-head, top 3 competitors, or full market positioning.",
-    href: "/tools/competitive-analyzer",
+    href: "/reports/competitive-analyzer",
     features: [
       "Head-to-Head competitor analysis",
       "Top 3 Competitors breakdown",
@@ -20,7 +20,7 @@ const tools = [
   {
     name: "SEO Intelligence Suite",
     description: "Five AI-powered SEO reports in one place — from AI visibility audits to full keyword research and competitor benchmarking.",
-    href: "/tools/seo-intelligence",
+    href: "/reports/seo-intelligence",
     features: [
       "AI SEO Optimizer (no login required)",
       "SEO Audit — technical + keyword opportunities",
@@ -58,7 +58,7 @@ export default function ToolsDirectory() {
           className="text-center mb-12"
         >
           <h1 className="text-5xl font-bold mb-4 text-white">
-            AI-Powered Business Intelligence
+            AI Powered Business Intelligence
           </h1>
           <p className="text-xl text-gray-300 max-w-3xl mx-auto">
             See who&apos;s outranking you, who&apos;s outcompeting you, and what to do about it. First report free, no card needed.
@@ -168,7 +168,7 @@ export default function ToolsDirectory() {
                 Run any report for free. No account required, no credit card.
               </p>
               <Link
-                href="/tools/competitive-analyzer"
+                href="/reports/competitive-analyzer"
                 className="inline-block px-12 py-6 bg-transparent border-2 border-white text-white text-xl font-bold rounded-full shadow-2xl hover:bg-white/10 transition-all duration-300"
               >
                 Run Your First Free Report

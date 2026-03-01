@@ -10,6 +10,7 @@
  * 4. On failure with a known userId, logEmail() also writes an email_failed notification
  */
 
+import { createServiceClient } from './supabase/service-client'
 import { resend, FROM, FROM_NAME, REPLY_TO } from './resend'
 import { welcomeEmail } from './emails/welcome'
 import { paymentConfirmationEmail } from './emails/payment-confirmation'
@@ -26,6 +27,28 @@ import { securityAlertEmail } from './emails/security-alert'
 import { logEmail } from './email-logger'
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
+
+type EmailPrefKey = 'nudge_emails' | 'support_emails' | 'referral_credit'
+
+/**
+ * Returns true if the user has the given email preference enabled (or if userId is missing).
+ * Defaults to true when the column is absent or the preference is not explicitly set to false.
+ */
+async function checkEmailPref(userId: string | undefined, pref: EmailPrefKey): Promise<boolean> {
+  if (!userId) return true
+  try {
+    const supabase = createServiceClient()
+    const { data } = await supabase
+      .from('profiles')
+      .select('email_preferences')
+      .eq('id', userId)
+      .single()
+    const prefs = data?.email_preferences ?? {}
+    return prefs[pref] !== false
+  } catch {
+    return true // default to sending on any error
+  }
+}
 
 /**
  * Wraps a resend.emails.send() call with logging.
@@ -98,6 +121,7 @@ export async function sendMagicLinkSetupEmail(
 }
 
 export async function sendReportsExhaustedEmail(to: string, name: string, userId?: string) {
+  if (!await checkEmailPref(userId, 'nudge_emails')) return { data: null, error: null }
   const { subject, html } = reportsExhaustedEmail(name)
   return sendAndLog(
     () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject, html }),
@@ -111,6 +135,7 @@ export async function sendSupportReplyEmail(
   replyMessage: string,
   userId?: string
 ) {
+  if (!await checkEmailPref(userId, 'support_emails')) return { data: null, error: null }
   const { subject, html } = supportReplyEmail(name, replyMessage)
   return sendAndLog(
     () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject, html }),
@@ -119,6 +144,7 @@ export async function sendSupportReplyEmail(
 }
 
 export async function sendSupportResolvedEmail(to: string, name: string, userId?: string) {
+  if (!await checkEmailPref(userId, 'support_emails')) return { data: null, error: null }
   const { subject, html } = supportResolvedEmail(name)
   return sendAndLog(
     () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject, html }),
@@ -162,6 +188,7 @@ export async function sendSupportClosedEmail(
   closeReason: string,
   userId?: string
 ) {
+  if (!await checkEmailPref(userId, 'support_emails')) return { data: null, error: null }
   const { subject, html } = supportClosedEmail({ userName: name, closeReason })
   return sendAndLog(
     () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject, html }),

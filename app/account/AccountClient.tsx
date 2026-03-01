@@ -45,6 +45,7 @@ interface Props {
   creditsRemaining: number  // subscription credits (subscriptions.credits_remaining)
   creditExpiry?: string
   creditHistory?: CreditHistoryItem[]
+  initialEmailPrefs: { nudge_emails: boolean; support_emails: boolean; referral_credit: boolean }
 }
 
 export default function AccountClient({
@@ -62,6 +63,7 @@ export default function AccountClient({
   creditsRemaining,
   creditExpiry,
   creditHistory,
+  initialEmailPrefs,
 }: Props) {
   const [name, setName] = useState(initialName)
   const [phone, setPhone] = useState(initialPhone)
@@ -80,6 +82,13 @@ export default function AccountClient({
   const [emailSaving, setEmailSaving] = useState(false)
   const [emailMsg, setEmailMsg] = useState('')
   const [emailError, setEmailError] = useState('')
+  // Email preferences
+  const [emailPrefsOpen, setEmailPrefsOpen] = useState(false)
+  const [nudgeEmails, setNudgeEmails] = useState(initialEmailPrefs.nudge_emails)
+  const [supportEmails, setSupportEmails] = useState(initialEmailPrefs.support_emails)
+  const [referralCredit, setReferralCredit] = useState(initialEmailPrefs.referral_credit)
+  const [emailPrefsSaving, setEmailPrefsSaving] = useState(false)
+  const [emailPrefsMsg, setEmailPrefsMsg] = useState('')
 
   const hasChanges = name !== initialName || phone !== initialPhone || smsOk !== initialSmsOk
   const phoneChanged = phone !== initialPhone
@@ -193,6 +202,26 @@ export default function AccountClient({
     setResetSent(true)
   }
 
+  async function saveEmailPrefs() {
+    setEmailPrefsSaving(true)
+    setEmailPrefsMsg('')
+    try {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Not authenticated')
+      const { error } = await supabase
+        .from('profiles')
+        .update({ email_preferences: { nudge_emails: nudgeEmails, support_emails: supportEmails, referral_credit: referralCredit } })
+        .eq('id', user.id)
+      if (error) throw error
+      setEmailPrefsMsg('Saved!')
+    } catch {
+      setEmailPrefsMsg('Failed to save. Try again.')
+    } finally {
+      setEmailPrefsSaving(false)
+    }
+  }
+
   const isPrivileged = role === 'admin' || role === 'tester'
 
   const planLabel =
@@ -271,6 +300,10 @@ export default function AccountClient({
               Both your old and new email must confirm the change.
             </p>
           </div>
+
+          {/* Autofill trap — prevents browser from filling real phone/password fields */}
+          <input type="text" aria-hidden="true" tabIndex={-1} autoComplete="username" className="sr-only" readOnly />
+          <input type="password" aria-hidden="true" tabIndex={-1} autoComplete="current-password" className="sr-only" readOnly />
 
           {/* Phone */}
           <div>
@@ -428,7 +461,7 @@ export default function AccountClient({
                 </Link>
               ) : (
                 <Link
-                  href="/tools"
+                  href="/reports"
                   className="text-xs text-primary hover:text-primary/80 font-medium transition-colors"
                 >
                   Run a report →
@@ -562,6 +595,92 @@ export default function AccountClient({
               </button>
             )}
           </div>
+        </motion.div>
+
+        {/* Email Notifications Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
+          className="bg-dark-700 border border-primary/20 rounded-2xl overflow-hidden"
+        >
+          <button
+            type="button"
+            onClick={() => setEmailPrefsOpen(!emailPrefsOpen)}
+            className="w-full flex items-center justify-between p-6 text-left hover:bg-white/5 transition-colors"
+          >
+            <h2 className="text-lg font-semibold text-white">Email Notifications</h2>
+            <svg
+              className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${emailPrefsOpen ? 'rotate-180' : ''}`}
+              fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          {emailPrefsOpen && (
+            <div className="px-6 pb-6 space-y-4 border-t border-gray-800 pt-4">
+              <p className="text-sm text-gray-500">
+                Mandatory emails (account, billing, security) are always sent.
+              </p>
+
+              <div className="space-y-3">
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={nudgeEmails}
+                    onChange={(e) => setNudgeEmails(e.target.checked)}
+                    className="w-4 h-4 mt-0.5 accent-primary flex-shrink-0"
+                  />
+                  <div>
+                    <p className="text-sm text-white font-medium">Credit reminders</p>
+                    <p className="text-xs text-gray-500 mt-0.5">Notification when your credits are running low or exhausted.</p>
+                  </div>
+                </label>
+
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={supportEmails}
+                    onChange={(e) => setSupportEmails(e.target.checked)}
+                    className="w-4 h-4 mt-0.5 accent-primary flex-shrink-0"
+                  />
+                  <div>
+                    <p className="text-sm text-white font-medium">Support updates</p>
+                    <p className="text-xs text-gray-500 mt-0.5">Emails when your support request gets a reply, is resolved, or closed.</p>
+                  </div>
+                </label>
+
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={referralCredit}
+                    onChange={(e) => setReferralCredit(e.target.checked)}
+                    className="w-4 h-4 mt-0.5 accent-primary flex-shrink-0"
+                  />
+                  <div>
+                    <p className="text-sm text-white font-medium">Credit awards</p>
+                    <p className="text-xs text-gray-500 mt-0.5">Notification when you earn credits via referrals or testimonials.</p>
+                  </div>
+                </label>
+              </div>
+
+              <div className="flex items-center gap-3 pt-1">
+                <button
+                  onClick={saveEmailPrefs}
+                  disabled={emailPrefsSaving}
+                  className="px-5 py-2.5 bg-gradient-to-r from-primary to-accent-blue text-white text-sm font-medium rounded-xl disabled:opacity-40 hover:shadow-lg hover:shadow-primary/20 transition-all"
+                >
+                  {emailPrefsSaving ? 'Saving…' : 'Save preferences'}
+                </button>
+                {emailPrefsMsg && (
+                  <p className={`text-sm ${emailPrefsMsg === 'Saved!' ? 'text-green-400' : 'text-red-400'}`}>
+                    {emailPrefsMsg}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
         </motion.div>
 
         {/* Footer actions */}

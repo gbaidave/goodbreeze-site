@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
+import { createServiceClient } from '@/lib/supabase/service-client'
 
 export async function DELETE(
   _request: NextRequest,
@@ -37,21 +38,28 @@ export async function DELETE(
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
 
-    // Ownership check — users can only delete their own reports
-    const { data: deleted, error } = await supabase
+    // Use service client for delete to bypass potential RLS SELECT policy gaps.
+    // Ownership check is done explicitly via user_id filter before deleting.
+    const svc = createServiceClient()
+
+    const { data: existing } = await svc
+      .from('reports')
+      .select('id')
+      .eq('id', id)
+      .eq('user_id', user.id)
+      .single()
+
+    if (!existing) {
+      return NextResponse.json({ error: 'Report not found' }, { status: 404 })
+    }
+
+    const { error } = await svc
       .from('reports')
       .delete()
       .eq('id', id)
-      .eq('user_id', user.id)
-      .select('id')
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 })
-    }
-
-    // If no rows returned, report didn't exist or RLS blocked the delete
-    if (!deleted || deleted.length === 0) {
-      return NextResponse.json({ error: 'Report not found' }, { status: 404 })
     }
 
     return NextResponse.json({ success: true })

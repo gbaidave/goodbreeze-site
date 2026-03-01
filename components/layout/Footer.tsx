@@ -69,7 +69,7 @@ export default function Footer() {
             <h4 className="font-semibold mb-4">Tools</h4>
             <ul className="space-y-2 text-gray-400 text-sm">
               <li>
-                <Link href="/tools/competitive-analyzer" className="hover:text-primary transition-colors">
+                <Link href="/reports/competitive-analyzer" className="hover:text-primary transition-colors">
                   Competitive Analyzer
                 </Link>
               </li>

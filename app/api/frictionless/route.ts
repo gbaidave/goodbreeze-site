@@ -422,6 +422,8 @@ export async function POST(request: NextRequest) {
       success: true,
       isNewUser,
       message: 'Report started. Check your inbox for a link to access your account and results.',
+      // Return sign-in URL so the frontend can redirect the user directly into their dashboard
+      signInUrl: magicLink ?? null,
     })
 
   } catch (error) {
