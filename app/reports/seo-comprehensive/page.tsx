@@ -52,7 +52,7 @@ export default function SeoComprehensivePage() {
       {submitted && (
         <ReportSubmittedModal
           heading="Comprehensive report started!"
-          body={<>This is our most thorough analysis. Allow <strong className="text-white">5–8 minutes</strong> — the PDF will arrive by email when complete.</>}
+          body={<>This is our most thorough analysis. Allow <strong className="text-white">5–8 minutes</strong>. The PDF will arrive by email when complete.</>}
           detail="Track progress in your dashboard."
           onRunAnother={() => setSubmitted(false)}
         />
@@ -129,7 +129,7 @@ export default function SeoComprehensivePage() {
           )}
 
           <p className="text-center text-xs text-gray-600">
-            Our most thorough report — allow 5–8 minutes. Starter subscription required.
+            Our most thorough report. Allow 5–8 minutes. Starter subscription required.
           </p>
         </motion.form>
       </div>

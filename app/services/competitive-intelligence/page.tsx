@@ -4,10 +4,10 @@ import { ChartIcon } from "@/components/ui/ModernIcons";
 
 export const metadata: Metadata = {
   title: "Competitive Intelligence Services",
-  description: "Know what your competitors are doing before it costs you. Automated monitoring of pricing, positioning, and market moves — so you never get caught off guard.",
+  description: "Know what your competitors are doing before it costs you. Automated monitoring of pricing, positioning, and market moves so you never get caught off guard.",
   openGraph: {
     title: "Competitive Intelligence Services | Good Breeze AI",
-    description: "Know what your competitors are doing before it costs you. Automated monitoring of pricing, positioning, and market moves — so you never get caught off guard.",
+    description: "Know what your competitors are doing before it costs you. Automated monitoring of pricing, positioning, and market moves so you never get caught off guard.",
     url: "https://goodbreeze.ai/services/competitive-intelligence",
   },
 };
@@ -39,7 +39,7 @@ export default function CompetitiveIntelligenceServices() {
 
         {/* First sentence with target keyword */}
         <p className="text-xl text-gray-300 mb-8 leading-relaxed">
-          <strong>Competitive intelligence services</strong> help businesses track competitor pricing, messaging, product launches, and market positioning automatically—so you can make informed strategic decisions without manual research.
+          <strong>Competitive intelligence services</strong> help businesses track competitor pricing, messaging, product launches, and market positioning automatically so you can make informed strategic decisions without manual research.
         </p>
 
         {/* What you get section */}
@@ -66,7 +66,7 @@ export default function CompetitiveIntelligenceServices() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-white mb-1">AI-Powered Analysis Reports</h3>
-                <p className="text-gray-300">Get automated reports that analyze competitor strengths, weaknesses, and strategic positioning—delivered on your schedule.</p>
+                <p className="text-gray-300">Get automated reports that analyze competitor strengths, weaknesses, and strategic positioning, delivered on your schedule.</p>
               </div>
             </div>
 
@@ -78,7 +78,7 @@ export default function CompetitiveIntelligenceServices() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-white mb-1">Real-Time Alerts</h3>
-                <p className="text-gray-300">Get notified instantly when competitors make significant changes—new pricing, product features, or messaging shifts.</p>
+                <p className="text-gray-300">Get notified instantly when competitors make significant changes: new pricing, product features, or messaging shifts.</p>
               </div>
             </div>
 
@@ -90,7 +90,7 @@ export default function CompetitiveIntelligenceServices() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-white mb-1">Strategic Recommendations</h3>
-                <p className="text-gray-300">We don't just give you data—we provide actionable insights on how to capitalize on competitive gaps and opportunities.</p>
+                <p className="text-gray-300">We don't just give you data. We provide actionable insights on how to capitalize on competitive gaps and opportunities.</p>
               </div>
             </div>
           </div>
@@ -107,7 +107,7 @@ export default function CompetitiveIntelligenceServices() {
 
             <div className="bg-gradient-to-br from-[#3b82f6] via-[#a855f7] to-[#3b82f6] rounded-xl p-6">
               <h3 className="text-lg font-semibold text-white mb-2">Product Launches</h3>
-              <p className="text-white/90">Know when competitors release new features or products—and how they position them.</p>
+              <p className="text-white/90">Know when competitors release new features or products and how they position them.</p>
             </div>
 
             <div className="bg-gradient-to-br from-[#a855f7] via-[#00adb5] to-[#a855f7] rounded-xl p-6">
@@ -129,7 +129,7 @@ export default function CompetitiveIntelligenceServices() {
             Most businesses check competitor websites once a quarter, if at all. By the time you notice a pricing change or new feature, you've already lost deals to competitors who moved faster.
           </p>
           <p className="text-gray-300">
-            Automated competitive intelligence catches changes the moment they happen—giving you a strategic advantage and helping you stay one step ahead.
+            Automated competitive intelligence catches changes the moment they happen, giving you a strategic advantage and helping you stay one step ahead.
           </p>
         </div>
 
@@ -137,7 +137,7 @@ export default function CompetitiveIntelligenceServices() {
         <div className="text-center bg-dark-700 rounded-2xl border border-primary/20 p-12">
           <h2 className="text-3xl font-bold text-white mb-4">Stop Guessing What Competitors Are Doing</h2>
           <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-            Get real time competitive intelligence delivered to your inbox—or try our free Sales Analyzer tool to see how you stack up right now.
+            Get real time competitive intelligence delivered to your inbox. Or try our free Sales Analyzer tool to see how you stack up right now.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link

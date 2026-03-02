@@ -39,7 +39,7 @@ export default function About() {
           <section>
             <h2 className="text-3xl font-bold mb-4">Our Mission</h2>
             <p className="text-gray-300 leading-relaxed text-lg">
-              Most SMBs are drowning in manual work, paying too much to hire, and confused about how AI actually helps. We fix that. We build freemium tools and custom automation that actually works—without the jargon, without the confusion, without the wasted money.
+              Most SMBs are drowning in manual work, paying too much to hire, and confused about how AI actually helps. We fix that. We build freemium tools and custom automation that actually works, without the jargon, without the confusion, without the wasted money.
             </p>
           </section>
 
@@ -85,7 +85,7 @@ export default function About() {
               While David leads strategy and client relationships, Good Breeze AI is supported by a network of specialized automation engineers, AI developers, and business analysts. Our team approach ensures you get expert-level support across every aspect of your automation journey.
             </p>
             <p className="text-gray-300 leading-relaxed text-lg">
-              We're not a giant agency—we're a focused team that treats your business like our own. When you work with us, you get the attention and care of a small team with the expertise and capabilities of a much larger one.
+              We're not a giant agency. We're a focused team that treats your business like our own. When you work with us, you get the attention and care of a small team with the expertise and capabilities of a much larger one.
             </p>
           </section>
 
@@ -102,7 +102,7 @@ export default function About() {
                   <div>
                     <h3 className="text-xl font-semibold mb-3 text-primary">Try Before You Buy</h3>
                     <p className="text-gray-300">
-                      Our freemium tools let you see the value instantly. No sales calls, no demos—just real results.
+                      Our freemium tools let you see the value instantly. No sales calls, no demos. Just real results.
                     </p>
                   </div>
                 </div>
@@ -132,7 +132,7 @@ export default function About() {
                   <div>
                     <h3 className="text-xl font-semibold mb-3 text-primary">Business-First</h3>
                     <p className="text-gray-300">
-                      We measure success by hours saved and revenue grown—not by how "cool" the tech is.
+                      We measure success by hours saved and revenue grown, not by how "cool" the tech is.
                     </p>
                   </div>
                 </div>
@@ -158,7 +158,7 @@ export default function About() {
           <section className="text-center pt-12 border-t border-gray-700">
             <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
             <p className="text-gray-300 mb-8">
-              Try our tools free or book a strategy call. No pressure, no jargon—just real solutions.
+              Try our tools free or book a strategy call. No pressure, no jargon. Just real solutions.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link

@@ -63,7 +63,7 @@ export function TestimonialForm({ submittedTypes }: Props) {
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
-        <h2 className="text-white font-bold text-xl mb-2">All done — thank you!</h2>
+        <h2 className="text-white font-bold text-xl mb-2">All done. Thank you!</h2>
         <p className="text-gray-400 text-sm">You&apos;ve submitted both a written and video testimonial. We really appreciate it.</p>
         <a href="/dashboard" className="inline-block mt-6 text-primary text-sm hover:underline">← Back to dashboard</a>
       </div>
@@ -309,8 +309,8 @@ export function TestimonialForm({ submittedTypes }: Props) {
             {submitting
               ? 'Submitting...'
               : tab === 'written'
-                ? 'Submit testimonial — earn 1 credit'
-                : 'Submit testimonial — earn 5 credits'}
+                ? 'Submit testimonial and earn 1 credit'
+                : 'Submit testimonial and earn 5 credits'}
           </button>
         </form>
       )}

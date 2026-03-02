@@ -14,7 +14,7 @@ const sections = [
       },
       {
         question: 'Do I need SEO experience to use this?',
-        answer: "No. Reports are written in plain English with specific, prioritized action items — not raw data dumps. If you can read a summary and follow a to-do list, you can act on these reports immediately. We write for business owners, not SEO specialists.",
+        answer: "No. Reports are written in plain English with specific, prioritized action items, not raw data dumps. If you can read a summary and follow a to-do list, you can act on these reports immediately. We write for business owners, not SEO specialists.",
       },
       {
         question: 'How long does a report take?',
@@ -22,7 +22,7 @@ const sections = [
       },
       {
         question: 'What information do I need to provide?',
-        answer: 'Just a URL — the page or website you want analyzed. Depending on the report type, you may also provide a competitor\'s URL, a target keyword, or your company name. Everything else is handled automatically.',
+        answer: 'Just a URL: the page or website you want analyzed. Depending on the report type, you may also provide a competitor\'s URL, a target keyword, or your company name. Everything else is handled automatically.',
       },
     ],
   },
@@ -31,7 +31,7 @@ const sections = [
     faqs: [
       {
         question: 'What\'s in each report?',
-        answer: 'It depends on the report type. The AI SEO Optimizer covers on-page SEO, keyword gaps, content quality, and AI search optimization. The Head-to-Head Analyzer compares your site against a competitor across keywords, content, and positioning. Keyword Research delivers keyword clusters with intent, difficulty, and content recommendations. Each report includes specific action items — not just scores.',
+        answer: 'It depends on the report type. The AI SEO Optimizer covers on-page SEO, keyword gaps, content quality, and AI search optimization. The Head-to-Head Analyzer compares your site against a competitor across keywords, content, and positioning. Keyword Research delivers keyword clusters with intent, difficulty, and content recommendations. Each report includes specific action items, not just scores.',
       },
       {
         question: 'How accurate is the AI analysis?',
@@ -39,11 +39,11 @@ const sections = [
       },
       {
         question: 'How is this different from Semrush or Ahrefs?',
-        answer: 'Those tools give you raw data and expect you to figure out what it means and what to do next — which takes hours of expertise you may not have. Good Breeze AI delivers an AI-curated PDF report with specific, prioritized recommendations. No learning curve. No endless dashboards. Just a report you can act on today.',
+        answer: 'Those tools give you raw data and expect you to figure out what it means and what to do next, which takes hours of expertise you may not have. Good Breeze AI delivers an AI-curated PDF report with specific, prioritized recommendations. No learning curve. No endless dashboards. Just a report you can act on today.',
       },
       {
         question: 'Can I share the PDF with my team?',
-        answer: 'Yes. The PDF is yours. Share it however you like — with your team, your agency, or a contractor. It\'s designed to be readable by anyone without technical context.',
+        answer: 'Yes. The PDF is yours. Share it however you like: with your team, your agency, or a contractor. It\'s designed to be readable by anyone without technical context.',
       },
     ],
   },
@@ -52,7 +52,7 @@ const sections = [
     faqs: [
       {
         question: 'Is the first report really free?',
-        answer: 'Yes. Your first report is completely free — no credit card required. After that, reports are included in your plan or available as one-off credits.',
+        answer: 'Yes. Your first report is completely free. No credit card required. After that, reports are included in your plan or available as one-off credits.',
       },
       {
         question: 'What happens after my free report?',
@@ -69,7 +69,7 @@ const sections = [
     faqs: [
       {
         question: 'How quickly will I see results?',
-        answer: "Your report is in your inbox in 2–3 minutes. Most users identify their first quick wins within the first read — and see measurable improvements within 1–2 weeks of acting on the recommendations. SEO is a longer game, but the report shows you exactly where to focus first.",
+        answer: "Your report is in your inbox in 2–3 minutes. Most users identify their first quick wins within the first read and see measurable improvements within 1–2 weeks of acting on the recommendations. SEO is a longer game, but the report shows you exactly where to focus first.",
       },
       {
         question: 'What if I don\'t understand something in my report?',
@@ -126,7 +126,7 @@ export default function FaqPageClient() {
       <div className="mt-16 p-8 rounded-2xl bg-dark-700 border border-primary/20 text-center">
         <p className="text-gray-300 mb-2">Still have a question?</p>
         <Link href="/contact" className="text-primary hover:underline font-medium">
-          Reach out — we reply fast →
+          Reach out. We reply fast →
         </Link>
       </div>
     </div>

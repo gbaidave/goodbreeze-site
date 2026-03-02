@@ -83,11 +83,11 @@ export default function KeywordResearchPage() {
             <label htmlFor="kw-seed" className={labelClass}>Seed Keyword *</label>
             <input id="kw-seed" type="text" value={keyword} onChange={e => setKeyword(e.target.value)}
               className={inputClass} placeholder="e.g. ai automation for small business" required />
-            <p className="text-xs text-gray-600 mt-1.5">Enter your main topic — we&apos;ll find related keywords, questions, and content gaps.</p>
+            <p className="text-xs text-gray-600 mt-1.5">Enter your main topic. We&apos;ll find related keywords, questions, and content gaps.</p>
           </div>
 
           <div>
-            <label htmlFor="kw-website" className={labelClass}>Your Website (optional — for competitor gap analysis)</label>
+            <label htmlFor="kw-website" className={labelClass}>Your Website (optional, for competitor gap analysis)</label>
             <input id="kw-website" type="text" value={url} onChange={e => setUrl(e.target.value)}
               className={inputClass} placeholder="https://yoursite.com" />
           </div>

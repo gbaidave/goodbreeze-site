@@ -4,10 +4,10 @@ import { ContentIcon } from "@/components/ui/ModernIcons";
 
 export const metadata: Metadata = {
   title: "Content Management & Delivery Services",
-  description: "Get off the content treadmill. Custom workflows that plan, create, and schedule content across platforms — so your business stays visible without consuming your week.",
+  description: "Get off the content treadmill. Custom workflows that plan, create, and schedule content across platforms so your business stays visible without consuming your week.",
   openGraph: {
     title: "Content Management & Delivery Services | Good Breeze AI",
-    description: "Get off the content treadmill. Custom workflows that plan, create, and schedule content across platforms — so your business stays visible without consuming your week.",
+    description: "Get off the content treadmill. Custom workflows that plan, create, and schedule content across platforms so your business stays visible without consuming your week.",
     url: "https://goodbreeze.ai/services/content-management",
   },
 };
@@ -39,7 +39,7 @@ export default function ContentManagementServices() {
 
         {/* First sentence with target keyword */}
         <p className="text-xl text-gray-300 mb-8 leading-relaxed">
-          <strong>Content management and delivery services</strong> help businesses automate the entire content lifecycle—from planning and creation to scheduling and publishing across multiple platforms—so you can maintain consistent social media presence without the daily grind.
+          <strong>Content management and delivery services</strong> help businesses automate the entire content lifecycle: from planning and creation to scheduling and publishing across multiple platforms so you can maintain consistent social media presence without the daily grind.
         </p>
 
         {/* What you get section */}
@@ -126,7 +126,7 @@ export default function ContentManagementServices() {
         <div className="bg-gradient-to-br from-primary/10 to-accent-purple/10 rounded-2xl border border-primary/30 p-8 mb-12">
           <h2 className="text-2xl font-bold text-white mb-4">Stop Trading Time for Content</h2>
           <p className="text-gray-300 mb-6">
-            Most businesses spend 10-15 hours per week on social media management—creating posts, scheduling content, monitoring engagement, and reporting on performance. That's nearly half a full time position dedicated just to content logistics.
+            Most businesses spend 10-15 hours per week on social media management: creating posts, scheduling content, monitoring engagement, and reporting on performance. That's nearly half a full time position dedicated just to content logistics.
           </p>
           <p className="text-gray-300">
             Automated content management systems reclaim 70-80% of that time, letting you focus on strategy and creativity while automation handles the repetitive scheduling, formatting, and distribution tasks.

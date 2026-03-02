@@ -206,7 +206,7 @@ export default function Hero() {
             <div className="relative rounded-2xl overflow-hidden border-2 border-primary/30 shadow-2xl shadow-primary/20 group-hover:border-primary/50 transition-all duration-500">
               <Image
                 src="/images/good-breeze-ai-business-owner-hero.webp"
-                alt="Small business owner watching a focused team in a well-run operation — Good Breeze AI"
+                alt="Small business owner watching a focused team in a well-run operation | Good Breeze AI"
                 width={800}
                 height={600}
                 className="w-full h-auto transform group-hover:scale-105 transition-transform duration-700"

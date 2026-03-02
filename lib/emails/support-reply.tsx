@@ -3,7 +3,7 @@ export function supportReplyEmail(
   replyMessage: string,
 ): { subject: string; html: string } {
   return {
-    subject: `Good Breeze AI — Reply to your support request`,
+    subject: `Good Breeze AI: Reply to your support request`,
     html: `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>

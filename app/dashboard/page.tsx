@@ -118,7 +118,7 @@ export default async function DashboardPage({
               </svg>
             </div>
             <div>
-              <p className="text-white font-semibold">Account created — you&apos;re in.</p>
+              <p className="text-white font-semibold">Account created. You&apos;re in.</p>
               <p className="text-gray-400 text-sm mt-0.5">
                 You have 1 credit ready to use. Head to{' '}
                 <a href="/reports" className="text-primary hover:text-primary/80 transition-colors font-medium">Reports</a>{' '}
@@ -175,7 +175,7 @@ export default async function DashboardPage({
                 </p>
               )}
               {isAdmin && (
-                <p className="text-gray-500 text-xs mt-1">Full access — no billing required</p>
+                <p className="text-gray-500 text-xs mt-1">Full access. No billing required</p>
               )}
             </div>
             {isSubscription && !isAdmin && (
@@ -196,7 +196,7 @@ export default async function DashboardPage({
             </p>
             <p className="text-gray-500 text-xs mt-1">
               {isAdmin
-                ? 'Full access — no billing required.'
+                ? 'Full access. No billing required.'
                 : isSubscription
                   ? `${totalAvailableCredits} credit${totalAvailableCredits !== 1 ? 's' : ''} remaining`
                   : totalAvailableCredits > 0
@@ -276,7 +276,7 @@ export default async function DashboardPage({
               <p className="text-gray-400 text-sm mt-1">
                 {hasWrittenTestimonial
                   ? 'Got a minute for a quick video testimonial? It helps us a lot.'
-                  : 'A quick written or video testimonial goes a long way — and we really appreciate it.'}
+                  : 'A quick written or video testimonial goes a long way. We really appreciate it.'}
               </p>
             </div>
             <a

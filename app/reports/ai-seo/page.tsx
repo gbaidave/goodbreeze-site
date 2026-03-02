@@ -131,7 +131,7 @@ export default function AiSeoPage() {
             <label className={labelClass}>Page URL to Analyze *</label>
             <input type="text" value={url} onChange={e => setUrl(e.target.value)}
               className={inputClass} placeholder="https://yoursite.com/your-page" required />
-            <p className="text-xs text-gray-600 mt-1.5">Enter the specific page you want analyzed — homepage, landing page, blog post, etc.</p>
+            <p className="text-xs text-gray-600 mt-1.5">Enter the specific page you want analyzed: homepage, landing page, blog post, etc.</p>
           </div>
 
           <div>
@@ -157,7 +157,7 @@ export default function AiSeoPage() {
 
           <p className="text-center text-xs text-gray-600">
             {isGuest
-              ? 'Free for new users — no account needed. Report delivered by email in 2–3 minutes.'
+              ? 'No account needed. Report delivered by email in 2–3 minutes.'
               : 'Report delivered by email in 2–3 minutes. Saved to your dashboard.'}
           </p>
         </motion.form>

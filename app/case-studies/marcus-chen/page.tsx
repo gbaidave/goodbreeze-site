@@ -153,7 +153,7 @@ export default function MarcusChenCaseStudy() {
               </div>
               <div className="bg-dark-700 rounded-xl border border-primary/20 p-6">
                 <h4 className="font-bold text-white mb-2">Nurture Sequences</h4>
-                <p className="text-sm">Cold leads get value content on days 1, 3, 7, 14 — stay top-of-mind</p>
+                <p className="text-sm">Cold leads get value content on days 1, 3, 7, 14. Stay top-of-mind.</p>
               </div>
             </div>
           </section>

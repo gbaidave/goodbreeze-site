@@ -388,7 +388,7 @@ export default function AccountClient({
                 {isPrivileged ? `${planLabel} Account` : `${planLabel} Plan`}
               </p>
               {isPrivileged && (
-                <p className="text-xs text-gray-500 mt-0.5">Full access — no billing required.</p>
+                <p className="text-xs text-gray-500 mt-0.5">Full access. No billing required.</p>
               )}
               {!isPrivileged && status && status !== 'active' && status !== 'trialing' && (
                 <p className="text-xs text-yellow-400 mt-0.5 capitalize">{status.replace('_', ' ')}</p>
@@ -426,7 +426,7 @@ export default function AccountClient({
                     </p>
                     {totalCredits > 0 ? (
                       <p className="text-xs text-gray-500 mt-0.5">
-                        {creditsRemaining} plan + {totalCredits} pack — resets each billing period
+                        {creditsRemaining} plan + {totalCredits} additional. Resets each billing period
                       </p>
                     ) : (
                       <p className="text-xs text-gray-500 mt-0.5">Resets to plan cap each billing period</p>
@@ -558,7 +558,7 @@ export default function AccountClient({
                 href="/pricing"
                 className="block w-full py-3 text-center bg-gradient-to-r from-primary to-accent-blue text-white text-sm font-semibold rounded-xl hover:shadow-lg hover:shadow-primary/20 transition-all"
               >
-                View plans — from $20/month
+                View plans, starting at $20/month
               </Link>
               <Link
                 href="/pricing"

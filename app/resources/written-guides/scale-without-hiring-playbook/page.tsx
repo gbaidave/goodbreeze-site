@@ -52,7 +52,7 @@ export default function GuideScaleWithoutHiring() {
                 Most businesses scale the same way: more customers means more employees. The problem? Hiring is expensive, slow, and risky. Training takes months. Quality is inconsistent. Turnover resets the clock.
               </p>
               <p>
-                Smart businesses are breaking this pattern. They're growing 30-50% year-over-year with the same team size—or smaller.
+                Smart businesses are breaking this pattern. They're growing 30-50% year-over-year with the same team size or smaller.
               </p>
               <p className="font-semibold text-white">
                 The secret? Automation that handles the work of multiple full-time employees.
@@ -103,7 +103,7 @@ export default function GuideScaleWithoutHiring() {
               <div className="bg-dark-700 rounded-xl border border-primary/20 p-8 my-6">
                 <h3 className="text-2xl font-bold text-white mb-4">Step 3: Scale with Confidence</h3>
                 <p>
-                  Once automation handles the repetitive work, your existing team can focus on high-value activities—closing deals, strategic planning, client relationships.
+                  Once automation handles the repetitive work, your existing team can focus on high-value activities: closing deals, strategic planning, client relationships.
                 </p>
                 <p className="mt-4">
                   Instead of hiring 3 people to handle growth, you hire 1 person and let automation handle the rest.

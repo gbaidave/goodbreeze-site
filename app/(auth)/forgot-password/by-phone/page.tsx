@@ -43,7 +43,7 @@ export default function ForgotPasswordByPhonePage() {
     <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-8">
       <h1 className="text-2xl font-bold text-white mb-2">Reset via phone</h1>
       <p className="text-zinc-400 mb-6">
-        Enter the phone number on your account — we&apos;ll email you a reset link.
+        Enter the phone number on your account. We&apos;ll email you a reset link.
       </p>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>

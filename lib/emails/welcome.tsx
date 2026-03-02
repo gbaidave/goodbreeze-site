@@ -19,7 +19,7 @@ export function welcomeEmail(name: string): { subject: string; html: string } {
         <tr><td style="background:#18181b;border:1px solid #27272a;border-radius:16px;padding:40px;">
           <h1 style="margin:0 0 12px;font-size:28px;font-weight:700;color:#ffffff;">Welcome, ${firstName} 👋</h1>
           <p style="margin:0 0 24px;font-size:16px;color:#a1a1aa;line-height:1.6;">
-            You're in. Your Good Breeze AI account is ready — run your first report for free, no card needed.
+            You're in. Your Good Breeze AI account is ready. Run your first report for free, no card needed.
           </p>
 
           <a href="https://goodbreeze.ai/tools" style="display:inline-block;background:linear-gradient(135deg,#22d3ee,#3b82f6);color:#09090b;font-weight:700;font-size:15px;padding:14px 28px;border-radius:10px;text-decoration:none;">

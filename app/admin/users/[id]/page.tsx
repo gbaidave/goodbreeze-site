@@ -92,7 +92,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
             {sub ? (
               <>
                 <Row label="Plan credits" value={String(sub.credits_remaining ?? 0)} />
-                <Row label="Pack credits" value={String(totalCredits)} />
+                <Row label="Additional credits" value={String(totalCredits)} />
                 <Row label="Total credits" value={String((sub.credits_remaining ?? 0) + totalCredits)} />
               </>
             ) : (

@@ -5,7 +5,6 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { PhoneGatePrompt } from "@/components/tools/PhoneGatePrompt";
-import { isValidPhone } from "@/lib/phone";
 
 // ============================================================================
 // Plan data
@@ -110,7 +109,6 @@ const ENTRY_OPTIONS = [
 type PaidPlan = "starter" | "growth" | "pro" | "spark_pack" | "boost_pack";
 
 const SUBSCRIPTION_PLAN_KEYS = new Set(["starter", "growth", "pro"]);
-const PLAN_CREDITS: Record<string, number> = { starter: 25, growth: 40, pro: 50 };
 
 // ============================================================================
 // Checkmark icon
@@ -136,53 +134,17 @@ export default function PricingPage() {
   const [phoneRequired, setPhoneRequired] = useState(false);
   const [pendingPlan, setPendingPlan] = useState<PaidPlan | null>(null);
   const [pendingAcknowledged, setPendingAcknowledged] = useState(false);
-  const [ackModal, setAckModal] = useState<{ planKey: PaidPlan; planName: string; credits: number } | null>(null);
-  const [ackChecked, setAckChecked] = useState(true);
-  const [ackPhone, setAckPhone] = useState("");
-  const [ackPhoneError, setAckPhoneError] = useState("");
   const { user } = useAuth();
 
-  async function handleAckSubmit() {
-    if (!ackModal) return;
-    setAckPhoneError("");
-    if (ackPhone.trim() && !isValidPhone(ackPhone)) {
-      setAckPhoneError("Enter a valid phone number (e.g. +1 555 000 0000)");
-      return;
-    }
-    if (ackPhone.trim()) {
-      try {
-        const res = await fetch("/api/account/save-phone", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ phone: ackPhone.trim() }),
-        });
-        if (!res.ok) {
-          const data = await res.json();
-          setAckPhoneError(data.error || "Failed to save phone. Try again.");
-          return;
-        }
-      } catch {
-        setAckPhoneError("Failed to save phone. Try again.");
-        return;
-      }
-    }
-    handleCheckout(ackModal.planKey, true);
-    setAckModal(null);
-  }
-
-  // For subscription plans, show the acknowledgment modal before proceeding.
-  // For credit packs, go straight to checkout.
-  function requestCheckout(planKey: PaidPlan, planName?: string) {
+  // Subscription plans auto-acknowledge (credit reset info is shown on the pricing card).
+  // Credit packs go straight to checkout with no acknowledgment needed.
+  function requestCheckout(planKey: PaidPlan) {
     if (!user) {
       window.location.href = `/signup?redirect=/pricing`;
       return;
     }
-    if (SUBSCRIPTION_PLAN_KEYS.has(planKey)) {
-      setAckChecked(true);
-      setAckModal({ planKey, planName: planName ?? planKey, credits: PLAN_CREDITS[planKey] ?? 0 });
-    } else {
-      handleCheckout(planKey);
-    }
+    const acknowledged = SUBSCRIPTION_PLAN_KEYS.has(planKey) ? true : undefined;
+    handleCheckout(planKey, acknowledged);
   }
 
   async function handleCheckout(plan: PaidPlan, acknowledged?: boolean) {
@@ -264,62 +226,6 @@ export default function PricingPage() {
                   if (pendingPlan) handleCheckout(pendingPlan, pendingAcknowledged || undefined);
                 }}
               />
-            </div>
-          </div>
-        )}
-
-        {/* ── Acknowledgment modal (subscription plans only) ─────────────── */}
-        {ackModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-6">
-            <div className="bg-dark-700 border border-primary/30 rounded-2xl p-8 max-w-md w-full shadow-xl shadow-primary/10">
-              <h3 className="text-xl font-bold text-white mb-2">One thing to know</h3>
-              <p className="text-gray-400 text-sm mb-5">
-                You&apos;re subscribing to the <strong className="text-white">{ackModal.planName}</strong> plan ({ackModal.credits} reports per month).
-              </p>
-              <div className="bg-zinc-900 border border-primary/20 rounded-xl p-4 mb-5 text-sm text-gray-400">
-                <p>Your credits reset at the start of each billing period. Unused credits don&apos;t carry over.</p>
-              </div>
-              <div className="mb-5">
-                <label htmlFor="ack-phone" className="block text-sm text-gray-400 mb-1.5">
-                  Phone number <span className="text-gray-600">(optional, saves time at checkout)</span>
-                </label>
-                <input
-                  id="ack-phone"
-                  type="tel"
-                  value={ackPhone}
-                  onChange={(e) => { setAckPhone(e.target.value); setAckPhoneError(""); }}
-                  placeholder="+1 555 000 0000"
-                  autoComplete="tel"
-                  className={`w-full px-4 py-2.5 bg-dark border rounded-xl text-sm text-white placeholder-gray-600 focus:outline-none focus:border-primary transition-colors ${ackPhoneError ? "border-red-500" : "border-gray-700"}`}
-                />
-                {ackPhoneError && <p className="text-xs text-red-400 mt-1">{ackPhoneError}</p>}
-              </div>
-              <label className="flex items-start gap-3 cursor-pointer mb-6 select-none">
-                <input
-                  type="checkbox"
-                  checked={ackChecked}
-                  onChange={(e) => setAckChecked(e.target.checked)}
-                  className="mt-0.5 w-4 h-4 rounded accent-primary"
-                />
-                <span className="text-sm text-gray-300">
-                  I understand that credits reset each billing period.
-                </span>
-              </label>
-              <div className="flex gap-3">
-                <button
-                  onClick={handleAckSubmit}
-                  disabled={!ackChecked || loading === ackModal.planKey}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-primary/40"
-                >
-                  {loading === ackModal.planKey ? "Redirecting…" : "Continue to Checkout"}
-                </button>
-                <button
-                  onClick={() => setAckModal(null)}
-                  className="px-6 py-3 border border-primary/30 text-gray-400 font-semibold rounded-full hover:text-white hover:border-primary/60 transition-all"
-                >
-                  Cancel
-                </button>
-              </div>
             </div>
           </div>
         )}
@@ -464,7 +370,7 @@ export default function PricingPage() {
               </ul>
 
               <button
-                onClick={() => requestCheckout(plan.key, plan.name)}
+                onClick={() => requestCheckout(plan.key)}
                 disabled={loading === plan.key}
                 className={`w-full px-6 py-3 font-semibold rounded-full transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed ${
                   plan.highlighted

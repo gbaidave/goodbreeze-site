@@ -52,7 +52,7 @@ export default function GuideAIAutomation() {
                 AI automation combines artificial intelligence with workflow automation to handle tasks that traditionally required human judgment. Unlike simple automation that follows rigid rules, AI automation can adapt, learn patterns, and make decisions based on context.
               </p>
               <p>
-                Think of it this way: regular automation is like a vending machine—press button A, get item A. AI automation is more like a smart assistant that understands what you need, considers your preferences, and suggests the best option.
+                Think of it this way: regular automation is like a vending machine: press button A, get item A. AI automation is more like a smart assistant that understands what you need, considers your preferences, and suggests the best option.
               </p>
             </section>
 
@@ -62,7 +62,7 @@ export default function GuideAIAutomation() {
                 For the first time in history, powerful AI tools are accessible to small and medium businesses at affordable prices. What used to cost hundreds of thousands of dollars in enterprise software is now available for a fraction of the cost.
               </p>
               <p>
-                The competitive advantage has shifted. It's no longer about who has the biggest budget—it's about who can implement automation fastest and most effectively.
+                The competitive advantage has shifted. It's no longer about who has the biggest budget. It's about who can implement automation fastest and most effectively.
               </p>
             </section>
 

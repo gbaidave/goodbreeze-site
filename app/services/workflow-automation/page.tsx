@@ -39,7 +39,7 @@ export default function WorkflowAutomationServices() {
 
         {/* First sentence with target keyword - answer the query above the fold */}
         <p className="text-xl text-gray-300 mb-8 leading-relaxed">
-          <strong>Workflow automation services</strong> help businesses eliminate repetitive manual tasks by creating custom automated systems that handle everything from lead follow-ups to data entry—freeing your team to focus on revenue-generating work.
+          <strong>Workflow automation services</strong> help businesses eliminate repetitive manual tasks by creating custom automated systems that handle everything from lead follow-ups to data entry, freeing your team to focus on revenue-generating work.
         </p>
 
         {/* What you get section */}
@@ -112,7 +112,7 @@ export default function WorkflowAutomationServices() {
 
             <div className="bg-gradient-to-br from-[#a855f7] via-[#00adb5] to-[#a855f7] rounded-xl p-6">
               <h3 className="text-lg font-semibold text-white mb-2">Reporting & Analytics</h3>
-              <p className="text-white/90">Generate and distribute reports automatically on a schedule you define—daily, weekly, or monthly.</p>
+              <p className="text-white/90">Generate and distribute reports automatically on a schedule you define: daily, weekly, or monthly.</p>
             </div>
 
             <div className="bg-gradient-to-br from-[#00adb5] via-[#3b82f6] to-[#a855f7] rounded-xl p-6">
@@ -126,7 +126,7 @@ export default function WorkflowAutomationServices() {
         <div className="bg-gradient-to-br from-primary/10 to-accent-purple/10 rounded-2xl border border-primary/30 p-8 mb-12">
           <h2 className="text-2xl font-bold text-white mb-4">What's the ROI?</h2>
           <p className="text-gray-300 mb-6">
-            Most businesses reclaim 20+ hours per week within the first month of implementing workflow automation. At an average of $50/hour for manual labor, that's over $50,000 in saved time annually—often more than the cost of implementation.
+            Most businesses reclaim 20+ hours per week within the first month of implementing workflow automation. At an average of $50/hour for manual labor, that's over $50,000 in saved time annually, often more than the cost of implementation.
           </p>
           <p className="text-gray-300">
             Plus, automated workflows don't make mistakes, don't take sick days, and scale instantly as your business grows.

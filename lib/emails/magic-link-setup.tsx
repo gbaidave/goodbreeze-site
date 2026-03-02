@@ -21,11 +21,11 @@ export function magicLinkSetupEmail(
         <tr><td style="background:#18181b;border:1px solid #27272a;border-radius:16px;padding:40px;">
           <h1 style="margin:0 0 12px;font-size:28px;font-weight:700;color:#ffffff;">Your account is ready</h1>
           <p style="margin:0 0 24px;font-size:16px;color:#a1a1aa;line-height:1.6;">
-            We created your Good Breeze AI account. Your <strong style="color:#ffffff;">${reportTypeLabel}</strong> report is being processed — we'll email you when it's ready to download.
+            We created your Good Breeze AI account. Your <strong style="color:#ffffff;">${reportTypeLabel}</strong> report is being processed. We'll email you when it's ready to download.
           </p>
 
           <p style="margin:0 0 20px;font-size:15px;color:#a1a1aa;line-height:1.6;">
-            Click below to access your account. This link signs you in automatically — no password needed.
+            Click below to access your account. This link signs you in automatically. No password needed.
           </p>
 
           <a href="${magicLink}" style="display:inline-block;background:linear-gradient(135deg,#22d3ee,#3b82f6);color:#09090b;font-weight:700;font-size:15px;padding:14px 28px;border-radius:10px;text-decoration:none;">
@@ -55,7 +55,7 @@ export function magicLinkSetupEmail(
                   <tr>
                     <td style="padding-bottom:16px;">
                       <p style="margin:0 0 4px;font-size:13px;font-weight:600;color:#22d3ee;">2. Set a password (optional)</p>
-                      <p style="margin:0;font-size:13px;color:#a1a1aa;line-height:1.5;">Once logged in, you can set a password from your account settings — or keep using magic links.</p>
+                      <p style="margin:0;font-size:13px;color:#a1a1aa;line-height:1.5;">Once logged in, you can set a password from your account settings, or keep using magic links.</p>
                     </td>
                   </tr>
                   <tr>

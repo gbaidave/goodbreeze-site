@@ -165,7 +165,7 @@ function ReportCard({ report, onDelete }: { report: Report; onDelete: (id: strin
         )}
 
         {report.status === 'failed_site_blocked' && (
-          <span className="text-sm text-red-400">Site blocked — check email</span>
+          <span className="text-sm text-red-400">Site blocked. Check email.</span>
         )}
 
         {/* Delete error */}

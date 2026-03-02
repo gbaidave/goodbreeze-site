@@ -39,7 +39,7 @@ export default function ProcessOptimizationServices() {
 
         {/* First sentence with target keyword */}
         <p className="text-xl text-gray-300 mb-8 leading-relaxed">
-          <strong>Process optimization services</strong> help businesses identify inefficiencies, eliminate bottlenecks, and redesign workflows for maximum speed and accuracy—often cutting operational costs by 30-50% while improving output quality.
+          <strong>Process optimization services</strong> help businesses identify inefficiencies, eliminate bottlenecks, and redesign workflows for maximum speed and accuracy, often cutting operational costs by 30-50% while improving output quality.
         </p>
 
         {/* What you get section */}
@@ -66,7 +66,7 @@ export default function ProcessOptimizationServices() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-white mb-1">Optimized Workflow Design</h3>
-                <p className="text-gray-300">We redesign processes to eliminate waste, reduce handoffs, and improve throughput—often cutting time-to-completion in half.</p>
+                <p className="text-gray-300">We redesign processes to eliminate waste, reduce handoffs, and improve throughput, often cutting time-to-completion in half.</p>
               </div>
             </div>
 
@@ -102,7 +102,7 @@ export default function ProcessOptimizationServices() {
           <div className="grid md:grid-cols-2 gap-6">
             <div className="bg-gradient-to-br from-[#3b82f6] via-[#a855f7] to-[#00adb5] rounded-xl p-6">
               <h3 className="text-lg font-semibold text-white mb-2">Sales to Fulfillment</h3>
-              <p className="text-white/90">Streamline the handoff from closed deal to project kickoff—eliminate delays and reduce errors.</p>
+              <p className="text-white/90">Streamline the handoff from closed deal to project kickoff. Eliminate delays and reduce errors.</p>
             </div>
 
             <div className="bg-gradient-to-br from-[#3b82f6] via-[#a855f7] to-[#3b82f6] rounded-xl p-6">
@@ -117,7 +117,7 @@ export default function ProcessOptimizationServices() {
 
             <div className="bg-gradient-to-br from-[#00adb5] via-[#3b82f6] to-[#a855f7] rounded-xl p-6">
               <h3 className="text-lg font-semibold text-white mb-2">Customer Support Triage</h3>
-              <p className="text-white/90">Route support tickets faster and more accurately—reduce response times and improve customer satisfaction.</p>
+              <p className="text-white/90">Route support tickets faster and more accurately, reducing response times and improving customer satisfaction.</p>
             </div>
           </div>
         </div>
@@ -126,10 +126,10 @@ export default function ProcessOptimizationServices() {
         <div className="bg-gradient-to-br from-primary/10 to-accent-purple/10 rounded-2xl border border-primary/30 p-8 mb-12">
           <h2 className="text-2xl font-bold text-white mb-4">The Cost of Inefficiency</h2>
           <p className="text-gray-300 mb-6">
-            Most businesses lose 20-30% of their operational capacity to inefficient processes—handoffs that shouldn't exist, approvals that slow everything down, and manual steps that could be automated.
+            Most businesses lose 20-30% of their operational capacity to inefficient processes: handoffs that shouldn't exist, approvals that slow everything down, and manual steps that could be automated.
           </p>
           <p className="text-gray-300">
-            Process optimization typically recovers 10-15 hours per employee per week. For a 10-person team, that's 100+ hours reclaimed monthly—equivalent to hiring 2-3 full time employees without the overhead.
+            Process optimization typically recovers 10-15 hours per employee per week. For a 10-person team, that's 100+ hours reclaimed monthly, equivalent to hiring 2-3 full time employees without the overhead.
           </p>
         </div>
 

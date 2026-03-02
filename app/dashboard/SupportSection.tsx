@@ -222,7 +222,7 @@ function TicketItem({ ticket, userEmail }: { ticket: Ticket; userEmail: string }
                     rows={2}
                     required
                     minLength={10}
-                    placeholder="e.g. Resolved — the report came through."
+                    placeholder="e.g. Resolved. The report came through."
                     className="w-full px-3 py-2 bg-dark border border-gray-700 text-white text-sm rounded-xl focus:outline-none focus:border-primary transition-colors resize-none placeholder-gray-600"
                   />
                   <div className="flex gap-2">

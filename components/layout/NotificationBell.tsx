@@ -24,6 +24,25 @@ function timeAgo(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString()
 }
 
+function getNotificationLink(type: string): string {
+  switch (type) {
+    case 'report_ready':
+    case 'report_failed':
+      return '/dashboard'
+    case 'referral_credit':
+    case 'testimonial_credit':
+      return '/account'
+    case 'credits_low':
+      return '/pricing'
+    case 'plan_changed':
+      return '/account'
+    case 'email_failed':
+      return '/account'
+    default:
+      return '/notifications'
+  }
+}
+
 function NotificationIcon({ type }: { type: string }) {
   if (type === 'email_failed' || type === 'report_failed') {
     return (
@@ -172,9 +191,11 @@ export function NotificationBell() {
           ) : (
             <div>
               {preview.map(n => (
-                <div
+                <Link
                   key={n.id}
-                  className={`flex gap-3 px-4 py-3 border-b border-gray-800 last:border-0 transition-colors ${!n.read ? 'bg-white/[0.04]' : ''}`}
+                  href={getNotificationLink(n.type)}
+                  onClick={() => setOpen(false)}
+                  className={`flex gap-3 px-4 py-3 border-b border-gray-800 last:border-0 transition-colors hover:bg-white/[0.06] ${!n.read ? 'bg-white/[0.04]' : ''}`}
                 >
                   <NotificationIcon type={n.type} />
                   <div className="flex-1 min-w-0">
@@ -184,7 +205,7 @@ export function NotificationBell() {
                   {!n.read && (
                     <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
                   )}
-                </div>
+                </Link>
               ))}
             </div>
           )}

@@ -46,7 +46,7 @@ export default function Solution() {
             </div>
             <h3 className="text-2xl font-semibold mb-4 text-center text-white">Enter Your URL</h3>
             <p className="text-white/90">
-              Paste the page or site you want analyzed. Add your company name if you like. Takes 10 seconds — no account needed to start.
+              Paste the page or site you want analyzed. Add your company name if you like. Takes 10 seconds, no account needed to start.
             </p>
           </motion.div>
 
@@ -68,7 +68,7 @@ export default function Solution() {
             </div>
             <h3 className="text-2xl font-semibold mb-4 text-center text-white">AI Does the Work</h3>
             <p className="text-white/90">
-              Our AI analyzes keywords, SEO gaps, competitor positioning, and content opportunities — across dozens of data points in real time.
+              Our AI analyzes keywords, SEO gaps, competitor positioning, and content opportunities across dozens of data points in real time.
             </p>
           </motion.div>
 

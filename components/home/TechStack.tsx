@@ -56,7 +56,7 @@ export default function TechStack() {
             Our Tech Stack
           </h2>
           <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-            We use the right tools for the job—proven, enterprise-grade technology that scales with your business
+            We use the right tools for the job: proven, enterprise-grade technology that scales with your business
           </p>
         </motion.div>
 

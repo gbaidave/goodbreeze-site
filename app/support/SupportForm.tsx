@@ -215,7 +215,7 @@ function TicketThread({ ticket, userEmail }: { ticket: Ticket; userEmail: string
                     rows={3}
                     required
                     minLength={10}
-                    placeholder="e.g. I figured it out — the report came through after a few minutes."
+                    placeholder="e.g. I figured it out. The report came through after a few minutes."
                     className="w-full px-3 py-2 bg-dark border border-gray-700 text-white text-sm rounded-xl focus:outline-none focus:border-primary transition-colors resize-none placeholder-gray-600"
                   />
                   <p className="text-xs text-gray-600 text-right">{closeReason.length} / 500</p>

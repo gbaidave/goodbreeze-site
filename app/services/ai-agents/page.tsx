@@ -4,10 +4,10 @@ import { BotIcon } from "@/components/ui/ModernIcons";
 
 export const metadata: Metadata = {
   title: "AI Agent Implementation Services",
-  description: "Deploy AI agents that handle customer support, lead qualification, and internal processes 24/7 — without the complexity or technical debt.",
+  description: "Deploy AI agents that handle customer support, lead qualification, and internal processes 24/7, without the complexity or technical debt.",
   openGraph: {
     title: "AI Agent Implementation Services | Good Breeze AI",
-    description: "Deploy AI agents that handle customer support, lead qualification, and internal processes 24/7 — without the complexity or technical debt.",
+    description: "Deploy AI agents that handle customer support, lead qualification, and internal processes 24/7, without the complexity or technical debt.",
     url: "https://goodbreeze.ai/services/ai-agents",
   },
 };
@@ -39,7 +39,7 @@ export default function AIAgentServices() {
 
         {/* First sentence with target keyword */}
         <p className="text-xl text-gray-300 mb-8 leading-relaxed">
-          <strong>AI agent implementation services</strong> help businesses deploy intelligent assistants that handle customer inquiries, qualify leads, and manage internal processes—24/7, without requiring constant human oversight.
+          <strong>AI agent implementation services</strong> help businesses deploy intelligent assistants that handle customer inquiries, qualify leads, and manage internal processes 24/7, without requiring constant human oversight.
         </p>
 
         {/* What you get section */}
@@ -54,7 +54,7 @@ export default function AIAgentServices() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-white mb-1">Custom AI Agent Design</h3>
-                <p className="text-gray-300">We design AI agents specifically for your use case—whether that's customer support, lead qualification, or internal knowledge management.</p>
+                <p className="text-gray-300">We design AI agents specifically for your use case, whether that's customer support, lead qualification, or internal knowledge management.</p>
               </div>
             </div>
 
@@ -126,7 +126,7 @@ export default function AIAgentServices() {
         <div className="bg-gradient-to-br from-primary/10 to-accent-purple/10 rounded-2xl border border-primary/30 p-8 mb-12">
           <h2 className="text-2xl font-bold text-white mb-4">Why AI Agents Make Sense</h2>
           <p className="text-gray-300 mb-6">
-            Hiring a full time support rep costs $40K-$60K annually. An AI agent handles the same volume of inquiries for a fraction of the cost—and never takes a day off.
+            Hiring a full time support rep costs $40K-$60K annually. An AI agent handles the same volume of inquiries for a fraction of the cost, and never takes a day off.
           </p>
           <p className="text-gray-300">
             Most businesses see response times drop from hours to seconds, customer satisfaction improve, and support costs decrease by 40-60% within the first quarter.

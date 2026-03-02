@@ -307,7 +307,7 @@ export default function SalesAnalyzer() {
           {isGuest && reportType !== 'h2h' ? (
             <div className="border border-primary/20 rounded-xl p-5 text-center space-y-3">
               <p className="text-sm text-gray-400">
-                {REPORT_LABELS[reportType]} requires an account. Sign in or create a free account — your first report credit is included.
+                {REPORT_LABELS[reportType]} requires an account. Sign in or create a free account. Your first report credit is included.
               </p>
               <div className="flex flex-col sm:flex-row gap-2 justify-center">
                 <Link href="/signup" className="px-5 py-2.5 bg-gradient-to-r from-primary to-accent-blue text-white text-sm font-semibold rounded-full hover:shadow-lg transition-all">
@@ -332,7 +332,7 @@ export default function SalesAnalyzer() {
             <CreditsDisplay />
             <p className="text-xs text-gray-600">
               {isGuest && reportType === 'h2h'
-                ? 'First report free — no account needed. Report delivered in 2–4 minutes.'
+                ? 'No account needed. Report delivered in 2–4 minutes.'
                 : 'Report delivered to your email in 2–4 minutes. Saved to your dashboard.'}
             </p>
           </div>

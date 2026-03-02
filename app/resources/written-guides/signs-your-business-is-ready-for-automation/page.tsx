@@ -82,7 +82,7 @@ export default function GuideReadyForAutomation() {
                 You're Paying for Work You Could Automate
               </h2>
               <p>
-                Data entry, document formatting, email scheduling, appointment booking—if you're paying someone hourly to do these tasks, you're spending 10-50x what automation would cost.
+                Data entry, document formatting, email scheduling, appointment booking: if you're paying someone hourly to do these tasks, you're spending 10-50x what automation would cost.
               </p>
               <p className="mt-4">
                 <strong>The Math:</strong> A virtual assistant costs $15-25/hour. Automation handling the same work costs pennies per transaction.

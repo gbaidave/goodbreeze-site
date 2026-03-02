@@ -68,7 +68,7 @@ export default function Contact() {
                 This is a no-pressure conversation. We'll listen to what you're dealing with and see if automation can help.
               </p>
               <p>
-                Whether you're just exploring AI for the first time or you've tried tools that didn't work, we'll meet you where you are and give you honest guidance—even if that means we're not the right fit right now.
+                Whether you're just exploring AI for the first time or you've tried tools that didn't work, we'll meet you where you are and give you honest guidance, even if that means we're not the right fit right now.
               </p>
               <p>
                 We work with businesses at different stages, from startups looking to automate a single process to established companies ready for full-scale transformation.

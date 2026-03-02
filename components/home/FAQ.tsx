@@ -6,16 +6,16 @@ import { useState } from "react";
 const faqs = [
   {
     question: "Do I need SEO experience to use this?",
-    answer: "No. Reports are written in plain English with specific action items — not raw data dumps. If you can read a summary and follow a to-do list, you can act on these reports immediately.",
+    answer: "No. Reports are written in plain English with specific action items, not raw data dumps. If you can read a summary and follow a to-do list, you can act on these reports immediately.",
     featured: true,
   },
   {
     question: "How is this different from Semrush or Ahrefs?",
-    answer: "Those tools give you raw data and expect you to figure out what it means and what to do next. Good Breeze AI delivers an AI-curated PDF report with specific, prioritized recommendations — no learning curve, no hours of analysis required.",
+    answer: "Those tools give you raw data and expect you to figure out what it means and what to do next. Good Breeze AI delivers an AI-curated PDF report with specific, prioritized recommendations. No learning curve, no hours of analysis required.",
   },
   {
     question: "How quickly will I see results?",
-    answer: "Your report lands in your inbox in 2–3 minutes. Most users identify their first quick wins within the first read — and see measurable improvements within 1–2 weeks of acting on the recommendations.",
+    answer: "Your report lands in your inbox in 2–3 minutes. Most users identify their first quick wins within the first read and see measurable improvements within 1–2 weeks of acting on the recommendations.",
   },
 ];
 

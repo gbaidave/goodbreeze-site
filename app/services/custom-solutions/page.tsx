@@ -4,10 +4,10 @@ import { CustomIcon } from "@/components/ui/ModernIcons";
 
 export const metadata: Metadata = {
   title: "Custom Automation Solutions",
-  description: "Your business isn't generic — your automation shouldn't be either. Bespoke solutions built exactly for your processes, your tools, and the way your team actually works.",
+  description: "Your business isn't generic, and your automation shouldn't be either. Bespoke solutions built exactly for your processes, your tools, and the way your team actually works.",
   openGraph: {
     title: "Custom Automation Solutions | Good Breeze AI",
-    description: "Your business isn't generic — your automation shouldn't be either. Bespoke solutions built exactly for your processes, your tools, and the way your team actually works.",
+    description: "Your business isn't generic, and your automation shouldn't be either. Bespoke solutions built exactly for your processes, your tools, and the way your team actually works.",
     url: "https://goodbreeze.ai/services/custom-solutions",
   },
 };
@@ -39,7 +39,7 @@ export default function CustomSolutionsServices() {
 
         {/* First sentence with target keyword */}
         <p className="text-xl text-gray-300 mb-8 leading-relaxed">
-          <strong>Custom automation solutions</strong> are built from scratch to match your unique business processes, integrations, and workflows—going beyond standard templates to solve problems that off the shelf tools can't handle.
+          <strong>Custom automation solutions</strong> are built from scratch to match your unique business processes, integrations, and workflows, going beyond standard templates to solve problems that off the shelf tools can't handle.
         </p>
 
         {/* What you get section */}
@@ -54,7 +54,7 @@ export default function CustomSolutionsServices() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-white mb-1">Deep Discovery Process</h3>
-                <p className="text-gray-300">We start by understanding your exact business process, data flows, systems, and pain points—no assumptions, just thorough research.</p>
+                <p className="text-gray-300">We start by understanding your exact business process, data flows, systems, and pain points. No assumptions, just thorough research.</p>
               </div>
             </div>
 
@@ -107,7 +107,7 @@ export default function CustomSolutionsServices() {
 
             <div className="bg-gradient-to-br from-[#3b82f6] via-[#a855f7] to-[#3b82f6] rounded-xl p-6">
               <h3 className="text-lg font-semibold text-white mb-2">Industry Specific Processes</h3>
-              <p className="text-white/90">Automate workflows unique to your industry that no standard template addresses—healthcare, legal, manufacturing, finance, etc.</p>
+              <p className="text-white/90">Automate workflows unique to your industry that no standard template addresses: healthcare, legal, manufacturing, finance, and more.</p>
             </div>
 
             <div className="bg-gradient-to-br from-[#a855f7] via-[#00adb5] to-[#a855f7] rounded-xl p-6">
@@ -126,7 +126,7 @@ export default function CustomSolutionsServices() {
         <div className="bg-gradient-to-br from-primary/10 to-accent-purple/10 rounded-2xl border border-primary/30 p-8 mb-12">
           <h2 className="text-2xl font-bold text-white mb-4">When Off the Shelf Doesn't Cut It</h2>
           <p className="text-gray-300 mb-6">
-            Standard automation templates work great for common problems. But if your business has unique processes, proprietary systems, or specific compliance requirements, you need a solution built around your reality—not a template you're forced to adapt to.
+            Standard automation templates work great for common problems. But if your business has unique processes, proprietary systems, or specific compliance requirements, you need a solution built around your reality, not a template you're forced to adapt to.
           </p>
           <p className="text-gray-300">
             Custom solutions cost more upfront but save significantly more time and money in the long run by eliminating workarounds, manual steps, and the frustration of trying to fit square pegs into round holes.
@@ -137,7 +137,7 @@ export default function CustomSolutionsServices() {
         <div className="text-center bg-dark-700 rounded-2xl border border-primary/20 p-12">
           <h2 className="text-3xl font-bold text-white mb-4">Let's Build Exactly What You Need</h2>
           <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-            Book a discovery call and tell us about your unique automation challenge—we'll design a solution that fits your business perfectly.
+            Book a discovery call and tell us about your unique automation challenge. We'll design a solution that fits your business perfectly.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
