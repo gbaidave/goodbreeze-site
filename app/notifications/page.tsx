@@ -31,6 +31,7 @@ const TYPE_LABELS: Record<string, string> = {
   report_ready:        'Report Ready',
   referral_credit:     'Referral Credit',
   testimonial_credit:  'Testimonial Credit',
+  credits_low:         'Credits Low',
   plan_changed:        'Plan Changed',
   admin_message:       'Message',
 }
@@ -41,6 +42,7 @@ const TYPE_COLORS: Record<string, string> = {
   report_ready:        'text-green-400 bg-green-500/10 border-green-500/20',
   referral_credit:     'text-primary bg-primary/10 border-primary/20',
   testimonial_credit:  'text-primary bg-primary/10 border-primary/20',
+  credits_low:         'text-amber-400 bg-amber-500/10 border-amber-500/20',
   plan_changed:        'text-accent-blue bg-accent-blue/10 border-accent-blue/20',
   admin_message:       'text-accent-blue bg-accent-blue/10 border-accent-blue/20',
 }

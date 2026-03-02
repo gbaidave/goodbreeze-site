@@ -271,7 +271,7 @@ export function TestimonialForm({ submittedTypes }: Props) {
                   I am not required to provide this authorization. Good Breeze AI LLC does not condition access
                   to its products, services, or pricing on this authorization. I am not entitled to monetary
                   payment for use of my testimonial; however, Good Breeze AI LLC may, at its discretion, provide
-                  report credits or other non-monetary benefits in appreciation for my submission.
+                  credits or other non-monetary benefits in appreciation for my submission.
                 </p>
                 <p>
                   I confirm I am 18 years of age or older and have the right to grant this authorization. I

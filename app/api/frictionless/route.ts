@@ -378,11 +378,13 @@ export async function POST(request: NextRequest) {
     // 7. Generate magic link so user can access their account.
     // Use the request origin (not a static env var) so the redirectTo URL always matches
     // the actual deployment URL — preventing Supabase from rejecting it as not in the allowlist.
+    // NOTE: No ?returnUrl param — query parameters in redirectTo can fail Supabase's whitelist
+    // matching. The auth callback defaults returnUrl to /dashboard, so this is equivalent.
     const requestOrigin = request.nextUrl.origin
     const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
       type: 'magiclink',
       email,
-      options: { redirectTo: `${requestOrigin}/auth/callback?returnUrl=/dashboard` },
+      options: { redirectTo: `${requestOrigin}/auth/callback` },
     })
 
     const magicLink = linkData?.properties?.action_link

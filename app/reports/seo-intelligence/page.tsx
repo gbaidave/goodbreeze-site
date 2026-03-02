@@ -290,7 +290,7 @@ export default function SeoIntelligencePage() {
           </Link>
           <h1 className="text-4xl font-bold text-white mt-4 mb-3">SEO Intelligence Suite</h1>
           <p className="text-gray-400 max-w-xl mx-auto">
-            Choose your report type. AI-generated SEO intelligence delivered as a full PDF to your inbox.
+            Choose your report type. Your full PDF report arrives in your inbox within 2–4 minutes.
           </p>
         </motion.div>
 
@@ -412,7 +412,7 @@ export default function SeoIntelligencePage() {
           {isGuest && !config.frictionless ? (
             <div className="border border-primary/20 rounded-xl p-5 text-center space-y-3">
               <p className="text-sm text-gray-400">
-                {config.label} requires an account. Sign in or create a free account. Your first report credit is included.
+                {config.label} requires an account. Sign in or create a free account. Your first credit is included.
               </p>
               <div className="flex flex-col sm:flex-row gap-2 justify-center">
                 <Link

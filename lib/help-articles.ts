@@ -31,13 +31,13 @@ export const helpArticles: HelpArticle[] = [
 
 Your report is processed in the background (usually 3–5 minutes) and delivered to your email as a PDF. You can also track the status in your dashboard and view the report directly once it's complete.
 
-New accounts include 1 report credit. Run any report type for free, no credit card required.`,
+New accounts include 1 credit. Run any report type for free, no credit card required.`,
   },
   {
     slug: 'what-free-reports-do-i-get',
     title: 'How many credits do I start with?',
     topic: 'Getting Started',
-    content: `Every new account starts with 1 report credit. No credit card required. Use it on any report type across the Analyzer or Brand Visibility tools.
+    content: `Every new account starts with 1 credit. No credit card required. Use it on any report type across the Analyzer or Brand Visibility tools.
 
 Once your credit is used, you can purchase a credit pack (Spark Pack: 3 credits for $5, Boost Pack: 10 credits for $10) or upgrade to a monthly plan (Starter $20/mo, Growth $30/mo, or Pro $40/mo). You can also earn additional credits by submitting a testimonial or referring a friend.`,
   },
@@ -123,7 +123,7 @@ The output includes: recommended content topics, keyword clusters, suggested pag
     slug: 'whats-included-in-free-plan',
     title: "What's included when I sign up?",
     topic: 'Billing & Plans',
-    content: `Every new account includes 1 report credit. No credit card required. You have access to all report types and the full dashboard from day one.
+    content: `Every new account includes 1 credit. No credit card required. You have access to all report types and the full dashboard from day one.
 
 Once your credit is used, you can earn more by submitting a testimonial (1–5 credits) or referring a friend (1 credit per signup). Or purchase a credit pack (Spark: 3 credits for $5, Boost: 10 credits for $10) or upgrade to a monthly plan.`,
   },
@@ -159,7 +159,7 @@ If you cancel and want to continue running occasional reports, you can purchase 
   },
   {
     slug: 'do-credits-expire',
-    title: 'Do report credits expire?',
+    title: 'Do credits expire?',
     topic: 'Billing & Plans',
     content: `Credits from purchases (Spark Pack, Boost Pack) don't expire. The 1 credit included when you sign up also doesn't expire.
 

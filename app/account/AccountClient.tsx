@@ -424,13 +424,7 @@ export default function AccountClient({
                     <p className="text-sm text-white font-medium">
                       {creditsRemaining + totalCredits} credit{creditsRemaining + totalCredits !== 1 ? 's' : ''} remaining
                     </p>
-                    {totalCredits > 0 ? (
-                      <p className="text-xs text-gray-500 mt-0.5">
-                        {creditsRemaining} plan + {totalCredits} additional. Resets each billing period
-                      </p>
-                    ) : (
-                      <p className="text-xs text-gray-500 mt-0.5">Resets to plan cap each billing period</p>
-                    )}
+                    <p className="text-xs text-gray-500 mt-0.5">Resets to plan cap each billing period</p>
                   </>
                 ) : (
                   <>

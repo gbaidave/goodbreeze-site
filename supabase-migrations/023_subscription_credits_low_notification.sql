@@ -28,7 +28,7 @@ BEGIN
     VALUES (
       NEW.user_id,
       'credits_low',
-      'You have 1 report credit remaining. Top up to keep running reports.'
+      'You have 1 credit remaining. Top up to keep running reports.'
     );
   END IF;
 

@@ -190,7 +190,7 @@ export default async function DashboardPage({
 
           {/* Credits */}
           <div className="bg-dark-700 border border-primary/20 rounded-2xl p-6">
-            <p className="text-gray-400 text-sm mb-1">Report credits</p>
+            <p className="text-gray-400 text-sm mb-1">Credits</p>
             <p className="text-2xl font-bold text-white">
               {isAdmin ? '∞' : totalAvailableCredits}
             </p>

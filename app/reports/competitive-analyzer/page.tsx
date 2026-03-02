@@ -236,7 +236,7 @@ export default function SalesAnalyzer() {
               value={targetWebsite}
               onChange={e => setTargetWebsite(e.target.value)}
               className={inputClass}
-              placeholder="https://yourdomain.com"
+              placeholder="https://yoursite.com"
               required
             />
           </div>
@@ -252,7 +252,7 @@ export default function SalesAnalyzer() {
                 <div>
                   <label htmlFor="ca-comp1-website" className={labelClass}>Competitor 1 Website</label>
                   <input id="ca-comp1-website" type="text" value={competitor1Website} onChange={e => setCompetitor1Website(e.target.value)}
-                    className={inputClass} placeholder="https://competitordomain.com" required />
+                    className={inputClass} placeholder="https://theirsite.com" required />
                 </div>
                 <div>
                   <label htmlFor="ca-comp1-name" className={labelClass}>Competitor 1 Name (optional)</label>
@@ -267,24 +267,24 @@ export default function SalesAnalyzer() {
                     <div>
                       <label htmlFor="ca-comp2-website" className={labelClass}>Competitor 2 Website</label>
                       <input id="ca-comp2-website" type="text" value={competitor2Website} onChange={e => setCompetitor2Website(e.target.value)}
-                        className={inputClass} placeholder="https://competitor2domain.com" />
+                        className={inputClass} placeholder="https://competitor2.com" />
                     </div>
                     <div>
                       <label htmlFor="ca-comp2-name" className={labelClass}>Competitor 2 Name (optional)</label>
                       <input id="ca-comp2-name" type="text" value={competitor2} onChange={e => setCompetitor2(e.target.value)}
-                        className={inputClass} placeholder="Competitor 2" />
+                        className={inputClass} placeholder="Rival Co" />
                     </div>
                   </div>
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div>
                       <label htmlFor="ca-comp3-website" className={labelClass}>Competitor 3 Website</label>
                       <input id="ca-comp3-website" type="text" value={competitor3Website} onChange={e => setCompetitor3Website(e.target.value)}
-                        className={inputClass} placeholder="https://competitor3domain.com" />
+                        className={inputClass} placeholder="https://competitor3.com" />
                     </div>
                     <div>
                       <label htmlFor="ca-comp3-name" className={labelClass}>Competitor 3 Name (optional)</label>
                       <input id="ca-comp3-name" type="text" value={competitor3} onChange={e => setCompetitor3(e.target.value)}
-                        className={inputClass} placeholder="Competitor 3" />
+                        className={inputClass} placeholder="Third Co" />
                     </div>
                   </div>
                 </>
@@ -307,7 +307,7 @@ export default function SalesAnalyzer() {
           {isGuest && reportType !== 'h2h' ? (
             <div className="border border-primary/20 rounded-xl p-5 text-center space-y-3">
               <p className="text-sm text-gray-400">
-                {REPORT_LABELS[reportType]} requires an account. Sign in or create a free account. Your first report credit is included.
+                {REPORT_LABELS[reportType]} requires an account. Sign in or create a free account. Your first credit is included.
               </p>
               <div className="flex flex-col sm:flex-row gap-2 justify-center">
                 <Link href="/signup" className="px-5 py-2.5 bg-gradient-to-r from-primary to-accent-blue text-white text-sm font-semibold rounded-full hover:shadow-lg transition-all">

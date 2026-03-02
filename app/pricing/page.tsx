@@ -75,7 +75,7 @@ const ENTRY_OPTIONS = [
     subtitle: "No credit card required",
     description: "Try before you buy",
     features: [
-      "1 report credit included. No card needed.",
+      "1 credit included. No card needed.",
       "All report types available",
       "PDF delivered to your email",
     ],
@@ -416,7 +416,7 @@ export default function PricingPage() {
               },
               {
                 q: "What's in the free tier exactly?",
-                a: "You get 1 report credit when you sign up. No credit card needed. Run any report type. Full PDF delivered to your email. Not a watered-down demo.",
+                a: "You get 1 credit when you sign up. No credit card needed. Run any report type. Full PDF delivered to your email. Not a watered-down demo.",
               },
               {
                 q: "What's the difference between credit packs and monthly plans?",

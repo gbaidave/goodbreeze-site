@@ -6,7 +6,7 @@ import Link from "next/link";
 const tools = [
   {
     name: "Competitive Analyzer",
-    description: "AI-powered competitive intelligence: head-to-head, top 3 competitors, or full market positioning.",
+    description: "Head-to-head, top 3 competitors, or full market positioning. Choose your competitive analysis.",
     href: "/reports/competitive-analyzer",
     features: [
       "Head-to-Head competitor analysis",
@@ -19,7 +19,7 @@ const tools = [
   },
   {
     name: "SEO Intelligence Suite",
-    description: "Five AI-powered SEO reports in one place. From AI visibility audits to full keyword research and competitor benchmarking.",
+    description: "Five SEO reports: audits, keyword research, landing page analysis, competitor benchmarking, and AI visibility.",
     href: "/reports/seo-intelligence",
     features: [
       "AI SEO Optimizer (no login required)",
@@ -33,7 +33,7 @@ const tools = [
   },
   {
     name: "Social Media Content Optimizer",
-    description: "AI-powered social media content strategies and post templates tailored to your brand and audience.",
+    description: "Social content strategies and post templates built around your brand voice and audience.",
     href: "#",
     features: [
       "Platform-specific content strategy",
