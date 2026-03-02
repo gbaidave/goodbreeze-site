@@ -36,12 +36,15 @@ export function UserActionsPanel({
   const [confirming, setConfirming] = useState<string | null>(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [grantFormKey, setGrantFormKey] = useState(0)
+  const [deductFormKey, setDeductFormKey] = useState(0)
 
-  function act(fn: () => Promise<void>, successMsg = 'Saved.') {
+  function act(fn: () => Promise<void>, successMsg = 'Saved.', onSuccess?: () => void) {
     startTransition(async () => {
       try {
         await fn()
         setFeedback({ type: 'ok', msg: successMsg })
+        onSuccess?.()
       } catch (e: any) {
         setFeedback({ type: 'err', msg: e.message ?? 'Something went wrong.' })
       }
@@ -180,12 +183,17 @@ export function UserActionsPanel({
         <p className="text-gray-400 text-xs uppercase tracking-wider">Credits</p>
         <div className="flex gap-3 flex-wrap">
           <form
+            key={grantFormKey}
             onSubmit={(e) => {
               e.preventDefault()
               const fd = new FormData(e.currentTarget)
               const amount = parseInt(fd.get('grant_amount') as string, 10)
               const note = fd.get('grant_note') as string
-              act(() => grantCredits(userId, amount, note))
+              act(
+                () => grantCredits(userId, amount, note),
+                `Granted ${amount} credit${amount !== 1 ? 's' : ''} — saved.`,
+                () => setGrantFormKey(k => k + 1),
+              )
             }}
             className="flex flex-col gap-2 w-full"
           >
@@ -215,12 +223,17 @@ export function UserActionsPanel({
             />
           </form>
           <form
+            key={deductFormKey}
             onSubmit={(e) => {
               e.preventDefault()
               const fd = new FormData(e.currentTarget)
               const amount = parseInt(fd.get('deduct_amount') as string, 10)
               const note = fd.get('deduct_note') as string
-              act(() => deductCredits(userId, amount, note))
+              act(
+                () => deductCredits(userId, amount, note),
+                `Deducted ${amount} credit${amount !== 1 ? 's' : ''} — saved.`,
+                () => setDeductFormKey(k => k + 1),
+              )
             }}
             className="flex flex-col gap-2 w-full"
           >
