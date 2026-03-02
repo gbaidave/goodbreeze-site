@@ -25,7 +25,7 @@ const SUBSCRIPTION_PLANS = [
       "SEO Audit & SEO Comprehensive Report",
       "Multi-Page Audit",
       "Reports delivered by email + stored in dashboard",
-      "Cancel anytime — access until billing period ends",
+      "Cancel anytime. Access until billing period ends.",
     ],
     badge: null,
     highlighted: false,
@@ -43,7 +43,7 @@ const SUBSCRIPTION_PLANS = [
       "SEO Audit & SEO Comprehensive Report",
       "Multi-Page Audit",
       "Reports delivered by email + stored in dashboard",
-      "Cancel anytime — access until billing period ends",
+      "Cancel anytime. Access until billing period ends.",
     ],
     badge: "Best Value",
     highlighted: true,
@@ -61,7 +61,7 @@ const SUBSCRIPTION_PLANS = [
       "SEO Audit & SEO Comprehensive Report",
       "Multi-Page Audit",
       "Reports delivered by email + stored in dashboard",
-      "Cancel anytime — access until billing period ends",
+      "Cancel anytime. Access until billing period ends.",
     ],
     badge: null,
     highlighted: false,
@@ -76,7 +76,7 @@ const ENTRY_OPTIONS = [
     subtitle: "No credit card required",
     description: "Try before you buy",
     features: [
-      "1 report credit included — no card needed",
+      "1 report credit included. No card needed.",
       "All report types available",
       "PDF delivered to your email",
     ],
@@ -281,7 +281,7 @@ export default function PricingPage() {
               </div>
               <div className="mb-5">
                 <label htmlFor="ack-phone" className="block text-sm text-gray-400 mb-1.5">
-                  Phone number <span className="text-gray-600">(optional — saves time at checkout)</span>
+                  Phone number <span className="text-gray-600">(optional, saves time at checkout)</span>
                 </label>
                 <input
                   id="ack-phone"
@@ -498,7 +498,7 @@ export default function PricingPage() {
             {[
               {
                 q: "What counts as a report?",
-                a: "Each time you submit a tool form and we generate a PDF — that's one report. You get the PDF by email and it's saved to your dashboard.",
+                a: "Each time you submit a report form and we generate a PDF, that counts as one report. You get the PDF by email and it's saved to your dashboard.",
               },
               {
                 q: "What happens when I cancel a monthly plan?",
@@ -510,7 +510,7 @@ export default function PricingPage() {
               },
               {
                 q: "What's in the free tier exactly?",
-                a: "You get 1 report credit when you sign up — no credit card needed. Run any report type. Full PDF delivered to your email — not a demo.",
+                a: "You get 1 report credit when you sign up. No credit card needed. Run any report type. Full PDF delivered to your email. Not a watered-down demo.",
               },
               {
                 q: "What's the difference between credit packs and monthly plans?",
@@ -518,7 +518,7 @@ export default function PricingPage() {
               },
               {
                 q: "Which plan is best for my business?",
-                a: "Start free to see the value. If you need more reports, a credit pack is the easiest next step. If you need regular reporting for SEO, competitive tracking, or client work — the Growth plan at $30/month covers most businesses at 40 reports/month.",
+                a: "Start free to see the value. If you need more reports, a credit pack is the easiest next step. If you run reports regularly for SEO, competitive tracking, or client work, the Growth plan at $30/month covers most businesses at 40 reports/month.",
               },
             ].map(({ q, a }, i) => (
               <div key={i} className="p-6 rounded-xl bg-dark-700 border border-primary/10">
@@ -538,7 +538,7 @@ export default function PricingPage() {
         >
           <h2 className="text-3xl font-bold mb-4 text-white">Need a Custom Solution?</h2>
           <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-            Higher volume, custom report types, or white-label — let&apos;s talk.
+            Higher volume, custom report types, or white-label options? Let&apos;s talk.
           </p>
           <Link
             href="/contact"

@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createServiceClient } from '@/lib/supabase/service-client'
 import { createClient } from '@/lib/supabase/server'
+import { sendCreditGrantedEmail } from '@/lib/email'
 
 // Guard: caller must be admin
 async function requireAdmin() {
@@ -69,6 +70,26 @@ export async function grantCredits(userId: string, amount: number, note: string)
     created_by: adminId,
   })
   if (noteError) throw new Error(noteError.message)
+
+  // Bell notification for the user
+  await supabase.from('notifications').insert({
+    user_id: userId,
+    type: 'referral_credit',
+    message: `The Good Breeze AI team added ${amount} free credit${amount !== 1 ? 's' : ''} to your account.`,
+  }).then(({ error }) => {
+    if (error) console.error('[grantCredits] notification error:', error)
+  })
+
+  // Email notification (fire and forget)
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('name, email')
+    .eq('id', userId)
+    .single()
+  if (profile?.email) {
+    sendCreditGrantedEmail(profile.email, profile.name || profile.email, amount, userId)
+      .catch((err) => console.error('[grantCredits] email error:', err))
+  }
 
   revalidatePath(`/admin/users/${userId}`)
 }

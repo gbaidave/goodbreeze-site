@@ -24,6 +24,7 @@ import { supportClosedEmail } from './emails/support-closed'
 import { supportAdminNotificationEmail } from './emails/support-admin-notification'
 import { testimonialAdminNotificationEmail } from './emails/testimonial-admin-notification'
 import { securityAlertEmail } from './emails/security-alert'
+import { creditGrantedEmail } from './emails/credit-granted'
 import { logEmail } from './email-logger'
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -275,6 +276,14 @@ export async function sendTestimonialAdminNotificationEmail(
       html,
     }),
     { userId, toEmail: adminEmail, type: 'support_confirmation', subject, notifyOnFail: false }
+  )
+}
+
+export async function sendCreditGrantedEmail(to: string, name: string, credits: number, userId?: string) {
+  const { subject, html } = creditGrantedEmail(name, credits)
+  return sendAndLog(
+    () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject, html }),
+    { userId, toEmail: to, type: 'plan_changed', subject }
   )
 }
 

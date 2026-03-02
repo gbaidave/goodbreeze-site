@@ -64,6 +64,7 @@ function daysRemaining(expiresAt: string | null): number | null {
 function ReportCard({ report, onDelete }: { report: Report; onDelete: (id: string) => void }) {
   const [confirming, setConfirming] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState('')
 
   const days = daysRemaining(report.expires_at)
   const isExpiringSoon = days !== null && days <= 7 && days > 0
@@ -73,12 +74,21 @@ function ReportCard({ report, onDelete }: { report: Report; onDelete: (id: strin
 
   async function handleDelete() {
     setDeleting(true)
+    setDeleteError('')
     try {
       const res = await fetch(`/api/reports/${report.id}`, { method: 'DELETE' })
-      if (res.ok) onDelete(report.id)
+      if (res.ok) {
+        onDelete(report.id)
+      } else {
+        const data = await res.json().catch(() => ({}))
+        setDeleteError(data.error ?? 'Delete failed. Try again.')
+        setConfirming(false)
+      }
+    } catch {
+      setDeleteError('Network error. Try again.')
+      setConfirming(false)
     } finally {
       setDeleting(false)
-      setConfirming(false)
     }
   }
 
@@ -156,6 +166,11 @@ function ReportCard({ report, onDelete }: { report: Report; onDelete: (id: strin
 
         {report.status === 'failed_site_blocked' && (
           <span className="text-sm text-red-400">Site blocked — check email</span>
+        )}
+
+        {/* Delete error */}
+        {deleteError && (
+          <span className="text-xs text-red-400">{deleteError}</span>
         )}
 
         {/* Delete control */}

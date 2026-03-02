@@ -92,15 +92,12 @@ export async function POST(
       return NextResponse.json({ error: 'Failed to send reply.' }, { status: 500 })
     }
 
-    // 5. Update status to in_progress if currently open
-    if (supportReq.status === 'open') {
-      await svc
-        .from('support_requests')
-        .update({ status: 'in_progress', updated_at: new Date().toISOString() })
-        .eq('id', requestId)
-    }
+    // Note: status is NOT auto-changed on admin reply. Tickets stay in their
+    // current status (open/in_progress) until the admin explicitly resolves or
+    // closes them. Auto-changing to in_progress caused tickets to disappear from
+    // the "Open" filter immediately after the admin replied (ANA5-K-T7 fix).
 
-    // 6. Bell notification for the user (fire and forget)
+    // 5. Bell notification for the user (fire and forget)
     if (supportReq.user_id) {
       void svc.from('notifications').insert({
         user_id: supportReq.user_id,
@@ -111,7 +108,7 @@ export async function POST(
       })
     }
 
-    // 7. Email the user (fire and forget)
+    // 6. Email the user (fire and forget)
     if (supportReq.user_id) {
       const { data: userProfile } = await svc
         .from('profiles')

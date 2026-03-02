@@ -61,8 +61,8 @@ export default function HowItWorks() {
                 transition={{ duration: 0.6, delay: index * 0.15 }}
                 className="relative text-center bg-dark-700 rounded-2xl p-6"
               >
-                {/* Step label circle — w-28 (112px) is ~40% larger than w-20 (80px) */}
-                <div className="relative inline-flex items-center justify-center w-28 h-28 mb-6 mx-auto">
+                {/* Step label circle — w-36 (144px) + text-4xl per Dave's request for 50% larger labels */}
+                <div className="relative inline-flex items-center justify-center w-36 h-36 mb-6 mx-auto">
                   <div
                     className="absolute inset-0 rounded-full bg-gradient-to-br from-primary to-accent-blue opacity-20"
                     aria-hidden="true"
@@ -72,7 +72,7 @@ export default function HowItWorks() {
                     aria-hidden="true"
                   />
                   <span
-                    className="relative text-2xl font-bold"
+                    className="relative text-4xl font-bold"
                     style={{
                       background: 'linear-gradient(135deg, #00adb5, #3b82f6)',
                       WebkitBackgroundClip: 'text',
