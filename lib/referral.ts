@@ -67,7 +67,7 @@ export async function processReferral(
     await supabase.from('notifications').insert({
       user_id: codeRow.user_id,
       type: 'referral_credit',
-      message: 'You earned 1 free report credit — someone signed up using your referral link!',
+      message: 'You earned 1 free credit — someone signed up using your referral link!',
     })
 
   } catch (err) {

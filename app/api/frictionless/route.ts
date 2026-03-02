@@ -375,18 +375,20 @@ export async function POST(request: NextRequest) {
       console.error(`n8n frictionless webhook failed for report ${reportId}:`, err)
     })
 
-    // 7. Generate magic link so user can access their account
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://goodbreeze.ai'
+    // 7. Generate magic link so user can access their account.
+    // Use the request origin (not a static env var) so the redirectTo URL always matches
+    // the actual deployment URL — preventing Supabase from rejecting it as not in the allowlist.
+    const requestOrigin = request.nextUrl.origin
     const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
       type: 'magiclink',
       email,
-      options: { redirectTo: `${siteUrl}/auth/callback?returnUrl=/dashboard` },
+      options: { redirectTo: `${requestOrigin}/auth/callback?returnUrl=/dashboard` },
     })
 
     const magicLink = linkData?.properties?.action_link
 
     if (linkError || !magicLink) {
-      console.error('Failed to generate magic link for frictionless user:', linkError)
+      console.error('Failed to generate magic link for frictionless user:', linkError?.message ?? 'action_link missing', { origin: requestOrigin })
     }
 
     // 8. Send magic link email (best-effort — report is already queued)

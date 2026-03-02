@@ -422,7 +422,7 @@ export default function AccountClient({
                 {isSubscription ? (
                   <>
                     <p className="text-sm text-white font-medium">
-                      {creditsRemaining + totalCredits} report credit{creditsRemaining + totalCredits !== 1 ? 's' : ''} remaining
+                      {creditsRemaining + totalCredits} credit{creditsRemaining + totalCredits !== 1 ? 's' : ''} remaining
                     </p>
                     {totalCredits > 0 ? (
                       <p className="text-xs text-gray-500 mt-0.5">
@@ -436,7 +436,7 @@ export default function AccountClient({
                   <>
                     <p className="text-sm text-white font-medium">
                       {totalCredits > 0
-                        ? `${totalCredits} report credit${totalCredits !== 1 ? 's' : ''} remaining`
+                        ? `${totalCredits} credit${totalCredits !== 1 ? 's' : ''} remaining`
                         : 'No credits remaining'}
                     </p>
                     {totalCredits > 0 && creditExpiry && (

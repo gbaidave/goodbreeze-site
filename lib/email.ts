@@ -90,9 +90,10 @@ export async function sendPaymentConfirmationEmail(
   name: string,
   plan: string,
   amount: string,
-  userId?: string
+  userId?: string,
+  receiptRef?: string
 ) {
-  const { subject, html } = paymentConfirmationEmail(name, plan, amount)
+  const { subject, html } = paymentConfirmationEmail(name, plan, amount, receiptRef)
   return sendAndLog(
     () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject, html }),
     { userId, toEmail: to, type: 'plan_changed', subject }

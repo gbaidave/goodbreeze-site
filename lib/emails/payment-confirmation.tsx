@@ -1,7 +1,8 @@
 export function paymentConfirmationEmail(
   name: string,
   plan: string,
-  amount: string
+  amount: string,
+  receiptRef?: string
 ): { subject: string; html: string } {
   const firstName = name.split(' ')[0]
 
@@ -24,9 +25,12 @@ export function paymentConfirmationEmail(
   const reportsLine = sub?.reports ?? pack?.credits ?? 'Credits added'
   const priceLine = sub?.price ?? amount
 
-  const subject = isSubscription
-    ? `You're on ${planLabel}. Your credits are ready.`
-    : `Payment confirmed. Your credits are ready.`
+  const receiptNum = receiptRef ? receiptRef.slice(-8).toUpperCase() : null
+  const subject = receiptNum
+    ? `Your receipt from Good Breeze AI #${receiptNum}`
+    : isSubscription
+      ? `You're on ${planLabel}. Your credits are ready.`
+      : `Payment confirmed. Your credits are ready.`
 
   return {
     subject,

@@ -197,13 +197,11 @@ export default async function DashboardPage({
             <p className="text-gray-500 text-xs mt-1">
               {isAdmin
                 ? 'Full access — no billing required.'
-                : isSubscription && packCredits > 0
-                  ? `${subscriptionCredits} plan + ${packCredits} pack`
-                  : isSubscription
-                    ? `${subscriptionCredits} credits remaining`
-                    : totalAvailableCredits > 0
-                      ? `${totalAvailableCredits} credit${totalAvailableCredits !== 1 ? 's' : ''} available`
-                      : <>No credits remaining. <a href="/pricing" className="text-primary hover:text-primary/80 transition-colors">Buy or earn more →</a></>}
+                : isSubscription
+                  ? `${totalAvailableCredits} credit${totalAvailableCredits !== 1 ? 's' : ''} remaining`
+                  : totalAvailableCredits > 0
+                    ? `${totalAvailableCredits} credit${totalAvailableCredits !== 1 ? 's' : ''} available`
+                    : <>No credits remaining. <a href="/pricing" className="text-primary hover:text-primary/80 transition-colors">Buy or earn more →</a></>}
             </p>
           </div>
 

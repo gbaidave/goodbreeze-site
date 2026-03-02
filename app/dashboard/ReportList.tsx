@@ -141,9 +141,7 @@ function ReportCard({ report, onDelete }: { report: Report; onDelete: (id: strin
             </Link>
             {report.pdf_url && (
               <a
-                href={report.pdf_url}
-                target="_blank"
-                rel="noopener noreferrer"
+                href={`/api/reports/${report.id}/download`}
                 className="text-sm text-gray-400 hover:text-gray-300 transition-colors whitespace-nowrap"
               >
                 Download PDF

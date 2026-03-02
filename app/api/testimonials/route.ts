@@ -186,7 +186,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 6. Notify the user (bell) and admin (bell + email)
-    const creditLabel = creditsToGrant === 1 ? '1 free report credit' : `${creditsToGrant} free report credits`
+    const creditLabel = creditsToGrant === 1 ? '1 free credit' : `${creditsToGrant} free credits`
 
     // Fetch profile for name (best-effort)
     const { data: profile } = await serviceSupabase
@@ -236,7 +236,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       creditsGranted: creditsToGrant,
-      message: `Testimonial submitted! ${creditsToGrant} free report credit${creditsToGrant !== 1 ? 's' : ''} added to your account.`,
+      message: `Testimonial submitted! ${creditsToGrant} free credit${creditsToGrant !== 1 ? 's' : ''} added to your account.`,
     })
 
   } catch (error) {

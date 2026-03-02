@@ -107,8 +107,9 @@ export async function POST(request: NextRequest) {
           const { data: profile } = await supabase
             .from('profiles').select('name, email').eq('id', userId).single()
           if (profile?.email) {
+            const receiptRef = (session.payment_intent as string | null) ?? session.id
             await sendPaymentConfirmationEmail(
-              profile.email, profile.name || profile.email, pack.label, pack.amount, userId
+              profile.email, profile.name || profile.email, pack.label, pack.amount, userId, receiptRef
             ).catch(console.error)
           }
         }
@@ -168,7 +169,7 @@ export async function POST(request: NextRequest) {
           const planLabel = priceId ? planMap[priceId] ?? 'starter' : 'starter'
           const planAmount = priceId ? planAmountMap[priceId] ?? '$20.00' : '$20.00'
           await sendPaymentConfirmationEmail(
-            profile.email, profile.name || profile.email, planLabel, planAmount, profile.id
+            profile.email, profile.name || profile.email, planLabel, planAmount, profile.id, sub.id
           ).catch(console.error)
         }
 
