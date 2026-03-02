@@ -103,6 +103,7 @@ export default async function DashboardPage({
   const totalAvailableCredits = isSubscription ? subscriptionCredits + packCredits : packCredits
 
   const isExhausted = !PAID_PLANS.includes(plan) && !isAdmin && packCredits === 0
+  const isLowCredits = !PAID_PLANS.includes(plan) && !isAdmin && totalAvailableCredits <= 2
 
 
   return (
@@ -213,8 +214,14 @@ export default async function DashboardPage({
           </div>
         </div>
 
-        {/* Upgrade banner — show for free/impulse users */}
-        {!isAdmin && !PAID_PLANS.includes(plan) && (
+        {/* Report history */}
+        <div>
+          <h2 className="text-xl font-bold text-white mb-4">Report history</h2>
+          <ReportList initialReports={reports} />
+        </div>
+
+        {/* Upgrade banner — show when credits are low (≤2) for free/impulse users */}
+        {!isAdmin && isLowCredits && (
           <div className="bg-gradient-to-r from-primary/10 to-accent-blue/10 border border-primary/30 rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <p className="text-white font-semibold text-lg">Get more reports</p>
@@ -226,24 +233,6 @@ export default async function DashboardPage({
                 className="inline-block px-5 py-2.5 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-primary/30 transition-all text-sm"
               >
                 Get More Reports
-              </a>
-            </div>
-          </div>
-        )}
-
-        {/* Buy credits — link to pricing for all non-admin users */}
-        {!isAdmin && (
-          <div className="bg-dark-700 border border-primary/20 rounded-2xl p-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div>
-                <p className="text-white font-semibold">Need more credits?</p>
-                <p className="text-gray-400 text-sm mt-0.5">Credit packs from $5. Monthly plans from $20/mo.</p>
-              </div>
-              <a
-                href="/pricing"
-                className="inline-block px-5 py-2.5 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-primary/30 transition-all text-sm flex-shrink-0"
-              >
-                See pricing
               </a>
             </div>
           </div>
@@ -287,12 +276,6 @@ export default async function DashboardPage({
             </a>
           </div>
         )}
-
-        {/* Report history */}
-        <div>
-          <h2 className="text-xl font-bold text-white mb-4">Report history</h2>
-          <ReportList initialReports={reports} />
-        </div>
 
         {/* Support requests */}
         <SupportSection

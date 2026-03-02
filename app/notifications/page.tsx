@@ -28,6 +28,7 @@ function timeAgo(dateStr: string): string {
 const TYPE_LABELS: Record<string, string> = {
   email_failed:        'Email Failed',
   report_failed:       'Report Failed',
+  error_alert:         'Report Error',
   report_ready:        'Report Ready',
   referral_credit:     'Referral Credit',
   testimonial_credit:  'Testimonial Credit',
@@ -39,6 +40,7 @@ const TYPE_LABELS: Record<string, string> = {
 const TYPE_COLORS: Record<string, string> = {
   email_failed:        'text-red-400 bg-red-500/10 border-red-500/20',
   report_failed:       'text-red-400 bg-red-500/10 border-red-500/20',
+  error_alert:         'text-red-400 bg-red-500/10 border-red-500/20',
   report_ready:        'text-green-400 bg-green-500/10 border-green-500/20',
   referral_credit:     'text-primary bg-primary/10 border-primary/20',
   testimonial_credit:  'text-primary bg-primary/10 border-primary/20',

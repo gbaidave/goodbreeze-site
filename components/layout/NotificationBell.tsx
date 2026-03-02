@@ -38,13 +38,15 @@ function getNotificationLink(type: string): string {
       return '/account'
     case 'email_failed':
       return '/account'
+    case 'error_alert':
+      return '/admin'
     default:
       return '/notifications'
   }
 }
 
 function NotificationIcon({ type }: { type: string }) {
-  if (type === 'email_failed' || type === 'report_failed') {
+  if (type === 'email_failed' || type === 'report_failed' || type === 'error_alert') {
     return (
       <div className="w-7 h-7 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
         <svg className="w-3.5 h-3.5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

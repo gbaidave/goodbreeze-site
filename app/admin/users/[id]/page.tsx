@@ -31,7 +31,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
     supabase.from('profiles').select('*').eq('id', id).single(),
     supabase.from('subscriptions').select('*').eq('user_id', id).order('created_at', { ascending: false }).limit(1).single(),
     supabase.from('credits').select('balance, expires_at, purchased_at, product').eq('user_id', id).order('purchased_at', { ascending: false }),
-    supabase.from('reports').select('id, report_type, status, created_at, pdf_url, input_data').eq('user_id', id).order('created_at', { ascending: false }).limit(25),
+    supabase.from('reports').select('id, report_type, status, created_at, pdf_url, input_data, n8n_execution_id').eq('user_id', id).order('created_at', { ascending: false }).limit(25),
     supabase.from('email_logs').select('id, type, subject, status, created_at, error').eq('user_id', id).order('created_at', { ascending: false }).limit(20),
     supabase.from('support_requests').select('id, message, status, created_at').eq('user_id', id).order('created_at', { ascending: false }).limit(10),
     supabase.from('admin_notes').select('id, note, created_at, created_by').eq('user_id', id).order('created_at', { ascending: false }),
@@ -160,10 +160,14 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
                       <td className="px-4 py-2 text-gray-500 text-xs">
                         {new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                       </td>
-                      <td className="px-4 py-2 text-right">
+                      <td className="px-4 py-2 text-right flex items-center justify-end gap-3">
                         {r.pdf_url && (
                           <a href={r.pdf_url} target="_blank" rel="noopener noreferrer"
                             className="text-primary text-xs hover:underline">PDF →</a>
+                        )}
+                        {(r.status === 'failed' || r.status === 'failed_site_blocked') && r.n8n_execution_id && (
+                          <a href={`https://n8n.goodbreeze.ai/executions/${r.n8n_execution_id}`} target="_blank" rel="noopener noreferrer"
+                            className="text-red-400 text-xs hover:underline">n8n →</a>
                         )}
                       </td>
                     </tr>
