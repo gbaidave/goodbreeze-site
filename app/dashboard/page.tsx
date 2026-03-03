@@ -104,6 +104,7 @@ export default async function DashboardPage({
 
   const isExhausted = !PAID_PLANS.includes(plan) && !isAdmin && packCredits === 0
   const isLowCredits = !PAID_PLANS.includes(plan) && !isAdmin && totalAvailableCredits <= 2
+  const isSubscriberExhausted = isSubscription && !isAdmin && subscriptionCredits === 0 && packCredits === 0
 
 
   return (
@@ -244,6 +245,31 @@ export default async function DashboardPage({
             hasWrittenTestimonial={hasWrittenTestimonial}
             hasVideoTestimonial={hasVideoTestimonial}
           />
+        )}
+
+        {/* Subscriber exhausted — subscriber plan has 0 monthly credits remaining */}
+        {isSubscriberExhausted && (
+          <div className="bg-gradient-to-br from-primary/10 to-accent-blue/10 border border-primary/40 rounded-2xl p-6">
+            <div className="flex items-start gap-3 mb-5">
+              <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <svg className="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-white font-semibold">You&apos;ve used all your {plan.charAt(0).toUpperCase() + plan.slice(1)} plan credits</p>
+                <p className="text-gray-400 text-sm mt-0.5">
+                  Upgrade your plan for more monthly reports, or pick up a credit pack.
+                </p>
+              </div>
+            </div>
+            <a
+              href="/pricing"
+              className="inline-block px-5 py-2.5 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-primary/30 transition-all text-sm"
+            >
+              Upgrade plan
+            </a>
+          </div>
         )}
 
         {/* Referral */}

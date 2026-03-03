@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   setUserRole, setPlanOverride, grantCredits, deductCredits,
@@ -36,8 +36,8 @@ export function UserActionsPanel({
   const [confirming, setConfirming] = useState<string | null>(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
-  const [grantFormKey, setGrantFormKey] = useState(0)
-  const [deductFormKey, setDeductFormKey] = useState(0)
+  const grantFormRef = useRef<HTMLFormElement>(null)
+  const deductFormRef = useRef<HTMLFormElement>(null)
 
   function act(fn: () => Promise<void>, successMsg = 'Saved.', onSuccess?: () => void) {
     startTransition(async () => {
@@ -183,7 +183,7 @@ export function UserActionsPanel({
         <p className="text-gray-400 text-xs uppercase tracking-wider">Credits</p>
         <div className="flex gap-3 flex-wrap">
           <form
-            key={grantFormKey}
+            ref={grantFormRef}
             onSubmit={(e) => {
               e.preventDefault()
               const fd = new FormData(e.currentTarget)
@@ -192,7 +192,7 @@ export function UserActionsPanel({
               act(
                 () => grantCredits(userId, amount, note),
                 `Granted ${amount} credit${amount !== 1 ? 's' : ''} — saved.`,
-                () => setGrantFormKey(k => k + 1),
+                () => grantFormRef.current?.reset(),
               )
             }}
             className="flex flex-col gap-2 w-full"
@@ -223,7 +223,7 @@ export function UserActionsPanel({
             />
           </form>
           <form
-            key={deductFormKey}
+            ref={deductFormRef}
             onSubmit={(e) => {
               e.preventDefault()
               const fd = new FormData(e.currentTarget)
@@ -232,7 +232,7 @@ export function UserActionsPanel({
               act(
                 () => deductCredits(userId, amount, note),
                 `Deducted ${amount} credit${amount !== 1 ? 's' : ''} — saved.`,
-                () => setDeductFormKey(k => k + 1),
+                () => deductFormRef.current?.reset(),
               )
             }}
             className="flex flex-col gap-2 w-full"

@@ -229,7 +229,7 @@ export default function SalesAnalyzer() {
 
           {/* Your Website */}
           <div>
-            <label htmlFor="ca-target-website" className={labelClass}>Your Business Website</label>
+            <label htmlFor="ca-target-website" className={labelClass}>Company A Website</label>
             <input
               id="ca-target-website"
               type="text"
@@ -250,12 +250,12 @@ export default function SalesAnalyzer() {
 
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="ca-comp1-website" className={labelClass}>Competitor 1 Website</label>
+                  <label htmlFor="ca-comp1-website" className={labelClass}>Company B Website</label>
                   <input id="ca-comp1-website" type="text" value={competitor1Website} onChange={e => setCompetitor1Website(e.target.value)}
                     className={inputClass} placeholder="https://theirsite.com" required />
                 </div>
                 <div>
-                  <label htmlFor="ca-comp1-name" className={labelClass}>Competitor 1 Name (optional)</label>
+                  <label htmlFor="ca-comp1-name" className={labelClass}>Company B Name (optional)</label>
                   <input id="ca-comp1-name" type="text" value={competitor1} onChange={e => setCompetitor1(e.target.value)}
                     className={inputClass} placeholder="Competitor Inc" />
                 </div>
@@ -265,24 +265,24 @@ export default function SalesAnalyzer() {
                 <>
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div>
-                      <label htmlFor="ca-comp2-website" className={labelClass}>Competitor 2 Website</label>
+                      <label htmlFor="ca-comp2-website" className={labelClass}>Company C Website</label>
                       <input id="ca-comp2-website" type="text" value={competitor2Website} onChange={e => setCompetitor2Website(e.target.value)}
                         className={inputClass} placeholder="https://competitor2.com" />
                     </div>
                     <div>
-                      <label htmlFor="ca-comp2-name" className={labelClass}>Competitor 2 Name (optional)</label>
+                      <label htmlFor="ca-comp2-name" className={labelClass}>Company C Name (optional)</label>
                       <input id="ca-comp2-name" type="text" value={competitor2} onChange={e => setCompetitor2(e.target.value)}
                         className={inputClass} placeholder="Rival Co" />
                     </div>
                   </div>
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div>
-                      <label htmlFor="ca-comp3-website" className={labelClass}>Competitor 3 Website</label>
+                      <label htmlFor="ca-comp3-website" className={labelClass}>Company D Website</label>
                       <input id="ca-comp3-website" type="text" value={competitor3Website} onChange={e => setCompetitor3Website(e.target.value)}
                         className={inputClass} placeholder="https://competitor3.com" />
                     </div>
                     <div>
-                      <label htmlFor="ca-comp3-name" className={labelClass}>Competitor 3 Name (optional)</label>
+                      <label htmlFor="ca-comp3-name" className={labelClass}>Company D Name (optional)</label>
                       <input id="ca-comp3-name" type="text" value={competitor3} onChange={e => setCompetitor3(e.target.value)}
                         className={inputClass} placeholder="Third Co" />
                     </div>

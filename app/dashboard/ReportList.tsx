@@ -117,7 +117,7 @@ function ReportCard({ report, onDelete }: { report: Report; onDelete: (id: strin
             )}
           </div>
           <p suppressHydrationWarning className="text-gray-500 text-sm">
-            {new Date(report.created_at).toLocaleDateString('en-US', {
+            {new Date(report.created_at).toLocaleString('en-US', {
               month: 'short', day: 'numeric', year: 'numeric',
               hour: '2-digit', minute: '2-digit',
             })}
