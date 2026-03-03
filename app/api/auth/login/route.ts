@@ -109,7 +109,11 @@ export async function POST(request: NextRequest) {
       }
     )
 
-    const { error: authError } = await supabase.auth.signInWithPassword({ email, password })
+    const { error: authError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+      options: captchaToken ? { captchaToken } : undefined,
+    })
 
     // 6. Update lockout state in DB
     if (profile) {
