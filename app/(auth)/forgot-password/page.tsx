@@ -5,18 +5,21 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/client'
+import TurnstileWidget from '@/components/auth/TurnstileWidget'
 
 const schema = z.object({ email: z.string().email('Enter a valid email address') })
 type FormData = z.infer<typeof schema>
 
 export default function ForgotPasswordPage() {
   const [sent, setSent] = useState(false)
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null)
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({ resolver: zodResolver(schema) })
 
   async function onSubmit(data: FormData) {
     const supabase = createClient()
     await supabase.auth.resetPasswordForEmail(data.email, {
       redirectTo: `${window.location.origin}/reset-password`,
+      captchaToken: captchaToken ?? undefined,
     })
     setSent(true) // Always show success — don't reveal if email exists
   }
@@ -42,6 +45,8 @@ export default function ForgotPasswordPage() {
           <input {...register('email')} type="email" className="w-full bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-500 rounded-lg px-4 py-3 focus:outline-none focus:border-cyan-500 transition-colors" placeholder="you@company.com" />
           {errors.email && <p className="text-red-400 text-xs mt-1">{errors.email.message}</p>}
         </div>
+        <TurnstileWidget onVerify={(token) => setCaptchaToken(token)} />
+
         <button type="submit" disabled={isSubmitting} className="w-full bg-cyan-500 hover:bg-cyan-400 text-zinc-950 font-semibold py-3 px-4 rounded-lg transition-colors disabled:opacity-60">
           {isSubmitting ? 'Sending...' : 'Send reset link'}
         </button>
