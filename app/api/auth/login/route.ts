@@ -2,8 +2,10 @@
  * POST /api/auth/login
  *
  * Server-side login with:
- *  - Account lockout (3 failed attempts → 30min lock)
  *  - Cloudflare Turnstile CAPTCHA verification (when TURNSTILE_SECRET_KEY is set)
+ *  - Rolling 30-min failure window: 3 failures within the window → lockout
+ *  - Escalating lockouts: 30min → 60min → contact support (permanent until manually unlocked)
+ *  - All counters reset on successful login
  *
  * Sets Supabase session cookies on the response so the client picks up the session.
  */
@@ -14,7 +16,14 @@ import { cookies } from 'next/headers'
 import { createServiceClient } from '@/lib/supabase/service-client'
 
 const LOCKOUT_ATTEMPTS = 3
-const LOCKOUT_MINUTES = 30
+const WINDOW_MINUTES   = 30
+
+/** Returns lockout duration in minutes, or null for permanent (support) lock. */
+function getLockoutDuration(lockoutCount: number): number | null {
+  if (lockoutCount <= 1) return 30
+  if (lockoutCount === 2) return 60
+  return null // 3rd+ lockout: contact support
+}
 
 async function verifyTurnstile(token: string): Promise<boolean> {
   const secret = process.env.TURNSTILE_SECRET_KEY
@@ -45,17 +54,28 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 2. Check lockout via service client (bypasses RLS to read profile by email)
+    // 2. Load profile (bypasses RLS to read lockout state by email)
     const svc = createServiceClient()
     const { data: profile } = await svc
       .from('profiles')
-      .select('id, failed_login_attempts, lockout_until')
+      .select('id, failed_login_attempts, lockout_until, lockout_count, window_start_at')
       .eq('email', email.toLowerCase().trim())
       .maybeSingle()
 
+    // 3. Check active lockout
     if (profile?.lockout_until) {
       const lockoutUntil = new Date(profile.lockout_until)
       if (lockoutUntil > new Date()) {
+        if ((profile.lockout_count ?? 0) >= 3) {
+          return NextResponse.json(
+            {
+              error: 'Account locked due to repeated failed attempts. Please contact support at support@goodbreeze.ai to unlock your account.',
+              locked: true,
+              supportLock: true,
+            },
+            { status: 423 }
+          )
+        }
         const minutesLeft = Math.ceil((lockoutUntil.getTime() - Date.now()) / 60000)
         return NextResponse.json(
           {
@@ -67,7 +87,12 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 3. Attempt Supabase login (SSR client — sets session cookies on response)
+    // 4. Determine effective failure count (reset if rolling window has expired)
+    const windowStart = profile?.window_start_at ? new Date(profile.window_start_at) : null
+    const windowExpired = !windowStart || (Date.now() - windowStart.getTime()) > WINDOW_MINUTES * 60 * 1000
+    const currentAttempts = windowExpired ? 0 : (profile?.failed_login_attempts ?? 0)
+
+    // 5. Attempt Supabase login (SSR client — sets session cookies on response)
     const cookieStore = await cookies()
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -86,43 +111,76 @@ export async function POST(request: NextRequest) {
 
     const { error: authError } = await supabase.auth.signInWithPassword({ email, password })
 
-    // 4. Track attempt in DB
+    // 6. Update lockout state in DB
     if (profile) {
       if (authError) {
-        const newAttempts = (profile.failed_login_attempts ?? 0) + 1
-        const lockoutUntil =
-          newAttempts >= LOCKOUT_ATTEMPTS
-            ? new Date(Date.now() + LOCKOUT_MINUTES * 60 * 1000).toISOString()
-            : null
+        const newAttempts = currentAttempts + 1
+        const newWindowStart = windowExpired
+          ? new Date().toISOString()
+          : (profile.window_start_at ?? new Date().toISOString())
+
+        if (newAttempts >= LOCKOUT_ATTEMPTS) {
+          // Trigger lockout — increment lockout_count and set duration
+          const newLockoutCount = (profile.lockout_count ?? 0) + 1
+          const duration = getLockoutDuration(newLockoutCount)
+          const lockoutUntil = duration !== null
+            ? new Date(Date.now() + duration * 60 * 1000).toISOString()
+            : new Date('2099-01-01T00:00:00Z').toISOString() // permanent until support unlocks
+
+          await svc
+            .from('profiles')
+            .update({
+              failed_login_attempts: 0,
+              window_start_at: null,
+              lockout_until: lockoutUntil,
+              lockout_count: newLockoutCount,
+            })
+            .eq('id', profile.id)
+
+          if (newLockoutCount >= 3) {
+            return NextResponse.json(
+              {
+                error: 'Account locked due to repeated failed attempts. Please contact support at support@goodbreeze.ai to unlock your account.',
+                locked: true,
+                supportLock: true,
+              },
+              { status: 423 }
+            )
+          }
+          return NextResponse.json(
+            {
+              error: `Too many failed attempts. Account locked for ${duration} minutes.`,
+              locked: true,
+            },
+            { status: 423 }
+          )
+        } else {
+          // Increment failure count within the rolling window
+          await svc
+            .from('profiles')
+            .update({
+              failed_login_attempts: newAttempts,
+              window_start_at: newWindowStart,
+            })
+            .eq('id', profile.id)
+        }
+      } else {
+        // Success — reset all lockout state including escalation counter
         await svc
           .from('profiles')
           .update({
-            failed_login_attempts: newAttempts,
-            ...(lockoutUntil ? { lockout_until: lockoutUntil } : {}),
+            failed_login_attempts: 0,
+            lockout_until: null,
+            lockout_count: 0,
+            window_start_at: null,
           })
-          .eq('id', profile.id)
-      } else {
-        // Success — reset counters
-        await svc
-          .from('profiles')
-          .update({ failed_login_attempts: 0, lockout_until: null })
           .eq('id', profile.id)
       }
     }
 
-    // 5. Return result
+    // 7. Return result
     if (authError) {
-      const attemptsAfter = (profile?.failed_login_attempts ?? 0) + 1
-      const remaining = LOCKOUT_ATTEMPTS - attemptsAfter
-      if (remaining <= 0) {
-        return NextResponse.json(
-          {
-            error: `Too many failed attempts. Account locked for ${LOCKOUT_MINUTES} minutes.`,
-            locked: true,
-          },
-          { status: 423 }
-        )
-      }
+      const remaining = LOCKOUT_ATTEMPTS - (currentAttempts + 1)
       return NextResponse.json(
         {
           error: 'Incorrect email or password.',
