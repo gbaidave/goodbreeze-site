@@ -46,8 +46,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Email and password are required.' }, { status: 400 })
     }
 
-    // 1. Verify CAPTCHA (if configured)
-    if (captchaToken) {
+    // 1. Verify CAPTCHA (required when configured — prevents raw API bypass)
+    if (process.env.TURNSTILE_SECRET_KEY) {
+      if (!captchaToken) {
+        return NextResponse.json({ error: 'CAPTCHA verification required.' }, { status: 400 })
+      }
       const valid = await verifyTurnstile(captchaToken)
       if (!valid) {
         return NextResponse.json({ error: 'CAPTCHA verification failed. Please try again.' }, { status: 400 })
