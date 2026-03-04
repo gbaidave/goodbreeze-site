@@ -61,9 +61,7 @@ export async function POST(
       return NextResponse.json({ error: 'Ticket not found.' }, { status: 404 })
     }
 
-    if (ticket.status === 'resolved' || ticket.status === 'closed') {
-      return NextResponse.json({ error: 'This ticket is closed. Reopen it to add a message.' }, { status: 400 })
-    }
+    const wasClosedOrResolved = ticket.status === 'resolved' || ticket.status === 'closed'
 
     const { error: msgError } = await svc.from('support_messages').insert({
       request_id: requestId,
@@ -74,6 +72,11 @@ export async function POST(
 
     if (msgError) {
       return NextResponse.json({ error: 'Failed to send reply.' }, { status: 500 })
+    }
+
+    // Auto-reopen if ticket was resolved/closed — user follow-up implies they need more help
+    if (wasClosedOrResolved) {
+      await svc.from('support_requests').update({ status: 'open' }).eq('id', requestId)
     }
 
     // Fetch user profile for notification context

@@ -39,10 +39,9 @@ function TicketItem({ ticket, userEmail }: { ticket: Ticket; userEmail: string }
   const [showCloseForm, setShowCloseForm] = useState(false)
   const [closeReason, setCloseReason] = useState('')
   const [closing, setClosing] = useState(false)
-  const [reopening, setReopening] = useState(false)
   const [error, setError] = useState('')
 
-  const isClosed = ticketStatus === 'resolved' || ticketStatus === 'closed'
+  const isFullyClosed = ticketStatus === 'resolved' || ticketStatus === 'closed'
   const lastMsg = ticket.messages[ticket.messages.length - 1]
   const hasUnreadAdminMessage = lastMsg?.sender_role === 'admin'
 
@@ -93,21 +92,6 @@ function TicketItem({ ticket, userEmail }: { ticket: Ticket; userEmail: string }
     }
   }
 
-  async function handleReopen() {
-    setReopening(true)
-    setError('')
-    try {
-      const res = await fetch(`/api/support/${ticket.id}/reopen`, { method: 'PATCH' })
-      const data = await res.json()
-      if (!res.ok) { setError(data.error || 'Failed to reopen.'); return }
-      setTicketStatus('open')
-    } catch {
-      setError('Something went wrong. Please try again.')
-    } finally {
-      setReopening(false)
-    }
-  }
-
   return (
     <div className="bg-dark border border-gray-800 rounded-xl overflow-hidden">
       <button
@@ -119,7 +103,7 @@ function TicketItem({ ticket, userEmail }: { ticket: Ticket; userEmail: string }
           <span className={`text-xs px-2 py-0.5 rounded-full border capitalize shrink-0 ${STATUS_STYLES[ticketStatus] ?? STATUS_STYLES.open}`}>
             {ticketStatus.replace('_', ' ')}
           </span>
-          {hasUnreadAdminMessage && !isClosed && (
+          {hasUnreadAdminMessage && !isFullyClosed && (
             <span className="w-2 h-2 rounded-full bg-primary shrink-0" title="New reply" />
           )}
           <span className="text-gray-300 text-sm truncate">
@@ -170,41 +154,30 @@ function TicketItem({ ticket, userEmail }: { ticket: Ticket; userEmail: string }
 
           {error && <p className="text-xs text-red-400">{error}</p>}
 
-          {/* Closed/resolved: show reopen */}
-          {isClosed && (
-            <p className="text-sm text-gray-500 pt-1">
-              This request is {ticketStatus}.{' '}
-              <button
-                type="button"
-                onClick={handleReopen}
-                disabled={reopening}
-                className="text-primary hover:text-primary/80 font-medium transition-colors disabled:opacity-50"
-              >
-                {reopening ? 'Reopening…' : 'Reopen to reply'}
-              </button>
-            </p>
-          )}
+          {/* Reply form — always shown; auto-reopens if resolved/closed */}
+          <form onSubmit={handleReply} className="space-y-2 pt-1">
+            {isFullyClosed && (
+              <p className="text-xs text-gray-500">Sending a reply will reopen this request.</p>
+            )}
+            <textarea
+              value={reply}
+              onChange={(e) => setReply(e.target.value)}
+              rows={2}
+              placeholder="Add a follow-up message…"
+              className="w-full px-3 py-2 bg-dark border border-gray-700 text-white text-sm rounded-xl focus:outline-none focus:border-primary transition-colors resize-none placeholder-gray-600"
+            />
+            <button
+              type="submit"
+              disabled={sending || !reply.trim()}
+              className="px-4 py-1.5 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {sending ? 'Sending…' : 'Send'}
+            </button>
+          </form>
 
-          {/* Active: reply form + close option */}
-          {!isClosed && (
+          {/* Close option — only for open/in_progress */}
+          {!isFullyClosed && (
             <>
-              <form onSubmit={handleReply} className="space-y-2 pt-1">
-                <textarea
-                  value={reply}
-                  onChange={(e) => setReply(e.target.value)}
-                  rows={2}
-                  placeholder="Add a follow-up message…"
-                  className="w-full px-3 py-2 bg-dark border border-gray-700 text-white text-sm rounded-xl focus:outline-none focus:border-primary transition-colors resize-none placeholder-gray-600"
-                />
-                <button
-                  type="submit"
-                  disabled={sending || !reply.trim()}
-                  className="px-4 py-1.5 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {sending ? 'Sending…' : 'Send'}
-                </button>
-              </form>
-
               {!showCloseForm ? (
                 <button
                   type="button"
