@@ -1,5 +1,6 @@
 "use client";
 
+import { Fragment } from "react";
 import { motion } from "framer-motion";
 
 const steps = [
@@ -27,25 +28,25 @@ export default function HowItWorks() {
   return (
     <section className="py-24 px-6 sm:px-8 lg:px-12 bg-dark-800">
       <div className="max-w-7xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-16"
-        >
-          <h2 className="text-4xl sm:text-5xl font-bold mb-4 text-white">
-            How We Work
-          </h2>
-          <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-            Low risk to start. Clear results along the way. Built to scale when
-            you&apos;re ready.
-          </p>
-        </motion.div>
+        {/* Section border wraps H2, subtitle, AND all three step cards */}
+        <div className="border border-primary/20 rounded-2xl p-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-12"
+          >
+            <h2 className="text-4xl sm:text-5xl font-bold mb-4 text-white">
+              How We Work
+            </h2>
+            <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+              Low risk to start. Clear results along the way. Built to scale when
+              you&apos;re ready.
+            </p>
+          </motion.div>
 
-        {/* Section border wraps all three cards */}
-        <div className="border border-primary/20 rounded-2xl p-6">
-          <div className="grid md:grid-cols-3 gap-8 relative">
+          <div className="flex flex-col md:flex-row md:items-stretch gap-6 md:gap-0 relative">
             {/* Connector line (desktop) */}
             <div
               className="hidden md:block absolute top-10 left-1/6 right-1/6 h-0.5 bg-gradient-to-r from-primary via-accent-blue to-accent-purple opacity-30"
@@ -53,40 +54,48 @@ export default function HowItWorks() {
             />
 
             {steps.map((step, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: index * 0.15 }}
-                className="relative text-center bg-dark-700 rounded-2xl p-6"
-              >
-                {/* Step label circle — w-[216px] (216px) + text-[54px] per Dave's request for 50% larger again */}
-                <div className="relative inline-flex items-center justify-center w-[216px] h-[216px] mb-6 mx-auto">
-                  <div
-                    className="absolute inset-0 rounded-full bg-gradient-to-br from-primary to-accent-blue opacity-20"
-                    aria-hidden="true"
-                  />
-                  <div
-                    className="absolute inset-0.5 rounded-full bg-dark-800"
-                    aria-hidden="true"
-                  />
-                  <span
-                    className="relative text-[54px] font-bold"
-                    style={{
-                      background: 'linear-gradient(135deg, #00adb5, #3b82f6)',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                      backgroundClip: 'text',
-                    }}
-                  >
-                    {step.label}
-                  </span>
-                </div>
+              <Fragment key={index}>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: index * 0.15 }}
+                  className="relative text-center bg-dark-700 rounded-2xl p-6 md:flex-1"
+                >
+                  {/* Step label circle — w-[216px] (216px) + text-[54px] per Dave's request for 50% larger again */}
+                  <div className="relative inline-flex items-center justify-center w-[216px] h-[216px] mb-6 mx-auto">
+                    <div
+                      className="absolute inset-0 rounded-full bg-gradient-to-br from-primary to-accent-blue opacity-20"
+                      aria-hidden="true"
+                    />
+                    <div
+                      className="absolute inset-0.5 rounded-full bg-dark-800"
+                      aria-hidden="true"
+                    />
+                    <span
+                      className="relative text-[54px] font-bold"
+                      style={{
+                        background: 'linear-gradient(135deg, #00adb5, #3b82f6)',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        backgroundClip: 'text',
+                      }}
+                    >
+                      {step.label}
+                    </span>
+                  </div>
 
-                <h3 className="text-xl font-bold text-white mb-3">{step.title}</h3>
-                <p className="text-gray-400 leading-relaxed line-clamp-3">{step.description}</p>
-              </motion.div>
+                  <h3 className="text-xl font-bold text-white mb-3">{step.title}</h3>
+                  <p className="text-gray-400 leading-relaxed line-clamp-3">{step.description}</p>
+                </motion.div>
+
+                {/* Vertical separator between step cards (desktop only) */}
+                {index < steps.length - 1 && (
+                  <div className="hidden md:flex items-stretch flex-shrink-0 self-stretch px-4" aria-hidden="true">
+                    <div className="w-px bg-primary/20" />
+                  </div>
+                )}
+              </Fragment>
             ))}
           </div>
         </div>

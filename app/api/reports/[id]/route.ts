@@ -44,13 +44,55 @@ export async function DELETE(
 
     const { data: existing } = await svc
       .from('reports')
-      .select('id')
+      .select('id, status, usage_type, credit_row_id, free_system')
       .eq('id', id)
       .eq('user_id', user.id)
       .single()
 
     if (!existing) {
       return NextResponse.json({ error: 'Report not found' }, { status: 404 })
+    }
+
+    // Refund credit when user cancels an in-flight report.
+    // Done directly (not via failure trigger) to avoid a spurious "report failed" notification.
+    if (
+      (existing.status === 'pending' || existing.status === 'processing') &&
+      existing.usage_type &&
+      existing.usage_type !== 'admin'
+    ) {
+      if (existing.usage_type === 'credits' && existing.credit_row_id) {
+        const { data: creditRow } = await svc
+          .from('credits')
+          .select('balance')
+          .eq('id', existing.credit_row_id)
+          .single()
+        if (creditRow) {
+          await svc.from('credits').update({ balance: creditRow.balance + 1 }).eq('id', existing.credit_row_id)
+        }
+      } else if (existing.usage_type === 'subscription') {
+        const { data: sub } = await svc
+          .from('subscriptions')
+          .select('id, credits_remaining')
+          .eq('user_id', user.id)
+          .in('status', ['active', 'trialing'])
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single()
+        if (sub) {
+          await svc.from('subscriptions').update({ credits_remaining: sub.credits_remaining + 1 }).eq('id', sub.id)
+        }
+      } else if (existing.usage_type === 'free' && existing.free_system) {
+        const { data: profile } = await svc
+          .from('profiles')
+          .select('free_reports_used')
+          .eq('id', user.id)
+          .single()
+        if (profile?.free_reports_used) {
+          const updated = { ...profile.free_reports_used }
+          delete updated[existing.free_system as string]
+          await svc.from('profiles').update({ free_reports_used: updated }).eq('id', user.id)
+        }
+      }
     }
 
     const { error } = await svc

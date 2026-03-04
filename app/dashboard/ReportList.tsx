@@ -102,12 +102,12 @@ function ReportCard({ report, onDelete }: { report: Report; onDelete: (id: strin
             </p>
             {days !== null && days > 7 && (
               <span suppressHydrationWarning className="text-xs px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-500 border border-zinc-700">
-                {days}d left
+                Available {days} more days
               </span>
             )}
             {isExpiringSoon && !isExpired && (
               <span suppressHydrationWarning className="text-xs px-2 py-0.5 rounded-full bg-orange-900/40 text-orange-400 border border-orange-800">
-                {days}d left
+                Available {days} more day{days !== 1 ? 's' : ''}
               </span>
             )}
             {isExpired && (
@@ -133,8 +133,13 @@ function ReportCard({ report, onDelete }: { report: Report; onDelete: (id: strin
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
           </svg>
         )}
-        {isStuck && (
-          <span className="text-xs text-amber-400">Taking too long?</span>
+        {isStuck && !confirming && (
+          <button
+            onClick={() => setConfirming(true)}
+            className="text-xs text-amber-400 hover:text-amber-300 underline transition-colors"
+          >
+            Cancel report
+          </button>
         )}
 
         <span className={`text-xs font-medium px-3 py-1 rounded-full border capitalize ${STATUS_STYLES[report.status] ?? STATUS_STYLES.pending}`}>

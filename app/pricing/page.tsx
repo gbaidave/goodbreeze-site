@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { PhoneGatePrompt } from "@/components/tools/PhoneGatePrompt";
+import { createClient } from "@/lib/supabase/client";
 
 // ============================================================================
 // Plan data
@@ -110,6 +111,9 @@ type PaidPlan = "starter" | "growth" | "pro" | "spark_pack" | "boost_pack";
 
 const SUBSCRIPTION_PLAN_KEYS = new Set(["starter", "growth", "pro"]);
 
+// Price in USD/month for upgrade/downgrade comparison
+const SUBSCRIPTION_PLAN_PRICES: Record<string, number> = { starter: 20, growth: 30, pro: 40 };
+
 // ============================================================================
 // Checkmark icon
 // ============================================================================
@@ -134,7 +138,23 @@ export default function PricingPage() {
   const [phoneRequired, setPhoneRequired] = useState(false);
   const [pendingPlan, setPendingPlan] = useState<PaidPlan | null>(null);
   const [pendingAcknowledged, setPendingAcknowledged] = useState(false);
+  const [currentPlan, setCurrentPlan] = useState<string | null>(null);
   const { user } = useAuth();
+
+  // Fetch user's active subscription plan for upgrade/downgrade/current-plan labeling
+  useEffect(() => {
+    if (!user) { setCurrentPlan(null); return }
+    const supabase = createClient()
+    supabase
+      .from('subscriptions')
+      .select('plan')
+      .eq('user_id', user.id)
+      .in('status', ['active', 'trialing'])
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single()
+      .then(({ data }) => setCurrentPlan(data?.plan ?? null))
+  }, [user]);
 
   // Subscription plans auto-acknowledge (credit reset info is shown on the pricing card).
   // Credit packs go straight to checkout with no acknowledgment needed.
@@ -369,21 +389,33 @@ export default function PricingPage() {
                 ))}
               </ul>
 
-              <button
-                onClick={() => requestCheckout(plan.key)}
-                disabled={loading === plan.key}
-                className={`w-full px-6 py-3 font-semibold rounded-full transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed ${
-                  plan.highlighted
-                    ? "bg-gradient-to-r from-primary to-accent-blue text-white border-2 border-white/60 hover:shadow-lg hover:shadow-primary/50 disabled:transform-none"
-                    : "border-2 border-primary text-primary hover:bg-primary hover:text-white"
-                }`}
-              >
-                {loading === plan.key
-                  ? "Redirecting…"
-                  : user
-                  ? `Get ${plan.name} Plan`
-                  : "Start Subscription"}
-              </button>
+              {(() => {
+                const isCurrentPlan = currentPlan === plan.key
+                const currentPrice = currentPlan ? SUBSCRIPTION_PLAN_PRICES[currentPlan] : undefined
+                const thisPrice = SUBSCRIPTION_PLAN_PRICES[plan.key]
+                const btnLabel =
+                  loading === plan.key ? "Redirecting…"
+                  : isCurrentPlan ? "Current Plan"
+                  : !user ? "Start Subscription"
+                  : currentPrice !== undefined && thisPrice !== undefined
+                    ? (thisPrice > currentPrice ? `Upgrade to ${plan.name}` : `Downgrade to ${plan.name}`)
+                  : `Get ${plan.name} Plan`
+                return (
+                  <button
+                    onClick={() => requestCheckout(plan.key)}
+                    disabled={loading === plan.key || isCurrentPlan}
+                    className={`w-full px-6 py-3 font-semibold rounded-full transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed ${
+                      isCurrentPlan
+                        ? "border-2 border-gray-600 text-gray-500 cursor-default"
+                        : plan.highlighted
+                        ? "bg-gradient-to-r from-primary to-accent-blue text-white border-2 border-white/60 hover:shadow-lg hover:shadow-primary/50 disabled:transform-none"
+                        : "border-2 border-primary text-primary hover:bg-primary hover:text-white"
+                    }`}
+                  >
+                    {btnLabel}
+                  </button>
+                )
+              })()}
 
               <p className="text-center text-xs text-gray-500 mt-3">
                 Access until billing period ends if cancelled. Credits reset each billing period.

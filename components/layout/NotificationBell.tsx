@@ -40,6 +40,12 @@ function getNotificationLink(type: string): string {
       return '/account'
     case 'error_alert':
       return '/admin'
+    case 'support_request':
+    case 'support_reply':
+    case 'support_resolved':
+    case 'support_closed':
+    case 'support_followup':
+      return '/dashboard#support'
     default:
       return '/notifications'
   }

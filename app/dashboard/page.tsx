@@ -199,11 +199,13 @@ export default async function DashboardPage({
             <p className="text-gray-500 text-xs mt-1">
               {isAdmin
                 ? 'Full access. No billing required.'
-                : isSubscription
-                  ? `${totalAvailableCredits} credit${totalAvailableCredits !== 1 ? 's' : ''} remaining`
-                  : totalAvailableCredits > 0
-                    ? `${totalAvailableCredits} credit${totalAvailableCredits !== 1 ? 's' : ''} available`
-                    : <>No credits remaining. <a href="/pricing" className="text-primary hover:text-primary/80 transition-colors">Buy or earn more →</a></>}
+                : isSubscription && totalAvailableCredits === 0
+                  ? <>No credits remaining. <a href="/pricing" className="text-primary hover:text-primary/80 transition-colors">Buy More Credits →</a></>
+                  : isSubscription
+                    ? `${totalAvailableCredits} credit${totalAvailableCredits !== 1 ? 's' : ''} remaining`
+                    : totalAvailableCredits > 0
+                      ? `${totalAvailableCredits} credit${totalAvailableCredits !== 1 ? 's' : ''} available`
+                      : <>No credits remaining. <a href="/pricing" className="text-primary hover:text-primary/80 transition-colors">Buy More Credits →</a></>}
             </p>
           </div>
 
@@ -214,6 +216,17 @@ export default async function DashboardPage({
             <p className="text-gray-500 text-xs mt-1">All time</p>
           </div>
         </div>
+
+        {/* Referral — above report history, hidden from admins */}
+        {!isAdmin && referralCode && (
+          <div id="referral">
+            <ReferralSection
+              code={referralCode}
+              signups={referralSignups}
+              creditsEarned={referralCredits}
+            />
+          </div>
+        )}
 
         {/* Report history */}
         <div>
@@ -271,17 +284,6 @@ export default async function DashboardPage({
             </a>
           </div>
         )}
-
-        {/* Referral */}
-        <div id="referral">
-          {referralCode && (
-            <ReferralSection
-              code={referralCode}
-              signups={referralSignups}
-              creditsEarned={referralCredits}
-            />
-          )}
-        </div>
 
         {/* Testimonial CTA — show until user has submitted both types */}
         {(!hasWrittenTestimonial || !hasVideoTestimonial) && (
