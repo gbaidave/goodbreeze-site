@@ -500,6 +500,11 @@ export default function AccountClient({
               >
                 {portalLoading ? 'Opening…' : 'Manage billing, invoices & payment method →'}
               </button>
+              <p className="text-xs text-center text-gray-600">
+                <a href="/refund-policy" className="hover:text-gray-400 underline transition-colors">Refund policy</a>
+                {' · '}
+                <a href="/support" className="hover:text-gray-400 underline transition-colors">Request a refund</a>
+              </p>
               {isSubscription && !cancelAtPeriodEnd && (
                 <button
                   onClick={() => setShowCancelConfirm(true)}

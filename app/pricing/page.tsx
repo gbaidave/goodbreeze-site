@@ -134,6 +134,7 @@ function Check() {
 
 export default function PricingPage() {
   const [loading, setLoading] = useState<PaidPlan | null>(null);
+  const [portalLoading, setPortalLoading] = useState(false);
   const [error, setError] = useState("");
   const [phoneRequired, setPhoneRequired] = useState(false);
   const [pendingPlan, setPendingPlan] = useState<PaidPlan | null>(null);
@@ -155,6 +156,26 @@ export default function PricingPage() {
       .single()
       .then(({ data }) => setCurrentPlan(data?.plan ?? null))
   }, [user]);
+
+  // Active subscribers changing plans go to the Stripe Billing Portal,
+  // which handles proration natively. New subscribers go through checkout.
+  async function openPortal() {
+    setPortalLoading(true);
+    setError("");
+    try {
+      const res = await fetch('/api/stripe/portal', { method: 'POST' });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        setError('Could not open billing portal. Please try again or manage billing from Account Settings.');
+      }
+    } catch {
+      setError('Could not open billing portal. Please try again.');
+    } finally {
+      setPortalLoading(false);
+    }
+  }
 
   // Subscription plans auto-acknowledge (credit reset info is shown on the pricing card).
   // Credit packs go straight to checkout with no acknowledgment needed.
@@ -393,17 +414,19 @@ export default function PricingPage() {
                 const isCurrentPlan = currentPlan === plan.key
                 const currentPrice = currentPlan ? SUBSCRIPTION_PLAN_PRICES[currentPlan] : undefined
                 const thisPrice = SUBSCRIPTION_PLAN_PRICES[plan.key]
+                // Active subscribers changing plans go to the portal (handles proration natively)
+                const isChangingPlan = !isCurrentPlan && currentPrice !== undefined && thisPrice !== undefined
                 const btnLabel =
-                  loading === plan.key ? "Redirecting…"
+                  (loading === plan.key || (isChangingPlan && portalLoading)) ? "Redirecting…"
                   : isCurrentPlan ? "Current Plan"
                   : !user ? "Start Subscription"
-                  : currentPrice !== undefined && thisPrice !== undefined
+                  : isChangingPlan
                     ? (thisPrice > currentPrice ? `Upgrade to ${plan.name}` : `Downgrade to ${plan.name}`)
                   : `Get ${plan.name} Plan`
                 return (
                   <button
-                    onClick={() => requestCheckout(plan.key)}
-                    disabled={loading === plan.key || isCurrentPlan}
+                    onClick={() => isChangingPlan ? openPortal() : requestCheckout(plan.key)}
+                    disabled={loading === plan.key || portalLoading || isCurrentPlan}
                     className={`w-full px-6 py-3 font-semibold rounded-full transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed ${
                       isCurrentPlan
                         ? "border-2 border-gray-600 text-gray-500 cursor-default"

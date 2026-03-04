@@ -76,10 +76,13 @@ export function paymentConfirmationEmail(
         </td></tr>
 
         <tr><td style="padding:32px 0 0;border-top:1px solid #27272a;">
-          <p style="margin:0;font-size:13px;color:#52525b;line-height:1.6;">
+          <p style="margin:0 0 8px;font-size:13px;color:#52525b;line-height:1.6;">
             Good Breeze AI · AI Operations That Scale Your Business<br>
             <a href="https://goodbreeze.ai" style="color:#22d3ee;text-decoration:none;">goodbreeze.ai</a> ·
             <a href="https://goodbreeze.ai/unsubscribe" style="color:#52525b;text-decoration:none;">Unsubscribe</a>
+          </p>
+          <p style="margin:0;font-size:12px;color:#3f3f46;line-height:1.6;">
+            View our <a href="https://goodbreeze.ai/refund-policy" style="color:#3f3f46;text-decoration:underline;">Refund Policy</a>
           </p>
         </td></tr>
 
