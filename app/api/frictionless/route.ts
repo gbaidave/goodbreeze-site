@@ -393,6 +393,25 @@ export async function POST(request: NextRequest) {
       console.error('Failed to generate magic link for frictionless user:', linkError?.message ?? 'action_link missing', { origin: requestOrigin })
     }
 
+    // Build a direct sign-in URL that hits our own /auth/callback route.
+    // This avoids the Supabase verify endpoint redirect chain which can fail in some
+    // environments (e.g., staging domain not in Supabase's redirect allowlist).
+    // Our callback calls verifyOtp directly — same result, more reliable.
+    // The email still uses the original Supabase action_link as a fallback.
+    let directSignInUrl: string | null = null
+    if (magicLink) {
+      try {
+        const magicUrl = new URL(magicLink)
+        const tokenHash = magicUrl.searchParams.get('token_hash')
+        const type = magicUrl.searchParams.get('type') ?? 'magiclink'
+        if (tokenHash) {
+          directSignInUrl = `${requestOrigin}/auth/callback?token_hash=${encodeURIComponent(tokenHash)}&type=${encodeURIComponent(type)}`
+        }
+      } catch {
+        directSignInUrl = magicLink // fallback: use original Supabase URL
+      }
+    }
+
     // 8. Send magic link email (best-effort — report is already queued)
     let emailStatus: 'sent' | 'failed' = 'failed'
     let emailError: string | null = linkError?.message ?? 'No magic link generated'
@@ -426,8 +445,9 @@ export async function POST(request: NextRequest) {
       success: true,
       isNewUser,
       message: 'Report started. Check your inbox for a link to access your account and results.',
-      // Return sign-in URL so the frontend can redirect the user directly into their dashboard
-      signInUrl: magicLink ?? null,
+      // Direct /auth/callback URL: browser hits our route directly, skipping Supabase redirect.
+      // Falls back to original Supabase action_link URL if token_hash extraction fails.
+      signInUrl: directSignInUrl ?? null,
     })
 
   } catch (error) {

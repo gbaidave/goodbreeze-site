@@ -134,12 +134,15 @@ function ReportCard({ report, onDelete }: { report: Report; onDelete: (id: strin
           </svg>
         )}
         {isStuck && !confirming && (
-          <button
-            onClick={() => setConfirming(true)}
-            className="text-xs text-amber-400 hover:text-amber-300 underline transition-colors"
-          >
-            Cancel report
-          </button>
+          <span className="flex items-center gap-1.5">
+            <span className="text-xs text-amber-500">Taking longer than expected.</span>
+            <button
+              onClick={() => setConfirming(true)}
+              className="text-xs text-amber-400 hover:text-amber-300 underline transition-colors"
+            >
+              Cancel and retry?
+            </button>
+          </span>
         )}
 
         <span className={`text-xs font-medium px-3 py-1 rounded-full border capitalize ${STATUS_STYLES[report.status] ?? STATUS_STYLES.pending}`}>

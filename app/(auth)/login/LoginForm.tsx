@@ -21,6 +21,7 @@ export default function LoginForm() {
   const [serverError, setServerError] = useState<string | null>(null)
   const [oauthLoading, setOauthLoading] = useState(false)
   const [captchaToken, setCaptchaToken] = useState<string | null>(null)
+  const [captchaError, setCaptchaError] = useState(false)
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -121,11 +122,14 @@ export default function LoginForm() {
           {errors.password && <p className="text-red-400 text-xs mt-1">{errors.password.message}</p>}
         </div>
 
-        <TurnstileWidget onVerify={(token) => setCaptchaToken(token)} />
+        <TurnstileWidget
+          onVerify={(token) => setCaptchaToken(token)}
+          onError={() => setCaptchaError(true)}
+        />
 
         <button
           type="submit"
-          disabled={isSubmitting || (!!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && !captchaToken)}
+          disabled={isSubmitting || (!!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && !captchaToken && !captchaError)}
           className="w-full bg-cyan-500 hover:bg-cyan-400 text-zinc-950 font-semibold py-3 px-4 rounded-lg transition-colors disabled:opacity-60"
         >
           {isSubmitting ? 'Signing in...' : 'Sign in'}

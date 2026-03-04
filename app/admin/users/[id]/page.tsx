@@ -162,7 +162,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
                       </td>
                       <td className="px-4 py-2 text-right flex items-center justify-end gap-3">
                         {r.pdf_url && (
-                          <a href={r.pdf_url} target="_blank" rel="noopener noreferrer"
+                          <a href={`/api/reports/${r.id}/download`} target="_blank" rel="noopener noreferrer"
                             className="text-primary text-xs hover:underline">PDF →</a>
                         )}
                         {(r.status === 'failed' || r.status === 'failed_site_blocked') && r.n8n_execution_id && (

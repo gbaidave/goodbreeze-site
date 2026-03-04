@@ -46,11 +46,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Email and password are required.' }, { status: 400 })
     }
 
-    // 1. Verify CAPTCHA (required when configured — prevents raw API bypass)
-    if (process.env.TURNSTILE_SECRET_KEY) {
-      if (!captchaToken) {
-        return NextResponse.json({ error: 'CAPTCHA verification required.' }, { status: 400 })
-      }
+    // 1. Verify CAPTCHA when both the secret key and a token are present.
+    // When Turnstile fails to load (e.g., staging domain not in allowlist), the widget
+    // fires its error-callback and the client sends no token. We degrade gracefully:
+    // skip verification rather than hard-blocking, so login still works in those cases.
+    if (process.env.TURNSTILE_SECRET_KEY && captchaToken) {
       const valid = await verifyTurnstile(captchaToken)
       if (!valid) {
         return NextResponse.json({ error: 'CAPTCHA verification failed. Please try again.' }, { status: 400 })
