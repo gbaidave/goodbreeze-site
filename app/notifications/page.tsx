@@ -37,6 +37,17 @@ const TYPE_LABELS: Record<string, string> = {
   admin_message:       'Message',
 }
 
+const TYPE_LINKS: Record<string, string> = {
+  report_ready:        '/dashboard',
+  report_failed:       '/dashboard',
+  error_alert:         '/admin/errors',
+  referral_credit:     '/dashboard',
+  testimonial_credit:  '/testimonials/submit',
+  credits_low:         '/pricing',
+  plan_changed:        '/account',
+  admin_message:       '/support',
+}
+
 const TYPE_COLORS: Record<string, string> = {
   email_failed:        'text-red-400 bg-red-500/10 border-red-500/20',
   report_failed:       'text-red-400 bg-red-500/10 border-red-500/20',
@@ -124,13 +135,12 @@ export default function NotificationsPage() {
           </div>
         ) : (
           <div className="space-y-3">
-            {notifications.map(n => (
-              <div
-                key={n.id}
-                className={`bg-dark-700 border rounded-xl p-4 transition-colors ${
-                  !n.read ? 'border-primary/30' : 'border-gray-800'
-                }`}
-              >
+            {notifications.map(n => {
+              const href = TYPE_LINKS[n.type]
+              const cardClass = `bg-dark-700 border rounded-xl p-4 transition-colors ${
+                !n.read ? 'border-primary/30' : 'border-gray-800'
+              }${href ? ' hover:border-primary/50' : ''}`
+              const inner = (
                 <div className="flex items-start gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2 mb-1.5">
@@ -143,8 +153,13 @@ export default function NotificationsPage() {
                     <p className="text-sm text-gray-200 leading-relaxed">{n.message}</p>
                   </div>
                 </div>
-              </div>
-            ))}
+              )
+              return href ? (
+                <Link key={n.id} href={href} className={`block ${cardClass}`}>{inner}</Link>
+              ) : (
+                <div key={n.id} className={cardClass}>{inner}</div>
+              )
+            })}
           </div>
         )}
 

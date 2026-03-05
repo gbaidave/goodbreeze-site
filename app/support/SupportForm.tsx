@@ -68,13 +68,46 @@ function SuccessState() {
 function TicketThread({ ticket, userEmail }: { ticket: Ticket; userEmail: string }) {
   const [open, setOpen] = useState(false)
   const [ticketStatus, setTicketStatus] = useState(ticket.status)
+  const [localMessages, setLocalMessages] = useState<Message[]>(ticket.messages)
   const [showCloseForm, setShowCloseForm] = useState(false)
   const [closeReason, setCloseReason] = useState('')
   const [closing, setClosing] = useState(false)
   const [reopening, setReopening] = useState(false)
   const [actionError, setActionError] = useState('')
+  const [showReplyForm, setShowReplyForm] = useState(false)
+  const [replyText, setReplyText] = useState('')
+  const [replying, setReplying] = useState(false)
+  const [replyError, setReplyError] = useState('')
 
   const isClosed = ticketStatus === 'resolved' || ticketStatus === 'closed'
+
+  async function handleReply(e: React.FormEvent) {
+    e.preventDefault()
+    if (replyText.trim().length < 1) return
+    setReplying(true)
+    setReplyError('')
+    try {
+      const res = await fetch(`/api/support/${ticket.id}/user-reply`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: replyText.trim() }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setReplyError(data.error || 'Failed to send.'); return }
+      setLocalMessages(prev => [...prev, {
+        id: Date.now().toString(),
+        sender_role: 'user',
+        message: replyText.trim(),
+        created_at: new Date().toISOString(),
+      }])
+      setReplyText('')
+      setShowReplyForm(false)
+    } catch {
+      setReplyError('Something went wrong. Please try again.')
+    } finally {
+      setReplying(false)
+    }
+  }
 
   async function handleClose(e: React.FormEvent) {
     e.preventDefault()
@@ -144,10 +177,10 @@ function TicketThread({ ticket, userEmail }: { ticket: Ticket; userEmail: string
       {open && (
         <div className="border-t border-gray-800 px-4 py-3 space-y-3">
           {/* Thread messages */}
-          {ticket.messages.length === 0 ? (
+          {localMessages.length === 0 ? (
             <p className="text-gray-600 text-sm">No messages yet.</p>
           ) : (
-            ticket.messages.map((msg) => (
+            localMessages.map((msg) => (
               <div
                 key={msg.id}
                 className={`rounded-xl p-3 text-sm ${
@@ -190,6 +223,50 @@ function TicketThread({ ticket, userEmail }: { ticket: Ticket; userEmail: string
                   {reopening ? 'Reopening…' : 'Reopen to add a message'}
                 </button>
               </p>
+            </div>
+          )}
+
+          {/* Reply form (open/in_progress tickets only) */}
+          {!isClosed && (
+            <div className="pt-2">
+              {!showReplyForm ? (
+                <button
+                  type="button"
+                  onClick={() => { setShowReplyForm(true); setReplyError('') }}
+                  className="text-xs text-primary hover:text-primary/80 font-medium transition-colors"
+                >
+                  + Add a reply
+                </button>
+              ) : (
+                <form onSubmit={handleReply} className="bg-dark-700 border border-primary/20 rounded-xl p-4 space-y-3">
+                  <p className="text-xs text-gray-400 font-medium">Add a reply</p>
+                  {replyError && <p className="text-xs text-red-400">{replyError}</p>}
+                  <textarea
+                    value={replyText}
+                    onChange={(e) => setReplyText(e.target.value)}
+                    rows={3}
+                    required
+                    placeholder="Add more details or ask a follow-up question…"
+                    className="w-full px-3 py-2 bg-dark border border-gray-700 text-white text-sm rounded-xl focus:outline-none focus:border-primary transition-colors resize-none placeholder-gray-600"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      type="submit"
+                      disabled={replying || replyText.trim().length < 1}
+                      className="px-3 py-1.5 bg-primary text-zinc-950 text-sm font-semibold rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {replying ? 'Sending…' : 'Send Reply'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setShowReplyForm(false); setReplyText(''); setReplyError('') }}
+                      className="px-3 py-1.5 text-gray-500 text-sm hover:text-gray-300 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              )}
             </div>
           )}
 

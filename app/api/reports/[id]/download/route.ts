@@ -25,10 +25,42 @@ const REPORT_TYPE_LABELS: Record<string, string> = {
   seo_comprehensive: 'SEO Comprehensive',
 }
 
-function buildFilename(reportType: string, createdAt: string): string {
+function extractDomain(url: string | undefined): string {
+  if (!url) return ''
+  try { return new URL(url).hostname.replace(/^www\./, '') } catch { return url }
+}
+
+function buildIdentifier(reportType: string, inputData: Record<string, unknown>): string {
+  const url = inputData.url as string | undefined
+  const targetWebsite = inputData.targetWebsite as string | undefined
+  const competitor1Website = inputData.competitor1Website as string | undefined
+  const competitor1 = inputData.competitor1 as string | undefined
+  const company = inputData.company as string | undefined
+  const focusKeyword = inputData.focusKeyword as string | undefined
+
+  switch (reportType) {
+    case 'h2h': {
+      const target = extractDomain(targetWebsite) || company || 'Target'
+      const comp = competitor1 || extractDomain(competitor1Website) || 'Competitor'
+      return `${target} vs ${comp}`
+    }
+    case 't3c':
+    case 'cp':
+      return extractDomain(targetWebsite) || company || ''
+    case 'keyword_research':
+      return focusKeyword || extractDomain(url) || ''
+    default: // ai_seo, landing_page, seo_audit, seo_comprehensive
+      return extractDomain(url) || company || ''
+  }
+}
+
+function buildFilename(reportType: string, createdAt: string, inputData: Record<string, unknown>): string {
   const label = REPORT_TYPE_LABELS[reportType] ?? reportType
+  const identifier = buildIdentifier(reportType, inputData)
   const date = new Date(createdAt).toISOString().split('T')[0] // YYYY-MM-DD
-  return `Good Breeze AI - ${label} - ${date}.pdf`
+  return identifier
+    ? `Good Breeze AI - ${label} - ${identifier} - ${date}.pdf`
+    : `Good Breeze AI - ${label} - ${date}.pdf`
 }
 
 /** Extract the Google Drive file ID from various GDrive URL formats. */
@@ -79,7 +111,7 @@ export async function GET(
 
     const { data: report, error } = await supabase
       .from('reports')
-      .select('id, status, pdf_url, report_type, created_at')
+      .select('id, status, pdf_url, report_type, created_at, input_data')
       .eq('id', id)
       .eq('user_id', user.id) // ownership check
       .single()
@@ -109,7 +141,7 @@ export async function GET(
       return NextResponse.json({ error: 'Failed to fetch PDF' }, { status: 502 })
     }
 
-    const filename = buildFilename(report.report_type, report.created_at)
+    const filename = buildFilename(report.report_type, report.created_at, (report.input_data as Record<string, unknown>) ?? {})
 
     return new NextResponse(upstream.body, {
       status: 200,

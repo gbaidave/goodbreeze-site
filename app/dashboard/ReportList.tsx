@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 // ============================================================================
@@ -14,6 +15,7 @@ interface Report {
   created_at: string
   pdf_url: string | null
   expires_at: string | null
+  input_data: Record<string, unknown> | null
 }
 
 interface ReportListProps {
@@ -42,6 +44,34 @@ const STATUS_STYLES: Record<string, string> = {
   complete:            'bg-green-900/40 text-green-400 border-green-800',
   failed:              'bg-red-900/40 text-red-400 border-red-800',
   failed_site_blocked: 'bg-red-900/40 text-red-400 border-red-800',
+}
+
+function getReportSubtitle(reportType: string, inputData: Record<string, unknown> | null): string | null {
+  if (!inputData) return null
+  function domain(u: string | undefined) {
+    if (!u) return ''
+    try { return new URL(u).hostname.replace(/^www\./, '') } catch { return u }
+  }
+  const url = inputData.url as string | undefined
+  const targetWebsite = inputData.targetWebsite as string | undefined
+  const competitor1Website = inputData.competitor1Website as string | undefined
+  const competitor1 = inputData.competitor1 as string | undefined
+  const company = inputData.company as string | undefined
+  const focusKeyword = inputData.focusKeyword as string | undefined
+  switch (reportType) {
+    case 'h2h': {
+      const target = domain(targetWebsite) || company
+      const comp = competitor1 || domain(competitor1Website)
+      return target && comp ? `${target} vs ${comp}` : target || null
+    }
+    case 't3c':
+    case 'cp':
+      return domain(targetWebsite) || company || null
+    case 'keyword_research':
+      return focusKeyword || domain(url) || null
+    default:
+      return domain(url) || company || null
+  }
 }
 
 const POLL_INTERVAL_MS = 5000
@@ -100,6 +130,10 @@ function ReportCard({ report, onDelete }: { report: Report; onDelete: (id: strin
             <p className="text-white font-medium">
               {REPORT_TYPE_LABELS[report.report_type] ?? report.report_type}
             </p>
+            {(() => {
+              const sub = getReportSubtitle(report.report_type, report.input_data)
+              return sub ? <p className="text-gray-500 text-xs">{sub}</p> : null
+            })()}
             {days !== null && days > 7 && (
               <span suppressHydrationWarning className="text-xs px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-500 border border-zinc-700">
                 Available {days} more days
@@ -184,6 +218,7 @@ function ReportCard({ report, onDelete }: { report: Report; onDelete: (id: strin
         {/* Delete control */}
         {confirming ? (
           <span className="flex items-center gap-2 text-sm">
+            <span className="text-gray-400">{isStuck ? 'Cancel and retry?' : 'Delete this report?'}</span>
             <button
               onClick={handleDelete}
               disabled={deleting}
@@ -221,6 +256,7 @@ function ReportCard({ report, onDelete }: { report: Report; onDelete: (id: strin
 // ============================================================================
 
 export default function ReportList({ initialReports }: ReportListProps) {
+  const router = useRouter()
   const [reports, setReports] = useState<Report[]>(initialReports)
   const [confirmDeleteAll, setConfirmDeleteAll] = useState(false)
   const [deletingAll, setDeletingAll] = useState(false)
@@ -272,6 +308,7 @@ export default function ReportList({ initialReports }: ReportListProps) {
 
   function handleDelete(id: string) {
     setReports(prev => prev.filter(r => r.id !== id))
+    router.refresh()
   }
 
   async function handleDeleteAll() {

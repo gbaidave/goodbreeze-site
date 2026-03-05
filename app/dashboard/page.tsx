@@ -31,7 +31,7 @@ export default async function DashboardPage({
     supabase.from('subscriptions').select('plan, status, current_period_end, credits_remaining')
       .eq('user_id', user.id).in('status', ['active', 'trialing']).order('created_at', { ascending: false }).limit(1).single(),
     supabase.from('credits').select('balance, expires_at').eq('user_id', user.id).gt('balance', 0).order('purchased_at', { ascending: true }),
-    supabase.from('reports').select('id, report_type, status, created_at, pdf_url, expires_at').eq('user_id', user.id)
+    supabase.from('reports').select('id, report_type, status, created_at, pdf_url, expires_at, input_data').eq('user_id', user.id)
       .not('status', 'in', '("failed","failed_site_blocked")')
       .gte('created_at', new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString())
       .order('created_at', { ascending: false }).limit(20),
@@ -103,7 +103,7 @@ export default async function DashboardPage({
   const totalAvailableCredits = isSubscription ? subscriptionCredits + packCredits : packCredits
 
   const isExhausted = !PAID_PLANS.includes(plan) && !isAdmin && packCredits === 0
-  const isLowCredits = !PAID_PLANS.includes(plan) && !isAdmin && totalAvailableCredits <= 2
+  const isLowCredits = !isAdmin && totalAvailableCredits >= 1 && totalAvailableCredits <= 2
   const isSubscriberExhausted = isSubscription && !isAdmin && subscriptionCredits === 0 && packCredits === 0
 
 
@@ -199,13 +199,13 @@ export default async function DashboardPage({
             <p className="text-gray-500 text-xs mt-1">
               {isAdmin
                 ? 'Full access. No billing required.'
-                : isSubscription && totalAvailableCredits === 0
+                : totalAvailableCredits === 0
                   ? <>No credits remaining. <a href="/pricing" className="text-primary hover:text-primary/80 transition-colors">Buy More Credits →</a></>
-                  : isSubscription
-                    ? `${totalAvailableCredits} credit${totalAvailableCredits !== 1 ? 's' : ''} remaining`
-                    : totalAvailableCredits > 0
-                      ? `${totalAvailableCredits} credit${totalAvailableCredits !== 1 ? 's' : ''} available`
-                      : <>No credits remaining. <a href="/pricing" className="text-primary hover:text-primary/80 transition-colors">Buy More Credits →</a></>}
+                  : isLowCredits
+                    ? <>Credits running low. <a href="/pricing" className="text-primary hover:text-primary/80 transition-colors">Buy More Credits →</a></>
+                    : isSubscription
+                      ? `${totalAvailableCredits} credit${totalAvailableCredits !== 1 ? 's' : ''} remaining`
+                      : `${totalAvailableCredits} credit${totalAvailableCredits !== 1 ? 's' : ''} available`}
             </p>
           </div>
 

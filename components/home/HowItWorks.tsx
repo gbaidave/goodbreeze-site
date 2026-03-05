@@ -91,9 +91,7 @@ export default function HowItWorks() {
 
                 {/* Vertical separator between step cards (desktop only) */}
                 {index < steps.length - 1 && (
-                  <div className="hidden md:flex items-stretch flex-shrink-0 self-stretch px-4" aria-hidden="true">
-                    <div className="w-px bg-primary/20" />
-                  </div>
+                  <div className="hidden md:block w-px bg-primary/20 self-stretch flex-shrink-0 mx-4" aria-hidden="true" />
                 )}
               </Fragment>
             ))}
