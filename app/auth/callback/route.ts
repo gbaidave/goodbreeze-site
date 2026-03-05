@@ -56,11 +56,9 @@ export async function GET(request: NextRequest) {
           processReferral(user.id, refCode).catch(console.error)
         }
 
-        // Append welcome flag so dashboard can show first-login banner
-        const welcomeUrl = returnUrl.includes('?')
-          ? `${returnUrl}&welcome=1`
-          : `${returnUrl}?welcome=1`
-        return NextResponse.redirect(`${origin}${welcomeUrl}`)
+        // Send new users to the welcome page so they get a clear confirmation message
+        const welcomeNext = encodeURIComponent(returnUrl)
+        return NextResponse.redirect(`${origin}/auth/welcome?next=${welcomeNext}`)
       }
     }
     return NextResponse.redirect(`${origin}${returnUrl}`)

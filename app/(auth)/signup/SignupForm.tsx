@@ -97,7 +97,7 @@ export default function SignupForm() {
     const supabase = createClient()
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_IN') {
-        router.push('/dashboard?welcome=1')
+        router.push('/auth/welcome')
       }
     })
     return () => subscription.unsubscribe()

@@ -3,12 +3,9 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { useAuth } from '@/components/auth/AuthProvider'
-import { GuestFields } from '@/components/tools/GuestFields'
 import { captureEvent } from '@/lib/analytics'
 import { ExhaustedState } from '@/components/ExhaustedState'
 import { PhoneGatePrompt } from '@/components/tools/PhoneGatePrompt'
-import { isValidPhone, normalizePhone } from '@/lib/phone'
 import { CreditsDisplay } from '@/components/tools/CreditsDisplay'
 import { ReportSubmittedModal } from '@/components/tools/ReportSubmittedModal'
 
@@ -21,9 +18,6 @@ const REPORT_LABELS: Record<ReportType, string> = {
 }
 
 export default function SalesAnalyzer() {
-  const { user, loading: authLoading } = useAuth()
-  const isGuest = !authLoading && !user
-
   const [reportType, setReportType] = useState<ReportType>('h2h')
   const [targetWebsite, setTargetWebsite] = useState('')
   const [competitor1, setCompetitor1] = useState('')
@@ -32,16 +26,11 @@ export default function SalesAnalyzer() {
   const [competitor2Website, setCompetitor2Website] = useState('')
   const [competitor3, setCompetitor3] = useState('')
   const [competitor3Website, setCompetitor3Website] = useState('')
-  const [guestName, setGuestName] = useState('')
-  const [guestEmail, setGuestEmail] = useState('')
-  const [guestPhone, setGuestPhone] = useState('')
-  const [guestErrors, setGuestErrors] = useState<Partial<Record<'name' | 'email' | 'phone', string>>>({})
 
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
   const [upgradePrompt, setUpgradePrompt] = useState('')
-  const [accountExists, setAccountExists] = useState(false)
   const [phoneRequired, setPhoneRequired] = useState(false)
 
   if (upgradePrompt) return <ExhaustedState error={error} upgradePrompt={upgradePrompt} />
@@ -81,56 +70,8 @@ export default function SalesAnalyzer() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError('')
-    setAccountExists(false)
     setPhoneRequired(false)
-
-    // Guests can only run h2h (freeAllowed)
-    if (isGuest && reportType !== 'h2h') {
-      setError('Sign in to access this report type.')
-      return
-    }
-
-    if (isGuest) {
-      const errs: typeof guestErrors = {}
-      if (!guestName.trim()) errs.name = 'Name is required'
-      if (!guestEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestEmail)) errs.email = 'Valid email is required'
-      if (guestPhone.trim() && !isValidPhone(guestPhone)) errs.phone = 'Enter a valid phone number'
-      if (Object.keys(errs).length) { setGuestErrors(errs); return }
-      setGuestErrors({})
-    }
-
-    if (user) {
-      await doSubmitAuthenticated()
-      return
-    }
-
-    // Guest frictionless — h2h only
-    setSubmitting(true)
-    try {
-      const res = await fetch('/api/frictionless', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          reportType: 'h2h',
-          targetWebsite,
-          competitor1,
-          competitor1Website,
-          name: guestName,
-          email: guestEmail,
-          ...(guestPhone.trim() && { phone: normalizePhone(guestPhone) }),
-        }),
-      })
-      const data = await res.json()
-      if (res.status === 409) { setAccountExists(true); return }
-      if (!res.ok) { setError(data.error || 'Something went wrong. Please try again.'); return }
-      captureEvent('tool_form_submit', { reportType })
-      if (data.signInUrl) { window.location.href = data.signInUrl; return }
-      setSubmitted(true)
-    } catch {
-      setError('Something went wrong. Please try again.')
-    } finally {
-      setSubmitting(false)
-    }
+    await doSubmitAuthenticated()
   }
 
   const inputClass = 'w-full px-4 py-3 bg-dark border border-gray-700 text-white rounded-xl focus:outline-none focus:border-primary transition-colors text-sm placeholder-gray-600'
@@ -140,13 +81,9 @@ export default function SalesAnalyzer() {
     <>
       {submitted && (
         <ReportSubmittedModal
-          heading={isGuest ? 'Check your inbox. Your account is ready.' : 'Report on its way!'}
-          body={isGuest
-            ? 'We created your Good Breeze AI account and started your competitive analysis. A sign-in link and your PDF results are on their way to your inbox.'
-            : <>Your competitive analysis is being generated. You&apos;ll receive the PDF in your inbox within <strong className="text-white">2–4 minutes</strong>.</>
-          }
-          detail={isGuest ? 'The PDF will be ready in 2–4 minutes.' : 'Check your dashboard to track progress or view past reports.'}
-          isGuest={isGuest}
+          heading="Report on its way!"
+          body={<>Your competitive analysis is being generated. You&apos;ll receive the PDF in your inbox within <strong className="text-white">2–4 minutes</strong>.</>}
+          detail="Check your dashboard to track progress or view past reports."
           onRunAnother={() => setSubmitted(false)}
         />
       )}
@@ -163,7 +100,7 @@ export default function SalesAnalyzer() {
           </Link>
           <h1 className="text-4xl font-bold text-white mt-4 mb-3">Competitive Analyzer</h1>
           <p className="text-gray-400 max-w-xl mx-auto">
-            AI-powered competitive intelligence reports. Pick your analysis type and we'll email you a full PDF.
+            AI-powered competitive intelligence reports. Pick your analysis type and we&apos;ll email you a full PDF.
           </p>
         </motion.div>
 
@@ -174,14 +111,6 @@ export default function SalesAnalyzer() {
           onSubmit={handleSubmit}
           className="bg-dark-700 border border-primary/20 rounded-2xl p-8 space-y-6"
         >
-          {accountExists && (
-            <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl text-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <p className="text-amber-300">You already have a Good Breeze AI account.</p>
-              <a href="/login" className="px-4 py-2 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primary/80 transition-colors whitespace-nowrap text-center">
-                Sign in to continue
-              </a>
-            </div>
-          )}
           {phoneRequired && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-6">
               <div className="max-w-md w-full relative">
@@ -292,48 +221,18 @@ export default function SalesAnalyzer() {
             </div>
           )}
 
-          {/* Guest identity fields — only shown for h2h (freeAllowed) */}
-          {isGuest && reportType === 'h2h' && (
-            <GuestFields
-              name={guestName} onNameChange={setGuestName}
-              email={guestEmail} onEmailChange={setGuestEmail}
-              phone={guestPhone} onPhoneChange={setGuestPhone}
-              showPhone={true}
-              errors={guestErrors}
-            />
-          )}
-
-          {/* Sign-in CTA for guests selecting paid report types */}
-          {isGuest && reportType !== 'h2h' ? (
-            <div className="border border-primary/20 rounded-xl p-5 text-center space-y-3">
-              <p className="text-sm text-gray-400">
-                {REPORT_LABELS[reportType]} requires an account. Sign in or create a free account. Your first credit is included.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-2 justify-center">
-                <Link href="/signup" className="px-5 py-2.5 bg-gradient-to-r from-primary to-accent-blue text-white text-sm font-semibold rounded-full hover:shadow-lg transition-all">
-                  Create account
-                </Link>
-                <Link href="/login" className="px-5 py-2.5 border border-primary/30 text-gray-300 text-sm rounded-full hover:border-primary hover:text-white transition-colors">
-                  Sign in
-                </Link>
-              </div>
-            </div>
-          ) : (
-            <button
-              type="submit"
-              disabled={submitting}
-              className="w-full py-4 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full hover:shadow-lg hover:shadow-primary/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {submitting ? 'Generating report…' : 'Generate Report'}
-            </button>
-          )}
+          <button
+            type="submit"
+            disabled={submitting}
+            className="w-full py-4 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full hover:shadow-lg hover:shadow-primary/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {submitting ? 'Generating report…' : 'Generate Report'}
+          </button>
 
           <div className="text-center space-y-1">
             <CreditsDisplay />
             <p className="text-xs text-gray-600">
-              {isGuest && reportType === 'h2h'
-                ? 'No account needed. Report delivered in 2–4 minutes.'
-                : 'Report delivered to your email in 2–4 minutes. Saved to your dashboard.'}
+              Report delivered to your email in 2–4 minutes. Saved to your dashboard.
             </p>
           </div>
         </motion.form>

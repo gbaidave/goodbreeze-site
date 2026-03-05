@@ -1,0 +1,459 @@
+'use client'
+
+import { useEffect, useRef, useState, useCallback } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
+import { generateFailurePacket } from '@/lib/admin/failure-packet'
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+interface Failure {
+  id: string
+  report_type: string
+  status: string
+  created_at: string
+  input_data: Record<string, unknown> | null
+  n8n_execution_id: string | null
+  admin_failure_status: string
+  admin_failure_notes: string | null
+  usage_type: string | null
+  profiles: { name: string | null; email: string }
+}
+
+type AdminStatus = 'unresolved' | 'in_progress' | 'resolved' | 'wont_fix'
+
+const ADMIN_STATUS_LABELS: Record<AdminStatus, string> = {
+  unresolved: 'Unresolved',
+  in_progress: 'In Progress',
+  resolved: 'Resolved',
+  wont_fix: "Won't Fix",
+}
+
+const ADMIN_STATUS_STYLES: Record<AdminStatus, string> = {
+  unresolved: 'bg-red-900/40 text-red-400 border-red-800',
+  in_progress: 'bg-yellow-900/40 text-yellow-400 border-yellow-800',
+  resolved: 'bg-green-900/40 text-green-400 border-green-800',
+  wont_fix: 'bg-gray-800 text-gray-400 border-gray-700',
+}
+
+const REPORT_TYPES = [
+  'Keyword Research', 'SEO Audit', 'LP Optimizer',
+  'AI SEO', 'Competitive Analysis', 'Head to Head',
+  'Top 3 Competitors', 'Competitive Position',
+]
+
+// ─── Main page ────────────────────────────────────────────────────────────────
+
+export default function AdminErrorsPage() {
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const highlightId = searchParams.get('highlight')
+
+  const [failures, setFailures] = useState<Failure[]>([])
+  const [loading, setLoading] = useState(true)
+  const [filters, setFilters] = useState({
+    status: 'all',
+    report_type: 'all',
+    failure_type: 'all',
+    date_range: '30d',
+    user_email: '',
+    sort: 'created_at',
+    order: 'desc',
+  })
+
+  const highlightRef = useRef<HTMLTableRowElement | null>(null)
+
+  const fetchFailures = useCallback(async () => {
+    setLoading(true)
+    const qs = new URLSearchParams(
+      Object.fromEntries(Object.entries(filters).filter(([, v]) => v && v !== 'all'))
+    ).toString()
+    const res = await fetch(`/api/admin/failures${qs ? `?${qs}` : ''}`)
+    const data = await res.json()
+    setFailures(data.failures ?? [])
+    setLoading(false)
+  }, [filters])
+
+  useEffect(() => { fetchFailures() }, [fetchFailures])
+
+  // Scroll to highlighted row after data loads
+  useEffect(() => {
+    if (highlightId && highlightRef.current) {
+      highlightRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  }, [highlightId, failures])
+
+  function setFilter(key: string, value: string) {
+    setFilters(f => ({ ...f, [key]: value }))
+  }
+
+  function toggleSort(col: string) {
+    setFilters(f => ({
+      ...f,
+      sort: col,
+      order: f.sort === col && f.order === 'desc' ? 'asc' : 'desc',
+    }))
+  }
+
+  const sortIndicator = (col: string) =>
+    filters.sort === col ? (filters.order === 'desc' ? ' ↓' : ' ↑') : ''
+
+  async function updateStatus(id: string, admin_failure_status: string) {
+    setFailures(prev =>
+      prev.map(f => f.id === id ? { ...f, admin_failure_status } : f)
+    )
+    await fetch(`/api/admin/failures/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ admin_failure_status }),
+    })
+  }
+
+  async function updateNotes(id: string, admin_failure_notes: string) {
+    setFailures(prev =>
+      prev.map(f => f.id === id ? { ...f, admin_failure_notes } : f)
+    )
+    await fetch(`/api/admin/failures/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ admin_failure_notes }),
+    })
+  }
+
+  const unresolvedCount = failures.filter(
+    f => f.admin_failure_status === 'unresolved'
+  ).length
+
+  return (
+    <div className="p-8 space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-white">Report Failures</h1>
+          <p className="text-gray-400 text-sm mt-1">
+            {loading ? 'Loading…' : `${failures.length} results`}
+            {!loading && unresolvedCount > 0 && (
+              <span className="ml-2 text-red-400 font-medium">
+                · {unresolvedCount} unresolved
+              </span>
+            )}
+          </p>
+        </div>
+        <button
+          onClick={fetchFailures}
+          className="px-4 py-2 border border-primary/20 text-gray-400 rounded-lg text-sm hover:text-white transition-colors"
+        >
+          Refresh
+        </button>
+      </div>
+
+      {/* Filters */}
+      <div className="flex flex-wrap gap-3">
+        <select
+          value={filters.status}
+          onChange={e => setFilter('status', e.target.value)}
+          className="bg-dark-700 border border-primary/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary"
+        >
+          <option value="all">All statuses</option>
+          <option value="unresolved">Unresolved</option>
+          <option value="in_progress">In Progress</option>
+          <option value="resolved">Resolved</option>
+          <option value="wont_fix">Won&apos;t Fix</option>
+        </select>
+
+        <select
+          value={filters.report_type}
+          onChange={e => setFilter('report_type', e.target.value)}
+          className="bg-dark-700 border border-primary/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary"
+        >
+          <option value="all">All report types</option>
+          {REPORT_TYPES.map(t => (
+            <option key={t} value={t}>{t}</option>
+          ))}
+        </select>
+
+        <select
+          value={filters.failure_type}
+          onChange={e => setFilter('failure_type', e.target.value)}
+          className="bg-dark-700 border border-primary/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary"
+        >
+          <option value="all">All failure types</option>
+          <option value="failed">Failed</option>
+          <option value="failed_site_blocked">Site Blocked</option>
+        </select>
+
+        <select
+          value={filters.date_range}
+          onChange={e => setFilter('date_range', e.target.value)}
+          className="bg-dark-700 border border-primary/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary"
+        >
+          <option value="today">Today</option>
+          <option value="7d">Last 7 days</option>
+          <option value="30d">Last 30 days</option>
+          <option value="all">All time</option>
+        </select>
+
+        <input
+          type="text"
+          value={filters.user_email}
+          onChange={e => setFilter('user_email', e.target.value)}
+          placeholder="Filter by user email…"
+          className="bg-dark-700 border border-primary/20 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-primary min-w-48"
+        />
+
+        {(filters.status !== 'all' || filters.report_type !== 'all' ||
+          filters.failure_type !== 'all' || filters.date_range !== '30d' ||
+          filters.user_email) && (
+          <button
+            onClick={() => setFilters({
+              status: 'all', report_type: 'all', failure_type: 'all',
+              date_range: '30d', user_email: '', sort: 'created_at', order: 'desc',
+            })}
+            className="px-4 py-2 border border-primary/20 text-gray-400 rounded-lg text-sm hover:text-white transition-colors"
+          >
+            Clear
+          </button>
+        )}
+      </div>
+
+      {/* Table */}
+      <div className="bg-dark-700 border border-primary/20 rounded-2xl overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-primary/10">
+              <th
+                className="text-left px-4 py-3 text-gray-400 font-medium cursor-pointer hover:text-white whitespace-nowrap"
+                onClick={() => toggleSort('created_at')}
+              >
+                Time{sortIndicator('created_at')}
+              </th>
+              <th className="text-left px-4 py-3 text-gray-400 font-medium">User</th>
+              <th
+                className="text-left px-4 py-3 text-gray-400 font-medium cursor-pointer hover:text-white whitespace-nowrap"
+                onClick={() => toggleSort('report_type')}
+              >
+                Report type{sortIndicator('report_type')}
+              </th>
+              <th className="text-left px-4 py-3 text-gray-400 font-medium">Failure</th>
+              <th className="text-left px-4 py-3 text-gray-400 font-medium">Input</th>
+              <th
+                className="text-left px-4 py-3 text-gray-400 font-medium cursor-pointer hover:text-white whitespace-nowrap"
+                onClick={() => toggleSort('admin_failure_status')}
+              >
+                Status{sortIndicator('admin_failure_status')}
+              </th>
+              <th className="text-left px-4 py-3 text-gray-400 font-medium">Notes</th>
+              <th className="px-4 py-3"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr>
+                <td colSpan={8} className="px-4 py-12 text-center text-gray-500">
+                  Loading…
+                </td>
+              </tr>
+            ) : failures.length === 0 ? (
+              <tr>
+                <td colSpan={8} className="px-4 py-12 text-center text-gray-500">
+                  No failures found.
+                </td>
+              </tr>
+            ) : (
+              failures.map(f => (
+                <FailureRow
+                  key={f.id}
+                  failure={f}
+                  isHighlighted={f.id === highlightId}
+                  rowRef={f.id === highlightId ? highlightRef : undefined}
+                  onStatusChange={updateStatus}
+                  onNotesChange={updateNotes}
+                />
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+// ─── Row component ─────────────────────────────────────────────────────────────
+
+function FailureRow({
+  failure: f,
+  isHighlighted,
+  rowRef,
+  onStatusChange,
+  onNotesChange,
+}: {
+  failure: Failure
+  isHighlighted: boolean
+  rowRef?: React.RefObject<HTMLTableRowElement | null>
+  onStatusChange: (id: string, status: string) => Promise<void>
+  onNotesChange: (id: string, notes: string) => Promise<void>
+}) {
+  const [editingNotes, setEditingNotes] = useState(false)
+  const [notesValue, setNotesValue] = useState(f.admin_failure_notes ?? '')
+  const [copied, setCopied] = useState(false)
+
+  const inputSummary = f.input_data
+    ? Object.entries(f.input_data)
+        .slice(0, 2)
+        .map(([k, v]) => `${k}: ${String(v).slice(0, 30)}`)
+        .join(' · ')
+    : '—'
+
+  async function handleNotesSave() {
+    setEditingNotes(false)
+    await onNotesChange(f.id, notesValue)
+  }
+
+  async function copyPacket() {
+    const packet = generateFailurePacket({
+      id: f.id,
+      user_name: f.profiles.name,
+      user_email: f.profiles.email,
+      report_type: f.report_type,
+      created_at: f.created_at,
+      status: f.status,
+      n8n_execution_id: f.n8n_execution_id,
+      input_data: f.input_data,
+      admin_failure_notes: f.admin_failure_notes,
+    })
+    await navigator.clipboard.writeText(packet)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  const adminStatus = f.admin_failure_status as AdminStatus
+
+  return (
+    <tr
+      ref={rowRef as React.RefObject<HTMLTableRowElement>}
+      className={`border-b border-primary/10 last:border-0 transition-colors ${
+        isHighlighted
+          ? 'bg-cyan-900/20 animate-pulse-once'
+          : 'hover:bg-primary/5'
+      }`}
+    >
+      {/* Time */}
+      <td className="px-4 py-3 text-gray-400 whitespace-nowrap text-xs">
+        {new Date(f.created_at).toLocaleDateString('en-US', {
+          month: 'short', day: 'numeric',
+        })}
+        <br />
+        {new Date(f.created_at).toLocaleTimeString('en-US', {
+          hour: 'numeric', minute: '2-digit', hour12: true,
+          timeZone: 'America/Los_Angeles',
+        })} PT
+      </td>
+
+      {/* User */}
+      <td className="px-4 py-3">
+        <p className="text-white text-xs font-medium">{f.profiles.name ?? '—'}</p>
+        <p className="text-gray-400 text-xs">{f.profiles.email}</p>
+      </td>
+
+      {/* Report type */}
+      <td className="px-4 py-3 text-gray-300 whitespace-nowrap text-xs">
+        {f.report_type}
+      </td>
+
+      {/* Failure type */}
+      <td className="px-4 py-3">
+        <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${
+          f.status === 'failed_site_blocked'
+            ? 'bg-orange-900/40 text-orange-400 border-orange-800'
+            : 'bg-red-900/40 text-red-400 border-red-800'
+        }`}>
+          {f.status === 'failed_site_blocked' ? 'Site Blocked' : 'Failed'}
+        </span>
+        {f.n8n_execution_id && (
+          <a
+            href={`https://n8n.goodbreeze.ai/executions/${f.n8n_execution_id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block text-xs text-cyan-500 hover:text-cyan-400 mt-1"
+          >
+            n8n →
+          </a>
+        )}
+      </td>
+
+      {/* Input summary */}
+      <td className="px-4 py-3 text-gray-500 text-xs max-w-[180px] truncate">
+        {inputSummary}
+      </td>
+
+      {/* Status dropdown */}
+      <td className="px-4 py-3">
+        <select
+          value={f.admin_failure_status}
+          onChange={e => onStatusChange(f.id, e.target.value)}
+          className={`text-xs font-medium px-2 py-1 rounded-lg border bg-transparent cursor-pointer focus:outline-none ${
+            ADMIN_STATUS_STYLES[adminStatus] ?? ADMIN_STATUS_STYLES.unresolved
+          }`}
+        >
+          {Object.entries(ADMIN_STATUS_LABELS).map(([val, label]) => (
+            <option key={val} value={val} className="bg-zinc-900 text-white">
+              {label}
+            </option>
+          ))}
+        </select>
+      </td>
+
+      {/* Notes */}
+      <td className="px-4 py-3 max-w-[160px]">
+        {editingNotes ? (
+          <div className="space-y-1">
+            <textarea
+              value={notesValue}
+              onChange={e => setNotesValue(e.target.value)}
+              className="w-full bg-dark border border-primary/20 rounded px-2 py-1 text-xs text-white resize-none focus:outline-none focus:border-primary"
+              rows={2}
+              autoFocus
+            />
+            <div className="flex gap-1">
+              <button
+                onClick={handleNotesSave}
+                className="text-xs text-cyan-400 hover:text-cyan-300"
+              >
+                Save
+              </button>
+              <button
+                onClick={() => { setEditingNotes(false); setNotesValue(f.admin_failure_notes ?? '') }}
+                className="text-xs text-gray-500 hover:text-gray-300"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            onClick={() => setEditingNotes(true)}
+            className="text-xs text-left text-gray-500 hover:text-gray-300 transition-colors w-full truncate"
+            title={f.admin_failure_notes ?? 'Click to add notes'}
+          >
+            {f.admin_failure_notes
+              ? f.admin_failure_notes.slice(0, 40) + (f.admin_failure_notes.length > 40 ? '…' : '')
+              : <span className="italic">Add notes…</span>
+            }
+          </button>
+        )}
+      </td>
+
+      {/* Actions */}
+      <td className="px-4 py-3 text-right">
+        <button
+          onClick={copyPacket}
+          className={`text-xs px-3 py-1.5 rounded-lg border transition-colors whitespace-nowrap ${
+            copied
+              ? 'border-green-700 text-green-400 bg-green-900/20'
+              : 'border-primary/20 text-gray-400 hover:text-white hover:border-primary/40'
+          }`}
+        >
+          {copied ? 'Copied!' : 'Copy packet'}
+        </button>
+      </td>
+    </tr>
+  )
+}

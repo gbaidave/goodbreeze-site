@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { LoginGate } from "@/components/tools/LoginGate";
 
 export const metadata: Metadata = {
   title: "AI Business Intelligence Tools",
@@ -13,5 +14,5 @@ export const metadata: Metadata = {
 };
 
 export default function ToolsLayout({ children }: { children: React.ReactNode }) {
-  return children;
+  return <LoginGate>{children}</LoginGate>;
 }

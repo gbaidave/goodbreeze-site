@@ -5,10 +5,12 @@ import { createClient } from '@/lib/supabase/server'
 const NAV_ITEMS = [
   { href: '/admin',                label: 'Overview' },
   { href: '/admin/users',          label: 'Users' },
+  { href: '/admin/errors',         label: 'Errors' },
   { href: '/admin/testimonials',   label: 'Testimonials' },
   { href: '/admin/support',        label: 'Support' },
   { href: '/admin/refunds',        label: 'Refunds' },
   { href: '/admin/email-logs',     label: 'Email Logs' },
+  { href: '/admin/settings',       label: 'Settings' },
 ]
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
