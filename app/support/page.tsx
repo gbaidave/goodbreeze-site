@@ -52,7 +52,7 @@ export default async function SupportPage() {
   const svc = createServiceClient()
   const { data: tickets } = await svc
     .from('support_requests')
-    .select('id, message, status, created_at')
+    .select('id, message, status, category, subject, created_at')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
     .limit(20)

@@ -1,15 +1,31 @@
+const CATEGORY_LABELS: Record<string, string> = {
+  account_access: 'Account Access',
+  report_issue:   'Report Issue',
+  billing:        'Billing',
+  refund:         'Refund Request',
+  dispute:        'Dispute',
+  help:           'General Help',
+  feedback:       'Feedback',
+}
+
 interface SupportEmailData {
   userName: string
   userEmail: string
   planAtTime: string
   lastReportContext: string
   message: string
+  category?: string
+  subject?: string | null
 }
 
 export function supportNotificationEmail(data: SupportEmailData): { subject: string; html: string } {
-  const { userName, userEmail, planAtTime, lastReportContext, message } = data
+  const { userName, userEmail, planAtTime, lastReportContext, message, category, subject } = data
+  const categoryLabel = category ? (CATEGORY_LABELS[category] ?? category) : null
+  const isDispute = category === 'dispute'
   return {
-    subject: `[Support] New request from ${userName} (${userEmail})`,
+    subject: categoryLabel
+      ? `[Support] ${isDispute ? '🚨 ' : ''}${categoryLabel} from ${userName} (${userEmail})`
+      : `[Support] New request from ${userName} (${userEmail})`,
     html: `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -26,7 +42,8 @@ export function supportNotificationEmail(data: SupportEmailData): { subject: str
 
         <!-- Main card -->
         <tr><td style="background:#18181b;border:1px solid #27272a;border-radius:16px;padding:32px;">
-          <h1 style="margin:0 0 20px;font-size:20px;font-weight:700;color:#ffffff;">New support request</h1>
+          <h1 style="margin:0 0 20px;font-size:20px;font-weight:700;color:#ffffff;">${isDispute ? '🚨 ' : ''}New support request${categoryLabel ? `: ${categoryLabel}` : ''}</h1>
+          ${subject ? `<p style="margin:0 0 20px;font-size:15px;color:#e4e4e7;"><strong>Subject:</strong> ${subject}</p>` : ''}
 
           <!-- User info -->
           <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;background:#09090b;border:1px solid #27272a;border-radius:10px;padding:16px;">

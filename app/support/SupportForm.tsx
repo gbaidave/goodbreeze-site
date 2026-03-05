@@ -15,6 +15,8 @@ interface Ticket {
   id: string
   message: string
   status: string
+  category?: string
+  subject?: string | null
   created_at: string
   messages: Message[]
 }
@@ -34,6 +36,30 @@ const STATUS_STYLES: Record<string, string> = {
   closed:      'bg-gray-800 text-gray-400',
 }
 
+const CATEGORY_OPTIONS = [
+  { value: 'help',           label: 'General Help',       placeholder: 'e.g. How do I use the SEO audit report?' },
+  { value: 'report_issue',   label: 'Report Issue',        placeholder: 'e.g. My keyword research report failed' },
+  { value: 'billing',        label: 'Billing',             placeholder: 'e.g. Question about my subscription' },
+  { value: 'refund',         label: 'Refund Request',      placeholder: 'e.g. I\'d like to request a refund' },
+  { value: 'dispute',        label: 'Dispute',             placeholder: 'e.g. I was charged incorrectly' },
+  { value: 'account_access', label: 'Account Access',      placeholder: 'e.g. I can\'t log in to my account' },
+  { value: 'feedback',       label: 'Feedback',            placeholder: 'e.g. Feature request: …' },
+]
+
+const CATEGORY_LABELS: Record<string, string> = Object.fromEntries(
+  CATEGORY_OPTIONS.map((c) => [c.value, c.label])
+)
+
+const CATEGORY_BADGES: Record<string, string> = {
+  help:           'bg-gray-800 text-gray-400',
+  report_issue:   'bg-yellow-900/40 text-yellow-400',
+  billing:        'bg-blue-900/40 text-blue-400',
+  refund:         'bg-orange-900/40 text-orange-400',
+  dispute:        'bg-red-900/40 text-red-400',
+  account_access: 'bg-purple-900/40 text-purple-400',
+  feedback:       'bg-green-900/40 text-green-400',
+}
+
 function SuccessState() {
   return (
     <div className="min-h-screen bg-dark flex items-center justify-center px-6">
@@ -49,10 +75,10 @@ function SuccessState() {
         </div>
         <h2 className="text-2xl font-bold text-white mb-3">Request sent</h2>
         <p className="text-gray-400 mb-2">
-          We&apos;ve received your request and will be in touch shortly.
+          We&apos;ve received your request and we&apos;ll be in touch.
         </p>
         <p className="text-gray-500 text-sm mb-8">
-          Expect a reply within 1 business day. We&apos;ll reply here in your dashboard and via email.
+          We&apos;ll reply here in your dashboard and via email.
         </p>
         <Link
           href="/dashboard"
@@ -149,6 +175,10 @@ function TicketThread({ ticket, userEmail }: { ticket: Ticket; userEmail: string
     }
   }
 
+  const categoryLabel = ticket.category ? (CATEGORY_LABELS[ticket.category] ?? ticket.category) : null
+  const categoryBadge = ticket.category ? (CATEGORY_BADGES[ticket.category] ?? CATEGORY_BADGES.help) : null
+  const threadTitle = ticket.subject || ticket.message.slice(0, 80) + (ticket.message.length > 80 ? '…' : '')
+
   return (
     <div className="bg-dark border border-gray-800 rounded-xl overflow-hidden">
       <button
@@ -156,12 +186,17 @@ function TicketThread({ ticket, userEmail }: { ticket: Ticket; userEmail: string
         onClick={() => setOpen((v) => !v)}
         className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-dark-700 transition-colors"
       >
-        <div className="flex items-center gap-3 min-w-0">
+        <div className="flex items-center gap-2 min-w-0 flex-wrap">
           <span className={`text-xs px-2 py-0.5 rounded-full capitalize shrink-0 ${STATUS_STYLES[ticketStatus] ?? STATUS_STYLES.open}`}>
             {ticketStatus.replace('_', ' ')}
           </span>
+          {categoryLabel && (
+            <span className={`text-xs px-2 py-0.5 rounded-full shrink-0 ${categoryBadge}`}>
+              {categoryLabel}
+            </span>
+          )}
           <span className="text-gray-300 text-sm truncate">
-            {ticket.message.slice(0, 80)}{ticket.message.length > 80 ? '…' : ''}
+            {threadTitle}
           </span>
         </div>
         <div className="flex items-center gap-3 shrink-0 ml-3">
@@ -323,6 +358,9 @@ function TicketThread({ ticket, userEmail }: { ticket: Ticket; userEmail: string
 }
 
 export default function SupportForm({ userName, userEmail, plan, lastReportContext, tickets = [] }: Props) {
+  const [category, setCategory] = useState('help')
+  const [subject, setSubject] = useState('')
+  const [productType, setProductType] = useState('subscription')
   const [message, setMessage] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
@@ -330,15 +368,22 @@ export default function SupportForm({ userName, userEmail, plan, lastReportConte
 
   if (submitted) return <SuccessState />
 
+  const selectedCategory = CATEGORY_OPTIONS.find((c) => c.value === category)
+  const subjectPlaceholder = selectedCategory?.placeholder ?? 'Optional — brief summary of your issue'
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setSubmitting(true)
     setError('')
     try {
+      const body: Record<string, string> = { message, category }
+      if (subject.trim()) body.subject = subject.trim()
+      if (category === 'refund') body.product_type = productType
+
       const res = await fetch('/api/support', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message }),
+        body: JSON.stringify(body),
       })
       const data = await res.json()
       if (!res.ok) { setError(data.error || 'Something went wrong.'); return }
@@ -366,7 +411,7 @@ export default function SupportForm({ userName, userEmail, plan, lastReportConte
           </Link>
           <h1 className="text-4xl font-bold text-white mt-4 mb-3">Get Help</h1>
           <p className="text-gray-400 max-w-lg mx-auto">
-            Describe your issue and we&apos;ll get back to you within 1 business day.
+            Describe your issue and we&apos;ll be in touch.
           </p>
         </motion.div>
 
@@ -429,10 +474,66 @@ export default function SupportForm({ userName, userEmail, plan, lastReportConte
             <p className="text-xs text-gray-600 mt-2">This context is sent with your request to help us respond faster.</p>
           </div>
 
+          {/* Category */}
+          <div>
+            <label htmlFor="support-category" className="block text-sm font-medium text-gray-300 mb-1.5">
+              What do you need help with? *
+            </label>
+            <select
+              id="support-category"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="w-full px-4 py-3 bg-dark border border-gray-700 text-white rounded-xl focus:outline-none focus:border-primary transition-colors text-sm appearance-none cursor-pointer"
+            >
+              {CATEGORY_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+            {category === 'dispute' && (
+              <p className="text-xs text-red-400 mt-1.5">
+                Disputes are treated as high priority and reviewed immediately.
+              </p>
+            )}
+          </div>
+
+          {/* Refund type — only shown for refund category */}
+          {category === 'refund' && (
+            <div>
+              <label htmlFor="support-product-type" className="block text-sm font-medium text-gray-300 mb-1.5">
+                What would you like a refund for? *
+              </label>
+              <select
+                id="support-product-type"
+                value={productType}
+                onChange={(e) => setProductType(e.target.value)}
+                className="w-full px-4 py-3 bg-dark border border-gray-700 text-white rounded-xl focus:outline-none focus:border-primary transition-colors text-sm appearance-none cursor-pointer"
+              >
+                <option value="subscription">My monthly / annual subscription</option>
+                <option value="credit_pack">A credit pack purchase</option>
+              </select>
+            </div>
+          )}
+
+          {/* Subject (optional) */}
+          <div>
+            <label htmlFor="support-subject" className="block text-sm font-medium text-gray-300 mb-1.5">
+              Subject <span className="text-gray-600 font-normal">(optional)</span>
+            </label>
+            <input
+              id="support-subject"
+              type="text"
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              maxLength={120}
+              placeholder={subjectPlaceholder}
+              className="w-full px-4 py-3 bg-dark border border-gray-700 text-white rounded-xl focus:outline-none focus:border-primary transition-colors text-sm placeholder-gray-600"
+            />
+          </div>
+
           {/* Message */}
           <div>
             <label htmlFor="support-message" className="block text-sm font-medium text-gray-300 mb-1.5">
-              How can we help? *
+              Message *
             </label>
             <textarea
               id="support-message"
@@ -459,7 +560,7 @@ export default function SupportForm({ userName, userEmail, plan, lastReportConte
           </button>
 
           <p className="text-center text-xs text-gray-600">
-            We respond within 1 business day. Reply will be sent to {userEmail} and will appear here.
+            We&apos;ll be in touch. Reply will be sent to {userEmail} and will appear here.
           </p>
         </motion.form>
 

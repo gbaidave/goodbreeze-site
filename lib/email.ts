@@ -230,6 +230,8 @@ export async function sendSupportNotificationEmail(
     planAtTime: string
     lastReportContext: string
     message: string
+    category?: string
+    subject?: string | null
   },
   userId?: string
 ) {

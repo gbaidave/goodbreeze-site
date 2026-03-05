@@ -31,6 +31,7 @@ CREATE INDEX IF NOT EXISTS refund_requests_created_at_idx ON public.refund_reque
 -- RLS: users can only read their own requests; admins use service client
 ALTER TABLE public.refund_requests ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view own refund requests" ON public.refund_requests;
 CREATE POLICY "Users can view own refund requests"
   ON public.refund_requests FOR SELECT
   USING (auth.uid() = user_id);
@@ -44,6 +45,7 @@ BEGIN
 END;
 $$;
 
+DROP TRIGGER IF EXISTS trg_refund_requests_updated_at ON public.refund_requests;
 CREATE TRIGGER trg_refund_requests_updated_at
   BEFORE UPDATE ON public.refund_requests
   FOR EACH ROW EXECUTE FUNCTION public.set_refund_requests_updated_at();

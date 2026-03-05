@@ -63,16 +63,18 @@ export async function POST(
 
     const wasClosedOrResolved = ticket.status === 'resolved' || ticket.status === 'closed'
 
-    const { error: msgError } = await svc.from('support_messages').insert({
+    const { data: insertedMsg, error: msgError } = await svc.from('support_messages').insert({
       request_id: requestId,
       sender_id: user.id,
       sender_role: 'user',
       message,
-    })
+    }).select('id').single()
 
     if (msgError) {
       return NextResponse.json({ error: 'Failed to send reply.' }, { status: 500 })
     }
+
+    const messageId = insertedMsg?.id ?? null
 
     // Auto-reopen if ticket was resolved/closed — user follow-up implies they need more help
     if (wasClosedOrResolved) {
@@ -112,7 +114,7 @@ export async function POST(
       user.id
     ).catch((err) => console.error('Support followup admin email failed:', err))
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true, messageId })
 
   } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
