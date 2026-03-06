@@ -18,6 +18,7 @@ import {
   sendPaymentConfirmationEmail,
   sendPaymentFailedEmail,
 } from '@/lib/email'
+import { logSystemError } from '@/lib/log-system-error'
 
 export async function POST(request: NextRequest) {
   const body = await request.text()
@@ -366,6 +367,7 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('[webhook] Unhandled exception:', error)
+    logSystemError('webhook', String(error), { stack: (error as Error)?.stack }, '/api/stripe/webhook')
     return NextResponse.json({ error: 'Webhook handler failed' }, { status: 500 })
   }
 }

@@ -15,9 +15,10 @@ interface Props {
   userEmail: string
   status: string
   messages: Message[]
+  assignedTo?: string | null
 }
 
-export function AdminReplyPanel({ requestId, userEmail, status, messages }: Props) {
+export function AdminReplyPanel({ requestId, userEmail, status, messages, assignedTo }: Props) {
   const router = useRouter()
   const [reply, setReply] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -27,8 +28,23 @@ export function AdminReplyPanel({ requestId, userEmail, status, messages }: Prop
   const [closing, setClosing] = useState(false)
   const [error, setError] = useState('')
   const [ticketStatus, setTicketStatus] = useState(status)
+  const [assignee, setAssignee] = useState(assignedTo ?? '')
+  const [savingAssignee, setSavingAssignee] = useState(false)
 
   const isDone = ticketStatus === 'resolved' || ticketStatus === 'closed'
+
+  async function handleAssigneeSave() {
+    setSavingAssignee(true)
+    try {
+      await fetch(`/api/admin/support/${requestId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ assigned_to: assignee.trim() || null }),
+      })
+    } finally {
+      setSavingAssignee(false)
+    }
+  }
 
   async function handleReply(e: React.FormEvent) {
     e.preventDefault()
@@ -97,6 +113,21 @@ export function AdminReplyPanel({ requestId, userEmail, status, messages }: Prop
 
   return (
     <div className="mt-4 space-y-4">
+      {/* Assignee */}
+      <div className="flex items-center gap-2">
+        <label className="text-xs text-gray-500 whitespace-nowrap">Assigned to:</label>
+        <input
+          type="text"
+          value={assignee}
+          onChange={(e) => setAssignee(e.target.value)}
+          onBlur={handleAssigneeSave}
+          placeholder="Unassigned"
+          maxLength={100}
+          className="flex-1 max-w-[200px] px-2 py-1 bg-dark border border-gray-700 text-white text-xs rounded-lg focus:outline-none focus:border-primary transition-colors placeholder-gray-600"
+        />
+        {savingAssignee && <span className="text-xs text-gray-500">Saving…</span>}
+      </div>
+
       {/* Thread */}
       {messages.length > 0 && (
         <div className="space-y-2">

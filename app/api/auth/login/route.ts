@@ -14,6 +14,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { createServiceClient } from '@/lib/supabase/service-client'
+import { logSystemError } from '@/lib/log-system-error'
 
 const LOCKOUT_ATTEMPTS = 3
 const WINDOW_MINUTES   = 30
@@ -201,6 +202,7 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Login route error:', error)
+    logSystemError('auth', String(error), { stack: (error as Error)?.stack }, '/api/auth/login')
     return NextResponse.json({ error: 'Something went wrong. Please try again.' }, { status: 500 })
   }
 }

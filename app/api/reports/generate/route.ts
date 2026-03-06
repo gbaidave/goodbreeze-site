@@ -25,6 +25,7 @@ import {
 } from '@/lib/entitlement'
 import { createServiceClient } from '@/lib/supabase/service-client'
 import { sendReportsExhaustedEmail } from '@/lib/email'
+import { logSystemError } from '@/lib/log-system-error'
 
 // ============================================================================
 // n8n webhook URLs
@@ -290,6 +291,7 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Report generation error:', error)
+    logSystemError('api', String(error), { stack: (error as Error)?.stack }, '/api/reports/generate')
     return NextResponse.json(
       { error: 'Internal server error', code: 'INTERNAL_ERROR' },
       { status: 500 }

@@ -44,7 +44,7 @@ export default async function AdminSupportPage({
 
   let query = supabase
     .from('support_requests')
-    .select('id, user_id, email, plan_at_time, message, status, category, subject, priority, created_at')
+    .select('id, user_id, email, plan_at_time, message, status, category, subject, priority, assigned_to, created_at')
     .order('priority', { ascending: false }) // high priority (dispute) first
     .order('created_at', { ascending: false })
 
@@ -190,6 +190,7 @@ export default async function AdminSupportPage({
                 userEmail={r.email}
                 status={r.status}
                 messages={(messagesByRequest[r.id] ?? []) as any}
+                assignedTo={(r as any).assigned_to ?? null}
               />
             </div>
           ))}

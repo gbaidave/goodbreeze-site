@@ -4,6 +4,22 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { generateFailurePacket } from '@/lib/admin/failure-packet'
 
+// ─── System Error types ────────────────────────────────────────────────────────
+
+interface SystemError {
+  id: string
+  type: string
+  message: string
+  context: Record<string, unknown> | null
+  route: string | null
+  resolved: boolean
+  resolved_at: string | null
+  resolved_notes: string | null
+  created_at: string
+}
+
+const SYSTEM_ERROR_TYPES = ['auth', 'payment', 'webhook', 'api', 'email']
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface Failure {
@@ -53,6 +69,8 @@ export default function AdminErrorsPage() {
   const router = useRouter()
   const highlightId = searchParams.get('highlight')
 
+  const [activeTab, setActiveTab] = useState<'failures' | 'system'>('failures')
+
   const [failures, setFailures] = useState<Failure[]>([])
   const [loading, setLoading] = useState(true)
   const [filters, setFilters] = useState({
@@ -66,6 +84,39 @@ export default function AdminErrorsPage() {
   })
 
   const highlightRef = useRef<HTMLTableRowElement | null>(null)
+
+  // System errors state
+  const [sysErrors, setSysErrors] = useState<SystemError[]>([])
+  const [sysLoading, setSysLoading] = useState(false)
+  const [sysFilters, setSysFilters] = useState({
+    type: 'all',
+    resolved: 'false',
+    date_range: '30d',
+  })
+
+  const fetchSysErrors = useCallback(async () => {
+    setSysLoading(true)
+    const qs = new URLSearchParams(
+      Object.fromEntries(Object.entries(sysFilters).filter(([, v]) => v && v !== 'all'))
+    ).toString()
+    const res = await fetch(`/api/admin/system-errors${qs ? `?${qs}` : ''}`)
+    const data = await res.json()
+    setSysErrors(data.errors ?? [])
+    setSysLoading(false)
+  }, [sysFilters])
+
+  useEffect(() => {
+    if (activeTab === 'system') fetchSysErrors()
+  }, [activeTab, fetchSysErrors])
+
+  async function resolveSysError(id: string, resolved: boolean) {
+    setSysErrors(prev => prev.map(e => e.id === id ? { ...e, resolved, resolved_at: resolved ? new Date().toISOString() : null } : e))
+    await fetch(`/api/admin/system-errors/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ resolved }),
+    })
+  }
 
   const fetchFailures = useCallback(async () => {
     setLoading(true)
@@ -134,8 +185,10 @@ export default function AdminErrorsPage() {
         <div>
           <h1 className="text-2xl font-bold text-white">Error Monitor</h1>
           <p className="text-gray-400 text-sm mt-1">
-            {loading ? 'Loading…' : `${failures.length} results`}
-            {!loading && unresolvedCount > 0 && (
+            {activeTab === 'failures'
+              ? (loading ? 'Loading…' : `${failures.length} results`)
+              : (sysLoading ? 'Loading…' : `${sysErrors.length} results`)}
+            {activeTab === 'failures' && !loading && unresolvedCount > 0 && (
               <span className="ml-2 text-red-400 font-medium">
                 · {unresolvedCount} unresolved
               </span>
@@ -143,12 +196,32 @@ export default function AdminErrorsPage() {
           </p>
         </div>
         <button
-          onClick={fetchFailures}
+          onClick={activeTab === 'failures' ? fetchFailures : fetchSysErrors}
           className="px-4 py-2 border border-primary/20 text-gray-400 rounded-lg text-sm hover:text-white transition-colors"
         >
           Refresh
         </button>
       </div>
+
+      {/* Tab bar */}
+      <div className="flex gap-2 border-b border-primary/10 pb-0">
+        {(['failures', 'system'] as const).map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors -mb-px ${
+              activeTab === tab
+                ? 'border-primary text-white'
+                : 'border-transparent text-gray-500 hover:text-gray-300'
+            }`}
+          >
+            {tab === 'failures' ? 'Report Failures' : 'System Errors'}
+          </button>
+        ))}
+      </div>
+
+      {/* ── Report Failures tab ─────────────────────────────────────── */}
+      {activeTab === 'failures' && <>
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3">
@@ -277,7 +350,168 @@ export default function AdminErrorsPage() {
           </tbody>
         </table>
       </div>
+
+      </>}
+
+      {/* ── System Errors tab ───────────────────────────────────────── */}
+      {activeTab === 'system' && <>
+
+      {/* System error filters */}
+      <div className="flex flex-wrap gap-3">
+        <select
+          value={sysFilters.type}
+          onChange={e => setSysFilters(f => ({ ...f, type: e.target.value }))}
+          className="bg-dark-700 border border-primary/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary [color-scheme:dark]"
+        >
+          <option value="all">All types</option>
+          {SYSTEM_ERROR_TYPES.map(t => (
+            <option key={t} value={t}>{t}</option>
+          ))}
+        </select>
+
+        <select
+          value={sysFilters.resolved}
+          onChange={e => setSysFilters(f => ({ ...f, resolved: e.target.value }))}
+          className="bg-dark-700 border border-primary/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary [color-scheme:dark]"
+        >
+          <option value="all">All</option>
+          <option value="false">Unresolved</option>
+          <option value="true">Resolved</option>
+        </select>
+
+        <select
+          value={sysFilters.date_range}
+          onChange={e => setSysFilters(f => ({ ...f, date_range: e.target.value }))}
+          className="bg-dark-700 border border-primary/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary [color-scheme:dark]"
+        >
+          <option value="today">Today</option>
+          <option value="7d">Last 7 days</option>
+          <option value="30d">Last 30 days</option>
+          <option value="all">All time</option>
+        </select>
+      </div>
+
+      {/* System errors table */}
+      <div className="bg-dark-700 border border-primary/20 rounded-2xl overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-primary/10">
+              <th className="text-left px-4 py-3 text-gray-400 font-medium whitespace-nowrap">Time</th>
+              <th className="text-left px-4 py-3 text-gray-400 font-medium">Type</th>
+              <th className="text-left px-4 py-3 text-gray-400 font-medium">Message</th>
+              <th className="text-left px-4 py-3 text-gray-400 font-medium">Route</th>
+              <th className="text-left px-4 py-3 text-gray-400 font-medium">Status</th>
+              <th className="px-4 py-3"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {sysLoading ? (
+              <tr>
+                <td colSpan={6} className="px-4 py-12 text-center text-gray-500">Loading…</td>
+              </tr>
+            ) : sysErrors.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="px-4 py-12 text-center text-gray-500">No system errors found.</td>
+              </tr>
+            ) : (
+              sysErrors.map(e => (
+                <SystemErrorRow key={e.id} error={e} onResolve={resolveSysError} />
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      </>}
     </div>
+  )
+}
+
+// ─── System Error Row ──────────────────────────────────────────────────────────
+
+function SystemErrorRow({
+  error: e,
+  onResolve,
+}: {
+  error: SystemError
+  onResolve: (id: string, resolved: boolean) => Promise<void>
+}) {
+  const [expanded, setExpanded] = useState(false)
+
+  return (
+    <>
+      <tr className={`border-b border-primary/10 last:border-0 hover:bg-primary/5 transition-colors ${e.resolved ? 'opacity-50' : ''}`}>
+        {/* Time */}
+        <td className="px-4 py-3 text-gray-400 whitespace-nowrap text-xs">
+          {new Date(e.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+          <br />
+          {new Date(e.created_at).toLocaleTimeString('en-US', {
+            hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/Los_Angeles',
+          })} PT
+        </td>
+
+        {/* Type */}
+        <td className="px-4 py-3">
+          <span className="text-xs font-medium px-2 py-0.5 rounded-full border bg-orange-900/40 text-orange-400 border-orange-800">
+            {e.type}
+          </span>
+        </td>
+
+        {/* Message */}
+        <td className="px-4 py-3 text-gray-300 text-xs max-w-[300px]">
+          <p className="truncate" title={e.message}>{e.message}</p>
+        </td>
+
+        {/* Route */}
+        <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">
+          {e.route ?? '—'}
+        </td>
+
+        {/* Status */}
+        <td className="px-4 py-3">
+          <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${
+            e.resolved
+              ? 'bg-green-900/40 text-green-400 border-green-800'
+              : 'bg-red-900/40 text-red-400 border-red-800'
+          }`}>
+            {e.resolved ? 'Resolved' : 'Unresolved'}
+          </span>
+        </td>
+
+        {/* Actions */}
+        <td className="px-4 py-3 text-right whitespace-nowrap">
+          {e.context && (
+            <button
+              onClick={() => setExpanded(v => !v)}
+              className="text-xs text-gray-500 hover:text-gray-300 mr-3 transition-colors"
+            >
+              {expanded ? 'Hide' : 'Context'}
+            </button>
+          )}
+          <button
+            onClick={() => onResolve(e.id, !e.resolved)}
+            className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${
+              e.resolved
+                ? 'border-gray-700 text-gray-500 hover:text-white hover:border-gray-500'
+                : 'border-green-800 text-green-400 hover:bg-green-900/30'
+            }`}
+          >
+            {e.resolved ? 'Unresolve' : 'Resolve'}
+          </button>
+        </td>
+      </tr>
+
+      {/* Expanded context */}
+      {expanded && e.context && (
+        <tr className="border-b border-primary/10">
+          <td colSpan={6} className="px-4 pb-3">
+            <pre className="bg-dark rounded-lg p-3 text-xs text-gray-400 overflow-x-auto whitespace-pre-wrap break-all">
+              {JSON.stringify(e.context, null, 2)}
+            </pre>
+          </td>
+        </tr>
+      )}
+    </>
   )
 }
 
