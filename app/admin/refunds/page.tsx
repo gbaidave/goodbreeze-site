@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { createServiceClient } from '@/lib/supabase/service-client'
 import { RefundActionPanel } from './RefundActionPanel'
+import { RefundThreadPanel } from './RefundThreadPanel'
 
 const STATUS_STYLES: Record<string, string> = {
   pending:  'bg-yellow-900/40 text-yellow-400 border-yellow-800',
@@ -27,8 +28,11 @@ export default async function AdminRefundsPage({
       id, user_id, stripe_payment_id, product_type, product_label,
       amount_paid_cents, credits_used_at_request, purchase_date,
       status, stripe_refund_id, refund_amount_cents, admin_notes,
-      reviewed_at, created_at,
-      profiles!refund_requests_user_id_fkey(name, email)
+      reviewed_at, created_at, support_request_id,
+      profiles!refund_requests_user_id_fkey(name, email),
+      support_requests(id, subject, category, status,
+        support_messages(id, sender_role, message, created_at)
+      )
     `)
     .order('created_at', { ascending: false })
 
@@ -97,6 +101,13 @@ export default async function AdminRefundsPage({
               : '—'
             const requestedOn = new Date(req.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 
+            const supportReq = (req as any).support_requests
+            const supportSubject = supportReq?.subject
+            const supportMessages = (supportReq?.support_messages ?? []).sort(
+              (a: { created_at: string }, b: { created_at: string }) =>
+                new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+            )
+
             return (
               <div key={req.id} className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 space-y-4">
                 {/* Header row */}
@@ -109,6 +120,9 @@ export default async function AdminRefundsPage({
                       <span className="text-white font-medium">{name}</span>
                       <span className="text-gray-500 text-sm">{email}</span>
                     </div>
+                    {supportSubject && (
+                      <p className="text-sm text-white font-medium">&ldquo;{supportSubject}&rdquo;</p>
+                    )}
                     <p className="text-sm text-gray-400">
                       <span className="text-white">{req.product_label}</span>
                       {' · '}
@@ -167,6 +181,15 @@ export default async function AdminRefundsPage({
                     Refunded ${(req.refund_amount_cents / 100).toFixed(2)} via Stripe
                     {req.reviewed_at && ` · ${new Date(req.reviewed_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`}
                   </p>
+                )}
+
+                {/* Support thread — expandable */}
+                {supportReq && (
+                  <RefundThreadPanel
+                    supportRequestId={supportReq.id}
+                    userEmail={email}
+                    messages={supportMessages}
+                  />
                 )}
               </div>
             )

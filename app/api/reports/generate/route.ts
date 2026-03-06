@@ -184,6 +184,24 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // 2c. Landing page optimizer: reject homepage URLs immediately (no path or just /)
+    if (reportType === 'landing_page' && body.url) {
+      try {
+        const parsed = new URL(body.url)
+        if (parsed.pathname === '/' || parsed.pathname === '') {
+          return NextResponse.json(
+            {
+              error: 'This looks like a homepage URL. The Landing Page Optimizer analyzes specific landing pages, not homepages. Please enter the URL of a specific page (e.g. /pricing, /features, or a campaign landing page).',
+              code: 'HOMEPAGE_URL',
+            },
+            { status: 400 }
+          )
+        }
+      } catch {
+        // URL already validated above — this won't throw
+      }
+    }
+
     // 2b. Hourly rate limit — max 20 reports per user per hour (burst protection)
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
     const { count: recentCount } = await supabase

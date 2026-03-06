@@ -85,6 +85,7 @@ export default function LandingPageOptimizerPage() {
             <label className={labelClass}>Landing Page URL *</label>
             <input type="text" value={url} onChange={e => setUrl(e.target.value)}
               className={inputClass} placeholder="https://yoursite.com/your-landing-page" required />
+            <p className="text-xs text-gray-600 mt-1.5">Enter a specific page URL — not your homepage. e.g. /pricing, /features, or a campaign page.</p>
           </div>
 
           <div>
