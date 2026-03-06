@@ -12,6 +12,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
+import { createServiceClient } from '@/lib/supabase/service-client'
 
 // Report type → human-readable label for the filename
 const REPORT_TYPE_LABELS: Record<string, string> = {
@@ -114,12 +115,16 @@ export async function GET(
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
 
-    const { data: report, error } = await supabase
-      .from('reports')
-      .select('id, status, pdf_url, report_type, created_at, input_data')
-      .eq('id', id)
-      .eq('user_id', user.id) // ownership check
-      .single()
+    // Check if requester is an admin — admins can download any user's report
+    const svc = createServiceClient()
+    const { data: profile } = await svc.from('profiles').select('role').eq('id', user.id).single()
+    const isAdmin = profile?.role === 'admin'
+
+    const reportQuery = isAdmin
+      ? svc.from('reports').select('id, status, pdf_url, report_type, created_at, input_data').eq('id', id)
+      : supabase.from('reports').select('id, status, pdf_url, report_type, created_at, input_data').eq('id', id).eq('user_id', user.id)
+
+    const { data: report, error } = await reportQuery.single()
 
     if (error || !report) {
       return NextResponse.json({ error: 'Report not found' }, { status: 404 })

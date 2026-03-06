@@ -3,74 +3,39 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { useAuth } from '@/components/auth/AuthProvider'
-import { GuestFields } from '@/components/tools/GuestFields'
 import { captureEvent } from '@/lib/analytics'
 import { ExhaustedState } from '@/components/ExhaustedState'
-import { isValidPhone, normalizePhone } from '@/lib/phone'
 import { ReportSubmittedModal } from '@/components/tools/ReportSubmittedModal'
 
 export default function AiSeoPage() {
   const { user, loading: authLoading } = useAuth()
   const isGuest = !authLoading && !user
+  const pathname = usePathname()
 
   const [url, setUrl] = useState('')
   const [company, setCompany] = useState('')
-  const [guestName, setGuestName] = useState('')
-  const [guestEmail, setGuestEmail] = useState('')
-  const [guestPhone, setGuestPhone] = useState('')
-  const [guestErrors, setGuestErrors] = useState<Partial<Record<'name' | 'email' | 'phone', string>>>({})
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
   const [upgradePrompt, setUpgradePrompt] = useState('')
-  const [accountExists, setAccountExists] = useState(false)
 
   if (upgradePrompt) return <ExhaustedState error={error} upgradePrompt={upgradePrompt} />
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError('')
-    setAccountExists(false)
-
-    if (isGuest) {
-      const errs: typeof guestErrors = {}
-      if (!guestName.trim()) errs.name = 'Name is required'
-      if (!guestEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestEmail)) errs.email = 'Valid email is required'
-      if (guestPhone.trim() && !isValidPhone(guestPhone)) errs.phone = 'Enter a valid phone number'
-      if (Object.keys(errs).length) { setGuestErrors(errs); return }
-      setGuestErrors({})
-    }
-
     setSubmitting(true)
     try {
-      if (user) {
-        const res = await fetch('/api/reports/generate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ reportType: 'ai_seo', url, company }),
-        })
-        const data = await res.json()
-        if (res.status === 402) { setError(data.error); setUpgradePrompt(data.upgradePrompt ?? 'impulse'); return }
-        if (!res.ok) { setError(data.error || 'Something went wrong.'); return }
-      } else {
-        const res = await fetch('/api/frictionless', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            reportType: 'ai_seo',
-            url,
-            company,
-            name: guestName,
-            email: guestEmail,
-            ...(guestPhone.trim() && { phone: normalizePhone(guestPhone) }),
-          }),
-        })
-        const data = await res.json()
-        if (res.status === 409) { setAccountExists(true); return }
-        if (!res.ok) { setError(data.error || 'Something went wrong.'); return }
-        if (data.signInUrl) { window.location.href = data.signInUrl; return }
-      }
+      const res = await fetch('/api/reports/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reportType: 'ai_seo', url, company }),
+      })
+      const data = await res.json()
+      if (res.status === 402) { setError(data.error); setUpgradePrompt(data.upgradePrompt ?? 'impulse'); return }
+      if (!res.ok) { setError(data.error || 'Something went wrong.'); return }
       captureEvent('tool_form_submit', { reportType: 'ai_seo' })
       setSubmitted(true)
     } catch {
@@ -87,13 +52,10 @@ export default function AiSeoPage() {
     <>
       {submitted && (
         <ReportSubmittedModal
-          heading={isGuest ? 'Check your inbox. Your account is ready.' : 'Report on its way!'}
-          body={isGuest
-            ? 'We created your Good Breeze AI account and started your AI SEO report. A sign-in link and your PDF results are on their way to your inbox.'
-            : <>Your AI SEO report is being generated. You&apos;ll receive the PDF by email in <strong className="text-white">2–3 minutes</strong>.</>
-          }
-          detail={isGuest ? 'The PDF will be ready in 2–3 minutes.' : 'Track progress or view past reports in your dashboard.'}
-          isGuest={isGuest}
+          heading="Report on its way!"
+          body={<>Your AI SEO report is being generated. You&apos;ll receive the PDF by email in <strong className="text-white">2–3 minutes</strong>.</>}
+          detail="Track progress or view past reports in your dashboard."
+          isGuest={false}
           onRunAnother={() => setSubmitted(false)}
         />
       )}
@@ -115,14 +77,6 @@ export default function AiSeoPage() {
           onSubmit={handleSubmit}
           className="bg-dark-700 border border-primary/20 rounded-2xl p-8 space-y-5"
         >
-          {accountExists && (
-            <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl text-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <p className="text-amber-300">You already have a Good Breeze AI account.</p>
-              <a href="/login" className="px-4 py-2 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primary/80 transition-colors whitespace-nowrap text-center">
-                Sign in to continue
-              </a>
-            </div>
-          )}
           {error && (
             <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm">{error}</div>
           )}
@@ -140,25 +94,23 @@ export default function AiSeoPage() {
               className={inputClass} placeholder="Your Company Name" />
           </div>
 
-          {isGuest && (
-            <GuestFields
-              name={guestName} onNameChange={setGuestName}
-              email={guestEmail} onEmailChange={setGuestEmail}
-              phone={guestPhone} onPhoneChange={setGuestPhone}
-              showPhone={true}
-              errors={guestErrors}
-            />
+          {isGuest ? (
+            <div className="border border-primary/20 rounded-xl p-5 text-center space-y-3">
+              <p className="text-sm text-gray-400">Create a free account to access this report. Your first AI SEO report is free.</p>
+              <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                <Link href={`/signup?returnUrl=${encodeURIComponent(pathname)}`} className="px-5 py-2.5 bg-gradient-to-r from-primary to-accent-blue text-white text-sm font-semibold rounded-full hover:shadow-lg transition-all">Create free account</Link>
+                <Link href={`/login?returnUrl=${encodeURIComponent(pathname)}`} className="px-5 py-2.5 border border-primary/30 text-gray-300 text-sm rounded-full hover:border-primary hover:text-white transition-colors">Sign in</Link>
+              </div>
+            </div>
+          ) : (
+            <button type="submit" disabled={submitting}
+              className="w-full py-4 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full hover:shadow-lg hover:shadow-primary/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+              {submitting ? 'Generating report…' : 'Generate AI SEO Report'}
+            </button>
           )}
 
-          <button type="submit" disabled={submitting}
-            className="w-full py-4 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full hover:shadow-lg hover:shadow-primary/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-            {submitting ? 'Generating report…' : 'Generate AI SEO Report'}
-          </button>
-
           <p className="text-center text-xs text-gray-600">
-            {isGuest
-              ? 'No account needed. Report delivered by email in 2–3 minutes.'
-              : 'Report delivered by email in 2–3 minutes. Saved to your dashboard.'}
+            Report delivered by email in 2–3 minutes. Saved to your dashboard.
           </p>
         </motion.form>
       </div>

@@ -36,19 +36,27 @@ export async function GET() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const { data, error } = await supabase
-      .from('notifications')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
-      .limit(50)
+    const [{ data, error }, { data: profile }] = await Promise.all([
+      supabase
+        .from('notifications')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(50),
+      supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single(),
+    ])
 
     if (error) throw error
 
     const notifications = data ?? []
     const unreadCount = notifications.filter(n => !n.read).length
+    const isAdmin = profile?.role === 'admin'
 
-    return NextResponse.json({ notifications, unreadCount })
+    return NextResponse.json({ notifications, unreadCount, isAdmin })
   } catch (error) {
     console.error('GET /api/notifications error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

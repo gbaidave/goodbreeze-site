@@ -30,6 +30,18 @@ export async function POST(request: NextRequest) {
   }
 
   const serviceClient = createServiceClient()
+
+  // Fetch testimonial before updating (need user_id + credits_granted + type)
+  const { data: testimonial, error: fetchError } = await serviceClient
+    .from('testimonials')
+    .select('user_id, credits_granted, type')
+    .eq('id', id)
+    .single()
+
+  if (fetchError || !testimonial) {
+    return NextResponse.json({ error: 'Testimonial not found' }, { status: 404 })
+  }
+
   const { error } = await serviceClient
     .from('testimonials')
     .update({ status })
@@ -37,6 +49,32 @@ export async function POST(request: NextRequest) {
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+
+  // Post-action: grant credits on approval, send user notification for approve/reject
+  if (status === 'approved') {
+    const credits = testimonial.credits_granted ?? 0
+    if (credits > 0) {
+      await serviceClient.from('credits').insert({
+        user_id: testimonial.user_id,
+        balance: credits,
+        product: null,
+        expires_at: null,
+        purchased_at: new Date().toISOString(),
+      })
+    }
+    const creditLabel = credits === 1 ? '1 credit' : `${credits} credits`
+    await serviceClient.from('notifications').insert({
+      user_id: testimonial.user_id,
+      type: 'testimonial_credit',
+      message: `Thank you for your ${testimonial.type} testimonial submission! ${creditLabel} have been added to your account.`,
+    })
+  } else if (status === 'rejected') {
+    await serviceClient.from('notifications').insert({
+      user_id: testimonial.user_id,
+      type: 'testimonial_credit',
+      message: `Your ${testimonial.type} testimonial wasn\u2019t selected this time \u2014 you\u2019re welcome to submit a new one at goodbreeze.ai/testimonials/submit.`,
+    })
   }
 
   // Redirect back to testimonials page (form POST → redirect)

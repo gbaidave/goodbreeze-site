@@ -157,19 +157,40 @@ export async function POST(request: NextRequest) {
         ? productType
         : 'subscription'
       const productLabel = resolvedProductType === 'subscription' ? 'Subscription' : 'Credit Pack'
-      void svc
-        .from('refund_requests')
-        .insert({
-          user_id: user.id,
-          stripe_payment_id: null,
-          product_type: resolvedProductType,
-          product_label: productLabel,
-          status: 'pending',
-          support_request_id: ticketId,
-        })
-        .then(({ error }) => {
+
+      // Count credits used at time of request to determine eligibility for auto-refund
+      // Subscription: reports completed in current billing period
+      // Credit pack: all completed reports (credits are non-refundable once used)
+      void (async () => {
+        try {
+          let creditsUsedAtRequest = 0
+          if (resolvedProductType === 'subscription') {
+            const { data: sub } = await svc.from('subscriptions').select('current_period_start').eq('user_id', user.id).single()
+            const periodStart = sub?.current_period_start ?? new Date(0).toISOString()
+            const { count } = await svc.from('reports').select('id', { count: 'exact', head: true })
+              .eq('user_id', user.id).eq('status', 'complete').gte('created_at', periodStart)
+            creditsUsedAtRequest = count ?? 0
+          } else {
+            // Credit pack: count all completed reports
+            const { count } = await svc.from('reports').select('id', { count: 'exact', head: true })
+              .eq('user_id', user.id).eq('status', 'complete')
+            creditsUsedAtRequest = count ?? 0
+          }
+
+          const { error } = await svc.from('refund_requests').insert({
+            user_id: user.id,
+            stripe_payment_id: null,
+            product_type: resolvedProductType,
+            product_label: productLabel,
+            status: 'pending',
+            support_request_id: ticketId,
+            credits_used_at_request: creditsUsedAtRequest,
+          })
           if (error) console.error('Auto refund_request insert error:', error)
-        })
+        } catch (e) {
+          console.error('Refund request creation error:', e)
+        }
+      })()
     }
 
     // 5c. Email support@ (fire and forget)

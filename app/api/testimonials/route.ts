@@ -22,7 +22,11 @@ const CREDIT_AMOUNTS: Record<string, number> = {
   video: 5,
 }
 
-const VALID_VIDEO_HOSTS = ['loom.com', 'youtube.com', 'youtu.be', 'drive.google.com']
+const VALID_VIDEO_HOSTS = [
+  'loom.com', 'youtube.com', 'youtu.be', 'drive.google.com',
+  'instagram.com', 'tiktok.com', 'facebook.com', 'fb.com',
+  'dropbox.com', 'vimeo.com',
+]
 
 function isValidVideoUrl(url: string): boolean {
   try {
@@ -112,7 +116,7 @@ export async function POST(request: NextRequest) {
     if (type === 'video') {
       if (!video_url || !isValidVideoUrl(video_url)) {
         return NextResponse.json(
-          { error: 'Please enter a valid Loom, YouTube, or Google Drive link', code: 'INVALID_VIDEO_URL' },
+          { error: 'Please enter a valid video link (Loom, YouTube, Instagram, TikTok, Facebook, Vimeo, Dropbox, or Google Drive)', code: 'INVALID_VIDEO_URL' },
           { status: 400 }
         )
       }
@@ -126,6 +130,7 @@ export async function POST(request: NextRequest) {
       .select('id')
       .eq('user_id', user.id)
       .eq('type', type)
+      .neq('status', 'rejected') // rejected testimonials can be resubmitted
       .single()
 
     if (existing) {
@@ -140,7 +145,15 @@ export async function POST(request: NextRequest) {
 
     const creditsToGrant = CREDIT_AMOUNTS[type]
 
-    // 4. Insert testimonial
+    // 4. Insert testimonial (or replace a previously rejected one for this type)
+    // Delete any existing rejected testimonial for this type first (unique constraint)
+    await serviceSupabase
+      .from('testimonials')
+      .delete()
+      .eq('user_id', user.id)
+      .eq('type', type)
+      .eq('status', 'rejected')
+
     const { error: insertError } = await serviceSupabase
       .from('testimonials')
       .insert({
@@ -169,24 +182,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 5. Grant credits immediately (product=null means usable on any report type)
-    const { error: creditError } = await serviceSupabase
-      .from('credits')
-      .insert({
-        user_id: user.id,
-        balance: creditsToGrant,
-        product: null,
-        expires_at: null,
-        purchased_at: new Date().toISOString(),
-      })
-
-    if (creditError) {
-      console.error('Testimonial credit grant error:', creditError)
-      // Don't fail the request — testimonial is saved; credits can be manually granted
-    }
-
-    // 6. Notify the user (bell) and admin (bell + email)
-    const creditLabel = creditsToGrant === 1 ? '1 free credit' : `${creditsToGrant} free credits`
+    // 5. Notify the user (bell) and admin (bell + email)
+    // Credits are NOT granted at submission — they are granted when admin approves.
 
     // Fetch profile for name (best-effort)
     const { data: profile } = await serviceSupabase
@@ -197,14 +194,14 @@ export async function POST(request: NextRequest) {
     const userName = profile?.name ?? 'Unknown'
     const userEmail = user.email ?? ''
 
-    // User bell notification
+    // User bell notification — confirm receipt, no credits mention
     await serviceSupabase.from('notifications').insert({
       user_id: user.id,
       type: 'testimonial_credit',
-      message: `Thank you for your ${type} testimonial! You earned ${creditLabel}.`,
+      message: `We received your ${type} testimonial — thank you! Credits will be added once it's reviewed.`,
     })
 
-    // Admin bell notification — notify all admin users
+    // Admin bell notification
     const { data: admins } = await serviceSupabase
       .from('profiles')
       .select('id')
@@ -214,7 +211,7 @@ export async function POST(request: NextRequest) {
         admins.map((a: { id: string }) => ({
           user_id: a.id,
           type: 'admin_message',
-          message: `New ${type} testimonial from ${userName} (${creditsToGrant} credit${creditsToGrant !== 1 ? 's' : ''} granted).`,
+          message: `New ${type} testimonial from ${userName} — pending review.`,
         }))
       )
     }
@@ -236,7 +233,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       creditsGranted: creditsToGrant,
-      message: `Testimonial submitted! ${creditsToGrant} free credit${creditsToGrant !== 1 ? 's' : ''} added to your account.`,
+      message: 'Testimonial submitted! We\'ll review it shortly.',
     })
 
   } catch (error) {

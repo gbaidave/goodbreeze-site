@@ -13,11 +13,12 @@ export default async function TestimonialSubmitPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login?returnUrl=/testimonials/submit')
 
-  // Check which types the user has already submitted
+  // Check which types the user has already submitted (exclude rejected — user can resubmit after rejection)
   const { data: existing } = await supabase
     .from('testimonials')
     .select('type')
     .eq('user_id', user.id)
+    .neq('status', 'rejected')
 
   const submittedTypes = (existing ?? []).map((t: { type: string }) => t.type)
 

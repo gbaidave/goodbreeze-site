@@ -24,7 +24,7 @@ function timeAgo(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString()
 }
 
-function getNotificationLink(type: string): string {
+function getNotificationLink(type: string, isAdmin: boolean): string {
   switch (type) {
     case 'report_ready':
     case 'report_failed':
@@ -39,13 +39,13 @@ function getNotificationLink(type: string): string {
     case 'email_failed':
       return '/account'
     case 'error_alert':
-      return '/admin'
+      return '/admin/errors'
     case 'support_request':
     case 'support_reply':
     case 'support_resolved':
     case 'support_closed':
     case 'support_followup':
-      return '/support'
+      return isAdmin ? '/admin/support' : '/support'
     default:
       return '/notifications'
   }
@@ -103,6 +103,7 @@ export function NotificationBell() {
   const [open, setOpen] = useState(false)
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
+  const [isAdmin, setIsAdmin] = useState(false)
   const [fetching, setFetching] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -132,6 +133,7 @@ export function NotificationBell() {
       const data = await res.json()
       setNotifications(data.notifications ?? [])
       setUnreadCount(data.unreadCount ?? 0)
+      if (data.isAdmin !== undefined) setIsAdmin(data.isAdmin)
       return data.unreadCount ?? 0
     } finally {
       setFetching(false)
@@ -210,7 +212,7 @@ export function NotificationBell() {
               {preview.map(n => (
                 <Link
                   key={n.id}
-                  href={getNotificationLink(n.type)}
+                  href={getNotificationLink(n.type, isAdmin)}
                   onClick={() => setOpen(false)}
                   className={`flex gap-3 px-4 py-3 border-b border-gray-800 last:border-0 transition-colors hover:bg-white/[0.06] ${!n.read ? 'bg-white/[0.04]' : ''}`}
                 >

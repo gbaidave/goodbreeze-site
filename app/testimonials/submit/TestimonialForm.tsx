@@ -80,8 +80,8 @@ export function TestimonialForm({ submittedTypes }: Props) {
         </div>
         <h2 className="text-white font-bold text-xl mb-2">Thank you!</h2>
         <p className="text-gray-400 text-sm mb-1">Your testimonial has been submitted for review.</p>
-        <p className="text-green-400 font-semibold text-sm">
-          +{success.creditsGranted} credit{success.creditsGranted !== 1 ? 's' : ''} added to your account.
+        <p className="text-gray-400 text-sm">
+          You&apos;ll receive {success.creditsGranted} credit{success.creditsGranted !== 1 ? 's' : ''} once it&apos;s approved.
         </p>
         <a href="/dashboard" className="inline-block mt-6 text-primary text-sm hover:underline">← Back to dashboard</a>
       </div>
@@ -165,7 +165,11 @@ export function TestimonialForm({ submittedTypes }: Props) {
                 <li>What results have you seen?</li>
               </ul>
               <p className="text-gray-500 text-xs mt-3">
-                Supported links: Loom, YouTube (unlisted is fine), or Google Drive (with share link)
+                Supported links: Loom, YouTube (unlisted is fine), Google Drive, Instagram, TikTok, Facebook, Vimeo, or Dropbox.
+              </p>
+              <p className="text-gray-500 text-xs mt-2">
+                On mobile? Record with your camera, post to Instagram, TikTok, or YouTube, then paste the link here.
+                Or use the <a href="https://www.loom.com/download" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Loom mobile app</a> to record and share instantly.
               </p>
             </div>
           )}
@@ -192,13 +196,13 @@ export function TestimonialForm({ submittedTypes }: Props) {
           {tab === 'video' && (
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Video link <span className="text-gray-500 font-normal text-xs">(Loom, YouTube, or Google Drive)</span>
+                Video link <span className="text-gray-500 font-normal text-xs">(Loom, YouTube, Instagram, TikTok, and more)</span>
               </label>
               <input
                 type="url"
                 value={videoUrl}
                 onChange={(e) => setVideoUrl(e.target.value)}
-                placeholder="https://loom.com/share/..."
+                placeholder="https://www.instagram.com/reel/... or https://loom.com/share/..."
                 required
                 className="w-full bg-dark border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-primary/50"
               />
@@ -306,11 +310,7 @@ export function TestimonialForm({ submittedTypes }: Props) {
               hover:bg-white/10 transition-all
               disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {submitting
-              ? 'Submitting...'
-              : tab === 'written'
-                ? 'Submit testimonial and earn 1 credit'
-                : 'Submit testimonial and earn 5 credits'}
+            {submitting ? 'Submitting...' : 'Submit for review'}
           </button>
         </form>
       )}
