@@ -125,7 +125,6 @@ function TicketThread({ ticket, userEmail }: { ticket: Ticket; userEmail: string
         created_at: new Date().toISOString(),
       }])
       setReplyText('')
-      setShowReplyForm(false)
     } catch {
       setReplyError('Something went wrong. Please try again.')
     } finally {
