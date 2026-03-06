@@ -62,8 +62,8 @@ export default function HowItWorks() {
                   transition={{ duration: 0.6, delay: index * 0.15 }}
                   className="relative text-center bg-dark-700 rounded-2xl p-6 md:flex-1"
                 >
-                  {/* Step label circle — w-[216px] (216px) + text-[54px] per Dave's request for 50% larger again */}
-                  <div className="relative inline-flex items-center justify-center w-[216px] h-[216px] mb-6 mx-auto">
+                  {/* Step label circle — 216px at desktop, scales down at md (tablet) to fit 3-col layout */}
+                  <div className="relative inline-flex items-center justify-center w-[216px] h-[216px] md:w-40 md:h-40 lg:w-[216px] lg:h-[216px] mb-6 mx-auto">
                     <div
                       className="absolute inset-0 rounded-full bg-gradient-to-br from-primary to-accent-blue opacity-20"
                       aria-hidden="true"
@@ -73,7 +73,7 @@ export default function HowItWorks() {
                       aria-hidden="true"
                     />
                     <span
-                      className="relative text-[54px] font-bold"
+                      className="relative text-[54px] md:text-[38px] lg:text-[54px] font-bold"
                       style={{
                         background: 'linear-gradient(135deg, #00adb5, #3b82f6)',
                         WebkitBackgroundClip: 'text',
