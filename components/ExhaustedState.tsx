@@ -55,7 +55,7 @@ export function ExhaustedState({ error, upgradePrompt }: Props) {
               </div>
               <div>
                 <p className="text-sm font-medium text-white group-hover:text-primary transition-colors">
-                  Refer a friend. Earn 1 credit per signup
+                  Refer a friend. Earn 3 credits per signup
                 </p>
                 <p className="text-xs text-gray-500">Your referral link is in the dashboard</p>
               </div>

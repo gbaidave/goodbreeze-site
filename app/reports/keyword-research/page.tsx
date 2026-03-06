@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/components/auth/AuthProvider'
 import { captureEvent } from '@/lib/analytics'
@@ -11,6 +12,7 @@ import { ReportSubmittedModal } from '@/components/tools/ReportSubmittedModal'
 export default function KeywordResearchPage() {
   const { user, loading: authLoading } = useAuth()
   const isGuest = !authLoading && !user
+  const pathname = usePathname()
 
   const [keyword, setKeyword] = useState('')
   const [url, setUrl] = useState('')
@@ -96,8 +98,8 @@ export default function KeywordResearchPage() {
             <div className="border border-primary/20 rounded-xl p-5 text-center space-y-3">
               <p className="text-sm text-gray-400">Create a free account to access this tool. Requires Impulse credits or Starter subscription.</p>
               <div className="flex flex-col sm:flex-row gap-2 justify-center">
-                <Link href="/register" className="px-5 py-2.5 bg-gradient-to-r from-primary to-accent-blue text-white text-sm font-semibold rounded-full hover:shadow-lg transition-all">Create free account</Link>
-                <Link href="/login" className="px-5 py-2.5 border border-primary/30 text-gray-300 text-sm rounded-full hover:border-primary hover:text-white transition-colors">Sign in</Link>
+                <Link href={`/signup?returnUrl=${encodeURIComponent(pathname)}`} className="px-5 py-2.5 bg-gradient-to-r from-primary to-accent-blue text-white text-sm font-semibold rounded-full hover:shadow-lg transition-all">Create free account</Link>
+                <Link href={`/login?returnUrl=${encodeURIComponent(pathname)}`} className="px-5 py-2.5 border border-primary/30 text-gray-300 text-sm rounded-full hover:border-primary hover:text-white transition-colors">Sign in</Link>
               </div>
             </div>
           ) : (

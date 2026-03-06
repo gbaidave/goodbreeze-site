@@ -54,7 +54,7 @@ export function reportsExhaustedEmail(name: string): { subject: string; html: st
             <tr>
               <td style="background:#18181b;border:1px solid #27272a;border-radius:12px;padding:20px;width:48%;vertical-align:top;">
                 <p style="margin:0 0 6px;font-size:14px;font-weight:600;color:#22d3ee;">Refer a friend</p>
-                <p style="margin:0 0 12px;font-size:13px;color:#a1a1aa;line-height:1.5;">Share your referral link. Earn 1 credit for every person who signs up.</p>
+                <p style="margin:0 0 12px;font-size:13px;color:#a1a1aa;line-height:1.5;">Share your referral link. Earn 3 credits for every person who signs up.</p>
                 <a href="https://goodbreeze.ai/dashboard" style="font-size:13px;color:#22d3ee;text-decoration:none;">Get your link →</a>
               </td>
               <td style="width:4%;"></td>

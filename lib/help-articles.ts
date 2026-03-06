@@ -174,11 +174,11 @@ Monthly plan subscribers don't use credits. Reports count against your monthly p
     slug: 'how-does-referral-program-work',
     title: 'How does the referral program work?',
     topic: 'Referrals',
-    content: `When someone signs up using your referral link, you automatically receive 1 credit. The credit is granted immediately. No minimum purchase required from the person you referred.
+    content: `When someone signs up using your referral link, you automatically receive 3 credits. The credits are granted immediately. No minimum purchase required from the person you referred.
 
-There's no cap on how many credits you can earn. If 10 people sign up through your link, you get 10 credits.
+There's no cap on how many credits you can earn. If 10 people sign up through your link, you get 30 credits.
 
-The person you refer gets their 1 included credit just like any new user. Your referral credit is separate and doesn't come at their expense.`,
+The person you refer gets their 1 included credit just like any new user. Your referral credits are separate and don't come at their expense.`,
   },
   {
     slug: 'where-is-my-referral-link',

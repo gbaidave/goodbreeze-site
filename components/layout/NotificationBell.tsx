@@ -45,7 +45,7 @@ function getNotificationLink(type: string): string {
     case 'support_resolved':
     case 'support_closed':
     case 'support_followup':
-      return '/dashboard#support'
+      return '/support'
     default:
       return '/notifications'
   }

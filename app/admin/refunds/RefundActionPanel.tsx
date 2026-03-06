@@ -17,7 +17,8 @@ export function RefundActionPanel({ requestId, stripePaymentId, amountPaidCents,
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const isEligible = creditsUsed === 0
+  const hasPaymentId = !!stripePaymentId && stripePaymentId.trim() !== ''
+  const isEligible = creditsUsed === 0 && hasPaymentId
 
   async function handleAction(action: 'refund' | 'deny') {
     setLoading(true)
@@ -70,7 +71,10 @@ export function RefundActionPanel({ requestId, stripePaymentId, amountPaidCents,
       </div>
       {!isEligible && (
         <p className="text-xs text-amber-400">
-          Credits have been used — not eligible for refund per policy. You can still deny or add notes.
+          {!hasPaymentId
+            ? 'No Stripe payment ID on file — process manually in Stripe dashboard.'
+            : 'Credits have been used — not eligible for automated refund per policy.'}
+          {' '}You can still deny or add notes.
         </p>
       )}
     </div>

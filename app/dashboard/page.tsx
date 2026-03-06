@@ -305,11 +305,13 @@ export default async function DashboardPage({
           </div>
         )}
 
-        {/* Support requests */}
-        <SupportSection
-          tickets={tickets}
-          userEmail={profile?.email || user.email!}
-        />
+        {/* Support requests — hidden for admins (they use /admin/support) */}
+        {!isAdmin && (
+          <SupportSection
+            tickets={tickets}
+            userEmail={profile?.email || user.email!}
+          />
+        )}
 
       </div>
     </div>

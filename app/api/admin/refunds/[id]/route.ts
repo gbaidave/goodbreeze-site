@@ -76,6 +76,16 @@ export async function PATCH(
     }
 
     // action === 'refund'
+    // Guard: credits must not have been used
+    if (refundReq.credits_used_at_request > 0) {
+      return NextResponse.json({ error: 'Refund ineligible — credits have been used.' }, { status: 422 })
+    }
+
+    // Guard: must have a valid Stripe payment ID
+    if (!refundReq.stripe_payment_id || refundReq.stripe_payment_id.trim() === '') {
+      return NextResponse.json({ error: 'No Stripe payment ID on file for this request. Cannot issue automated refund — process manually in Stripe dashboard.' }, { status: 422 })
+    }
+
     // Issue via Stripe
     let stripeRefund: Awaited<ReturnType<typeof stripe.refunds.create>> | null = null
     try {

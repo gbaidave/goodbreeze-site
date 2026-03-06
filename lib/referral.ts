@@ -3,7 +3,7 @@
  *
  * processReferral() — call once per new user signup.
  * Validates the referral code, prevents self-referral, inserts a referral_uses
- * row (idempotent via UNIQUE on new_user_id), grants 1 credit to the referrer,
+ * row (idempotent via UNIQUE on new_user_id), grants 3 credits to the referrer,
  * and writes a referral_credit notification.
  */
 
@@ -40,12 +40,12 @@ export async function processReferral(
     // Unique constraint violation = already attributed — skip
     if (insertError) return
 
-    // 4. Grant 1 free report credit to the referrer
+    // 4. Grant 3 free report credits to the referrer
     const { error: creditError } = await supabase
       .from('credits')
       .insert({
         user_id: codeRow.user_id,
-        balance: 1,
+        balance: 3,
         product: null,
         expires_at: null,
         purchased_at: new Date().toISOString(),
@@ -67,7 +67,7 @@ export async function processReferral(
     await supabase.from('notifications').insert({
       user_id: codeRow.user_id,
       type: 'referral_credit',
-      message: 'You earned 1 free credit. Someone signed up using your referral link!',
+      message: 'You earned 3 free credits. Someone signed up using your referral link!',
     })
 
   } catch (err) {

@@ -98,9 +98,7 @@ function TicketThread({ ticket, userEmail }: { ticket: Ticket; userEmail: string
   const [showCloseForm, setShowCloseForm] = useState(false)
   const [closeReason, setCloseReason] = useState('')
   const [closing, setClosing] = useState(false)
-  const [reopening, setReopening] = useState(false)
   const [actionError, setActionError] = useState('')
-  const [showReplyForm, setShowReplyForm] = useState(false)
   const [replyText, setReplyText] = useState('')
   const [replying, setReplying] = useState(false)
   const [replyError, setReplyError] = useState('')
@@ -157,21 +155,6 @@ function TicketThread({ ticket, userEmail }: { ticket: Ticket; userEmail: string
       setActionError('Something went wrong. Please try again.')
     } finally {
       setClosing(false)
-    }
-  }
-
-  async function handleReopen() {
-    setReopening(true)
-    setActionError('')
-    try {
-      const res = await fetch(`/api/support/${ticket.id}/reopen`, { method: 'PATCH' })
-      const data = await res.json()
-      if (!res.ok) { setActionError(data.error || 'Failed to reopen.'); return }
-      setTicketStatus('open')
-    } catch {
-      setActionError('Something went wrong. Please try again.')
-    } finally {
-      setReopening(false)
     }
   }
 
@@ -244,66 +227,27 @@ function TicketThread({ ticket, userEmail }: { ticket: Ticket; userEmail: string
             <p className="text-xs text-red-400">{actionError}</p>
           )}
 
-          {/* Closed/resolved: show reopen option */}
-          {isClosed && (
-            <div className="pt-1">
-              <p className="text-sm text-gray-500">
-                This request is {ticketStatus}.{' '}
-                <button
-                  type="button"
-                  onClick={handleReopen}
-                  disabled={reopening}
-                  className="text-primary hover:text-primary/80 font-medium transition-colors disabled:opacity-50"
-                >
-                  {reopening ? 'Reopening…' : 'Reopen to add a message'}
-                </button>
-              </p>
-            </div>
-          )}
-
-          {/* Reply form (open/in_progress tickets only) */}
-          {!isClosed && (
-            <div className="pt-2">
-              {!showReplyForm ? (
-                <button
-                  type="button"
-                  onClick={() => { setShowReplyForm(true); setReplyError('') }}
-                  className="text-xs text-primary hover:text-primary/80 font-medium transition-colors"
-                >
-                  + Add a reply
-                </button>
-              ) : (
-                <form onSubmit={handleReply} className="bg-dark-700 border border-primary/20 rounded-xl p-4 space-y-3">
-                  <p className="text-xs text-gray-400 font-medium">Add a reply</p>
-                  {replyError && <p className="text-xs text-red-400">{replyError}</p>}
-                  <textarea
-                    value={replyText}
-                    onChange={(e) => setReplyText(e.target.value)}
-                    rows={3}
-                    required
-                    placeholder="Add more details or ask a follow-up question…"
-                    className="w-full px-3 py-2 bg-dark border border-gray-700 text-white text-sm rounded-xl focus:outline-none focus:border-primary transition-colors resize-none placeholder-gray-600"
-                  />
-                  <div className="flex gap-2">
-                    <button
-                      type="submit"
-                      disabled={replying || replyText.trim().length < 1}
-                      className="px-3 py-1.5 bg-primary text-zinc-950 text-sm font-semibold rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {replying ? 'Sending…' : 'Send Reply'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => { setShowReplyForm(false); setReplyText(''); setReplyError('') }}
-                      className="px-3 py-1.5 text-gray-500 text-sm hover:text-gray-300 transition-colors"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </form>
-              )}
-            </div>
-          )}
+          {/* Reply form — always visible */}
+          <form onSubmit={handleReply} className="space-y-2 pt-1">
+            {isClosed && (
+              <p className="text-xs text-gray-500">Sending a reply will reopen this request.</p>
+            )}
+            {replyError && <p className="text-xs text-red-400">{replyError}</p>}
+            <textarea
+              value={replyText}
+              onChange={(e) => setReplyText(e.target.value)}
+              rows={2}
+              placeholder="Add a follow-up message…"
+              className="w-full px-3 py-2 bg-dark border border-gray-700 text-white text-sm rounded-xl focus:outline-none focus:border-primary transition-colors resize-none placeholder-gray-600"
+            />
+            <button
+              type="submit"
+              disabled={replying || replyText.trim().length < 1}
+              className="px-4 py-1.5 bg-primary text-zinc-950 text-sm font-semibold rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {replying ? 'Sending…' : 'Send'}
+            </button>
+          </form>
 
           {/* Active ticket: close option */}
           {!isClosed && (
@@ -483,17 +427,12 @@ export default function SupportForm({ userName, userEmail, plan, lastReportConte
               id="support-category"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="w-full px-4 py-3 bg-dark border border-gray-700 text-white rounded-xl focus:outline-none focus:border-primary transition-colors text-sm appearance-none cursor-pointer"
+              className="w-full px-4 py-3 bg-dark border border-gray-700 text-white rounded-xl focus:outline-none focus:border-primary transition-colors text-sm appearance-none cursor-pointer [color-scheme:dark]"
             >
               {CATEGORY_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))}
             </select>
-            {category === 'dispute' && (
-              <p className="text-xs text-red-400 mt-1.5">
-                Disputes are treated as high priority and reviewed immediately.
-              </p>
-            )}
           </div>
 
           {/* Refund type — only shown for refund category */}
@@ -506,7 +445,7 @@ export default function SupportForm({ userName, userEmail, plan, lastReportConte
                 id="support-product-type"
                 value={productType}
                 onChange={(e) => setProductType(e.target.value)}
-                className="w-full px-4 py-3 bg-dark border border-gray-700 text-white rounded-xl focus:outline-none focus:border-primary transition-colors text-sm appearance-none cursor-pointer"
+                className="w-full px-4 py-3 bg-dark border border-gray-700 text-white rounded-xl focus:outline-none focus:border-primary transition-colors text-sm appearance-none cursor-pointer [color-scheme:dark]"
               >
                 <option value="subscription">My monthly / annual subscription</option>
                 <option value="credit_pack">A credit pack purchase</option>

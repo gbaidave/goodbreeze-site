@@ -12,6 +12,7 @@ import { createClient } from '@/lib/supabase/client'
 export function CreditsDisplay() {
   const { user, loading: authLoading } = useAuth()
   const [credits, setCredits] = useState<number | null>(null)
+  const [role, setRole] = useState<string | null>(null)
 
   useEffect(() => {
     if (!user) return
@@ -30,7 +31,13 @@ export function CreditsDisplay() {
         .in('status', ['active', 'trialing'])
         .limit(1)
         .maybeSingle(),
-    ]).then(([creditsRes, subRes]) => {
+      supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single(),
+    ]).then(([creditsRes, subRes, profileRes]) => {
+      setRole(profileRes.data?.role ?? 'user')
       const packTotal = (creditsRes.data ?? []).reduce(
         (sum, c) => sum + ((c.balance as number) ?? 0), 0
       )
@@ -42,6 +49,7 @@ export function CreditsDisplay() {
   }, [user])
 
   if (authLoading || !user || credits === null) return null
+  if (role === 'admin' || role === 'tester') return null
 
   return (
     <p className="text-sm text-gray-400">

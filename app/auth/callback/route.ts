@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
 
         // Send new users to the welcome page so they get a clear confirmation message
         const welcomeNext = encodeURIComponent(returnUrl)
-        return NextResponse.redirect(`${origin}/auth/welcome?next=${welcomeNext}`)
+        return NextResponse.redirect(`${origin}/welcome?next=${welcomeNext}`)
       }
     }
     return NextResponse.redirect(`${origin}${returnUrl}`)

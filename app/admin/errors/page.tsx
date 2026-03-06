@@ -35,10 +35,15 @@ const ADMIN_STATUS_STYLES: Record<AdminStatus, string> = {
   wont_fix: 'bg-gray-800 text-gray-400 border-gray-700',
 }
 
-const REPORT_TYPES = [
-  'Keyword Research', 'SEO Audit', 'LP Optimizer',
-  'AI SEO', 'Competitive Analysis', 'Head to Head',
-  'Top 3 Competitors', 'Competitive Position',
+const REPORT_TYPES: { value: string; label: string }[] = [
+  { value: 'keyword_research',  label: 'Keyword Research' },
+  { value: 'seo_audit',         label: 'SEO Audit' },
+  { value: 'landing_page',      label: 'LP Optimizer' },
+  { value: 'ai_seo',            label: 'AI SEO' },
+  { value: 'seo_comprehensive', label: 'SEO Comprehensive' },
+  { value: 'Head to Head',      label: 'Head to Head' },
+  { value: 'Top 3 Competitors', label: 'Top 3 Competitors' },
+  { value: 'Competitive Position', label: 'Competitive Position' },
 ]
 
 // ─── Main page ────────────────────────────────────────────────────────────────
@@ -127,7 +132,7 @@ export default function AdminErrorsPage() {
     <div className="p-8 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Report Failures</h1>
+          <h1 className="text-2xl font-bold text-white">Error Monitor</h1>
           <p className="text-gray-400 text-sm mt-1">
             {loading ? 'Loading…' : `${failures.length} results`}
             {!loading && unresolvedCount > 0 && (
@@ -150,7 +155,7 @@ export default function AdminErrorsPage() {
         <select
           value={filters.status}
           onChange={e => setFilter('status', e.target.value)}
-          className="bg-dark-700 border border-primary/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary"
+          className="bg-dark-700 border border-primary/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary [color-scheme:dark]"
         >
           <option value="all">All statuses</option>
           <option value="unresolved">Unresolved</option>
@@ -162,18 +167,18 @@ export default function AdminErrorsPage() {
         <select
           value={filters.report_type}
           onChange={e => setFilter('report_type', e.target.value)}
-          className="bg-dark-700 border border-primary/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary"
+          className="bg-dark-700 border border-primary/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary [color-scheme:dark]"
         >
           <option value="all">All report types</option>
           {REPORT_TYPES.map(t => (
-            <option key={t} value={t}>{t}</option>
+            <option key={t.value} value={t.value}>{t.label}</option>
           ))}
         </select>
 
         <select
           value={filters.failure_type}
           onChange={e => setFilter('failure_type', e.target.value)}
-          className="bg-dark-700 border border-primary/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary"
+          className="bg-dark-700 border border-primary/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary [color-scheme:dark]"
         >
           <option value="all">All failure types</option>
           <option value="failed">Failed</option>
@@ -183,7 +188,7 @@ export default function AdminErrorsPage() {
         <select
           value={filters.date_range}
           onChange={e => setFilter('date_range', e.target.value)}
-          className="bg-dark-700 border border-primary/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary"
+          className="bg-dark-700 border border-primary/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary [color-scheme:dark]"
         >
           <option value="today">Today</option>
           <option value="7d">Last 7 days</option>
@@ -389,7 +394,7 @@ function FailureRow({
         <select
           value={f.admin_failure_status}
           onChange={e => onStatusChange(f.id, e.target.value)}
-          className={`text-xs font-medium px-2 py-1 rounded-lg border bg-transparent cursor-pointer focus:outline-none ${
+          className={`text-xs font-medium px-2 py-1 rounded-lg border bg-transparent cursor-pointer focus:outline-none [color-scheme:dark] ${
             ADMIN_STATUS_STYLES[adminStatus] ?? ADMIN_STATUS_STYLES.unresolved
           }`}
         >

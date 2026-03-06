@@ -8,6 +8,7 @@ const NAV_ITEMS = [
   { href: '/admin/errors',         label: 'Errors' },
   { href: '/admin/testimonials',   label: 'Testimonials' },
   { href: '/admin/support',        label: 'Support' },
+  { href: '/admin/disputes',       label: 'Disputes' },
   { href: '/admin/refunds',        label: 'Refunds' },
   { href: '/admin/email-logs',     label: 'Email Logs' },
   { href: '/admin/settings',       label: 'Settings' },

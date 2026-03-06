@@ -74,6 +74,11 @@ function extractGdriveFileId(url: string): string | null {
   const idMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/)
   if (idMatch) return idMatch[1]
 
+  // https://n8n.goodbreeze.ai/webhook/pdf-download?fileId={FILE_ID}
+  // n8n proxy stores the GDrive file ID in the fileId query param
+  const fileIdMatch = url.match(/[?&]fileId=([a-zA-Z0-9_-]+)/)
+  if (fileIdMatch) return fileIdMatch[1]
+
   return null
 }
 
