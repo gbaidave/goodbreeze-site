@@ -1,12 +1,16 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 
 interface Props {
   submittedTypes: string[]
 }
 
 type TabType = 'written' | 'video'
+type VideoMode = 'url' | 'file'
+
+const ACCEPTED_VIDEO_TYPES = ['video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska', 'video/webm']
+const MAX_FILE_SIZE_MB = 250
 
 export function TestimonialForm({ submittedTypes }: Props) {
   const [tab, setTab] = useState<TabType>(
@@ -14,6 +18,12 @@ export function TestimonialForm({ submittedTypes }: Props) {
   )
   const [content, setContent] = useState('')
   const [videoUrl, setVideoUrl] = useState('')
+  const [videoMode, setVideoMode] = useState<VideoMode>('url')
+  const [videoFile, setVideoFile] = useState<File | null>(null)
+  const [uploading, setUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
+  const [uploadPhase, setUploadPhase] = useState<'scanning' | 'uploading'>('scanning')
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [pullQuote, setPullQuote] = useState('')
   const [consent, setConsent] = useState(true)
   const [submitting, setSubmitting] = useState(false)
@@ -22,11 +32,100 @@ export function TestimonialForm({ submittedTypes }: Props) {
 
   const bothSubmitted = submittedTypes.includes('written') && submittedTypes.includes('video')
 
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0] ?? null
+    if (!file) { setVideoFile(null); return }
+    if (!ACCEPTED_VIDEO_TYPES.includes(file.type)) {
+      setError('Please select an MP4, MOV, AVI, MKV, or WebM file.')
+      e.target.value = ''
+      return
+    }
+    if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+      setError(`File is too large. Maximum size is ${MAX_FILE_SIZE_MB}MB.`)
+      e.target.value = ''
+      return
+    }
+    setError(null)
+    setVideoFile(file)
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
-    setSubmitting(true)
 
+    let resolvedVideoUrl = videoUrl
+
+    // Upload file if file mode is selected
+    if (tab === 'video' && videoMode === 'file') {
+      if (!videoFile) {
+        setError('Please select a video file to upload.')
+        return
+      }
+      setUploading(true)
+      setUploadProgress(0)
+      setUploadPhase('scanning')
+      try {
+        // Compute SHA-256 for VirusTotal check
+        const buffer = await videoFile.arrayBuffer()
+        const hashBuffer = await crypto.subtle.digest('SHA-256', buffer)
+        const sha256 = Array.from(new Uint8Array(hashBuffer))
+          .map(b => b.toString(16).padStart(2, '0'))
+          .join('')
+
+        // Get GDrive resumable upload session URL
+        const initRes = await fetch('/api/testimonials/upload-video', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            filename: videoFile.name,
+            fileType: videoFile.type,
+            fileSize: videoFile.size,
+            sha256,
+          }),
+        })
+        const initData = await initRes.json()
+        if (!initRes.ok) {
+          setError(initData.error ?? 'Upload failed. Please try again.')
+          return
+        }
+
+        // Upload directly to GDrive via XHR (for progress tracking)
+        setUploadPhase('uploading')
+        const fileId = await new Promise<string>((resolve, reject) => {
+          const xhr = new XMLHttpRequest()
+          xhr.open('PUT', initData.uploadUrl)
+          xhr.setRequestHeader('Content-Type', videoFile.type)
+          xhr.upload.addEventListener('progress', (e) => {
+            if (e.lengthComputable) {
+              setUploadProgress(Math.round((e.loaded / e.total) * 100))
+            }
+          })
+          xhr.addEventListener('load', () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              try {
+                resolve(JSON.parse(xhr.responseText).id)
+              } catch {
+                reject(new Error('Invalid upload response'))
+              }
+            } else {
+              reject(new Error('Upload failed'))
+            }
+          })
+          xhr.addEventListener('error', () => reject(new Error('Upload failed')))
+          xhr.send(videoFile)
+        })
+
+        resolvedVideoUrl = `https://drive.google.com/file/d/${fileId}/view`
+        setUploadProgress(100)
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : 'Upload failed. Please try again.')
+        return
+      } finally {
+        setUploading(false)
+      }
+    }
+
+    setSubmitting(true)
     try {
       const res = await fetch('/api/testimonials', {
         method: 'POST',
@@ -34,7 +133,7 @@ export function TestimonialForm({ submittedTypes }: Props) {
         body: JSON.stringify({
           type: tab,
           content: tab === 'written' ? content : undefined,
-          video_url: tab === 'video' ? videoUrl : undefined,
+          video_url: tab === 'video' ? resolvedVideoUrl : undefined,
           pull_quote: pullQuote,
           ca_consent: consent,
         }),
@@ -192,20 +291,82 @@ export function TestimonialForm({ submittedTypes }: Props) {
             </div>
           )}
 
-          {/* Video URL */}
+          {/* Video input */}
           {tab === 'video' && (
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Video link <span className="text-gray-500 font-normal text-xs">(Loom, YouTube, Instagram, TikTok, and more)</span>
-              </label>
-              <input
-                type="url"
-                value={videoUrl}
-                onChange={(e) => setVideoUrl(e.target.value)}
-                placeholder="https://www.instagram.com/reel/... or https://loom.com/share/..."
-                required
-                className="w-full bg-dark border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-primary/50"
-              />
+            <div className="space-y-3">
+              {/* Toggle */}
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setVideoMode('url')}
+                  className={`flex-1 py-2 text-sm rounded-lg border transition-colors ${
+                    videoMode === 'url'
+                      ? 'border-primary text-primary bg-primary/10'
+                      : 'border-gray-700 text-gray-400 hover:text-gray-200'
+                  }`}
+                >
+                  Paste a link
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setVideoMode('file')}
+                  className={`flex-1 py-2 text-sm rounded-lg border transition-colors ${
+                    videoMode === 'file'
+                      ? 'border-primary text-primary bg-primary/10'
+                      : 'border-gray-700 text-gray-400 hover:text-gray-200'
+                  }`}
+                >
+                  Upload a file
+                </button>
+              </div>
+
+              {videoMode === 'url' ? (
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Video link <span className="text-gray-500 font-normal text-xs">(Loom, YouTube, Instagram, TikTok, and more)</span>
+                  </label>
+                  <input
+                    type="url"
+                    value={videoUrl}
+                    onChange={(e) => setVideoUrl(e.target.value)}
+                    placeholder="https://www.instagram.com/reel/... or https://loom.com/share/..."
+                    required
+                    className="w-full bg-dark border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-primary/50"
+                  />
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Video file <span className="text-gray-500 font-normal text-xs">(MP4, MOV, AVI, MKV, WebM · max {MAX_FILE_SIZE_MB}MB)</span>
+                  </label>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="video/mp4,video/quicktime,video/x-msvideo,video/x-matroska,video/webm"
+                    onChange={handleFileChange}
+                    required
+                    className="w-full bg-dark border border-gray-700 rounded-xl px-4 py-3 text-gray-300 text-sm focus:outline-none focus:border-primary/50 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-primary/20 file:text-primary file:text-sm file:cursor-pointer cursor-pointer"
+                  />
+                  {videoFile && (
+                    <p className="text-xs text-gray-500 mt-1.5">
+                      {videoFile.name} ({(videoFile.size / 1024 / 1024).toFixed(1)}MB)
+                    </p>
+                  )}
+                  {uploading && (
+                    <div className="mt-2 space-y-1">
+                      <div className="h-1.5 bg-dark rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-primary transition-all duration-300 rounded-full"
+                          style={{ width: `${uploadProgress}%` }}
+                        />
+                      </div>
+                      <p className="text-xs text-gray-500">
+                        {uploadPhase === 'scanning' ? 'Scanning file…' : `Uploading… ${uploadProgress}%`}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
@@ -305,12 +466,15 @@ export function TestimonialForm({ submittedTypes }: Props) {
           {/* Submit */}
           <button
             type="submit"
-            disabled={submitting || !consent}
+            disabled={submitting || uploading || !consent}
             className="w-full py-3 border border-white text-white font-semibold rounded-xl
               hover:bg-white/10 transition-all
               disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {submitting ? 'Submitting...' : 'Submit for review'}
+            {uploading
+              ? (uploadPhase === 'scanning' ? 'Scanning file…' : `Uploading… ${uploadProgress}%`)
+              : submitting ? 'Submitting…' : 'Submit for review'
+            }
           </button>
         </form>
       )}

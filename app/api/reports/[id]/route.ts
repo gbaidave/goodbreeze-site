@@ -1,4 +1,11 @@
 /**
+ * PATCH /api/reports/[id]
+ *
+ * Marks a stuck pending/processing report as failed.
+ * Called by the dashboard polling loop when a report exceeds the 10-minute
+ * timeout threshold. Setting status to 'failed' fires the DB triggers that
+ * refund the credit and create a bell notification automatically.
+ *
  * DELETE /api/reports/[id]
  *
  * Deletes a single report owned by the authenticated user.
@@ -9,6 +16,79 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { createServiceClient } from '@/lib/supabase/service-client'
+
+const TIMEOUT_MS = 10 * 60 * 1000 // 10 minutes
+
+export async function PATCH(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params
+
+    const cookieStore = await cookies()
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll: () => cookieStore.getAll(),
+          setAll: (cookiesToSet) => {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            )
+          },
+        },
+      }
+    )
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+    }
+
+    const svc = createServiceClient()
+
+    const { data: existing } = await svc
+      .from('reports')
+      .select('id, status, created_at')
+      .eq('id', id)
+      .eq('user_id', user.id)
+      .single()
+
+    if (!existing) {
+      return NextResponse.json({ error: 'Report not found' }, { status: 404 })
+    }
+
+    if (existing.status !== 'pending' && existing.status !== 'processing') {
+      // Already in a terminal state — idempotent, return success
+      return NextResponse.json({ success: true, status: existing.status })
+    }
+
+    const ageMs = Date.now() - new Date(existing.created_at).getTime()
+    if (ageMs < TIMEOUT_MS) {
+      return NextResponse.json({ error: 'Report has not yet exceeded the timeout threshold' }, { status: 400 })
+    }
+
+    const { error } = await svc
+      .from('reports')
+      .update({ status: 'failed' })
+      .eq('id', id)
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+
+    // DB triggers on reports table handle:
+    //   refund_on_report_failure()         → credit refunded
+    //   notify_on_report_status_change()   → bell notification created
+
+    return NextResponse.json({ success: true, status: 'failed' })
+
+  } catch {
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
 
 export async function DELETE(
   _request: NextRequest,

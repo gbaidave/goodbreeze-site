@@ -4,11 +4,19 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 
+interface AttachmentMeta {
+  id: string
+  file_name: string
+  file_size: number | null
+  mime_type: string
+}
+
 interface Message {
   id: string
   sender_role: 'user' | 'admin'
   message: string
   created_at: string
+  attachments?: AttachmentMeta[]
 }
 
 interface Ticket {
@@ -60,6 +68,114 @@ const CATEGORY_BADGES: Record<string, string> = {
   feedback:       'bg-green-900/40 text-green-400',
 }
 
+const MAX_ATTACH = 3
+const MAX_ATTACH_BYTES = 5 * 1024 * 1024
+
+const ALLOWED_ATTACH_TYPES = [
+  'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp',
+  'application/pdf',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/msword',
+  'text/plain',
+]
+
+async function uploadAttachments(messageId: string, files: File[]): Promise<string | null> {
+  if (!files.length) return null
+  const fd = new FormData()
+  fd.append('messageId', messageId)
+  for (const f of files) fd.append('files', f)
+  const res = await fetch('/api/support/attachments', { method: 'POST', body: fd })
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}))
+    return data.error || 'Failed to upload attachments.'
+  }
+  return null
+}
+
+function formatBytes(bytes: number | null): string {
+  if (!bytes) return ''
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
+function AttachmentChips({ attachments }: { attachments: AttachmentMeta[] }) {
+  if (!attachments.length) return null
+  return (
+    <div className="flex flex-wrap gap-1.5 mt-2">
+      {attachments.map((att) => (
+        <a
+          key={att.id}
+          href={`/api/support/attachments/${att.id}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 px-2 py-1 bg-dark border border-gray-700 rounded-lg text-xs text-gray-300 hover:text-white hover:border-primary/50 transition-colors"
+        >
+          <svg className="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+          </svg>
+          <span className="truncate max-w-[140px]">{att.file_name}</span>
+          {att.file_size ? <span className="text-gray-500 shrink-0">{formatBytes(att.file_size)}</span> : null}
+        </a>
+      ))}
+    </div>
+  )
+}
+
+function FilePickerInput({
+  files,
+  onChange,
+  error,
+}: {
+  files: File[]
+  onChange: (files: File[]) => void
+  error: string
+}) {
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const selected = Array.from(e.target.files ?? [])
+    const all = [...files, ...selected].slice(0, MAX_ATTACH)
+    onChange(all)
+    e.target.value = ''
+  }
+  function remove(idx: number) {
+    onChange(files.filter((_, i) => i !== idx))
+  }
+  return (
+    <div className="space-y-1.5">
+      {files.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {files.map((f, i) => (
+            <div key={i} className="inline-flex items-center gap-1 px-2 py-1 bg-dark border border-gray-700 rounded-lg text-xs text-gray-300">
+              <svg className="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+              </svg>
+              <span className="truncate max-w-[120px]">{f.name}</span>
+              <button type="button" onClick={() => remove(i)} className="text-gray-500 hover:text-red-400 transition-colors ml-0.5">×</button>
+            </div>
+          ))}
+        </div>
+      )}
+      {files.length < MAX_ATTACH && (
+        <label className="inline-flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-300 cursor-pointer transition-colors">
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+          </svg>
+          Attach file{files.length > 0 ? '' : ' (optional)'}
+          <input
+            type="file"
+            multiple
+            accept={ALLOWED_ATTACH_TYPES.join(',')}
+            onChange={handleChange}
+            className="sr-only"
+          />
+        </label>
+      )}
+      {error && <p className="text-xs text-red-400">{error}</p>}
+      <p className="text-xs text-gray-600">Max {MAX_ATTACH} files · 5 MB each · images, PDF, Word, text</p>
+    </div>
+  )
+}
+
 function SuccessState() {
   return (
     <div className="min-h-screen bg-dark flex items-center justify-center px-6">
@@ -100,14 +216,26 @@ function TicketThread({ ticket, userEmail }: { ticket: Ticket; userEmail: string
   const [closing, setClosing] = useState(false)
   const [actionError, setActionError] = useState('')
   const [replyText, setReplyText] = useState('')
+  const [replyFiles, setReplyFiles] = useState<File[]>([])
+  const [replyFileError, setReplyFileError] = useState('')
   const [replying, setReplying] = useState(false)
   const [replyError, setReplyError] = useState('')
 
   const isClosed = ticketStatus === 'resolved' || ticketStatus === 'closed'
 
+  function validateFiles(files: File[]): string {
+    for (const f of files) {
+      if (f.size > MAX_ATTACH_BYTES) return `"${f.name}" exceeds 5 MB.`
+      if (!ALLOWED_ATTACH_TYPES.includes(f.type)) return `"${f.name}" type not allowed.`
+    }
+    return ''
+  }
+
   async function handleReply(e: React.FormEvent) {
     e.preventDefault()
     if (replyText.trim().length < 1) return
+    const fileErr = validateFiles(replyFiles)
+    if (fileErr) { setReplyFileError(fileErr); return }
     setReplying(true)
     setReplyError('')
     try {
@@ -118,13 +246,21 @@ function TicketThread({ ticket, userEmail }: { ticket: Ticket; userEmail: string
       })
       const data = await res.json()
       if (!res.ok) { setReplyError(data.error || 'Failed to send.'); return }
+      // Upload attachments if any
+      let attachErr: string | null = null
+      if (replyFiles.length && data.messageId) {
+        attachErr = await uploadAttachments(data.messageId, replyFiles)
+      }
       setLocalMessages(prev => [...prev, {
-        id: Date.now().toString(),
+        id: data.messageId ?? Date.now().toString(),
         sender_role: 'user',
         message: replyText.trim(),
         created_at: new Date().toISOString(),
+        attachments: [],
       }])
       setReplyText('')
+      setReplyFiles([])
+      if (attachErr) setReplyError(`Reply sent, but attachments failed: ${attachErr}`)
     } catch {
       setReplyError('Something went wrong. Please try again.')
     } finally {
@@ -217,6 +353,9 @@ function TicketThread({ ticket, userEmail }: { ticket: Ticket; userEmail: string
                   </span>
                 </div>
                 <p className="whitespace-pre-wrap">{msg.message}</p>
+                {msg.attachments && msg.attachments.length > 0 && (
+                  <AttachmentChips attachments={msg.attachments} />
+                )}
               </div>
             ))
           )}
@@ -239,10 +378,15 @@ function TicketThread({ ticket, userEmail }: { ticket: Ticket; userEmail: string
               placeholder="Add a follow-up message…"
               className="w-full px-3 py-2 bg-dark border border-gray-700 text-white text-sm rounded-xl focus:outline-none focus:border-primary transition-colors resize-none placeholder-gray-600"
             />
+            <FilePickerInput
+              files={replyFiles}
+              onChange={(f) => { setReplyFiles(f); setReplyFileError('') }}
+              error={replyFileError}
+            />
             <button
               type="submit"
               disabled={replying || replyText.trim().length < 1}
-              className="px-4 py-1.5 bg-primary text-zinc-950 text-sm font-semibold rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-1.5 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {replying ? 'Sending…' : 'Send'}
             </button>
@@ -304,7 +448,11 @@ export default function SupportForm({ userName, userEmail, plan, lastReportConte
   const [category, setCategory] = useState('help')
   const [subject, setSubject] = useState('')
   const [productType, setProductType] = useState('subscription')
+  const [refundMethod, setRefundMethod] = useState<'credits' | 'payment_method'>('credits')
+  const [stripeAttempted, setStripeAttempted] = useState(false)
   const [message, setMessage] = useState('')
+  const [attachFiles, setAttachFiles] = useState<File[]>([])
+  const [attachFileError, setAttachFileError] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
@@ -316,12 +464,20 @@ export default function SupportForm({ userName, userEmail, plan, lastReportConte
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    // Validate attachments client-side
+    for (const f of attachFiles) {
+      if (f.size > MAX_ATTACH_BYTES) { setAttachFileError(`"${f.name}" exceeds 5 MB.`); return }
+      if (!ALLOWED_ATTACH_TYPES.includes(f.type)) { setAttachFileError(`"${f.name}" type not allowed.`); return }
+    }
     setSubmitting(true)
     setError('')
     try {
       const body: Record<string, string> = { message, category }
       if (subject.trim()) body.subject = subject.trim()
-      if (category === 'refund') body.product_type = productType
+      if (category === 'refund') {
+        body.product_type = productType
+        body.refund_method = refundMethod
+      }
 
       const res = await fetch('/api/support', {
         method: 'POST',
@@ -330,6 +486,10 @@ export default function SupportForm({ userName, userEmail, plan, lastReportConte
       })
       const data = await res.json()
       if (!res.ok) { setError(data.error || 'Something went wrong.'); return }
+      // Upload attachments after ticket + message created
+      if (attachFiles.length && data.messageId) {
+        await uploadAttachments(data.messageId, attachFiles)
+      }
       setSubmitted(true)
     } catch {
       setError('Something went wrong. Please try again.')
@@ -429,27 +589,83 @@ export default function SupportForm({ userName, userEmail, plan, lastReportConte
               className="w-full px-4 py-3 bg-dark border border-gray-700 text-white rounded-xl focus:outline-none focus:border-primary transition-colors text-sm appearance-none cursor-pointer [color-scheme:dark]"
             >
               {CATEGORY_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
+                <option key={opt.value} value={opt.value} className="bg-dark text-white">{opt.label}</option>
               ))}
             </select>
           </div>
 
           {/* Refund type — only shown for refund category */}
           {category === 'refund' && (
-            <div>
-              <label htmlFor="support-product-type" className="block text-sm font-medium text-gray-300 mb-1.5">
-                What would you like a refund for? *
-              </label>
-              <select
-                id="support-product-type"
-                value={productType}
-                onChange={(e) => setProductType(e.target.value)}
-                className="w-full px-4 py-3 bg-dark border border-gray-700 text-white rounded-xl focus:outline-none focus:border-primary transition-colors text-sm appearance-none cursor-pointer [color-scheme:dark]"
-              >
-                <option value="subscription">My monthly / annual subscription</option>
-                <option value="credit_pack">A credit pack purchase</option>
-              </select>
-            </div>
+            <>
+              <div>
+                <label htmlFor="support-product-type" className="block text-sm font-medium text-gray-300 mb-1.5">
+                  What would you like a refund for? *
+                </label>
+                <select
+                  id="support-product-type"
+                  value={productType}
+                  onChange={(e) => setProductType(e.target.value)}
+                  className="w-full px-4 py-3 bg-dark border border-gray-700 text-white rounded-xl focus:outline-none focus:border-primary transition-colors text-sm appearance-none cursor-pointer [color-scheme:dark]"
+                >
+                  <option value="subscription" className="bg-dark text-white">My monthly / annual subscription</option>
+                  <option value="credit_pack" className="bg-dark text-white">A credit pack purchase</option>
+                </select>
+              </div>
+
+              <div>
+                <p className="block text-sm font-medium text-gray-300 mb-2">How would you like to be refunded? *</p>
+                <div className="space-y-2">
+                  {[
+                    { value: 'credits', label: 'Add credits to my account' },
+                    { value: 'payment_method', label: 'Refund to my original payment method' },
+                  ].map((opt) => (
+                    <label key={opt.value} className="flex items-center gap-3 cursor-pointer group">
+                      <input
+                        type="radio"
+                        name="refund_method"
+                        value={opt.value}
+                        checked={refundMethod === opt.value}
+                        onChange={() => {
+                          setRefundMethod(opt.value as 'credits' | 'payment_method')
+                          setStripeAttempted(false)
+                        }}
+                        className="accent-primary"
+                      />
+                      <span className="text-sm text-gray-300 group-hover:text-white transition-colors">{opt.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {refundMethod === 'payment_method' && (
+                <div className="bg-amber-950/30 border border-amber-800/50 rounded-xl p-4 space-y-3">
+                  <p className="text-sm text-amber-300 font-medium">Try Stripe first</p>
+                  <p className="text-sm text-gray-300">
+                    Many payment refunds can be handled directly through your billing settings.{' '}
+                    <a
+                      href="/account"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary underline hover:text-primary/80"
+                    >
+                      Go to your account settings
+                    </a>{' '}
+                    and look for billing or subscription options. If Stripe allows a self-service refund, that&apos;s the fastest path.
+                  </p>
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={stripeAttempted}
+                      onChange={(e) => setStripeAttempted(e.target.checked)}
+                      className="mt-0.5 accent-primary"
+                    />
+                    <span className="text-sm text-gray-300">
+                      I tried but Stripe wouldn&apos;t let me do it — I need admin help.
+                    </span>
+                  </label>
+                </div>
+              )}
+            </>
           )}
 
           {/* Subject (optional) */}
@@ -489,9 +705,23 @@ export default function SupportForm({ userName, userEmail, plan, lastReportConte
             </p>
           </div>
 
+          {/* Attachments */}
+          <div>
+            <p className="text-sm font-medium text-gray-300 mb-1.5">Attachments <span className="text-gray-600 font-normal">(optional)</span></p>
+            <FilePickerInput
+              files={attachFiles}
+              onChange={(f) => { setAttachFiles(f); setAttachFileError('') }}
+              error={attachFileError}
+            />
+          </div>
+
           <button
             type="submit"
-            disabled={submitting || message.trim().length < 10}
+            disabled={
+              submitting ||
+              message.trim().length < 10 ||
+              (category === 'refund' && refundMethod === 'payment_method' && !stripeAttempted)
+            }
             className="w-full py-4 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full hover:shadow-lg hover:shadow-primary/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {submitting ? 'Sending…' : 'Send Request'}

@@ -3,11 +3,19 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
+interface AttachmentMeta {
+  id: string
+  file_name: string
+  file_size: number | null
+  mime_type: string
+}
+
 interface Message {
   id: string
   sender_role: 'user' | 'admin'
   message: string
   created_at: string
+  attachments?: AttachmentMeta[]
 }
 
 interface Props {
@@ -16,6 +24,13 @@ interface Props {
   status: string
   messages: Message[]
   assignedTo?: string | null
+}
+
+function formatBytes(bytes: number | null): string {
+  if (!bytes) return ''
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
 export function AdminReplyPanel({ requestId, userEmail, status, messages, assignedTo }: Props) {
@@ -152,6 +167,25 @@ export function AdminReplyPanel({ requestId, userEmail, status, messages, assign
                 </span>
               </div>
               <p className="whitespace-pre-wrap">{msg.message}</p>
+              {msg.attachments && msg.attachments.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {msg.attachments.map((att) => (
+                    <a
+                      key={att.id}
+                      href={`/api/support/attachments/${att.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 px-2 py-1 bg-dark border border-gray-700 rounded-lg text-xs text-gray-300 hover:text-white hover:border-primary/50 transition-colors"
+                    >
+                      <svg className="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                      </svg>
+                      <span className="truncate max-w-[140px]">{att.file_name}</span>
+                      {att.file_size ? <span className="text-gray-500 shrink-0">{formatBytes(att.file_size)}</span> : null}
+                    </a>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
         </div>

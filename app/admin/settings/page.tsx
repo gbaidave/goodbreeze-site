@@ -114,7 +114,7 @@ export default function AdminSettingsPage() {
                 className="bg-dark border border-primary/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary [color-scheme:dark]"
               >
                 {HOURS.map(h => (
-                  <option key={h.value} value={h.value}>{h.label} PT</option>
+                  <option key={h.value} value={h.value} className="bg-dark text-white">{h.label} PT</option>
                 ))}
               </select>
             </div>

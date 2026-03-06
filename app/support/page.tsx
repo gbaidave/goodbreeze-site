@@ -72,9 +72,27 @@ export default async function SupportPage() {
     messagesByTicket[msg.request_id]!.push(msg as any)
   }
 
+  // Load attachments for all messages in these tickets
+  const messageIds = (allMessages ?? []).map((m) => m.id)
+  const { data: allAttachments } = messageIds.length
+    ? await svc
+        .from('support_attachments')
+        .select('id, message_id, file_name, file_size, mime_type')
+        .in('message_id', messageIds)
+    : { data: [] }
+
+  const attachmentsByMessage: Record<string, Array<{ id: string; file_name: string; file_size: number | null; mime_type: string }>> = {}
+  for (const att of allAttachments ?? []) {
+    if (!attachmentsByMessage[att.message_id]) attachmentsByMessage[att.message_id] = []
+    attachmentsByMessage[att.message_id]!.push(att as any)
+  }
+
   const ticketsWithMessages = (tickets ?? []).map((t) => ({
     ...t,
-    messages: messagesByTicket[t.id] ?? [],
+    messages: (messagesByTicket[t.id] ?? []).map((m) => ({
+      ...m,
+      attachments: attachmentsByMessage[m.id] ?? [],
+    })),
   }))
 
   return (

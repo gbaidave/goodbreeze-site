@@ -71,6 +71,10 @@ export default async function AccountPage() {
         nudge_emails: profile?.email_preferences?.nudge_emails !== false,
         support_emails: profile?.email_preferences?.support_emails !== false,
         referral_credit: profile?.email_preferences?.referral_credit !== false,
+        report_ready: profile?.email_preferences?.report_ready !== false,
+        support_confirmation: profile?.email_preferences?.support_confirmation !== false,
+        report_failure: profile?.email_preferences?.report_failure !== false,
+        testimonial_approved: profile?.email_preferences?.testimonial_approved !== false,
       }}
     />
   )

@@ -60,6 +60,7 @@ export async function POST(request: NextRequest) {
     const category: string = body.category ?? 'help'
     const subject = body.subject ? String(body.subject).trim().slice(0, MAX_SUBJECT_LEN) : null
     const productType: string | null = body.product_type ?? null
+    const refundMethod: string = body.refund_method === 'payment_method' ? 'payment_method' : 'credits'
 
     if (message.length < MIN_MESSAGE_LEN) {
       return NextResponse.json(
@@ -156,7 +157,10 @@ export async function POST(request: NextRequest) {
       const resolvedProductType = productType && (VALID_PRODUCT_TYPES as readonly string[]).includes(productType)
         ? productType
         : 'subscription'
-      const productLabel = resolvedProductType === 'subscription' ? 'Subscription' : 'Credit Pack'
+      const refundMethodLabel = refundMethod === 'payment_method' ? 'Payment method' : 'Credits'
+      const productLabel = resolvedProductType === 'subscription'
+        ? `Subscription — ${refundMethodLabel}`
+        : `Credit Pack — ${refundMethodLabel}`
 
       // Count credits used at time of request to determine eligibility for auto-refund
       // Subscription: reports completed in current billing period

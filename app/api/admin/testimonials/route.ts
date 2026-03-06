@@ -24,6 +24,7 @@ export async function POST(request: NextRequest) {
   const body = await request.formData()
   const id = body.get('id') as string
   const status = body.get('status') as string
+  const rejectionReason = (body.get('rejection_reason') as string | null) ?? ''
 
   if (!id || !VALID_STATUSES.includes(status as typeof VALID_STATUSES[number])) {
     return NextResponse.json({ error: 'Invalid input' }, { status: 400 })
@@ -70,10 +71,19 @@ export async function POST(request: NextRequest) {
       message: `Thank you for your ${testimonial.type} testimonial submission! ${creditLabel} have been added to your account.`,
     })
   } else if (status === 'rejected') {
+    const submitUrl = 'goodbreeze.ai/testimonials/submit'
+    const rejectionMessages: Record<string, string> = {
+      not_enough_detail: `Your ${testimonial.type} testimonial wasn\u2019t selected \u2014 it could use more detail about your specific results. Feel free to resubmit at ${submitUrl}.`,
+      no_gbai_mention: `Your ${testimonial.type} testimonial wasn\u2019t selected \u2014 make sure to mention Good Breeze AI specifically. Feel free to resubmit at ${submitUrl}.`,
+      video_quality: `Your video testimonial wasn\u2019t selected due to audio or video quality. Try refilming somewhere quiet with good lighting and resubmit at ${submitUrl}.`,
+      too_short: `Your ${testimonial.type} testimonial wasn\u2019t selected \u2014 it was a bit brief. Try expanding on your results and resubmit at ${submitUrl}.`,
+      not_a_fit: `Your ${testimonial.type} testimonial wasn\u2019t selected this time. You\u2019re welcome to submit a new one at ${submitUrl}.`,
+    }
+    const message = rejectionMessages[rejectionReason] ?? rejectionMessages.not_a_fit
     await serviceClient.from('notifications').insert({
       user_id: testimonial.user_id,
       type: 'testimonial_credit',
-      message: `Your ${testimonial.type} testimonial wasn\u2019t selected this time \u2014 you\u2019re welcome to submit a new one at goodbreeze.ai/testimonials/submit.`,
+      message,
     })
   }
 

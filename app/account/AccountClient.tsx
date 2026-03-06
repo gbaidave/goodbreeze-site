@@ -45,7 +45,7 @@ interface Props {
   creditsRemaining: number  // subscription credits (subscriptions.credits_remaining)
   creditExpiry?: string
   creditHistory?: CreditHistoryItem[]
-  initialEmailPrefs: { nudge_emails: boolean; support_emails: boolean; referral_credit: boolean }
+  initialEmailPrefs: { nudge_emails: boolean; support_emails: boolean; referral_credit: boolean; report_ready: boolean; support_confirmation: boolean; report_failure: boolean; testimonial_approved: boolean }
 }
 
 export default function AccountClient({
@@ -87,6 +87,11 @@ export default function AccountClient({
   const [nudgeEmails, setNudgeEmails] = useState(initialEmailPrefs.nudge_emails)
   const [supportEmails, setSupportEmails] = useState(initialEmailPrefs.support_emails)
   const [referralCredit, setReferralCredit] = useState(initialEmailPrefs.referral_credit)
+  const [reportReady, setReportReady] = useState(initialEmailPrefs.report_ready)
+  const [supportConfirmation, setSupportConfirmation] = useState(initialEmailPrefs.support_confirmation)
+  const [reportFailure, setReportFailure] = useState(initialEmailPrefs.report_failure)
+  const [testimonialApproved, setTestimonialApproved] = useState(initialEmailPrefs.testimonial_approved)
+  const [showAllCredits, setShowAllCredits] = useState(false)
   const [emailPrefsSaving, setEmailPrefsSaving] = useState(false)
   const [emailPrefsMsg, setEmailPrefsMsg] = useState('')
 
@@ -211,7 +216,7 @@ export default function AccountClient({
       if (!user) throw new Error('Not authenticated')
       const { error } = await supabase
         .from('profiles')
-        .update({ email_preferences: { nudge_emails: nudgeEmails, support_emails: supportEmails, referral_credit: referralCredit } })
+        .update({ email_preferences: { nudge_emails: nudgeEmails, support_emails: supportEmails, referral_credit: referralCredit, report_ready: reportReady, support_confirmation: supportConfirmation, report_failure: reportFailure, testimonial_approved: testimonialApproved } })
         .eq('id', user.id)
       if (error) throw error
       setEmailPrefsMsg('Saved!')
@@ -469,7 +474,7 @@ export default function AccountClient({
             <div className="space-y-2">
               <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Credit history</p>
               <div className="divide-y divide-primary/10 border border-gray-800 rounded-xl overflow-hidden">
-                {creditHistory.map((c) => (
+                {(showAllCredits ? creditHistory : creditHistory.slice(0, 5)).map((c) => (
                   <div key={c.id} className="flex items-center justify-between px-4 py-2.5">
                     <div>
                       <p className="text-sm text-white">
@@ -487,6 +492,14 @@ export default function AccountClient({
                   </div>
                 ))}
               </div>
+              {!showAllCredits && creditHistory.length > 5 && (
+                <button
+                  onClick={() => setShowAllCredits(true)}
+                  className="text-xs text-primary hover:text-primary/80 transition-colors"
+                >
+                  Show all ({creditHistory.length})
+                </button>
+              )}
             </div>
           )}
 
@@ -627,6 +640,19 @@ export default function AccountClient({
                 <label className="flex items-start gap-3 cursor-pointer">
                   <input
                     type="checkbox"
+                    checked={reportReady}
+                    onChange={(e) => setReportReady(e.target.checked)}
+                    className="w-4 h-4 mt-0.5 accent-primary flex-shrink-0"
+                  />
+                  <div>
+                    <p className="text-sm text-white font-medium">Report delivery</p>
+                    <p className="text-xs text-gray-500 mt-0.5">Email when your report is ready to view.</p>
+                  </div>
+                </label>
+
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
                     checked={nudgeEmails}
                     onChange={(e) => setNudgeEmails(e.target.checked)}
                     className="w-4 h-4 mt-0.5 accent-primary flex-shrink-0"
@@ -653,13 +679,52 @@ export default function AccountClient({
                 <label className="flex items-start gap-3 cursor-pointer">
                   <input
                     type="checkbox"
+                    checked={supportConfirmation}
+                    onChange={(e) => setSupportConfirmation(e.target.checked)}
+                    className="w-4 h-4 mt-0.5 accent-primary flex-shrink-0"
+                  />
+                  <div>
+                    <p className="text-sm text-white font-medium">Request confirmation</p>
+                    <p className="text-xs text-gray-500 mt-0.5">Confirmation email when you submit a support request.</p>
+                  </div>
+                </label>
+
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={reportFailure}
+                    onChange={(e) => setReportFailure(e.target.checked)}
+                    className="w-4 h-4 mt-0.5 accent-primary flex-shrink-0"
+                  />
+                  <div>
+                    <p className="text-sm text-white font-medium">Report failure alerts</p>
+                    <p className="text-xs text-gray-500 mt-0.5">Notification when a report fails and needs attention.</p>
+                  </div>
+                </label>
+
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
                     checked={referralCredit}
                     onChange={(e) => setReferralCredit(e.target.checked)}
                     className="w-4 h-4 mt-0.5 accent-primary flex-shrink-0"
                   />
                   <div>
-                    <p className="text-sm text-white font-medium">Credit awards</p>
-                    <p className="text-xs text-gray-500 mt-0.5">Notification when you earn credits via referrals or testimonials.</p>
+                    <p className="text-sm text-white font-medium">Referral credits</p>
+                    <p className="text-xs text-gray-500 mt-0.5">Notification when you earn credits for referring someone.</p>
+                  </div>
+                </label>
+
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={testimonialApproved}
+                    onChange={(e) => setTestimonialApproved(e.target.checked)}
+                    className="w-4 h-4 mt-0.5 accent-primary flex-shrink-0"
+                  />
+                  <div>
+                    <p className="text-sm text-white font-medium">Testimonial approval</p>
+                    <p className="text-xs text-gray-500 mt-0.5">Notification when your testimonial is approved and your reward is added.</p>
                   </div>
                 </label>
               </div>

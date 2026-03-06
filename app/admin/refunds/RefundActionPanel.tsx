@@ -71,9 +71,16 @@ export function RefundActionPanel({ requestId, stripePaymentId, amountPaidCents,
       </div>
       {!isEligible && (
         <p className="text-xs text-amber-400">
-          {!hasPaymentId
-            ? 'No Stripe payment ID on file — process manually in Stripe dashboard.'
-            : 'Credits have been used — not eligible for automated refund per policy.'}
+          {!hasPaymentId ? (
+            <>No Stripe payment ID on file —{' '}
+              <a
+                href="https://dashboard.stripe.com/payments"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-amber-300"
+              >process manually in Stripe dashboard</a>.
+            </>
+          ) : 'Credits have been used — not eligible for automated refund per policy.'}
           {' '}You can still deny or add notes.
         </p>
       )}

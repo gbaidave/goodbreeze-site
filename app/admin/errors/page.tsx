@@ -230,11 +230,11 @@ export default function AdminErrorsPage() {
           onChange={e => setFilter('status', e.target.value)}
           className="bg-dark-700 border border-primary/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary [color-scheme:dark]"
         >
-          <option value="all">All statuses</option>
-          <option value="unresolved">Unresolved</option>
-          <option value="in_progress">In Progress</option>
-          <option value="resolved">Resolved</option>
-          <option value="wont_fix">Won&apos;t Fix</option>
+          <option value="all" className="bg-dark text-white">All statuses</option>
+          <option value="unresolved" className="bg-dark text-white">Unresolved</option>
+          <option value="in_progress" className="bg-dark text-white">In Progress</option>
+          <option value="resolved" className="bg-dark text-white">Resolved</option>
+          <option value="wont_fix" className="bg-dark text-white">Won&apos;t Fix</option>
         </select>
 
         <select
@@ -242,9 +242,9 @@ export default function AdminErrorsPage() {
           onChange={e => setFilter('report_type', e.target.value)}
           className="bg-dark-700 border border-primary/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary [color-scheme:dark]"
         >
-          <option value="all">All report types</option>
+          <option value="all" className="bg-dark text-white">All report types</option>
           {REPORT_TYPES.map(t => (
-            <option key={t.value} value={t.value}>{t.label}</option>
+            <option key={t.value} value={t.value} className="bg-dark text-white">{t.label}</option>
           ))}
         </select>
 
@@ -253,9 +253,9 @@ export default function AdminErrorsPage() {
           onChange={e => setFilter('failure_type', e.target.value)}
           className="bg-dark-700 border border-primary/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary [color-scheme:dark]"
         >
-          <option value="all">All failure types</option>
-          <option value="failed">Failed</option>
-          <option value="failed_site_blocked">Site Blocked</option>
+          <option value="all" className="bg-dark text-white">All failure types</option>
+          <option value="failed" className="bg-dark text-white">Failed</option>
+          <option value="failed_site_blocked" className="bg-dark text-white">Site Blocked</option>
         </select>
 
         <select
@@ -263,10 +263,10 @@ export default function AdminErrorsPage() {
           onChange={e => setFilter('date_range', e.target.value)}
           className="bg-dark-700 border border-primary/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary [color-scheme:dark]"
         >
-          <option value="today">Today</option>
-          <option value="7d">Last 7 days</option>
-          <option value="30d">Last 30 days</option>
-          <option value="all">All time</option>
+          <option value="today" className="bg-dark text-white">Today</option>
+          <option value="7d" className="bg-dark text-white">Last 7 days</option>
+          <option value="30d" className="bg-dark text-white">Last 30 days</option>
+          <option value="all" className="bg-dark text-white">All time</option>
         </select>
 
         <input
@@ -363,9 +363,9 @@ export default function AdminErrorsPage() {
           onChange={e => setSysFilters(f => ({ ...f, type: e.target.value }))}
           className="bg-dark-700 border border-primary/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary [color-scheme:dark]"
         >
-          <option value="all">All types</option>
+          <option value="all" className="bg-dark text-white">All types</option>
           {SYSTEM_ERROR_TYPES.map(t => (
-            <option key={t} value={t}>{t}</option>
+            <option key={t} value={t} className="bg-dark text-white">{t}</option>
           ))}
         </select>
 
@@ -374,9 +374,9 @@ export default function AdminErrorsPage() {
           onChange={e => setSysFilters(f => ({ ...f, resolved: e.target.value }))}
           className="bg-dark-700 border border-primary/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary [color-scheme:dark]"
         >
-          <option value="all">All</option>
-          <option value="false">Unresolved</option>
-          <option value="true">Resolved</option>
+          <option value="all" className="bg-dark text-white">All</option>
+          <option value="false" className="bg-dark text-white">Unresolved</option>
+          <option value="true" className="bg-dark text-white">Resolved</option>
         </select>
 
         <select
@@ -384,10 +384,10 @@ export default function AdminErrorsPage() {
           onChange={e => setSysFilters(f => ({ ...f, date_range: e.target.value }))}
           className="bg-dark-700 border border-primary/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary [color-scheme:dark]"
         >
-          <option value="today">Today</option>
-          <option value="7d">Last 7 days</option>
-          <option value="30d">Last 30 days</option>
-          <option value="all">All time</option>
+          <option value="today" className="bg-dark text-white">Today</option>
+          <option value="7d" className="bg-dark text-white">Last 7 days</option>
+          <option value="30d" className="bg-dark text-white">Last 30 days</option>
+          <option value="all" className="bg-dark text-white">All time</option>
         </select>
       </div>
 

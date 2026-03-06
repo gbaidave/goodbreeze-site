@@ -37,7 +37,7 @@ const REPORT_CONFIG: Record<BVReportType, ReportConfig> = {
     description: 'AI & LLM visibility analysis + on-page SEO gaps and prioritized fixes.',
     showKeyword: false,
     showCompany: true,
-    frictionless: true,
+    frictionless: false,
     urlLabel: 'Page URL to Analyze',
     urlPlaceholder: 'https://yoursite.com/your-page',
   },

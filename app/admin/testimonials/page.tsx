@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { createServiceClient } from '@/lib/supabase/service-client'
+import { RejectPanel } from './RejectPanel'
 
 interface SearchParams { status?: string; type?: string }
 
@@ -153,7 +154,7 @@ export default async function AdminTestimonialsPage({
                 {t.status === 'pending' && (
                   <div className="flex gap-3 pt-1">
                     <ApproveRejectForm testimonialId={t.id} action="approved" label="Approve" />
-                    <ApproveRejectForm testimonialId={t.id} action="rejected" label="Reject" />
+                    <RejectPanel testimonialId={t.id} />
                   </div>
                 )}
                 {t.status !== 'pending' && (

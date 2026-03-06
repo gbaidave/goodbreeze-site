@@ -29,7 +29,14 @@ import { logEmail } from './email-logger'
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
-type EmailPrefKey = 'nudge_emails' | 'support_emails' | 'referral_credit'
+type EmailPrefKey =
+  | 'nudge_emails'
+  | 'support_emails'
+  | 'referral_credit'
+  | 'report_ready'
+  | 'support_confirmation'
+  | 'report_failure'
+  | 'testimonial_approved'
 
 /**
  * Returns true if the user has the given email preference enabled (or if userId is missing).
@@ -282,6 +289,7 @@ export async function sendTestimonialAdminNotificationEmail(
 }
 
 export async function sendCreditGrantedEmail(to: string, name: string, credits: number, userId?: string) {
+  if (!await checkEmailPref(userId, 'referral_credit')) return { data: null, error: null }
   const { subject, html } = creditGrantedEmail(name, credits)
   return sendAndLog(
     () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject, html }),

@@ -67,11 +67,29 @@ export default async function AdminSupportPage({
         .order('created_at', { ascending: true })
     : { data: [] }
 
+  // Load attachments for all messages
+  const messageIds = (allMessages ?? []).map((m) => m.id)
+  const { data: allAttachments } = messageIds.length
+    ? await supabase
+        .from('support_attachments')
+        .select('id, message_id, file_name, file_size, mime_type')
+        .in('message_id', messageIds)
+    : { data: [] }
+
+  const attachmentsByMessage: Record<string, any[]> = {}
+  for (const att of allAttachments ?? []) {
+    if (!attachmentsByMessage[att.message_id]) attachmentsByMessage[att.message_id] = []
+    attachmentsByMessage[att.message_id]!.push(att)
+  }
+
   // Group messages by request_id
   const messagesByRequest: Record<string, any[]> = {}
   for (const msg of allMessages ?? []) {
     if (!messagesByRequest[msg.request_id]) messagesByRequest[msg.request_id] = []
-    messagesByRequest[msg.request_id]!.push(msg)
+    messagesByRequest[msg.request_id]!.push({
+      ...msg,
+      attachments: attachmentsByMessage[msg.id] ?? [],
+    })
   }
 
   function buildFilter(s: string, c?: string) {

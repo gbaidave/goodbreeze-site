@@ -123,13 +123,17 @@ export default async function AdminRefundsPage({
                     {supportSubject && (
                       <p className="text-sm text-white font-medium">&ldquo;{supportSubject}&rdquo;</p>
                     )}
-                    <p className="text-sm text-gray-400">
-                      <span className="text-white">{req.product_label}</span>
-                      {' · '}
-                      {req.product_type === 'subscription' ? 'Subscription' : 'Credit Pack'}
-                      {' · '}
-                      {amountFormatted}
-                    </p>
+                    <div className="flex items-center gap-2 flex-wrap mt-0.5">
+                      {req.product_label?.includes('Payment method') ? (
+                        <span className="text-xs px-2 py-0.5 rounded-full border bg-orange-900/40 text-orange-400 border-orange-800">Payment method</span>
+                      ) : (
+                        <span className="text-xs px-2 py-0.5 rounded-full border bg-blue-900/40 text-blue-400 border-blue-800">Credits</span>
+                      )}
+                      <span className="text-sm text-gray-400">
+                        <span className="text-white">{req.product_label?.split(' — ')[0] ?? req.product_label}</span>
+                        {' · '}{amountFormatted}
+                      </span>
+                    </div>
                   </div>
                   <div className="text-right text-xs text-gray-500 shrink-0">
                     <p>Purchased: {purchasedOn}</p>
