@@ -96,12 +96,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (countdownRef.current)  clearInterval(countdownRef.current)
     }
 
-    function doSignOut() {
+    async function doSignOut() {
       clearAllTimers()
       localStorage.removeItem(LAST_ACTIVE_KEY)
-      createClient().auth.signOut().then(() => {
-        window.location.href = '/login?reason=timeout'
-      })
+      try {
+        await fetch('/api/auth/signout', { method: 'POST' })
+      } catch { /* ignore — redirect regardless */ }
+      window.location.href = '/login?reason=timeout'
     }
 
     function startCountdown() {
@@ -151,8 +152,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function signOut() {
     localStorage.removeItem(LAST_ACTIVE_KEY)
-    const supabase = createClient()
-    await supabase.auth.signOut()
+    try {
+      await fetch('/api/auth/signout', { method: 'POST' })
+    } catch { /* ignore — redirect regardless */ }
     window.location.href = '/login'
   }
 
