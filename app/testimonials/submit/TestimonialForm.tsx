@@ -95,6 +95,7 @@ export function TestimonialForm({ submittedTypes }: Props) {
           const xhr = new XMLHttpRequest()
           xhr.open('PUT', initData.uploadUrl)
           xhr.setRequestHeader('Content-Type', videoFile.type)
+          xhr.setRequestHeader('Content-Range', `bytes 0-${videoFile.size - 1}/${videoFile.size}`)
           xhr.upload.addEventListener('progress', (e) => {
             if (e.lengthComputable) {
               setUploadProgress(Math.round((e.loaded / e.total) * 100))
@@ -105,13 +106,14 @@ export function TestimonialForm({ submittedTypes }: Props) {
               try {
                 resolve(JSON.parse(xhr.responseText).id)
               } catch {
-                reject(new Error('Invalid upload response'))
+                reject(new Error('Upload response invalid — please try again.'))
               }
             } else {
-              reject(new Error('Upload failed'))
+              const snippet = xhr.responseText ? xhr.responseText.slice(0, 200) : 'no response'
+              reject(new Error(`Upload failed (HTTP ${xhr.status}): ${snippet}`))
             }
           })
-          xhr.addEventListener('error', () => reject(new Error('Upload failed')))
+          xhr.addEventListener('error', () => reject(new Error('Upload failed — network error or browser blocked the request. Check console for CORS details.')))
           xhr.send(videoFile)
         })
 
