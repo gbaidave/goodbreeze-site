@@ -34,7 +34,7 @@ export default async function DashboardPage({
     supabase.from('reports').select('id, report_type, status, created_at, pdf_url, expires_at, input_data').eq('user_id', user.id)
       .order('created_at', { ascending: false }).limit(100),
     supabase.from('referral_codes').select('code, referral_uses(reward_granted)').eq('user_id', user.id).single(),
-    supabase.from('testimonials').select('type').eq('user_id', user.id),
+    supabase.from('testimonials').select('type').eq('user_id', user.id).in('status', ['approved', 'pending']),
     serviceClient.from('support_requests').select('id, message, status, created_at').eq('user_id', user.id).order('created_at', { ascending: false }).limit(10),
   ])
 

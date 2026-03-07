@@ -74,16 +74,15 @@ export async function POST(request: NextRequest) {
       message: approvalMessage,
     })
   } else if (status === 'rejected') {
-    const submitUrl = 'https://goodbreeze.ai/testimonials/submit'
     const rejectionMessages: Record<string, string> = {
-      not_enough_detail: `Your ${testimonial.type} testimonial wasn\u2019t selected \u2014 it could use more detail about your specific results. Feel free to resubmit at ${submitUrl}.`,
-      no_gbai_mention: `Your ${testimonial.type} testimonial wasn\u2019t selected \u2014 make sure to mention Good Breeze AI specifically. Feel free to resubmit at ${submitUrl}.`,
-      video_quality: `Your video testimonial wasn\u2019t selected due to audio or video quality. Try refilming somewhere quiet with good lighting and resubmit at ${submitUrl}.`,
-      too_short: `Your ${testimonial.type} testimonial wasn\u2019t selected \u2014 it was a bit brief. Try expanding on your results and resubmit at ${submitUrl}.`,
-      not_a_fit: `Your ${testimonial.type} testimonial wasn\u2019t selected this time. You\u2019re welcome to submit a new one at ${submitUrl}.`,
-      duplicate: `Your ${testimonial.type} testimonial wasn\u2019t selected \u2014 a similar submission already exists. Feel free to submit something new at ${submitUrl}.`,
-      policy_violation: `Your ${testimonial.type} testimonial wasn\u2019t selected \u2014 it didn\u2019t meet our submission guidelines. Review the guidelines and resubmit at ${submitUrl}.`,
-      other: `Your ${testimonial.type} testimonial wasn\u2019t selected this time. You\u2019re welcome to submit a new one at ${submitUrl}.`,
+      not_enough_detail: `Your ${testimonial.type} testimonial wasn\u2019t selected \u2014 it could use more detail about your specific results. Feel free to resubmit.`,
+      no_gbai_mention: `Your ${testimonial.type} testimonial wasn\u2019t selected \u2014 make sure to mention Good Breeze AI specifically. Feel free to resubmit.`,
+      video_quality: `Your video testimonial wasn\u2019t selected due to audio or video quality. Try refilming somewhere quiet with good lighting and resubmit.`,
+      too_short: `Your ${testimonial.type} testimonial wasn\u2019t selected \u2014 it was a bit brief. Try expanding on your results and resubmit.`,
+      not_a_fit: `Your ${testimonial.type} testimonial wasn\u2019t selected this time. You\u2019re welcome to submit a new one.`,
+      duplicate: `Your ${testimonial.type} testimonial wasn\u2019t selected \u2014 a similar submission already exists. Feel free to submit something new.`,
+      policy_violation: `Your ${testimonial.type} testimonial wasn\u2019t selected \u2014 it didn\u2019t meet our submission guidelines. Review the guidelines and resubmit.`,
+      other: `Your ${testimonial.type} testimonial wasn\u2019t selected this time. You\u2019re welcome to submit a new one.`,
     }
     const message = rejectionMessages[rejectionReason] ?? rejectionMessages.not_a_fit
     await serviceClient.from('notifications').insert({
