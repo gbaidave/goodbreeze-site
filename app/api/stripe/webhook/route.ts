@@ -8,6 +8,7 @@
  * - customer.subscription.updated → sync subscription status
  * - customer.subscription.deleted → mark subscription cancelled
  * - invoice.payment_failed → flag subscription past_due
+ * - charge.refunded → sync manual Stripe refunds back to the app (notify user)
  */
 
 import { NextRequest, NextResponse } from 'next/server'
@@ -355,6 +356,49 @@ export async function POST(request: NextRequest) {
             }
           }
         }
+        break
+      }
+
+      case 'charge.refunded': {
+        // Fires for ALL refunds — both app-issued (via admin panel) and manual (via Stripe dashboard).
+        // If the refund_request was already marked 'refunded' by the admin panel, we skip it (idempotent).
+        const charge = event.data.object as Stripe.Charge
+        const paymentIntentId = charge.payment_intent as string | null
+        if (!paymentIntentId) break
+
+        // Find the refund_request matching this PI that isn't already processed
+        const { data: refundReq } = await supabase
+          .from('refund_requests')
+          .select('id, user_id, product_label, stripe_refund_id')
+          .eq('stripe_payment_id', paymentIntentId)
+          .eq('status', 'pending')
+          .maybeSingle()
+
+        if (!refundReq) {
+          // Already processed by admin panel or no matching request — nothing to do
+          break
+        }
+
+        // Get refund amount from the most recent refund on this charge
+        const latestRefund = charge.refunds?.data?.[0]
+        const amountCents = latestRefund?.amount ?? charge.amount_refunded
+        const amountStr = amountCents ? `$${(amountCents / 100).toFixed(2)}` : ''
+        const stripeRefundId = latestRefund?.id ?? null
+
+        await supabase.from('refund_requests').update({
+          status: 'refunded',
+          stripe_refund_id: stripeRefundId,
+          refund_amount_cents: amountCents ?? null,
+          reviewed_at: new Date().toISOString(),
+        }).eq('id', refundReq.id)
+
+        await supabase.from('notifications').insert({
+          user_id: refundReq.user_id,
+          type: 'info',
+          message: `Your refund${amountStr ? ` of ${amountStr}` : ''} for ${refundReq.product_label} has been processed. Please allow 5–10 business days for the amount to appear on your statement.`,
+        })
+
+        console.log('[webhook] charge.refunded — synced refund_request', refundReq.id, 'for user', refundReq.user_id)
         break
       }
 

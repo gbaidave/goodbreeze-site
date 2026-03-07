@@ -181,9 +181,24 @@ export async function POST(request: NextRequest) {
             creditsUsedAtRequest = count ?? 0
           }
 
+          // Auto-populate stripe_payment_id for credit pack refunds
+          // Look up the most recent credit pack purchase with a PI on file
+          let autoPaymentId: string | null = null
+          if (resolvedProductType === 'credits') {
+            const { data: latestCredit } = await svc
+              .from('credits')
+              .select('stripe_payment_intent_id')
+              .eq('user_id', user.id)
+              .not('stripe_payment_intent_id', 'is', null)
+              .order('purchased_at', { ascending: false })
+              .limit(1)
+              .single()
+            autoPaymentId = latestCredit?.stripe_payment_intent_id ?? null
+          }
+
           const { error } = await svc.from('refund_requests').insert({
             user_id: user.id,
-            stripe_payment_id: null,
+            stripe_payment_id: autoPaymentId,
             product_type: resolvedProductType,
             product_label: productLabel,
             status: 'pending',
