@@ -474,9 +474,7 @@ function TicketListSection({ tickets, userEmail }: { tickets: Ticket[]; userEmai
       return sortOrder === 'newest' ? -diff : diff
     })
 
-  // Only show status tabs that have at least one ticket (plus 'All')
-  const activeStatuses = new Set(tickets.map((t) => t.status))
-  const visibleTabs = STATUS_FILTER_TABS.filter((t) => t.value === 'all' || activeStatuses.has(t.value))
+  const visibleTabs = STATUS_FILTER_TABS
 
   return (
     <motion.div
@@ -522,7 +520,7 @@ function TicketListSection({ tickets, userEmail }: { tickets: Ticket[]; userEmai
       </div>
 
       {/* Status filter tabs */}
-      {visibleTabs.length > 2 && (
+      {tickets.length > 0 && (
         <div className="flex gap-1 flex-wrap">
           {visibleTabs.map((tab) => (
             <button

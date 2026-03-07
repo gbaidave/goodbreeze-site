@@ -210,7 +210,7 @@ export async function POST(request: NextRequest) {
       await serviceSupabase.from('notifications').insert(
         admins.map((a: { id: string }) => ({
           user_id: a.id,
-          type: 'admin_message',
+          type: 'new_testimonial',
           message: `New ${type} testimonial from ${userName} — pending review.`,
         }))
       )

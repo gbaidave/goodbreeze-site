@@ -125,9 +125,9 @@ export default async function AdminRefundsPage({
                     )}
                     <div className="flex items-center gap-2 flex-wrap mt-0.5">
                       {req.product_label?.includes('Payment method') ? (
-                        <span className="text-xs px-2 py-0.5 rounded-full border bg-orange-900/40 text-orange-400 border-orange-800">Payment method</span>
+                        <span className="text-xs px-2 py-0.5 rounded-full border bg-orange-900/60 text-orange-300 border-orange-700">Payment method</span>
                       ) : (
-                        <span className="text-xs px-2 py-0.5 rounded-full border bg-blue-900/40 text-blue-400 border-blue-800">Credits</span>
+                        <span className="text-xs px-2 py-0.5 rounded-full border bg-blue-900/60 text-blue-300 border-blue-700">Credits</span>
                       )}
                       <span className="text-sm text-gray-400">
                         <span className="text-white">{req.product_label?.split(' — ')[0] ?? req.product_label}</span>
@@ -143,25 +143,25 @@ export default async function AdminRefundsPage({
 
                 {/* Details */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
-                  <div className="bg-zinc-800 rounded-lg px-3 py-2">
+                  <div className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2">
                     <p className="text-gray-500 text-xs mb-0.5">Credits used</p>
                     <p className={`font-semibold ${req.credits_used_at_request > 0 ? 'text-red-400' : 'text-green-400'}`}>
                       {req.credits_used_at_request}
                     </p>
                   </div>
-                  <div className="bg-zinc-800 rounded-lg px-3 py-2">
+                  <div className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2">
                     <p className="text-gray-500 text-xs mb-0.5">Eligible</p>
                     <p className={`font-semibold ${req.credits_used_at_request === 0 ? 'text-green-400' : 'text-red-400'}`}>
                       {req.credits_used_at_request === 0 ? 'Yes' : 'No — credits used'}
                     </p>
                   </div>
-                  <div className="bg-zinc-800 rounded-lg px-3 py-2">
+                  <div className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2">
                     <p className="text-gray-500 text-xs mb-0.5">Stripe payment</p>
-                    <p className="font-mono text-xs text-gray-300 truncate">{req.stripe_payment_id || '—'}</p>
+                    <p className="font-mono text-xs text-white truncate">{req.stripe_payment_id || '—'}</p>
                   </div>
-                  <div className="bg-zinc-800 rounded-lg px-3 py-2">
+                  <div className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2">
                     <p className="text-gray-500 text-xs mb-0.5">Stripe refund ID</p>
-                    <p className="font-mono text-xs text-gray-300 truncate">{req.stripe_refund_id || '—'}</p>
+                    <p className="font-mono text-xs text-white truncate">{req.stripe_refund_id || '—'}</p>
                   </div>
                 </div>
 

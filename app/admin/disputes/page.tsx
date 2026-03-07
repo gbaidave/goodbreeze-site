@@ -23,7 +23,7 @@ export default async function AdminDisputesPage({
 
   let query = supabase
     .from('support_requests')
-    .select('id, user_id, email, plan_at_time, message, status, subject, priority, created_at, stripe_payment_id')
+    .select('id, user_id, email, plan_at_time, message, status, subject, priority, created_at')
     .eq('category', 'dispute')
     .order('created_at', { ascending: false })
 
@@ -96,9 +96,6 @@ export default async function AdminDisputesPage({
                   )}
                   {r.plan_at_time && (
                     <p className="text-gray-500 text-xs mt-0.5">Plan: {r.plan_at_time}</p>
-                  )}
-                  {r.stripe_payment_id && (
-                    <p className="text-gray-500 text-xs mt-0.5">Payment: {r.stripe_payment_id}</p>
                   )}
                 </div>
                 <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">

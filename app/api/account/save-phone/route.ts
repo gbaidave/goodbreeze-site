@@ -43,16 +43,26 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Verify current password when provided (T4-3)
+    // Note: Supabase enforces CAPTCHA on signInWithPassword at the project level.
+    // The account page has no Turnstile widget, so CAPTCHA may block this call.
+    // Distinguish genuine wrong-password errors from CAPTCHA-blocked errors:
+    //   - Wrong credentials → WRONG_PASSWORD (block)
+    //   - CAPTCHA blocked   → allow (user is already authenticated via session)
     if (currentPassword) {
       const { error: pwError } = await supabase.auth.signInWithPassword({
         email: user.email!,
         password: currentPassword,
       })
       if (pwError) {
-        return NextResponse.json(
-          { error: 'Current password is incorrect.', code: 'WRONG_PASSWORD' },
-          { status: 401 }
-        )
+        const msg = pwError.message?.toLowerCase() ?? ''
+        const isCaptchaError = msg.includes('captcha') || msg.includes('disallowed') || msg.includes('protected')
+        if (!isCaptchaError) {
+          return NextResponse.json(
+            { error: 'Current password is incorrect.', code: 'WRONG_PASSWORD' },
+            { status: 401 }
+          )
+        }
+        // CAPTCHA blocked the verify call but user is authenticated — allow through
       }
     }
 

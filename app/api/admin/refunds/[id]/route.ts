@@ -45,8 +45,8 @@ export async function PATCH(
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
     }
 
-    const { action, notes } = await request.json()
-    if (!['refund', 'deny'].includes(action)) {
+    const { action, notes, stripePaymentId: incomingPaymentId } = await request.json()
+    if (!['refund', 'deny', 'set_payment_id'].includes(action)) {
       return NextResponse.json({ error: 'Invalid action.' }, { status: 400 })
     }
 
@@ -62,6 +62,15 @@ export async function PATCH(
     }
     if (refundReq.status !== 'pending') {
       return NextResponse.json({ error: 'This request has already been processed.' }, { status: 409 })
+    }
+
+    if (action === 'set_payment_id') {
+      const pid = (incomingPaymentId ?? '').trim()
+      if (!pid.startsWith('pi_')) {
+        return NextResponse.json({ error: 'Invalid payment intent ID — must start with pi_.' }, { status: 400 })
+      }
+      await svc.from('refund_requests').update({ stripe_payment_id: pid }).eq('id', requestId)
+      return NextResponse.json({ success: true })
     }
 
     if (action === 'deny') {
