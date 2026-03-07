@@ -19,6 +19,7 @@ export default function LandingPageOptimizerPage() {
   const [company, setCompany] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [reportId, setReportId] = useState<string | undefined>(undefined)
   const [error, setError] = useState('')
   const [upgradePrompt, setUpgradePrompt] = useState('')
 
@@ -38,6 +39,7 @@ export default function LandingPageOptimizerPage() {
       if (res.status === 402) { setError(data.error); setUpgradePrompt(data.upgradePrompt ?? 'impulse'); return }
       if (!res.ok) { setError(data.error || 'Something went wrong.'); return }
       captureEvent('tool_form_submit', { reportType: 'landing_page' })
+      setReportId(data.reportId)
       setSubmitted(true)
     } catch {
       setError('Something went wrong. Please try again.')
@@ -56,7 +58,8 @@ export default function LandingPageOptimizerPage() {
           heading="Optimization report on its way!"
           body={<>Your landing page optimization report is being generated. PDF arrives by email in <strong className="text-white">2–3 minutes</strong>.</>}
           detail="Track progress in your dashboard."
-          onRunAnother={() => setSubmitted(false)}
+          reportId={reportId}
+          onRunAnother={() => { setSubmitted(false); setReportId(undefined) }}
         />
       )}
     <div className="min-h-screen bg-dark py-24 px-6">

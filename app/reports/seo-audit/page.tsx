@@ -19,6 +19,7 @@ export default function SeoAuditPage() {
   const [focusKeyword, setFocusKeyword] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [reportId, setReportId] = useState<string | undefined>(undefined)
   const [error, setError] = useState('')
   const [upgradePrompt, setUpgradePrompt] = useState('')
 
@@ -38,6 +39,7 @@ export default function SeoAuditPage() {
       if (res.status === 402) { setError(data.error); setUpgradePrompt(data.upgradePrompt ?? 'impulse'); return }
       if (!res.ok) { setError(data.error || 'Something went wrong.'); return }
       captureEvent('tool_form_submit', { reportType: 'seo_audit' })
+      setReportId(data.reportId)
       setSubmitted(true)
     } catch {
       setError('Something went wrong. Please try again.')
@@ -56,7 +58,8 @@ export default function SeoAuditPage() {
           heading="Audit running!"
           body={<>Your SEO audit is underway. The PDF will arrive in your inbox within <strong className="text-white">3–5 minutes</strong>.</>}
           detail="Track progress in your dashboard."
-          onRunAnother={() => setSubmitted(false)}
+          reportId={reportId}
+          onRunAnother={() => { setSubmitted(false); setReportId(undefined) }}
         />
       )}
     <div className="min-h-screen bg-dark py-24 px-6">

@@ -35,6 +35,7 @@ export default function SalesAnalyzer() {
 
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [reportId, setReportId] = useState<string | undefined>(undefined)
   const [error, setError] = useState('')
   const [upgradePrompt, setUpgradePrompt] = useState('')
   const [phoneRequired, setPhoneRequired] = useState(false)
@@ -65,6 +66,7 @@ export default function SalesAnalyzer() {
       }
       if (!res.ok) { setError(data.error || 'Something went wrong. Please try again.'); return }
       captureEvent('tool_form_submit', { reportType })
+      setReportId(data.reportId)
       setSubmitted(true)
     } catch {
       setError('Something went wrong. Please try again.')
@@ -90,7 +92,8 @@ export default function SalesAnalyzer() {
           heading="Report on its way!"
           body={<>Your competitive analysis is being generated. You&apos;ll receive the PDF in your inbox within <strong className="text-white">2–4 minutes</strong>.</>}
           detail="Check your dashboard to track progress or view past reports."
-          onRunAnother={() => setSubmitted(false)}
+          reportId={reportId}
+          onRunAnother={() => { setSubmitted(false); setReportId(undefined) }}
         />
       )}
     <div className="min-h-screen bg-dark py-24 px-6">
