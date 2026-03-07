@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { generateFailurePacket } from '@/lib/admin/failure-packet'
+import { CustomSelect } from '@/components/ui/CustomSelect'
 
 // ─── System Error types ────────────────────────────────────────────────────────
 
@@ -225,49 +226,51 @@ export default function AdminErrorsPage() {
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3">
-        <select
+        <CustomSelect
           value={filters.status}
-          onChange={e => setFilter('status', e.target.value)}
-          className="bg-dark-700 border border-primary/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary [color-scheme:dark]"
-        >
-          <option value="all" className="bg-dark text-white">All statuses</option>
-          <option value="unresolved" className="bg-dark text-white">Unresolved</option>
-          <option value="in_progress" className="bg-dark text-white">In Progress</option>
-          <option value="resolved" className="bg-dark text-white">Resolved</option>
-          <option value="wont_fix" className="bg-dark text-white">Won&apos;t Fix</option>
-        </select>
+          onChange={v => setFilter('status', v)}
+          options={[
+            { value: 'all', label: 'All statuses' },
+            { value: 'unresolved', label: 'Unresolved' },
+            { value: 'in_progress', label: 'In Progress' },
+            { value: 'resolved', label: 'Resolved' },
+            { value: 'wont_fix', label: "Won't Fix" },
+          ]}
+          className="bg-dark-700 border border-primary/20 rounded-lg px-3 py-2 text-sm text-white"
+        />
 
-        <select
+        <CustomSelect
           value={filters.report_type}
-          onChange={e => setFilter('report_type', e.target.value)}
-          className="bg-dark-700 border border-primary/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary [color-scheme:dark]"
-        >
-          <option value="all" className="bg-dark text-white">All report types</option>
-          {REPORT_TYPES.map(t => (
-            <option key={t.value} value={t.value} className="bg-dark text-white">{t.label}</option>
-          ))}
-        </select>
+          onChange={v => setFilter('report_type', v)}
+          options={[
+            { value: 'all', label: 'All report types' },
+            ...REPORT_TYPES,
+          ]}
+          className="bg-dark-700 border border-primary/20 rounded-lg px-3 py-2 text-sm text-white"
+        />
 
-        <select
+        <CustomSelect
           value={filters.failure_type}
-          onChange={e => setFilter('failure_type', e.target.value)}
-          className="bg-dark-700 border border-primary/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary [color-scheme:dark]"
-        >
-          <option value="all" className="bg-dark text-white">All failure types</option>
-          <option value="failed" className="bg-dark text-white">Failed</option>
-          <option value="failed_site_blocked" className="bg-dark text-white">Site Blocked</option>
-        </select>
+          onChange={v => setFilter('failure_type', v)}
+          options={[
+            { value: 'all', label: 'All failure types' },
+            { value: 'failed', label: 'Failed' },
+            { value: 'failed_site_blocked', label: 'Site Blocked' },
+          ]}
+          className="bg-dark-700 border border-primary/20 rounded-lg px-3 py-2 text-sm text-white"
+        />
 
-        <select
+        <CustomSelect
           value={filters.date_range}
-          onChange={e => setFilter('date_range', e.target.value)}
-          className="bg-dark-700 border border-primary/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary [color-scheme:dark]"
-        >
-          <option value="today" className="bg-dark text-white">Today</option>
-          <option value="7d" className="bg-dark text-white">Last 7 days</option>
-          <option value="30d" className="bg-dark text-white">Last 30 days</option>
-          <option value="all" className="bg-dark text-white">All time</option>
-        </select>
+          onChange={v => setFilter('date_range', v)}
+          options={[
+            { value: 'today', label: 'Today' },
+            { value: '7d', label: 'Last 7 days' },
+            { value: '30d', label: 'Last 30 days' },
+            { value: 'all', label: 'All time' },
+          ]}
+          className="bg-dark-700 border border-primary/20 rounded-lg px-3 py-2 text-sm text-white"
+        />
 
         <input
           type="text"
@@ -358,37 +361,38 @@ export default function AdminErrorsPage() {
 
       {/* System error filters */}
       <div className="flex flex-wrap gap-3">
-        <select
+        <CustomSelect
           value={sysFilters.type}
-          onChange={e => setSysFilters(f => ({ ...f, type: e.target.value }))}
-          className="bg-dark-700 border border-primary/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary [color-scheme:dark]"
-        >
-          <option value="all" className="bg-dark text-white">All types</option>
-          {SYSTEM_ERROR_TYPES.map(t => (
-            <option key={t} value={t} className="bg-dark text-white">{t}</option>
-          ))}
-        </select>
+          onChange={v => setSysFilters(f => ({ ...f, type: v }))}
+          options={[
+            { value: 'all', label: 'All types' },
+            ...SYSTEM_ERROR_TYPES.map(t => ({ value: t, label: t })),
+          ]}
+          className="bg-dark-700 border border-primary/20 rounded-lg px-3 py-2 text-sm text-white"
+        />
 
-        <select
+        <CustomSelect
           value={sysFilters.resolved}
-          onChange={e => setSysFilters(f => ({ ...f, resolved: e.target.value }))}
-          className="bg-dark-700 border border-primary/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary [color-scheme:dark]"
-        >
-          <option value="all" className="bg-dark text-white">All</option>
-          <option value="false" className="bg-dark text-white">Unresolved</option>
-          <option value="true" className="bg-dark text-white">Resolved</option>
-        </select>
+          onChange={v => setSysFilters(f => ({ ...f, resolved: v }))}
+          options={[
+            { value: 'all', label: 'All' },
+            { value: 'false', label: 'Unresolved' },
+            { value: 'true', label: 'Resolved' },
+          ]}
+          className="bg-dark-700 border border-primary/20 rounded-lg px-3 py-2 text-sm text-white"
+        />
 
-        <select
+        <CustomSelect
           value={sysFilters.date_range}
-          onChange={e => setSysFilters(f => ({ ...f, date_range: e.target.value }))}
-          className="bg-dark-700 border border-primary/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary [color-scheme:dark]"
-        >
-          <option value="today" className="bg-dark text-white">Today</option>
-          <option value="7d" className="bg-dark text-white">Last 7 days</option>
-          <option value="30d" className="bg-dark text-white">Last 30 days</option>
-          <option value="all" className="bg-dark text-white">All time</option>
-        </select>
+          onChange={v => setSysFilters(f => ({ ...f, date_range: v }))}
+          options={[
+            { value: 'today', label: 'Today' },
+            { value: '7d', label: 'Last 7 days' },
+            { value: '30d', label: 'Last 30 days' },
+            { value: 'all', label: 'All time' },
+          ]}
+          className="bg-dark-700 border border-primary/20 rounded-lg px-3 py-2 text-sm text-white"
+        />
       </div>
 
       {/* System errors table */}
@@ -625,19 +629,15 @@ function FailureRow({
 
       {/* Status dropdown */}
       <td className="px-4 py-3">
-        <select
+        <CustomSelect
           value={f.admin_failure_status}
-          onChange={e => onStatusChange(f.id, e.target.value)}
-          className={`text-xs font-medium px-2 py-1 rounded-lg border bg-transparent cursor-pointer focus:outline-none [color-scheme:dark] ${
+          onChange={v => onStatusChange(f.id, v)}
+          options={Object.entries(ADMIN_STATUS_LABELS).map(([val, label]) => ({ value: val, label }))}
+          className={`text-xs font-medium px-2 py-1 rounded-lg border cursor-pointer ${
             ADMIN_STATUS_STYLES[adminStatus] ?? ADMIN_STATUS_STYLES.unresolved
           }`}
-        >
-          {Object.entries(ADMIN_STATUS_LABELS).map(([val, label]) => (
-            <option key={val} value={val} className="bg-zinc-900 text-white">
-              {label}
-            </option>
-          ))}
-        </select>
+          dropdownMinWidth="w-36"
+        />
       </td>
 
       {/* Notes */}

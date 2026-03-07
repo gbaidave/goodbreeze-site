@@ -50,7 +50,7 @@ const REPORT_META: Record<ReportType, {
   landing_page:      { product: 'seo_auditor', impulseAllowed: true,  usesMoz: false, usesSerp: false },
   keyword_research:  { product: 'seo_auditor', impulseAllowed: true,  usesMoz: false, usesSerp: true  },
   seo_audit:         { product: 'seo_auditor', impulseAllowed: true,  usesMoz: true,  usesSerp: true  },
-  seo_comprehensive: { product: 'seo_auditor', impulseAllowed: false, usesMoz: true,  usesSerp: true  },
+  seo_comprehensive: { product: 'seo_auditor', impulseAllowed: true,  usesMoz: true,  usesSerp: true  },
 }
 
 // Per-plan monthly report caps (all report types combined).

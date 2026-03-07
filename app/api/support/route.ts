@@ -211,8 +211,9 @@ export async function POST(request: NextRequest) {
           const notifMsg = category === 'dispute'
             ? `🚨 Dispute from ${userName} (${userEmail})`
             : `New ${category.replace('_', ' ')} request from ${userName} (${userEmail})`
+          const notifType = category === 'dispute' ? 'dispute_request' : 'support_request'
           await svc.from('notifications').insert(
-            admins.map((a) => ({ user_id: a.id, type: 'support_request', message: notifMsg }))
+            admins.map((a) => ({ user_id: a.id, type: notifType, message: notifMsg }))
           )
         }
       } catch (e) {

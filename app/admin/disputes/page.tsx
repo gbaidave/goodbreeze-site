@@ -17,7 +17,7 @@ export default async function AdminDisputesPage({
   searchParams: Promise<SearchParams>
 }) {
   const params = await searchParams
-  const statusFilter = params.status ?? 'all'
+  const statusFilter = params.status ?? 'open'
 
   const supabase = createServiceClient()
 

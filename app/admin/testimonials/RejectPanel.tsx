@@ -5,11 +5,14 @@ import { useRouter } from 'next/navigation'
 import { AnimatePresence, motion } from 'framer-motion'
 
 const REJECTION_REASONS = [
-  { value: 'not_enough_detail', label: 'Not enough detail' },
-  { value: 'no_gbai_mention',   label: 'Doesn\u2019t mention Good Breeze AI' },
-  { value: 'video_quality',     label: 'Video quality issue' },
-  { value: 'too_short',         label: 'Too short' },
-  { value: 'not_a_fit',         label: 'Not a fit' },
+  { value: 'not_enough_detail',  label: 'Not enough detail' },
+  { value: 'no_gbai_mention',    label: 'Doesn\u2019t mention Good Breeze AI' },
+  { value: 'video_quality',      label: 'Video quality issue' },
+  { value: 'too_short',          label: 'Too short' },
+  { value: 'not_a_fit',          label: 'Not a fit' },
+  { value: 'duplicate',          label: 'Duplicate submission' },
+  { value: 'policy_violation',   label: 'Policy violation' },
+  { value: 'other',              label: 'Other' },
 ]
 
 export function RejectPanel({ testimonialId }: { testimonialId: string }) {

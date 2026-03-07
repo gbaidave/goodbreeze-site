@@ -106,14 +106,21 @@ export function TestimonialForm({ submittedTypes }: Props) {
               try {
                 resolve(JSON.parse(xhr.responseText).id)
               } catch {
-                reject(new Error('Upload response invalid — please try again.'))
+                reject(new Error('Upload finished but the response was unexpected. Please try again.'))
               }
+            } else if (xhr.status === 403) {
+              reject(new Error('Upload was denied. The upload destination may not be configured correctly — please contact support.'))
+            } else if (xhr.status === 404) {
+              reject(new Error('Upload destination not found. Please contact support.'))
+            } else if (xhr.status === 429) {
+              reject(new Error('Too many upload requests. Please wait a moment and try again.'))
+            } else if (xhr.status >= 500) {
+              reject(new Error("Google's upload service returned an error. Please try again in a moment."))
             } else {
-              const snippet = xhr.responseText ? xhr.responseText.slice(0, 200) : 'no response'
-              reject(new Error(`Upload failed (HTTP ${xhr.status}): ${snippet}`))
+              reject(new Error('Upload failed. Please try again or contact support if this keeps happening.'))
             }
           })
-          xhr.addEventListener('error', () => reject(new Error('Upload failed — network error or browser blocked the request. Check console for CORS details.')))
+          xhr.addEventListener('error', () => reject(new Error('Upload failed — your connection was interrupted. Check your internet and try again.')))
           xhr.send(videoFile)
         })
 

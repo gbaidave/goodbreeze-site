@@ -119,6 +119,8 @@ export async function POST(request: NextRequest) {
   const safeName = `testimonial-${user.id}-${Date.now()}.${ext}`
 
   // Create GDrive resumable upload session
+  // Include Origin so Google enables CORS for the browser's direct PUT to the session URL
+  const origin = request.headers.get('origin') ?? 'https://goodbreeze-site.vercel.app'
   const initRes = await fetch(
     'https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable',
     {
@@ -128,6 +130,7 @@ export async function POST(request: NextRequest) {
         'Content-Type': 'application/json',
         'X-Upload-Content-Type': fileType,
         'X-Upload-Content-Length': String(fileSize),
+        'Origin': origin,
       },
       body: JSON.stringify({
         name: safeName,

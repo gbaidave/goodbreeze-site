@@ -20,25 +20,6 @@ const REPORT_TYPE_LABELS: Record<string, string> = {
 }
 
 // ============================================================================
-// GDrive URL helpers
-// ============================================================================
-
-function getGDriveFileId(url: string): string | null {
-  const match = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/)
-  return match ? match[1] : null
-}
-
-function getGDriveEmbedUrl(url: string): string | null {
-  const fileId = getGDriveFileId(url)
-  return fileId ? `https://drive.google.com/file/d/${fileId}/preview` : null
-}
-
-function getGDriveDownloadUrl(url: string): string | null {
-  const fileId = getGDriveFileId(url)
-  return fileId ? `https://drive.google.com/uc?export=download&id=${fileId}` : null
-}
-
-// ============================================================================
 // Expiry helpers
 // ============================================================================
 
@@ -159,8 +140,6 @@ export default async function ReportViewerPage({
   }
 
   // Complete — show PDF viewer
-  const embedUrl = report.pdf_url ? getGDriveEmbedUrl(report.pdf_url) : null
-  const downloadUrl = report.pdf_url ? getGDriveDownloadUrl(report.pdf_url) : null
 
   return (
     <div className="min-h-screen bg-dark">
@@ -215,32 +194,18 @@ export default async function ReportViewerPage({
         </div>
       </div>
 
-      {/* PDF Embed */}
-      {embedUrl ? (
+      {/* PDF Embed — served via our own proxy so auth + correct filename are handled */}
+      {report.pdf_url ? (
         <div className="w-full" style={{ height: 'calc(100vh - 90px)' }}>
           <iframe
-            src={embedUrl}
+            src={`/api/reports/${report.id}/download?view=1`}
             className="w-full h-full border-0"
             title={label}
-            allow="autoplay"
           />
         </div>
       ) : (
-        // Fallback if pdf_url isn't a GDrive URL
         <div className="max-w-2xl mx-auto py-24 px-6 text-center">
-          <p className="text-gray-400 mb-6">
-            Your report is ready. The in-browser viewer isn&apos;t available for this file type.
-          </p>
-          {report.pdf_url && (
-            <a
-              href={report.pdf_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-6 py-3 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full hover:shadow-lg transition-all"
-            >
-              Open Report PDF →
-            </a>
-          )}
+          <p className="text-gray-400 mb-6">Your report PDF is not yet available.</p>
         </div>
       )}
     </div>

@@ -95,6 +95,15 @@ function ReportCard({ report, onDelete }: { report: Report; onDelete: (id: strin
   const [confirming, setConfirming] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState('')
+  const [timeLabel, setTimeLabel] = useState(() =>
+    new Date(report.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  )
+  useEffect(() => {
+    setTimeLabel(new Date(report.created_at).toLocaleString('en-US', {
+      month: 'short', day: 'numeric', year: 'numeric',
+      hour: '2-digit', minute: '2-digit',
+    }))
+  }, [report.created_at])
 
   const days = daysRemaining(report.expires_at)
   const isExpiringSoon = days !== null && days <= 7 && days > 0
@@ -150,12 +159,7 @@ function ReportCard({ report, onDelete }: { report: Report; onDelete: (id: strin
               </span>
             )}
           </div>
-          <p suppressHydrationWarning className="text-gray-500 text-sm">
-            {new Date(report.created_at).toLocaleString('en-US', {
-              month: 'short', day: 'numeric', year: 'numeric',
-              hour: '2-digit', minute: '2-digit',
-            })}
-          </p>
+          <p className="text-gray-500 text-sm">{timeLabel}</p>
         </div>
       </div>
 

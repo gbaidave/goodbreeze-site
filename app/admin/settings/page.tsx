@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { CustomSelect } from '@/components/ui/CustomSelect'
 
 interface Settings {
   failure_email_enabled: string
@@ -108,15 +109,13 @@ export default function AdminSettingsPage() {
                 <p className="text-sm text-white font-medium">Digest send time</p>
                 <p className="text-xs text-gray-400 mt-0.5">Pacific time</p>
               </div>
-              <select
+              <CustomSelect
                 value={settings.digest_send_hour_pacific}
-                onChange={e => setSettings(s => ({ ...s, digest_send_hour_pacific: e.target.value }))}
-                className="bg-dark border border-primary/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary [color-scheme:dark]"
-              >
-                {HOURS.map(h => (
-                  <option key={h.value} value={h.value} className="bg-dark text-white">{h.label} PT</option>
-                ))}
-              </select>
+                onChange={v => setSettings(s => ({ ...s, digest_send_hour_pacific: v }))}
+                options={HOURS.map(h => ({ value: h.value, label: `${h.label} PT` }))}
+                className="bg-dark border border-primary/20 rounded-lg px-3 py-2 text-sm text-white"
+                dropdownMinWidth="w-36"
+              />
             </div>
           )}
         </div>

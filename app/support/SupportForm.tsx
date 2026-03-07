@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import { CustomSelect } from '@/components/ui/CustomSelect'
 
 interface AttachmentMeta {
   id: string
@@ -318,6 +319,11 @@ function TicketThread({ ticket, userEmail }: { ticket: Ticket; userEmail: string
           </span>
         </div>
         <div className="flex items-center gap-3 shrink-0 ml-3">
+          {localMessages.length > 0 && (
+            <span className="text-xs text-gray-600">
+              {localMessages.length} msg{localMessages.length !== 1 ? 's' : ''}
+            </span>
+          )}
           <span className="text-gray-600 text-xs">
             {new Date(ticket.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
           </span>
@@ -444,6 +450,109 @@ function TicketThread({ ticket, userEmail }: { ticket: Ticket; userEmail: string
   )
 }
 
+const STATUS_FILTER_TABS = [
+  { value: 'all',         label: 'All' },
+  { value: 'open',        label: 'Open' },
+  { value: 'in_progress', label: 'In Progress' },
+  { value: 'resolved',    label: 'Resolved' },
+  { value: 'closed',      label: 'Closed' },
+]
+
+function TicketListSection({ tickets, userEmail }: { tickets: Ticket[]; userEmail: string }) {
+  const [filterStatus, setFilterStatus] = useState('all')
+  const [filterCategory, setFilterCategory] = useState('all')
+  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest')
+
+  // Derive available categories from actual tickets
+  const availableCategories = Array.from(new Set(tickets.map((t) => t.category).filter(Boolean))) as string[]
+
+  const filtered = tickets
+    .filter((t) => filterStatus === 'all' || t.status === filterStatus)
+    .filter((t) => filterCategory === 'all' || t.category === filterCategory)
+    .sort((a, b) => {
+      const diff = new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      return sortOrder === 'newest' ? -diff : diff
+    })
+
+  // Only show status tabs that have at least one ticket (plus 'All')
+  const activeStatuses = new Set(tickets.map((t) => t.status))
+  const visibleTabs = STATUS_FILTER_TABS.filter((t) => t.value === 'all' || activeStatuses.has(t.value))
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.1 }}
+      className="space-y-3"
+    >
+      {/* Section header + controls */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wide">
+          Your Requests
+          <span className="ml-2 text-gray-600 font-normal normal-case">
+            ({filtered.length}{filtered.length !== tickets.length ? ` of ${tickets.length}` : ''})
+          </span>
+        </h2>
+        <div className="flex items-center gap-2">
+          {/* Category filter */}
+          {availableCategories.length > 1 && (
+            <CustomSelect
+              value={filterCategory}
+              onChange={setFilterCategory}
+              options={[
+                { value: 'all', label: 'All categories' },
+                ...availableCategories.map((cat) => ({ value: cat, label: CATEGORY_LABELS[cat] ?? cat })),
+              ]}
+              className="text-xs px-2 py-1.5 bg-dark border border-gray-700 text-gray-300 rounded-lg"
+              dropdownMinWidth="w-44"
+            />
+          )}
+          {/* Sort */}
+          <CustomSelect
+            value={sortOrder}
+            onChange={(v) => setSortOrder(v as 'newest' | 'oldest')}
+            options={[
+              { value: 'newest', label: 'Newest first' },
+              { value: 'oldest', label: 'Oldest first' },
+            ]}
+            className="text-xs px-2 py-1.5 bg-dark border border-gray-700 text-gray-300 rounded-lg"
+            dropdownMinWidth="w-36"
+          />
+        </div>
+      </div>
+
+      {/* Status filter tabs */}
+      {visibleTabs.length > 2 && (
+        <div className="flex gap-1 flex-wrap">
+          {visibleTabs.map((tab) => (
+            <button
+              key={tab.value}
+              type="button"
+              onClick={() => setFilterStatus(tab.value)}
+              className={`text-xs px-3 py-1.5 rounded-full transition-colors ${
+                filterStatus === tab.value
+                  ? 'bg-primary text-white'
+                  : 'bg-dark border border-gray-700 text-gray-400 hover:text-gray-200 hover:border-gray-600'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Ticket rows */}
+      {filtered.length === 0 ? (
+        <p className="text-gray-600 text-sm py-4 text-center">No requests match this filter.</p>
+      ) : (
+        filtered.map((ticket) => (
+          <TicketThread key={ticket.id} ticket={ticket} userEmail={userEmail} />
+        ))
+      )}
+    </motion.div>
+  )
+}
+
 export default function SupportForm({ userName, userEmail, plan, lastReportContext, tickets = [] }: Props) {
   const [category, setCategory] = useState('help')
   const [subject, setSubject] = useState('')
@@ -518,26 +627,11 @@ export default function SupportForm({ userName, userEmail, plan, lastReportConte
           </p>
         </motion.div>
 
-        {/* Previous tickets */}
-        {tickets.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.05 }}
-            className="space-y-3"
-          >
-            <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wide">Your Previous Requests</h2>
-            {tickets.map((ticket) => (
-              <TicketThread key={ticket.id} ticket={ticket} userEmail={userEmail} />
-            ))}
-          </motion.div>
-        )}
-
-        {/* New request form */}
+        {/* New request form — primary action first */}
         <motion.form
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
+          transition={{ delay: 0.05 }}
           onSubmit={handleSubmit}
           className="bg-dark-700 border border-primary/20 rounded-2xl p-8 space-y-6"
         >
@@ -582,16 +676,14 @@ export default function SupportForm({ userName, userEmail, plan, lastReportConte
             <label htmlFor="support-category" className="block text-sm font-medium text-gray-300 mb-1.5">
               What do you need help with? *
             </label>
-            <select
+            <CustomSelect
               id="support-category"
               value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="w-full px-4 py-3 bg-dark border border-gray-700 text-white rounded-xl focus:outline-none focus:border-primary transition-colors text-sm appearance-none cursor-pointer [color-scheme:dark]"
-            >
-              {CATEGORY_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value} className="bg-dark text-white">{opt.label}</option>
-              ))}
-            </select>
+              onChange={setCategory}
+              options={CATEGORY_OPTIONS.map((opt) => ({ value: opt.value, label: opt.label }))}
+              className="w-full px-4 py-3 bg-dark border border-gray-700 text-white rounded-xl text-sm"
+              dropdownMinWidth="w-full"
+            />
           </div>
 
           {/* Refund type — only shown for refund category */}
@@ -601,15 +693,17 @@ export default function SupportForm({ userName, userEmail, plan, lastReportConte
                 <label htmlFor="support-product-type" className="block text-sm font-medium text-gray-300 mb-1.5">
                   What would you like a refund for? *
                 </label>
-                <select
+                <CustomSelect
                   id="support-product-type"
                   value={productType}
-                  onChange={(e) => setProductType(e.target.value)}
-                  className="w-full px-4 py-3 bg-dark border border-gray-700 text-white rounded-xl focus:outline-none focus:border-primary transition-colors text-sm appearance-none cursor-pointer [color-scheme:dark]"
-                >
-                  <option value="subscription" className="bg-dark text-white">My monthly / annual subscription</option>
-                  <option value="credit_pack" className="bg-dark text-white">A credit pack purchase</option>
-                </select>
+                  onChange={setProductType}
+                  options={[
+                    { value: 'subscription', label: 'My monthly / annual subscription' },
+                    { value: 'credit_pack', label: 'A credit pack purchase' },
+                  ]}
+                  className="w-full px-4 py-3 bg-dark border border-gray-700 text-white rounded-xl text-sm"
+                  dropdownMinWidth="w-full"
+                />
               </div>
 
               <div>
@@ -731,6 +825,11 @@ export default function SupportForm({ userName, userEmail, plan, lastReportConte
             We&apos;ll be in touch. Reply will be sent to {userEmail} and will appear here.
           </p>
         </motion.form>
+
+        {/* Previous tickets — below the form */}
+        {tickets.length > 0 && (
+          <TicketListSection tickets={tickets} userEmail={userEmail} />
+        )}
 
       </div>
     </div>

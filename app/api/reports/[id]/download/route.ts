@@ -134,18 +134,10 @@ export async function GET(
       return NextResponse.json({ error: 'PDF not available' }, { status: 404 })
     }
 
-    const fileId = extractGdriveFileId(report.pdf_url)
-    if (!fileId) {
-      // Fallback: redirect to the raw URL if we can't parse the file ID
-      return NextResponse.redirect(report.pdf_url)
-    }
-
-    // Fetch the PDF from Google Drive (direct download URL)
-    const downloadUrl = `https://drive.google.com/uc?id=${fileId}&export=download&confirm=t`
-    const upstream = await fetch(downloadUrl, {
-      headers: { 'User-Agent': 'Mozilla/5.0' },
-      redirect: 'follow',
-    })
+    // Fetch the PDF via the stored proxy URL (n8n webhook → GDrive).
+    // Avoids the unreliable drive.google.com/uc unauthenticated download which
+    // can return an HTML virus-scan warning page instead of the PDF binary.
+    const upstream = await fetch(report.pdf_url, { redirect: 'follow' })
 
     if (!upstream.ok) {
       return NextResponse.json({ error: 'Failed to fetch PDF' }, { status: 502 })
@@ -153,11 +145,18 @@ export async function GET(
 
     const filename = buildFilename(report.report_type, report.created_at, (report.input_data as Record<string, unknown>) ?? {})
 
+    // ?view=1 → inline (for in-browser iframe); default → attachment (triggers download)
+    const url = new URL(request.url)
+    const inline = url.searchParams.get('view') === '1'
+    const disposition = inline
+      ? `inline; filename="${filename}"`
+      : `attachment; filename="${filename}"`
+
     return new NextResponse(upstream.body, {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="${filename}"`,
+        'Content-Disposition': disposition,
         'Cache-Control': 'private, max-age=3600',
       },
     })
