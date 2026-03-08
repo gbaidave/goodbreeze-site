@@ -93,7 +93,7 @@ export default function SalesAnalyzer() {
           body={<>Your competitive analysis is being generated. You&apos;ll receive the PDF in your inbox within <strong className="text-white">2–4 minutes</strong>.</>}
           detail="Check your dashboard to track progress or view past reports."
           reportId={reportId}
-          onRunAnother={() => { setSubmitted(false); setReportId(undefined) }}
+          onRunAnother={() => { setSubmitted(false); setReportId(undefined); setTargetWebsite(''); setCompetitor1(''); setCompetitor1Website(''); setCompetitor2(''); setCompetitor2Website(''); setCompetitor3(''); setCompetitor3Website('') }}
         />
       )}
     <div className="min-h-screen bg-dark py-24 px-6">

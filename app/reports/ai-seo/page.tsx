@@ -59,7 +59,7 @@ export default function AiSeoPage() {
           detail="Track progress or view past reports in your dashboard."
           isGuest={false}
           reportId={reportId}
-          onRunAnother={() => { setSubmitted(false); setReportId(undefined) }}
+          onRunAnother={() => { setSubmitted(false); setReportId(undefined); setUrl(''); setCompany('') }}
         />
       )}
     <div className="min-h-screen bg-dark py-24 px-6">

@@ -192,7 +192,7 @@ export async function POST(request: NextRequest) {
               .not('stripe_payment_intent_id', 'is', null)
               .order('purchased_at', { ascending: false })
               .limit(1)
-              .single()
+              .maybeSingle()
             autoPaymentId = latestCredit?.stripe_payment_intent_id ?? null
           }
 

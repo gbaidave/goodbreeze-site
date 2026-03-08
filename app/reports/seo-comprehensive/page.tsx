@@ -59,7 +59,7 @@ export default function SeoComprehensivePage() {
           body={<>This is our most thorough analysis. Allow <strong className="text-white">5–8 minutes</strong>. The PDF will arrive by email when complete.</>}
           detail="Track progress in your dashboard."
           reportId={reportId}
-          onRunAnother={() => { setSubmitted(false); setReportId(undefined) }}
+          onRunAnother={() => { setSubmitted(false); setReportId(undefined); setUrl(''); setCompany(''); setFocusKeyword('') }}
         />
       )}
     <div className="min-h-screen bg-dark py-24 px-6">

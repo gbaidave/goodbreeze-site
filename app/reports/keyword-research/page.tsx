@@ -59,7 +59,7 @@ export default function KeywordResearchPage() {
           body={<>Your keyword research report is being generated. The PDF will arrive by email in <strong className="text-white">2–3 minutes</strong>.</>}
           detail="Track progress in your dashboard."
           reportId={reportId}
-          onRunAnother={() => { setSubmitted(false); setReportId(undefined) }}
+          onRunAnother={() => { setSubmitted(false); setReportId(undefined); setKeyword(''); setUrl('') }}
         />
       )}
     <div className="min-h-screen bg-dark py-24 px-6">

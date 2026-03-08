@@ -369,7 +369,7 @@ export async function POST(request: NextRequest) {
         // Find the refund_request matching this PI that isn't already processed
         const { data: refundReq } = await supabase
           .from('refund_requests')
-          .select('id, user_id, product_label, stripe_refund_id')
+          .select('id, user_id, product_label, product_type, stripe_refund_id')
           .eq('stripe_payment_id', paymentIntentId)
           .eq('status', 'pending')
           .maybeSingle()
@@ -391,6 +391,32 @@ export async function POST(request: NextRequest) {
           refund_amount_cents: amountCents ?? null,
           reviewed_at: new Date().toISOString(),
         }).eq('id', refundReq.id)
+
+        // Revoke product access based on what was refunded
+        if (refundReq.product_type === 'credits') {
+          // Zero out the refunded credit pack row
+          await supabase.from('credits')
+            .update({ balance: 0 })
+            .eq('user_id', refundReq.user_id)
+            .eq('stripe_payment_intent_id', paymentIntentId)
+          console.log('[webhook] charge.refunded — zeroed credit pack for user', refundReq.user_id)
+        } else if (refundReq.product_type === 'subscription') {
+          // Cancel the active subscription in Stripe + update local DB
+          const { data: sub } = await supabase
+            .from('subscriptions')
+            .select('stripe_subscription_id')
+            .eq('user_id', refundReq.user_id)
+            .in('status', ['active', 'trialing'])
+            .maybeSingle()
+          if (sub?.stripe_subscription_id) {
+            await stripe.subscriptions.cancel(sub.stripe_subscription_id).catch(console.error)
+            await supabase.from('subscriptions').update({
+              status: 'canceled',
+              credits_remaining: 0,
+            }).eq('stripe_subscription_id', sub.stripe_subscription_id)
+            console.log('[webhook] charge.refunded — canceled subscription', sub.stripe_subscription_id, 'for user', refundReq.user_id)
+          }
+        }
 
         await supabase.from('notifications').insert({
           user_id: refundReq.user_id,

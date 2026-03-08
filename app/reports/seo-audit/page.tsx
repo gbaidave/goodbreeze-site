@@ -59,7 +59,7 @@ export default function SeoAuditPage() {
           body={<>Your SEO audit is underway. The PDF will arrive in your inbox within <strong className="text-white">3–5 minutes</strong>.</>}
           detail="Track progress in your dashboard."
           reportId={reportId}
-          onRunAnother={() => { setSubmitted(false); setReportId(undefined) }}
+          onRunAnother={() => { setSubmitted(false); setReportId(undefined); setUrl(''); setCompany(''); setFocusKeyword('') }}
         />
       )}
     <div className="min-h-screen bg-dark py-24 px-6">
