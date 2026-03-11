@@ -12,7 +12,7 @@ async function requireAdmin() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Unauthorized')
   const { data: profile } = await supabase.from('profiles').select('role, id').eq('id', user.id).single()
-  if (!canDo(profile?.role, 'view_users')) throw new Error('Forbidden')
+  if (!canDo(profile?.role, 'view_users') || !profile) throw new Error('Forbidden')
   return { adminId: profile.id, callerRole: profile.role as string }
 }
 
@@ -22,7 +22,7 @@ async function requireSuperadmin() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Unauthorized')
   const { data: profile } = await supabase.from('profiles').select('role, id').eq('id', user.id).single()
-  if (profile?.role !== 'superadmin') throw new Error('Forbidden')
+  if (!profile || profile.role !== 'superadmin') throw new Error('Forbidden')
   return { adminId: profile.id }
 }
 
