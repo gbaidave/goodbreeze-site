@@ -6,16 +6,19 @@ import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/components/auth/AuthProvider'
 
 const SUBSCRIPTION_PLANS = ['starter', 'growth', 'pro']
+const UNLIMITED_ROLES = ['tester', 'admin', 'superadmin', 'support']
 
 export function CreditsPill() {
   const { user, loading } = useAuth()
   const [credits, setCredits] = useState<number | null>(null)
+  const [unlimited, setUnlimited] = useState(false)
 
   async function fetchCredits() {
     if (!user) return
     const supabase = createClient()
 
-    const [subRes, packRes] = await Promise.all([
+    const [profileRes, subRes, packRes] = await Promise.all([
+      supabase.from('profiles').select('role').eq('id', user.id).single(),
       supabase
         .from('subscriptions')
         .select('credits_remaining, plan')
@@ -31,6 +34,13 @@ export function CreditsPill() {
         .gt('balance', 0),
     ])
 
+    if (profileRes.data && UNLIMITED_ROLES.includes(profileRes.data.role)) {
+      setUnlimited(true)
+      setCredits(0)
+      return
+    }
+
+    setUnlimited(false)
     const sub = subRes.data
     const isSubscription = sub && SUBSCRIPTION_PLANS.includes(sub.plan)
     const subscriptionCredits = isSubscription ? (sub.credits_remaining ?? 0) : 0
@@ -55,9 +65,17 @@ export function CreditsPill() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user])
 
-  if (loading || !user || credits === null) return null
+  if (loading || !user || (credits === null && !unlimited)) return null
 
-  const isLow = credits <= 5
+  if (unlimited) {
+    return (
+      <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold bg-zinc-800 text-zinc-300">
+        Credits · ∞
+      </span>
+    )
+  }
+
+  const isLow = (credits ?? 0) <= 5
 
   return (
     <Link

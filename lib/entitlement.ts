@@ -97,8 +97,8 @@ export async function checkEntitlement(
     return { allowed: false, reason: 'Account not found. Please sign in again.' }
   }
 
-  // Testers and admins bypass all limits (no deduction either)
-  if (profile.role === 'tester' || profile.role === 'admin') {
+  // Privileged roles bypass all limits (no deduction either)
+  if (['tester', 'admin', 'superadmin', 'support'].includes(profile.role)) {
     return { allowed: true, deductFrom: 'subscription' }
   }
 

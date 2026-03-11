@@ -42,7 +42,7 @@ export default async function AdminBugReportsPage({
   // Load admin/support users for assignee dropdown
   const { data: adminUsers } = await svc
     .from('profiles')
-    .select('id, name')
+    .select('id, name, email')
     .in('role', ['superadmin', 'admin', 'support'])
     .order('name', { ascending: true })
 

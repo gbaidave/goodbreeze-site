@@ -21,6 +21,7 @@ interface Message {
 interface AdminUser {
   id: string
   name: string
+  email?: string
 }
 
 interface Props {
@@ -159,7 +160,9 @@ export function AdminReplyPanel({
         >
           <option value="">Unassigned</option>
           {assignableUsers.map((u) => (
-            <option key={u.id} value={u.id}>{u.name || u.id}</option>
+            <option key={u.id} value={u.id}>
+              {u.name ? `${u.name} (${u.email ?? u.id})` : (u.email ?? u.id)}
+            </option>
           ))}
         </select>
         {isSupport && !assignableUsers.find((u) => u.id === actorUserId) && (
