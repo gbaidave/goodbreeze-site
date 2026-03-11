@@ -86,7 +86,8 @@ export default async function DashboardPage({
   const plan = overrideActive ? (profile!.plan_override_type as string) : rawPlan
 
   const firstName = profile?.name?.split(' ')[0] || profile?.email?.split('@')[0] || 'there'
-  const isAdmin = canDo(profile?.role, 'view_admin_panel') || profile?.role === 'tester'
+  const isAdminPanel = canDo(profile?.role, 'view_admin_panel') // superadmin, admin, support — gets admin link
+  const isAdmin = isAdminPanel || profile?.role === 'tester'    // also tester — suppresses billing/nudge UI
   const isTester = profile?.role === 'tester'
 
   const PAID_PLANS = ['starter', 'growth', 'pro', 'custom']
@@ -142,7 +143,7 @@ export default async function DashboardPage({
             >
               Support & requests
             </a>
-            {profile?.role === 'admin' && (
+            {isAdminPanel && (
               <a
                 href="/admin"
                 className="text-sm text-gray-500 hover:text-gray-300 transition-colors"

@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service-client'
 import { UserActionsPanel } from './UserActionsPanel'
 import { AdminNotesPanel } from './AdminNotesPanel'
@@ -20,6 +21,15 @@ const STATUS_STYLES: Record<string, string> = {
 
 export default async function AdminUserDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
+
+  // Get caller's role to pass down to UserActionsPanel for conditional rendering
+  const authClient = await createClient()
+  const { data: { user: callerUser } } = await authClient.auth.getUser()
+  const { data: callerProfile } = callerUser
+    ? await authClient.from('profiles').select('role').eq('id', callerUser.id).single()
+    : { data: null }
+  const callerRole = callerProfile?.role ?? 'admin'
+
   const supabase = createServiceClient()
 
   // Fetch ban status from auth
@@ -123,6 +133,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
           <UserActionsPanel
             userId={profile.id}
             currentRole={profile.role}
+            callerRole={callerRole}
             currentOverrideType={profile.plan_override_type ?? null}
             currentOverrideUntil={profile.plan_override_until ?? null}
             stripeCustomerId={profile.stripe_customer_id ?? null}

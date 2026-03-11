@@ -94,6 +94,7 @@ export async function POST(request: NextRequest) {
         plan_at_time: plan,
         last_report_context: lastReportContext,
         message,
+        category: 'bug_report',
       })
       .select('id')
       .single()

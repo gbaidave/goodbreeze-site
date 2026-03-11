@@ -6,10 +6,12 @@ import {
   setUserRole, setPlanOverride, grantCredits, deductCredits,
   updateEmail, updatePhone, suspendAccount, unsuspendAccount, deleteAccount,
 } from './actions'
+import { assignableRoles, canDo } from '@/lib/permissions'
 
 interface Props {
   userId: string
   currentRole: string
+  callerRole: string
   currentOverrideType: string | null
   currentOverrideUntil: string | null
   stripeCustomerId: string | null
@@ -18,11 +20,12 @@ interface Props {
   isSuspended: boolean
 }
 
-const CONFIRM_ROLES = new Set(['tester', 'admin'])
+const CONFIRM_ROLES = new Set(['tester', 'support', 'admin', 'superadmin'])
 
 export function UserActionsPanel({
   userId,
   currentRole,
+  callerRole,
   currentOverrideType,
   currentOverrideUntil,
   stripeCustomerId,
@@ -30,6 +33,8 @@ export function UserActionsPanel({
   currentPhone,
   isSuspended,
 }: Props) {
+  const isSuperadmin = callerRole === 'superadmin'
+  const roleOptions = assignableRoles(callerRole)
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [feedback, setFeedback] = useState<{ type: 'ok' | 'err'; msg: string } | null>(null)
@@ -77,7 +82,7 @@ export function UserActionsPanel({
       <section className="space-y-2">
         <p className="text-gray-400 text-xs uppercase tracking-wider">Role</p>
         <div className="flex gap-2 flex-wrap">
-          {['user', 'tester', 'affiliate', 'admin'].map((role) => (
+          {roleOptions.map((role) => (
             <button
               key={role}
               disabled={pending || currentRole === role}
@@ -117,8 +122,8 @@ export function UserActionsPanel({
         )}
       </section>
 
-      {/* Plan override */}
-      <section className="space-y-2">
+      {/* Plan override — superadmin only */}
+      {isSuperadmin && <section className="space-y-2">
         <p className="text-gray-400 text-xs uppercase tracking-wider">Plan Override</p>
         <form
           onSubmit={(e) => {
@@ -176,7 +181,7 @@ export function UserActionsPanel({
             {currentOverrideUntil && ` until ${new Date(currentOverrideUntil).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`}
           </p>
         )}
-      </section>
+      </section>}
 
       {/* Credits */}
       <section className="space-y-2">
@@ -317,7 +322,7 @@ export function UserActionsPanel({
         </form>
       </section>
 
-      {/* Account status */}
+      {/* Account status — suspend/unsuspend for admin+; delete for superadmin only */}
       <section className="space-y-2">
         <p className="text-gray-400 text-xs uppercase tracking-wider">Account</p>
         <div className="flex flex-wrap gap-2">
@@ -339,7 +344,7 @@ export function UserActionsPanel({
             </button>
           )}
 
-          {!confirmDelete ? (
+          {isSuperadmin && (!confirmDelete ? (
             <button
               onClick={() => setConfirmDelete(true)}
               className="px-4 py-2 bg-red-900/40 text-red-400 border border-red-800 rounded-lg text-sm font-medium hover:bg-red-900/60 transition-colors"
@@ -363,19 +368,19 @@ export function UserActionsPanel({
                 Cancel
               </button>
             </div>
-          )}
+          ))}
         </div>
         {isSuspended && (
           <p className="text-xs text-yellow-400">Account is currently suspended.</p>
         )}
       </section>
 
-      {/* Stripe deep link */}
-      {stripeCustomerId && (
+      {/* Stripe deep link — superadmin only */}
+      {isSuperadmin && stripeCustomerId && (
         <section className="space-y-2">
           <p className="text-gray-400 text-xs uppercase tracking-wider">Stripe</p>
           <a
-            href={`https://dashboard.stripe.com/test/customers/${stripeCustomerId}`}
+            href={`https://dashboard.stripe.com/customers/${stripeCustomerId}`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-block text-sm text-primary hover:underline"

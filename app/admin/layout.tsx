@@ -3,22 +3,37 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { canDo } from '@/lib/permissions'
 
-const ADMIN_NAV = [
-  { href: '/admin',                label: 'Overview' },
-  { href: '/admin/users',          label: 'Users' },
-  { href: '/admin/errors',         label: 'Errors' },
-  { href: '/admin/testimonials',   label: 'Testimonials' },
-  { href: '/admin/support',        label: 'Support' },
-  { href: '/admin/disputes',       label: 'Disputes' },
-  { href: '/admin/refunds',        label: 'Refunds' },
-  { href: '/admin/email-logs',     label: 'Email Logs' },
-  { href: '/admin/settings',       label: 'Settings' },
+// Full nav — superadmin sees everything
+const SUPERADMIN_NAV = [
+  { href: '/admin',              label: 'Overview' },
+  { href: '/admin/users',        label: 'Users' },
+  { href: '/admin/errors',       label: 'Errors' },
+  { href: '/admin/testimonials', label: 'Testimonials' },
+  { href: '/admin/support',      label: 'Support' },
+  { href: '/admin/disputes',     label: 'Disputes' },
+  { href: '/admin/bug-reports',  label: 'Bug Reports' },
+  { href: '/admin/refunds',      label: 'Refunds' },
+  { href: '/admin/email-logs',   label: 'Email Logs' },
+  { href: '/admin/settings',     label: 'Settings' },
 ]
 
-// Support role only sees Support + Disputes
+// Admin nav — no Refunds or Settings (Stripe + system config = superadmin only)
+const ADMIN_NAV = [
+  { href: '/admin',              label: 'Overview' },
+  { href: '/admin/users',        label: 'Users' },
+  { href: '/admin/errors',       label: 'Errors' },
+  { href: '/admin/testimonials', label: 'Testimonials' },
+  { href: '/admin/support',      label: 'Support' },
+  { href: '/admin/disputes',     label: 'Disputes' },
+  { href: '/admin/bug-reports',  label: 'Bug Reports' },
+  { href: '/admin/email-logs',   label: 'Email Logs' },
+]
+
+// Support nav — tickets, disputes, bug reports only
 const SUPPORT_NAV = [
-  { href: '/admin/support',   label: 'Support' },
-  { href: '/admin/disputes',  label: 'Disputes' },
+  { href: '/admin/support',     label: 'Support' },
+  { href: '/admin/disputes',    label: 'Disputes' },
+  { href: '/admin/bug-reports', label: 'Bug Reports' },
 ]
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -34,7 +49,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   if (!canDo(profile?.role, 'view_admin_panel')) redirect('/dashboard')
 
-  const NAV_ITEMS = profile?.role === 'support' ? SUPPORT_NAV : ADMIN_NAV
+  const NAV_ITEMS =
+    profile?.role === 'superadmin' ? SUPERADMIN_NAV :
+    profile?.role === 'admin'      ? ADMIN_NAV :
+    SUPPORT_NAV
 
   return (
     <div className="min-h-screen bg-dark flex">

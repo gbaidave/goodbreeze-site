@@ -1,5 +1,8 @@
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service-client'
+import { canDo } from '@/lib/permissions'
 import { RefundActionPanel } from './RefundActionPanel'
 import { RefundThreadPanel } from './RefundThreadPanel'
 
@@ -17,6 +20,13 @@ export default async function AdminRefundsPage({
 }: {
   searchParams: Promise<SearchParams>
 }) {
+  // Superadmin only — regular admins do not handle Stripe
+  const authClient = await createClient()
+  const { data: { user } } = await authClient.auth.getUser()
+  if (!user) redirect('/login')
+  const { data: callerProfile } = await authClient.from('profiles').select('role').eq('id', user.id).single()
+  if (!canDo(callerProfile?.role, 'process_refunds')) redirect('/admin')
+
   const params = await searchParams
   const statusFilter = params.status ?? 'pending'
 

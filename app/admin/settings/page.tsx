@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { CustomSelect } from '@/components/ui/CustomSelect'
 
 interface Settings {
@@ -22,6 +23,7 @@ const HOURS = Array.from({ length: 24 }, (_, i) => {
 })
 
 export default function AdminSettingsPage() {
+  const router = useRouter()
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -31,12 +33,16 @@ export default function AdminSettingsPage() {
     fetch('/api/admin/settings')
       .then(r => r.json())
       .then(data => {
+        if (data.error === 'Admin required') {
+          router.replace('/dashboard')
+          return
+        }
         if (data.settings) {
           setSettings({ ...DEFAULT_SETTINGS, ...data.settings })
         }
         setLoading(false)
       })
-  }, [])
+  }, [router])
 
   async function handleSave() {
     setSaving(true)

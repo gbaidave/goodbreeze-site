@@ -42,8 +42,8 @@ export async function PATCH(
     const svc = createServiceClient()
     const { data: adminProfile } = await svc
       .from('profiles').select('role').eq('id', user.id).single()
-    if (!canDo(adminProfile?.role, 'grant_credits')) {
-      return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
+    if (!canDo(adminProfile?.role, 'process_refunds')) {
+      return NextResponse.json({ error: 'Superadmin access required' }, { status: 403 })
     }
 
     const { action, notes, stripePaymentId: incomingPaymentId } = await request.json()

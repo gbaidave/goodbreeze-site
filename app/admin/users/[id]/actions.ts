@@ -4,21 +4,35 @@ import { revalidatePath } from 'next/cache'
 import { createServiceClient } from '@/lib/supabase/service-client'
 import { createClient } from '@/lib/supabase/server'
 import { sendCreditGrantedEmail } from '@/lib/email'
+import { canDo, assignableRoles } from '@/lib/permissions'
 
-// Guard: caller must be admin
+// Guard: caller must have view_users permission (admin or superadmin)
 async function requireAdmin() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Unauthorized')
   const { data: profile } = await supabase.from('profiles').select('role, id').eq('id', user.id).single()
-  if (profile?.role !== 'admin') throw new Error('Forbidden')
+  if (!canDo(profile?.role, 'view_users')) throw new Error('Forbidden')
+  return { adminId: profile.id, callerRole: profile.role as string }
+}
+
+// Guard: caller must be superadmin
+async function requireSuperadmin() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Unauthorized')
+  const { data: profile } = await supabase.from('profiles').select('role, id').eq('id', user.id).single()
+  if (profile?.role !== 'superadmin') throw new Error('Forbidden')
   return { adminId: profile.id }
 }
 
 // ---- Role ---------------------------------------------------------------
 
 export async function setUserRole(userId: string, role: string) {
-  const { adminId } = await requireAdmin()
+  const { callerRole } = await requireAdmin()
+  // Enforce role cap: admin can only assign roles in their assignable list
+  const allowed = assignableRoles(callerRole)
+  if (!allowed.includes(role as any)) throw new Error('You do not have permission to assign that role.')
   const supabase = createServiceClient()
   const { error } = await supabase
     .from('profiles')
@@ -28,10 +42,10 @@ export async function setUserRole(userId: string, role: string) {
   revalidatePath(`/admin/users/${userId}`)
 }
 
-// ---- Plan override ------------------------------------------------------
+// ---- Plan override (superadmin only) ------------------------------------
 
 export async function setPlanOverride(userId: string, overrideType: string | null, overrideUntil: string | null) {
-  await requireAdmin()
+  await requireSuperadmin()
   const supabase = createServiceClient()
   const { error } = await supabase
     .from('profiles')
@@ -216,7 +230,7 @@ export async function unsuspendAccount(userId: string) {
 }
 
 export async function deleteAccount(userId: string) {
-  await requireAdmin()
+  await requireSuperadmin()
   const supabase = createServiceClient()
   const { error } = await supabase.auth.admin.deleteUser(userId)
   if (error) throw new Error(error.message)
