@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { canDo } from '@/lib/permissions'
 
 // Routes that require authentication
 const PROTECTED_ROUTES = ['/dashboard', '/account', '/api/reports', '/admin', '/api/admin']
@@ -49,14 +50,14 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(loginUrl)
     }
 
-    // Admin routes: require role = 'admin'
+    // Admin routes: require view_admin_panel permission (superadmin, admin, support)
     if (user && (pathname.startsWith('/admin') || pathname.startsWith('/api/admin'))) {
       const { data: profile } = await supabase
         .from('profiles')
         .select('role')
         .eq('id', user.id)
         .single()
-      if (profile?.role !== 'admin') {
+      if (!canDo(profile?.role, 'view_admin_panel')) {
         return NextResponse.redirect(new URL('/dashboard', request.url))
       }
     }

@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service-client'
+import { canDo } from '@/lib/permissions'
 import ReportList from './ReportList'
 import { ReferralSection } from './ReferralSection'
 import { NudgeCard } from './NudgeCard'
@@ -85,7 +86,7 @@ export default async function DashboardPage({
   const plan = overrideActive ? (profile!.plan_override_type as string) : rawPlan
 
   const firstName = profile?.name?.split(' ')[0] || profile?.email?.split('@')[0] || 'there'
-  const isAdmin = profile?.role === 'admin' || profile?.role === 'tester'
+  const isAdmin = canDo(profile?.role, 'view_admin_panel') || profile?.role === 'tester'
   const isTester = profile?.role === 'tester'
 
   const PAID_PLANS = ['starter', 'growth', 'pro', 'custom']
