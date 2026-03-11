@@ -118,7 +118,7 @@ export async function GET(
     // Check if requester is an admin — admins can download any user's report
     const svc = createServiceClient()
     const { data: profile } = await svc.from('profiles').select('role').eq('id', user.id).single()
-    const isAdmin = profile?.role === 'admin'
+    const isAdmin = ['superadmin', 'admin'].includes(profile?.role ?? '')
 
     const reportQuery = isAdmin
       ? svc.from('reports').select('id, status, pdf_url, report_type, created_at, input_data').eq('id', id)

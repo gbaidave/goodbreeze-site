@@ -1,8 +1,9 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { canDo } from '@/lib/permissions'
 
-const NAV_ITEMS = [
+const ADMIN_NAV = [
   { href: '/admin',                label: 'Overview' },
   { href: '/admin/users',          label: 'Users' },
   { href: '/admin/errors',         label: 'Errors' },
@@ -12,6 +13,12 @@ const NAV_ITEMS = [
   { href: '/admin/refunds',        label: 'Refunds' },
   { href: '/admin/email-logs',     label: 'Email Logs' },
   { href: '/admin/settings',       label: 'Settings' },
+]
+
+// Support role only sees Support + Disputes
+const SUPPORT_NAV = [
+  { href: '/admin/support',   label: 'Support' },
+  { href: '/admin/disputes',  label: 'Disputes' },
 ]
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -25,7 +32,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     .eq('id', user.id)
     .single()
 
-  if (profile?.role !== 'admin') redirect('/dashboard')
+  if (!canDo(profile?.role, 'view_admin_panel')) redirect('/dashboard')
+
+  const NAV_ITEMS = profile?.role === 'support' ? SUPPORT_NAV : ADMIN_NAV
 
   return (
     <div className="min-h-screen bg-dark flex">

@@ -126,7 +126,7 @@ export async function POST(request: NextRequest) {
         const { data: admins } = await svc
           .from('profiles')
           .select('id')
-          .eq('role', 'admin')
+          .in('role', ['superadmin', 'admin', 'support'])
         if (admins?.length) {
           await svc.from('notifications').insert(
             admins.map((a) => ({

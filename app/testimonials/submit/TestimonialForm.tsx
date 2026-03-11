@@ -25,7 +25,7 @@ export function TestimonialForm({ submittedTypes }: Props) {
   const [uploadPhase, setUploadPhase] = useState<'scanning' | 'uploading'>('scanning')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [pullQuote, setPullQuote] = useState('')
-  const [consent, setConsent] = useState(true)
+  const [consent, setConsent] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<{ creditsGranted: number } | null>(null)
@@ -396,74 +396,93 @@ export function TestimonialForm({ submittedTypes }: Props) {
           </div>
 
           {/* CA Consent */}
-          <div className="space-y-3">
-            <div className="flex items-start gap-3">
-              <input
-                id="ca-consent"
-                type="checkbox"
-                checked={consent}
-                onChange={(e) => setConsent(e.target.checked)}
-                required
-                className="mt-0.5 w-4 h-4 rounded border-gray-600 bg-dark text-primary focus:ring-primary/30"
-              />
-              <label htmlFor="ca-consent" className="text-gray-400 text-xs leading-relaxed cursor-pointer">
-                I have read the Media Release Authorization below and agree to its terms.
-                I authorize Good Breeze AI LLC to use my testimonial, name, and/or video for marketing purposes
-                as described therein. I confirm I am 18 or older and that this reflects my genuine experience
-                with the product.
-              </label>
-            </div>
+          {(() => {
+            const formReady = tab === 'written'
+              ? (content.trim().length >= 30 && pullQuote.trim().length >= 2)
+              : (videoMode === 'url' ? videoUrl.trim().length > 0 : videoFile !== null) && pullQuote.trim().length >= 2
+            const nudge = formReady && !consent
+            return (
+              <div className={`space-y-3 rounded-xl p-4 transition-colors ${nudge ? 'bg-primary/5 border border-primary/30' : 'border border-transparent'}`}>
+                {nudge && (
+                  <div className="flex items-center gap-2 text-primary text-xs font-medium animate-pulse">
+                    <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                    </svg>
+                    One last step — please read and accept the media release below
+                  </div>
+                )}
+                <div className="flex items-start gap-3">
+                  <input
+                    id="ca-consent"
+                    type="checkbox"
+                    checked={consent}
+                    onChange={(e) => setConsent(e.target.checked)}
+                    required
+                    className="mt-0.5 w-4 h-4 rounded border-gray-600 bg-dark text-primary focus:ring-primary/30"
+                  />
+                  <label htmlFor="ca-consent" className="text-gray-400 text-xs leading-relaxed cursor-pointer">
+                    I have read the{' '}
+                    <a href="/legal/media-release" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                      Media Release Authorization
+                    </a>{' '}
+                    and agree to its terms. I authorize Good Breeze AI LLC to use my testimonial, name, and/or
+                    video for marketing purposes as described therein. I confirm I am 18 or older and that this
+                    reflects my genuine experience with the product.
+                  </label>
+                </div>
 
-            <details className="text-xs border border-gray-800 rounded-lg">
-              <summary className="px-4 py-2 text-gray-600 cursor-pointer hover:text-gray-400 transition-colors select-none">
-                Read full Media Release Authorization ↓
-              </summary>
-              <div className="px-4 py-4 space-y-3 text-gray-500 leading-relaxed border-t border-gray-800">
-                <p>
-                  <strong className="text-gray-400">Purpose:</strong> By checking the consent box on this form,
-                  I hereby provide my electronic consent to authorize GOOD BREEZE AI LLC to use and disclose my
-                  written testimonial, pull-quote, name, and/or video submission (including video links I provide)
-                  in its marketing, website, social media, and public relations efforts.
-                </p>
-                <p>
-                  <strong className="text-gray-400">Right to Revoke:</strong> I understand I have the right to
-                  revoke this authorization at any time by sending written notice to support@goodbreeze.ai.
-                  Revocation will not affect any use of my content that occurred before my revocation was received.
-                </p>
-                <p>
-                  <strong className="text-gray-400">Authorization to Release:</strong> I hereby authorize GOOD
-                  BREEZE AI LLC and its personnel to use my testimonial, pull-quote, name, and/or video submission
-                  in its marketing, public relations, and media efforts, including but not limited to the Good
-                  Breeze AI website, social media channels, email marketing, and advertising materials.
-                </p>
-                <p>
-                  I understand that my testimonial content, once published, may exist indefinitely in recorded,
-                  printed, or electronic form, and may be further shared by others beyond Good Breeze AI LLC&apos;s
-                  direct control.
-                </p>
-                <p>
-                  I am not required to provide this authorization. Good Breeze AI LLC does not condition access
-                  to its products, services, or pricing on this authorization. I am not entitled to monetary
-                  payment for use of my testimonial; however, Good Breeze AI LLC may, at its discretion, provide
-                  credits or other non-monetary benefits in appreciation for my submission.
-                </p>
-                <p>
-                  I confirm I am 18 years of age or older and have the right to grant this authorization. I
-                  waive the right of prior approval and release and hold harmless GOOD BREEZE AI LLC and its
-                  affiliates from any and all claims for damages arising from the use of my testimonial, name,
-                  or video submission in the Company&apos;s marketing and media efforts.
-                </p>
-                <p>
-                  <strong className="text-gray-400">Electronic Consent:</strong> My electronic consent
-                  constitutes a legally binding agreement under the California Uniform Electronic Transactions
-                  Act (Cal. Com. Code §§ 1633.1 et seq.) and the federal E-SIGN Act.
-                </p>
-                <p className="text-gray-600 italic">
-                  Contact for revocation requests: support@goodbreeze.ai · goodbreeze.ai
-                </p>
+                <details className="text-xs border border-gray-800 rounded-lg">
+                  <summary className="px-4 py-2 text-gray-600 cursor-pointer hover:text-gray-400 transition-colors select-none">
+                    Read full Media Release Authorization ↓
+                  </summary>
+                  <div className="px-4 py-4 space-y-3 text-gray-500 leading-relaxed border-t border-gray-800">
+                    <p>
+                      <strong className="text-gray-400">Purpose:</strong> By checking the consent box on this form,
+                      I hereby provide my electronic consent to authorize GOOD BREEZE AI LLC to use and disclose my
+                      written testimonial, pull-quote, name, and/or video submission (including video links I provide)
+                      in its marketing, website, social media, and public relations efforts.
+                    </p>
+                    <p>
+                      <strong className="text-gray-400">Right to Revoke:</strong> I understand I have the right to
+                      revoke this authorization at any time by sending written notice to support@goodbreeze.ai.
+                      Revocation will not affect any use of my content that occurred before my revocation was received.
+                    </p>
+                    <p>
+                      <strong className="text-gray-400">Authorization to Release:</strong> I hereby authorize GOOD
+                      BREEZE AI LLC and its personnel to use my testimonial, pull-quote, name, and/or video submission
+                      in its marketing, public relations, and media efforts, including but not limited to the Good
+                      Breeze AI website, social media channels, email marketing, and advertising materials.
+                    </p>
+                    <p>
+                      I understand that my testimonial content, once published, may exist indefinitely in recorded,
+                      printed, or electronic form, and may be further shared by others beyond Good Breeze AI LLC&apos;s
+                      direct control.
+                    </p>
+                    <p>
+                      I am not required to provide this authorization. Good Breeze AI LLC does not condition access
+                      to its products, services, or pricing on this authorization. I am not entitled to monetary
+                      payment for use of my testimonial; however, Good Breeze AI LLC may, at its discretion, provide
+                      credits or other non-monetary benefits in appreciation for my submission.
+                    </p>
+                    <p>
+                      I confirm I am 18 years of age or older and have the right to grant this authorization. I
+                      waive the right of prior approval and release and hold harmless GOOD BREEZE AI LLC and its
+                      affiliates from any and all claims for damages arising from the use of my testimonial, name,
+                      or video submission in the Company&apos;s marketing and media efforts.
+                    </p>
+                    <p>
+                      <strong className="text-gray-400">Electronic Consent:</strong> My electronic consent
+                      constitutes a legally binding agreement under the California Uniform Electronic Transactions
+                      Act (Cal. Com. Code §§ 1633.1 et seq.) and the federal E-SIGN Act.
+                    </p>
+                    <p className="text-gray-600 italic">
+                      Contact for revocation requests: support@goodbreeze.ai · goodbreeze.ai
+                    </p>
+                  </div>
+                </details>
               </div>
-            </details>
-          </div>
+            )
+          })()}
 
           {/* Error */}
           {error && (

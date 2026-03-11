@@ -15,7 +15,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { createServiceClient } from '@/lib/supabase/service-client'
-import { sendTestimonialAdminNotificationEmail } from '@/lib/email'
+import { sendTestimonialAdminNotificationEmail, sendConsentConfirmationEmail } from '@/lib/email'
 
 const CREDIT_AMOUNTS: Record<string, number> = {
   written: 1,
@@ -38,6 +38,29 @@ function isValidVideoUrl(url: string): boolean {
     return false
   }
 }
+
+// Verbatim consent text stored with every record.
+// Increment CONSENT_TEXT_VERSION and update CONSENT_TEXT if this copy changes.
+const CONSENT_TEXT_VERSION = 'v1.0'
+const CONSENT_TEXT = `I have read the Media Release Authorization below and agree to its terms. I authorize Good Breeze AI LLC to use my testimonial, name, and/or video for marketing purposes as described therein. I confirm I am 18 or older and that this reflects my genuine experience with the product.
+
+Media Release Authorization
+
+Purpose: By checking the consent box on this form, I hereby provide my electronic consent to authorize GOOD BREEZE AI LLC to use and disclose my written testimonial, pull-quote, name, and/or video submission (including video links I provide) in its marketing, website, social media, and public relations efforts.
+
+Right to Revoke: I understand I have the right to revoke this authorization at any time by sending written notice to support@goodbreeze.ai. Revocation will not affect any use of my content that occurred before my revocation was received.
+
+Authorization to Release: I hereby authorize GOOD BREEZE AI LLC and its personnel to use my testimonial, pull-quote, name, and/or video submission in its marketing, public relations, and media efforts, including but not limited to the Good Breeze AI website, social media channels, email marketing, and advertising materials.
+
+I understand that my testimonial content, once published, may exist indefinitely in recorded, printed, or electronic form, and may be further shared by others beyond Good Breeze AI LLC's direct control.
+
+I am not required to provide this authorization. Good Breeze AI LLC does not condition access to its products, services, or pricing on this authorization. I am not entitled to monetary payment for use of my testimonial; however, Good Breeze AI LLC may, at its discretion, provide credits or other non-monetary benefits in appreciation for my submission.
+
+I confirm I am 18 years of age or older and have the right to grant this authorization. I waive the right of prior approval and release and hold harmless GOOD BREEZE AI LLC and its affiliates from any and all claims for damages arising from the use of my testimonial, name, or video submission in the Company's marketing and media efforts.
+
+Electronic Consent: My electronic consent constitutes a legally binding agreement under the California Uniform Electronic Transactions Act (Cal. Com. Code §§ 1633.1 et seq.) and the federal E-SIGN Act.
+
+Contact for revocation requests: support@goodbreeze.ai · goodbreeze.ai`
 
 export async function POST(request: NextRequest) {
   try {
@@ -65,6 +88,12 @@ export async function POST(request: NextRequest) {
         { status: 401 }
       )
     }
+
+    // Capture IP and User-Agent at request time (before body is parsed)
+    const ipAddress = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+      || request.headers.get('x-real-ip')
+      || ''
+    const userAgent = request.headers.get('user-agent') || ''
 
     // 2. Parse and validate input
     const body = await request.json()
@@ -154,7 +183,7 @@ export async function POST(request: NextRequest) {
       .eq('type', type)
       .eq('status', 'rejected')
 
-    const { error: insertError } = await serviceSupabase
+    const { data: insertedTestimonial, error: insertError } = await serviceSupabase
       .from('testimonials')
       .insert({
         user_id: user.id,
@@ -166,6 +195,8 @@ export async function POST(request: NextRequest) {
         status: 'pending',
         credits_granted: creditsToGrant,
       })
+      .select('id')
+      .single()
 
     if (insertError) {
       // Unique constraint hit = race condition duplicate
@@ -194,6 +225,41 @@ export async function POST(request: NextRequest) {
     const userName = profile?.name ?? 'Unknown'
     const userEmail = user.email ?? ''
 
+    // 5a. Record consent audit trail (best-effort — never fails the request)
+    const testimonialId = insertedTestimonial?.id
+    if (testimonialId) {
+      const consentedAt = new Date().toISOString()
+      const { data: consentRecord, error: consentError } = await serviceSupabase
+        .from('testimonial_consents')
+        .insert({
+          user_id: user.id,
+          testimonial_id: testimonialId,
+          email: userEmail,
+          name: userName,
+          ip_address: ipAddress || null,
+          user_agent: userAgent || null,
+          consent_text_version: CONSENT_TEXT_VERSION,
+          consent_text: CONSENT_TEXT,
+        })
+        .select('id')
+        .single()
+
+      if (consentError) {
+        console.error('Consent record insert error:', consentError)
+      } else if (consentRecord) {
+        // Send confirmation email + update confirmation_sent_at (fire-and-forget)
+        void sendConsentConfirmationEmail(
+          { userName, userEmail, ipAddress, userAgent, consentTextVersion: CONSENT_TEXT_VERSION, consentText: CONSENT_TEXT, consentedAt },
+          user.id
+        ).then(() =>
+          serviceSupabase
+            .from('testimonial_consents')
+            .update({ confirmation_sent_at: new Date().toISOString() })
+            .eq('id', consentRecord.id)
+        ).catch((err) => console.error('Consent email/update error:', err))
+      }
+    }
+
     // User bell notification — confirm receipt, no credits mention
     await serviceSupabase.from('notifications').insert({
       user_id: user.id,
@@ -205,7 +271,7 @@ export async function POST(request: NextRequest) {
     const { data: admins } = await serviceSupabase
       .from('profiles')
       .select('id')
-      .eq('role', 'admin')
+      .in('role', ['superadmin', 'admin'])
     if (admins && admins.length > 0) {
       await serviceSupabase.from('notifications').insert(
         admins.map((a: { id: string }) => ({

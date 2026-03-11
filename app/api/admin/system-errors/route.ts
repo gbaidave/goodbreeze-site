@@ -9,6 +9,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { createServiceClient } from '@/lib/supabase/service-client'
+import { canDo } from '@/lib/permissions'
 
 export async function GET(request: NextRequest) {
   const cookieStore = await cookies()
@@ -32,7 +33,7 @@ export async function GET(request: NextRequest) {
   const svc = createServiceClient()
   const { data: profile } = await svc
     .from('profiles').select('role').eq('id', user.id).single()
-  if (profile?.role !== 'admin') {
+  if (!canDo(profile?.role, 'view_error_monitoring')) {
     return NextResponse.json({ error: 'Admin required' }, { status: 403 })
   }
 

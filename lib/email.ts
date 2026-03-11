@@ -25,6 +25,7 @@ import { supportAdminNotificationEmail } from './emails/support-admin-notificati
 import { testimonialAdminNotificationEmail } from './emails/testimonial-admin-notification'
 import { securityAlertEmail } from './emails/security-alert'
 import { creditGrantedEmail } from './emails/credit-granted'
+import { consentConfirmationEmail } from './emails/consent-confirmation'
 import { logEmail } from './email-logger'
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -307,5 +308,24 @@ export async function sendSecurityAlertEmail(
   return sendAndLog(
     () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject, html }),
     { userId, toEmail: to, type: 'security_alert', subject }
+  )
+}
+
+export async function sendConsentConfirmationEmail(
+  data: {
+    userName: string
+    userEmail: string
+    ipAddress: string
+    userAgent: string
+    consentTextVersion: string
+    consentText: string
+    consentedAt: string
+  },
+  userId?: string
+) {
+  const { subject, html } = consentConfirmationEmail(data)
+  return sendAndLog(
+    () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to: data.userEmail, replyTo: REPLY_TO, subject, html }),
+    { userId, toEmail: data.userEmail, type: 'security_alert', subject, notifyOnFail: false }
   )
 }

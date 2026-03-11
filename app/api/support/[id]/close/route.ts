@@ -97,7 +97,7 @@ export async function PATCH(
     // Notify all admins via bell (fire and forget)
     void (async () => {
       try {
-        const { data: admins } = await svc.from('profiles').select('id').eq('role', 'admin')
+        const { data: admins } = await svc.from('profiles').select('id').in('role', ['superadmin', 'admin', 'support'])
         if (admins?.length) {
           await svc.from('notifications').insert(
             admins.map((a) => ({

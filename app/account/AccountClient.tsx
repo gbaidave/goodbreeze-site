@@ -227,10 +227,12 @@ export default function AccountClient({
     }
   }
 
-  const isPrivileged = role === 'admin' || role === 'tester'
+  const isPrivileged = role === 'superadmin' || role === 'admin' || role === 'support' || role === 'tester'
 
   const planLabel =
+    role === 'superadmin' ? 'Superadmin' :
     role === 'admin' ? 'Admin' :
+    role === 'support' ? 'Support' :
     role === 'tester' ? 'Tester' :
     plan === 'starter' ? 'Starter' :
     plan === 'growth' ? 'Growth' :

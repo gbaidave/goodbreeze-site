@@ -9,6 +9,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { createServiceClient } from '@/lib/supabase/service-client'
+import { canDo } from '@/lib/permissions'
 
 const ALLOWED_KEYS = [
   'failure_email_enabled',
@@ -37,7 +38,7 @@ async function requireAdmin(): Promise<boolean> {
   const svc = createServiceClient()
   const { data: profile } = await svc
     .from('profiles').select('role').eq('id', user.id).single()
-  return profile?.role === 'admin'
+  return canDo(profile?.role, 'system_settings')
 }
 
 export async function GET() {

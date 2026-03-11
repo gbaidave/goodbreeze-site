@@ -18,12 +18,21 @@ interface Message {
   attachments?: AttachmentMeta[]
 }
 
+interface AdminUser {
+  id: string
+  name: string
+}
+
 interface Props {
   requestId: string
   userEmail: string
   status: string
   messages: Message[]
   assignedTo?: string | null
+  assigneeId?: string | null
+  adminUsers?: AdminUser[]
+  actorRole?: string
+  actorUserId?: string
 }
 
 function formatBytes(bytes: number | null): string {
@@ -33,7 +42,10 @@ function formatBytes(bytes: number | null): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
-export function AdminReplyPanel({ requestId, userEmail, status, messages, assignedTo }: Props) {
+export function AdminReplyPanel({
+  requestId, userEmail, status, messages, assignedTo,
+  assigneeId, adminUsers = [], actorRole = 'admin', actorUserId = '',
+}: Props) {
   const router = useRouter()
   const [reply, setReply] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -43,19 +55,27 @@ export function AdminReplyPanel({ requestId, userEmail, status, messages, assign
   const [closing, setClosing] = useState(false)
   const [error, setError] = useState('')
   const [ticketStatus, setTicketStatus] = useState(status)
-  const [assignee, setAssignee] = useState(assignedTo ?? '')
+  const [currentAssigneeId, setCurrentAssigneeId] = useState(assigneeId ?? '')
   const [savingAssignee, setSavingAssignee] = useState(false)
 
   const isDone = ticketStatus === 'resolved' || ticketStatus === 'closed'
+  const isSupport = actorRole === 'support'
 
-  async function handleAssigneeSave() {
+  // Support role can only self-assign; admin/superadmin can assign to any eligible user
+  const assignableUsers = isSupport
+    ? adminUsers.filter((u) => u.id === actorUserId)
+    : adminUsers
+
+  async function handleAssigneeChange(newAssigneeId: string) {
+    setCurrentAssigneeId(newAssigneeId)
     setSavingAssignee(true)
     try {
-      await fetch(`/api/admin/support/${requestId}`, {
+      await fetch(`/api/admin/support/${requestId}/assign`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ assigned_to: assignee.trim() || null }),
+        body: JSON.stringify({ assignee_id: newAssigneeId || null }),
       })
+      router.refresh()
     } finally {
       setSavingAssignee(false)
     }
@@ -131,15 +151,27 @@ export function AdminReplyPanel({ requestId, userEmail, status, messages, assign
       {/* Assignee */}
       <div className="flex items-center gap-2">
         <label className="text-xs text-gray-500 whitespace-nowrap">Assigned to:</label>
-        <input
-          type="text"
-          value={assignee}
-          onChange={(e) => setAssignee(e.target.value)}
-          onBlur={handleAssigneeSave}
-          placeholder="Unassigned"
-          maxLength={100}
-          className="flex-1 max-w-[200px] px-2 py-1 bg-dark border border-gray-700 text-white text-xs rounded-lg focus:outline-none focus:border-primary transition-colors placeholder-gray-600"
-        />
+        <select
+          value={currentAssigneeId}
+          onChange={(e) => handleAssigneeChange(e.target.value)}
+          disabled={savingAssignee}
+          className="flex-1 max-w-[200px] px-2 py-1 bg-dark border border-gray-700 text-white text-xs rounded-lg focus:outline-none focus:border-primary transition-colors disabled:opacity-50"
+        >
+          <option value="">Unassigned</option>
+          {assignableUsers.map((u) => (
+            <option key={u.id} value={u.id}>{u.name || u.id}</option>
+          ))}
+        </select>
+        {isSupport && !assignableUsers.find((u) => u.id === actorUserId) && (
+          <button
+            type="button"
+            onClick={() => handleAssigneeChange(actorUserId)}
+            disabled={savingAssignee}
+            className="text-xs text-primary hover:underline disabled:opacity-50"
+          >
+            Assign to me
+          </button>
+        )}
         {savingAssignee && <span className="text-xs text-gray-500">Saving…</span>}
       </div>
 

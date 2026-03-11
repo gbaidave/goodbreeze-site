@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service-client'
+import { canDo } from '@/lib/permissions'
 
 const VALID_STATUSES = ['pending', 'approved', 'rejected'] as const
 
@@ -16,7 +17,7 @@ export async function POST(request: NextRequest) {
     .select('role')
     .eq('id', user.id)
     .single()
-  if (profile?.role !== 'admin') {
+  if (!canDo(profile?.role, 'approve_testimonials')) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 

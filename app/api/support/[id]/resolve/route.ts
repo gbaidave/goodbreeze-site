@@ -15,6 +15,7 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { createServiceClient } from '@/lib/supabase/service-client'
 import { sendSupportResolvedEmail } from '@/lib/email'
+import { canDo } from '@/lib/permissions'
 
 export async function PATCH(
   request: NextRequest,
@@ -51,7 +52,7 @@ export async function PATCH(
       .select('role')
       .eq('id', user.id)
       .single()
-    if (profile?.role !== 'admin') {
+    if (!canDo(profile?.role, 'resolve_ticket')) {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
     }
 

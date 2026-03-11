@@ -10,6 +10,7 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { createServiceClient } from '@/lib/supabase/service-client'
 import { stripe } from '@/lib/stripe'
+import { canDo } from '@/lib/permissions'
 
 export async function PATCH(
   request: NextRequest,
@@ -41,7 +42,7 @@ export async function PATCH(
     const svc = createServiceClient()
     const { data: adminProfile } = await svc
       .from('profiles').select('role').eq('id', user.id).single()
-    if (adminProfile?.role !== 'admin') {
+    if (!canDo(adminProfile?.role, 'grant_credits')) {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
     }
 

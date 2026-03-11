@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service-client'
 import { AdminReplyPanel } from './AdminReplyPanel'
 
@@ -29,7 +30,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   feedback:       'Feedback',
 }
 
-interface SearchParams { status?: string; category?: string }
+interface SearchParams { status?: string; category?: string; assignee?: string }
 
 export default async function AdminSupportPage({
   searchParams,
@@ -39,12 +40,30 @@ export default async function AdminSupportPage({
   const params = await searchParams
   const statusFilter = params.status ?? 'open'
   const categoryFilter = params.category ?? 'all'
+  const assigneeFilter = params.assignee ?? 'all'
 
-  const supabase = createServiceClient()
+  // Get current actor (for role-aware UI)
+  const supabaseAuth = await createClient()
+  const { data: { user: actor } } = await supabaseAuth.auth.getUser()
 
-  let query = supabase
+  const svc = createServiceClient()
+
+  // Load actor's role
+  const { data: actorProfile } = actor
+    ? await svc.from('profiles').select('role').eq('id', actor.id).single()
+    : { data: null }
+  const actorRole = actorProfile?.role ?? 'admin'
+
+  // Load admin/support users for assignee dropdown
+  const { data: adminUsers } = await svc
+    .from('profiles')
+    .select('id, name')
+    .in('role', ['superadmin', 'admin', 'support'])
+    .order('name', { ascending: true })
+
+  let query = svc
     .from('support_requests')
-    .select('id, user_id, email, plan_at_time, message, status, category, subject, priority, assigned_to, created_at')
+    .select('id, user_id, email, plan_at_time, message, status, category, subject, priority, assigned_to, assignee_id, created_at')
     .order('priority', { ascending: false }) // high priority (dispute) first
     .order('created_at', { ascending: false })
 
@@ -54,13 +73,18 @@ export default async function AdminSupportPage({
   if (categoryFilter !== 'all') {
     query = query.eq('category', categoryFilter)
   }
+  if (assigneeFilter === 'mine' && actor) {
+    query = query.eq('assignee_id', actor.id)
+  } else if (assigneeFilter === 'unassigned') {
+    query = query.is('assignee_id', null)
+  }
 
   const { data: requests } = await query.limit(100)
 
   // Load all messages for the fetched requests in one query
   const requestIds = requests?.map((r) => r.id) ?? []
   const { data: allMessages } = requestIds.length
-    ? await supabase
+    ? await svc
         .from('support_messages')
         .select('id, request_id, sender_role, message, created_at')
         .in('request_id', requestIds)
@@ -70,7 +94,7 @@ export default async function AdminSupportPage({
   // Load attachments for all messages
   const messageIds = (allMessages ?? []).map((m) => m.id)
   const { data: allAttachments } = messageIds.length
-    ? await supabase
+    ? await svc
         .from('support_attachments')
         .select('id, message_id, file_name, file_size, mime_type')
         .in('message_id', messageIds)
@@ -92,10 +116,17 @@ export default async function AdminSupportPage({
     })
   }
 
-  function buildFilter(s: string, c?: string) {
+  // Build assignee name lookup
+  const assigneeById: Record<string, string> = {}
+  for (const u of adminUsers ?? []) {
+    assigneeById[u.id] = u.name ?? u.id
+  }
+
+  function buildFilter(s: string, c?: string, a?: string) {
     const p = new URLSearchParams()
     if (s !== 'open') p.set('status', s)
     if (c && c !== 'all') p.set('category', c)
+    if (a && a !== 'all') p.set('assignee', a)
     const qs = p.toString()
     return `/admin/support${qs ? `?${qs}` : ''}`
   }
@@ -112,7 +143,7 @@ export default async function AdminSupportPage({
         {['open', 'in_progress', 'resolved', 'closed', 'all'].map((s) => (
           <Link
             key={s}
-            href={buildFilter(s, categoryFilter !== 'all' ? categoryFilter : undefined)}
+            href={buildFilter(s, categoryFilter !== 'all' ? categoryFilter : undefined, assigneeFilter !== 'all' ? assigneeFilter : undefined)}
             className={`px-4 py-2 rounded-lg text-sm font-medium capitalize transition-colors
               ${statusFilter === s
                 ? 'bg-primary text-white'
@@ -123,12 +154,32 @@ export default async function AdminSupportPage({
         ))}
       </div>
 
+      {/* Assignee filter tabs */}
+      <div className="flex gap-2 flex-wrap">
+        {[
+          { key: 'all', label: 'All Tickets' },
+          { key: 'mine', label: 'Mine' },
+          { key: 'unassigned', label: 'Unassigned' },
+        ].map(({ key, label }) => (
+          <Link
+            key={key}
+            href={buildFilter(statusFilter, categoryFilter !== 'all' ? categoryFilter : undefined, key !== 'all' ? key : undefined)}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors
+              ${assigneeFilter === key
+                ? 'bg-primary/20 text-primary border border-primary/40'
+                : 'border border-gray-800 text-gray-500 hover:text-white'}`}
+          >
+            {label}
+          </Link>
+        ))}
+      </div>
+
       {/* Category filter tabs */}
       <div className="flex gap-2 flex-wrap">
         {(['all', 'help', 'report_issue', 'billing', 'refund', 'dispute', 'account_access', 'feedback'] as const).map((c) => (
           <Link
             key={c}
-            href={buildFilter(statusFilter, c !== 'all' ? c : undefined)}
+            href={buildFilter(statusFilter, c !== 'all' ? c : undefined, assigneeFilter !== 'all' ? assigneeFilter : undefined)}
             className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors
               ${categoryFilter === c
                 ? 'bg-primary/20 text-primary border border-primary/40'
@@ -159,6 +210,11 @@ export default async function AdminSupportPage({
                   )}
                   {r.plan_at_time && (
                     <p className="text-gray-500 text-xs mt-0.5">Plan: {r.plan_at_time}</p>
+                  )}
+                  {(r as any).assignee_id && (
+                    <p className="text-gray-500 text-xs mt-0.5">
+                      Assigned: {assigneeById[(r as any).assignee_id] ?? (r as any).assignee_id}
+                    </p>
                   )}
                 </div>
                 <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
@@ -209,6 +265,10 @@ export default async function AdminSupportPage({
                 status={r.status}
                 messages={(messagesByRequest[r.id] ?? []) as any}
                 assignedTo={(r as any).assigned_to ?? null}
+                assigneeId={(r as any).assignee_id ?? null}
+                adminUsers={(adminUsers ?? []) as { id: string; name: string }[]}
+                actorRole={actorRole}
+                actorUserId={actor?.id ?? ''}
               />
             </div>
           ))}

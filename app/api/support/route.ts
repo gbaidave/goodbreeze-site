@@ -218,10 +218,25 @@ export async function POST(request: NextRequest) {
       user.id
     ).catch((err) => console.error('Support notification email failed:', err))
 
-    // 5d. Bell notification for all admin users (fire and forget)
+    // 5d. Auto-assign to first support user if one exists (fire and forget)
     void (async () => {
       try {
-        const { data: admins } = await svc.from('profiles').select('id').eq('role', 'admin')
+        const { data: supportUsers } = await svc
+          .from('profiles').select('id').eq('role', 'support').limit(1)
+        if (supportUsers && supportUsers.length > 0) {
+          await svc.from('support_requests')
+            .update({ assignee_id: supportUsers[0]!.id })
+            .eq('id', ticketId)
+        }
+      } catch (e) {
+        console.error('Auto-assign error:', e)
+      }
+    })()
+
+    // 5e. Bell notification for all admin/support users (fire and forget)
+    void (async () => {
+      try {
+        const { data: admins } = await svc.from('profiles').select('id').in('role', ['superadmin', 'admin', 'support'])
         if (admins?.length) {
           const notifMsg = category === 'dispute'
             ? `🚨 Dispute from ${userName} (${userEmail})`

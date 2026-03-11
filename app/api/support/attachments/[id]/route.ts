@@ -43,7 +43,7 @@ export async function GET(
     .eq('id', user.id)
     .single()
 
-  const isAdmin = profile?.role === 'admin' || profile?.role === 'tester'
+  const isAdmin = ['superadmin', 'admin', 'support', 'tester'].includes(profile?.role ?? '')
 
   if (!isAdmin && ticketOwnerId !== user.id) {
     return NextResponse.json({ error: 'Not authorized.' }, { status: 403 })

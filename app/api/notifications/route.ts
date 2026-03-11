@@ -54,7 +54,7 @@ export async function GET() {
 
     const notifications = data ?? []
     const unreadCount = notifications.filter(n => !n.read).length
-    const isAdmin = profile?.role === 'admin'
+    const isAdmin = ['superadmin', 'admin'].includes(profile?.role ?? '')
 
     return NextResponse.json({ notifications, unreadCount, isAdmin })
   } catch (error) {

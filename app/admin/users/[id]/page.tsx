@@ -3,6 +3,7 @@ import { createServiceClient } from '@/lib/supabase/service-client'
 import { UserActionsPanel } from './UserActionsPanel'
 import { AdminNotesPanel } from './AdminNotesPanel'
 import { CreditRowsPanel } from './CreditRowsPanel'
+import { ResendConsentButton } from './ResendConsentButton'
 
 const REPORT_LABELS: Record<string, string> = {
   h2h: 'Head to Head', t3c: 'Top 3 Competitors', cp: 'Competitive Position',
@@ -27,7 +28,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
   const isSuspended = !!bannedUntil && new Date(bannedUntil) > new Date()
 
   // Fetch all user data in parallel
-  const [profileRes, subRes, creditsRes, reportsRes, emailLogsRes, supportRes, notesRes, testimonialsRes] = await Promise.all([
+  const [profileRes, subRes, creditsRes, reportsRes, emailLogsRes, supportRes, notesRes, testimonialsRes, consentsRes] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', id).single(),
     supabase.from('subscriptions').select('*').eq('user_id', id).order('created_at', { ascending: false }).limit(1).single(),
     supabase.from('credits').select('balance, expires_at, purchased_at, product').eq('user_id', id).order('purchased_at', { ascending: false }),
@@ -36,6 +37,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
     supabase.from('support_requests').select('id, message, status, created_at').eq('user_id', id).order('created_at', { ascending: false }).limit(10),
     supabase.from('admin_notes').select('id, note, created_at, created_by').eq('user_id', id).order('created_at', { ascending: false }),
     supabase.from('testimonials').select('id, type, status, pull_quote, content, video_url, credits_granted, admin_note, created_at').eq('user_id', id).order('created_at', { ascending: false }),
+    supabase.from('testimonial_consents').select('id, testimonial_id, email, name, ip_address, user_agent, consent_text_version, consented_at, confirmation_sent_at').eq('user_id', id).order('consented_at', { ascending: false }),
   ])
 
   const profile = profileRes.data
@@ -48,6 +50,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
   const supportRequests = supportRes.data ?? []
   const rawNotes = notesRes.data ?? []
   const testimonials = testimonialsRes.data ?? []
+  const consents = consentsRes.data ?? []
 
   // Fetch note author names
   const authorIds = [...new Set(rawNotes.map((n: any) => n.created_by))]
@@ -280,6 +283,56 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
                     {t.admin_note && (
                       <p className="text-gray-500 text-xs italic">Note: {t.admin_note}</p>
                     )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </Section>
+
+          {/* Media Release Consents */}
+          <Section title={`Media Release Consents (${consents.length})`}>
+            {consents.length === 0 ? (
+              <p className="text-gray-500 text-sm px-4 py-3">No consent records found.</p>
+            ) : (
+              <div className="divide-y divide-primary/10">
+                {consents.map((c: any) => (
+                  <div key={c.id} className="px-4 py-4 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs px-2 py-0.5 rounded-full border bg-dark-700 text-gray-300 border-gray-700">
+                          {c.consent_text_version}
+                        </span>
+                        <span className={`text-xs px-2 py-0.5 rounded-full border ${
+                          c.confirmation_sent_at
+                            ? 'bg-green-900/40 text-green-400 border-green-800'
+                            : 'bg-yellow-900/40 text-yellow-400 border-yellow-800'
+                        }`}>
+                          {c.confirmation_sent_at ? 'Email sent' : 'Email pending'}
+                        </span>
+                      </div>
+                      <span className="text-gray-500 text-xs">
+                        {new Date(c.consented_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        {' '}
+                        {new Date(c.consented_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'America/Los_Angeles', timeZoneName: 'short' })}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+                      <div><span className="text-gray-500">Name:</span> <span className="text-gray-300">{c.name || '—'}</span></div>
+                      <div><span className="text-gray-500">Email:</span> <span className="text-gray-300">{c.email}</span></div>
+                      {c.ip_address && (
+                        <div><span className="text-gray-500">IP:</span> <span className="text-gray-300 font-mono">{c.ip_address}</span></div>
+                      )}
+                      {c.user_agent && (
+                        <div className="col-span-2"><span className="text-gray-500">Browser:</span> <span className="text-gray-400 font-mono text-xs">{c.user_agent.slice(0, 80)}{c.user_agent.length > 80 ? '…' : ''}</span></div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <a href="/legal/media-release" target="_blank" rel="noopener noreferrer"
+                        className="text-primary text-xs hover:underline">
+                        View Media Release {c.consent_text_version} →
+                      </a>
+                      <ResendConsentButton userId={id} consentId={c.id} />
+                    </div>
                   </div>
                 ))}
               </div>
