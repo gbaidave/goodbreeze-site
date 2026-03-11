@@ -49,10 +49,8 @@ export async function POST(request: NextRequest) {
       }
     )
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
-    }
+    const { data: { user } } = await supabase.auth.getUser()
+    // Support page is accessible without login — unauthenticated submissions allowed
 
     // 2. Validate body
     const body = await request.json()
@@ -61,6 +59,16 @@ export async function POST(request: NextRequest) {
     const subject = body.subject ? String(body.subject).trim().slice(0, MAX_SUBJECT_LEN) : null
     const productType: string | null = body.product_type ?? null
     const refundMethod: string = body.refund_method === 'payment_method' ? 'payment_method' : 'credits'
+
+    // Guest fields (only used when no authenticated user)
+    const guestName: string = body.guest_name ? String(body.guest_name).trim().slice(0, 120) : ''
+    const guestEmail: string = body.guest_email ? String(body.guest_email).trim().slice(0, 254) : ''
+    if (!user && (!guestName || !guestEmail || !guestEmail.includes('@'))) {
+      return NextResponse.json(
+        { error: 'Please provide your name and email address.' },
+        { status: 400 }
+      )
+    }
 
     if (message.length < MIN_MESSAGE_LEN) {
       return NextResponse.json(
@@ -83,40 +91,51 @@ export async function POST(request: NextRequest) {
 
     const priority = category === 'dispute' ? 'high' : 'normal'
 
-    // 3. Fetch user context
+    // 3. Fetch user context (skip for unauthenticated guests)
     const svc = createServiceClient()
-    const [profileRes, subRes, lastReportRes] = await Promise.all([
-      svc.from('profiles').select('name, email').eq('id', user.id).single(),
-      svc
-        .from('subscriptions')
-        .select('plan')
-        .eq('user_id', user.id)
-        .in('status', ['active', 'trialing'])
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single(),
-      svc
-        .from('reports')
-        .select('report_type, status')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single(),
-    ])
+    let userName: string
+    let userEmail: string
+    let plan: string
+    let lastReportContext: string
 
-    const userName = profileRes.data?.name || user.email!.split('@')[0]
-    const userEmail = profileRes.data?.email || user.email!
-    const plan = subRes.data?.plan || 'free'
-    const lastReport = lastReportRes.data
-    const lastReportContext = lastReport
-      ? `${lastReport.report_type} (${lastReport.status})`
-      : 'No reports yet'
+    if (user) {
+      const [profileRes, subRes, lastReportRes] = await Promise.all([
+        svc.from('profiles').select('name, email').eq('id', user.id).single(),
+        svc
+          .from('subscriptions')
+          .select('plan')
+          .eq('user_id', user.id)
+          .in('status', ['active', 'trialing'])
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single(),
+        svc
+          .from('reports')
+          .select('report_type, status')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single(),
+      ])
+      userName = profileRes.data?.name || user.email!.split('@')[0]
+      userEmail = profileRes.data?.email || user.email!
+      plan = subRes.data?.plan || 'free'
+      const lastReport = lastReportRes.data
+      lastReportContext = lastReport
+        ? `${lastReport.report_type} (${lastReport.status})`
+        : 'No reports yet'
+    } else {
+      userName = guestName
+      userEmail = guestEmail
+      plan = 'free'
+      lastReportContext = 'Guest (no account)'
+    }
 
     // 4. Insert support request
     const { data: insertedRequest, error: insertError } = await svc
       .from('support_requests')
       .insert({
-        user_id: user.id,
+        user_id: user?.id ?? null,
         email: userEmail,
         plan_at_time: plan,
         last_report_context: lastReportContext,
@@ -143,7 +162,7 @@ export async function POST(request: NextRequest) {
       .from('support_messages')
       .insert({
         request_id: ticketId,
-        sender_id: user.id,
+        sender_id: user?.id ?? null,
         sender_role: 'user',
         message,
       })
@@ -152,8 +171,8 @@ export async function POST(request: NextRequest) {
 
     const messageId = insertedMsg?.id ?? null
 
-    // 5b. If category = 'refund': create placeholder refund_requests row
-    if (category === 'refund') {
+    // 5b. If category = 'refund' and user is authenticated: create placeholder refund_requests row
+    if (category === 'refund' && user) {
       const resolvedProductType = productType && (VALID_PRODUCT_TYPES as readonly string[]).includes(productType)
         ? productType
         : 'subscription'
@@ -215,7 +234,7 @@ export async function POST(request: NextRequest) {
     // 5c. Email support@ (fire and forget)
     sendSupportNotificationEmail(
       { userName, userEmail, planAtTime: plan, lastReportContext, message, category, subject },
-      user.id
+      user?.id
     ).catch((err) => console.error('Support notification email failed:', err))
 
     // 5d. Auto-assign to first support user if one exists (fire and forget)

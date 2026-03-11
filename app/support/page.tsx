@@ -1,4 +1,3 @@
-import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service-client'
 import SupportForm from './SupportForm'
@@ -17,7 +16,20 @@ export default async function SupportPage() {
   } catch {
     // treat as unauthenticated
   }
-  if (!user) redirect('/login')
+
+  // Unauthenticated visitors can access the support page (e.g. can't log in)
+  if (!user) {
+    return (
+      <SupportForm
+        isAuthenticated={false}
+        userName=""
+        userEmail=""
+        plan="free"
+        lastReportContext={null}
+        tickets={[]}
+      />
+    )
+  }
 
   const [profileRes, subRes, lastReportRes] = await Promise.all([
     supabase.from('profiles').select('name, email').eq('id', user.id).single(),
@@ -97,6 +109,7 @@ export default async function SupportPage() {
 
   return (
     <SupportForm
+      isAuthenticated={true}
       userName={userName}
       userEmail={userEmail}
       plan={plan}

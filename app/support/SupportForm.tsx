@@ -31,6 +31,7 @@ interface Ticket {
 }
 
 interface Props {
+  isAuthenticated: boolean
   userName: string
   userEmail: string
   plan: string
@@ -177,7 +178,7 @@ function FilePickerInput({
   )
 }
 
-function SuccessState() {
+function SuccessState({ isAuthenticated }: { isAuthenticated: boolean }) {
   return (
     <div className="min-h-screen bg-dark flex items-center justify-center px-6">
       <motion.div
@@ -195,13 +196,15 @@ function SuccessState() {
           We&apos;ve received your request and we&apos;ll be in touch.
         </p>
         <p className="text-gray-500 text-sm mb-8">
-          We&apos;ll reply here in your dashboard and via email.
+          {isAuthenticated
+            ? "We'll reply here in your dashboard and via email."
+            : "We'll reply to the email address you provided."}
         </p>
         <Link
-          href="/dashboard"
+          href={isAuthenticated ? '/dashboard' : '/'}
           className="inline-block px-6 py-3 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full hover:shadow-lg hover:shadow-primary/30 transition-all"
         >
-          Back to Dashboard
+          {isAuthenticated ? 'Back to Dashboard' : 'Back to Home'}
         </Link>
       </motion.div>
     </div>
@@ -551,26 +554,33 @@ function TicketListSection({ tickets, userEmail }: { tickets: Ticket[]; userEmai
   )
 }
 
-export default function SupportForm({ userName, userEmail, plan, lastReportContext, tickets = [] }: Props) {
+export default function SupportForm({ isAuthenticated, userName, userEmail, plan, lastReportContext, tickets = [] }: Props) {
   const [category, setCategory] = useState('help')
   const [subject, setSubject] = useState('')
   const [productType, setProductType] = useState('subscription')
   const [refundMethod, setRefundMethod] = useState<'credits' | 'payment_method'>('credits')
   const [stripeAttempted, setStripeAttempted] = useState(false)
   const [message, setMessage] = useState('')
+  const [guestName, setGuestName] = useState('')
+  const [guestEmail, setGuestEmail] = useState('')
   const [attachFiles, setAttachFiles] = useState<File[]>([])
   const [attachFileError, setAttachFileError] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
 
-  if (submitted) return <SuccessState />
+  if (submitted) return <SuccessState isAuthenticated={isAuthenticated} />
 
   const selectedCategory = CATEGORY_OPTIONS.find((c) => c.value === category)
   const subjectPlaceholder = selectedCategory?.placeholder ?? 'Optional — brief summary of your issue'
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    // Guest validation
+    if (!isAuthenticated) {
+      if (!guestName.trim()) { setError('Please enter your name.'); return }
+      if (!guestEmail.trim() || !guestEmail.includes('@')) { setError('Please enter a valid email address.'); return }
+    }
     // Validate attachments client-side
     for (const f of attachFiles) {
       if (f.size > MAX_ATTACH_BYTES) { setAttachFileError(`"${f.name}" exceeds 5 MB.`); return }
@@ -581,6 +591,10 @@ export default function SupportForm({ userName, userEmail, plan, lastReportConte
     try {
       const body: Record<string, string> = { message, category }
       if (subject.trim()) body.subject = subject.trim()
+      if (!isAuthenticated) {
+        body.guest_name = guestName.trim()
+        body.guest_email = guestEmail.trim()
+      }
       if (category === 'refund') {
         body.product_type = productType
         body.refund_method = refundMethod
@@ -616,8 +630,8 @@ export default function SupportForm({ userName, userEmail, plan, lastReportConte
           animate={{ opacity: 1, y: 0 }}
           className="text-center"
         >
-          <Link href="/dashboard" className="text-gray-500 hover:text-primary text-sm transition-colors">
-            ← Back to Dashboard
+          <Link href={isAuthenticated ? '/dashboard' : '/'} className="text-gray-500 hover:text-primary text-sm transition-colors">
+            ← {isAuthenticated ? 'Back to Dashboard' : 'Back to Home'}
           </Link>
           <h1 className="text-4xl font-bold text-white mt-4 mb-3">Get Help</h1>
           <p className="text-gray-400 max-w-lg mx-auto">
@@ -643,31 +657,64 @@ export default function SupportForm({ userName, userEmail, plan, lastReportConte
             </div>
           )}
 
-          {/* Context — auto-filled */}
-          <div className="bg-dark border border-gray-800 rounded-xl p-4 space-y-2">
-            <p className="text-xs text-gray-500 uppercase tracking-wide mb-3">Your account context</p>
-            <div className="grid sm:grid-cols-2 gap-2 text-sm">
-              <div>
-                <span className="text-gray-500">Name: </span>
-                <span className="text-gray-300">{userName}</span>
-              </div>
-              <div>
-                <span className="text-gray-500">Email: </span>
-                <span className="text-gray-300">{userEmail}</span>
-              </div>
-              <div>
-                <span className="text-gray-500">Plan: </span>
-                <span className="text-gray-300">{planLabel}</span>
-              </div>
-              {lastReportContext && (
+          {/* Context — auto-filled for authenticated, editable for guests */}
+          {isAuthenticated ? (
+            <div className="bg-dark border border-gray-800 rounded-xl p-4 space-y-2">
+              <p className="text-xs text-gray-500 uppercase tracking-wide mb-3">Your account context</p>
+              <div className="grid sm:grid-cols-2 gap-2 text-sm">
                 <div>
-                  <span className="text-gray-500">Last report: </span>
-                  <span className="text-gray-300">{lastReportContext}</span>
+                  <span className="text-gray-500">Name: </span>
+                  <span className="text-gray-300">{userName}</span>
                 </div>
-              )}
+                <div>
+                  <span className="text-gray-500">Email: </span>
+                  <span className="text-gray-300">{userEmail}</span>
+                </div>
+                <div>
+                  <span className="text-gray-500">Plan: </span>
+                  <span className="text-gray-300">{planLabel}</span>
+                </div>
+                {lastReportContext && (
+                  <div>
+                    <span className="text-gray-500">Last report: </span>
+                    <span className="text-gray-300">{lastReportContext}</span>
+                  </div>
+                )}
+              </div>
+              <p className="text-xs text-gray-600 mt-2">This context is sent with your request to help us respond faster.</p>
             </div>
-            <p className="text-xs text-gray-600 mt-2">This context is sent with your request to help us respond faster.</p>
-          </div>
+          ) : (
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="guest-name" className="block text-sm font-medium text-gray-300 mb-1.5">
+                  Your name *
+                </label>
+                <input
+                  id="guest-name"
+                  type="text"
+                  value={guestName}
+                  onChange={(e) => setGuestName(e.target.value)}
+                  required
+                  placeholder="Jane Smith"
+                  className="w-full px-4 py-3 bg-dark border border-gray-700 text-white rounded-xl focus:outline-none focus:border-primary transition-colors text-sm placeholder-gray-600"
+                />
+              </div>
+              <div>
+                <label htmlFor="guest-email" className="block text-sm font-medium text-gray-300 mb-1.5">
+                  Your email *
+                </label>
+                <input
+                  id="guest-email"
+                  type="email"
+                  value={guestEmail}
+                  onChange={(e) => setGuestEmail(e.target.value)}
+                  required
+                  placeholder="jane@example.com"
+                  className="w-full px-4 py-3 bg-dark border border-gray-700 text-white rounded-xl focus:outline-none focus:border-primary transition-colors text-sm placeholder-gray-600"
+                />
+              </div>
+            </div>
+          )}
 
           {/* Category */}
           <div>
@@ -820,7 +867,9 @@ export default function SupportForm({ userName, userEmail, plan, lastReportConte
           </button>
 
           <p className="text-center text-xs text-gray-600">
-            We&apos;ll be in touch. Reply will be sent to {userEmail} and will appear here.
+            {isAuthenticated
+              ? `We'll be in touch. Reply will be sent to ${userEmail} and will appear here.`
+              : "We'll reply to the email address you provided above."}
           </p>
         </motion.form>
 
