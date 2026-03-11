@@ -7,21 +7,28 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: '*',
         allow: '/',
         disallow: [
+          // Auth & user-only pages
           '/dashboard',
           '/account',
-          '/api/',
+          '/notifications',
+          '/support',
+          '/welcome',
+          // Auth flows
           '/login',
           '/signup',
           '/forgot-password',
           '/forgot-password/by-phone',
           '/reset-password',
           '/auth/',
-          '/reports/competitive-analyzer',
-          '/reports/ai-seo',
-          '/reports/seo-audit',
-          '/reports/keyword-research',
-          '/reports/landing-page-optimizer',
-          '/reports/seo-comprehensive',
+          // Admin area
+          '/admin',
+          // API
+          '/api/',
+          // Report tool forms & individual report results (hub /reports stays crawlable)
+          '/reports/',
+          // Not ready to index yet
+          '/testimonials',
+          '/refund-policy',
         ],
       },
     ],

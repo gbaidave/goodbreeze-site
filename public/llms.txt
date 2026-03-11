@@ -1,24 +1,25 @@
 # Good Breeze AI
 
-> AI-powered business operations tools for small and mid-size businesses. Freemium SaaS platform delivering competitive analysis, SEO auditing, and marketing automation reports.
+> AI-powered competitive intelligence and SEO reports for small and mid-size businesses. Freemium SaaS platform — start free, no credit card required.
 
 ## What We Do
 
-Good Breeze AI helps business owners eliminate busywork and scale output without hiring a team. We provide:
+Good Breeze AI helps business owners eliminate busywork and scale output without hiring. We generate AI-powered reports that surface competitive gaps, SEO weaknesses, and growth opportunities — in minutes, not weeks.
 
-- **Competitive Analyzer** — AI-generated head-to-head, top 3 competitors, and competitive position reports
-- **SEO Auditor** — Technical SEO audits, keyword research, landing page optimization, and AI SEO recommendations
-- **Done-for-you automation** — Custom n8n workflow implementations for client businesses
+- **Competitive Analyzer** — Head-to-head comparisons, Top 3 Competitors analysis, and Competitive Position reports
+- **SEO Reports** — Technical SEO audits, keyword research, landing page optimization, AI SEO recommendations, and comprehensive SEO analysis
+- **Done-for-you AI systems** — Custom automation workflows built for client businesses (custom engagements)
 
-## Products
+## Products & Pricing
 
-- Free tier: 1 report to try (no credit card required)
+- Free tier: 1 free report (no credit card required)
 - Impulse pack: 3 reports for $1
-- Starter subscription: $20/month unlimited access
+- Starter subscription: $20/month for ongoing access
+- Custom engagements: $5K–$20K for done-for-you AI automation systems
 
 ## Target Audience
 
-Small business owners, marketing consultants, and agency operators who want AI-powered insights without enterprise pricing.
+Small business owners, marketing consultants, and agency operators who want AI-powered competitive and SEO intelligence without enterprise pricing or complexity.
 
 ## Company
 
@@ -30,7 +31,19 @@ Small business owners, marketing consultants, and agency operators who want AI-p
 ## Key Pages
 
 - Homepage: https://goodbreeze.ai
-- Tools: https://goodbreeze.ai/tools
-- SEO Audit: https://goodbreeze.ai/seo-audit
+- Reports hub: https://goodbreeze.ai/reports
+- Services: https://goodbreeze.ai/services
+- Pricing: https://goodbreeze.ai/pricing
 - About: https://goodbreeze.ai/about
-- Case Studies: https://goodbreeze.ai/case-studies/alana-shaw
+- FAQ: https://goodbreeze.ai/faq
+- Free SEO audit tool: https://goodbreeze.ai/seo-audit
+- Privacy Policy: https://goodbreeze.ai/privacy-policy
+- Terms of Use: https://goodbreeze.ai/terms-of-use
+
+## Social Media
+
+- Facebook: https://www.facebook.com/goodbreezeai
+- Instagram: https://www.instagram.com/goodbreezeai/
+- X (Twitter): https://x.com/goodbreezeai
+- TikTok: https://www.tiktok.com/@goodbreezeai
+- YouTube: https://www.youtube.com/channel/UCE77aX0sasPB1N-bt31eO5g

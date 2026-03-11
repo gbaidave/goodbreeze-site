@@ -25,12 +25,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${base}/reports`,             lastModified: now, changeFrequency: 'weekly',  priority: 0.9 },
     { url: `${base}/seo-audit`,           lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
 
-    // Case studies
-    { url: `${base}/case-studies`,              lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
-    { url: `${base}/case-studies/marcus-chen`,  lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
-    { url: `${base}/case-studies/alana-shaw`,   lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
-    { url: `${base}/case-studies/julia-lawson`, lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
-    { url: `${base}/case-studies/rafael-moreno`,lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
+    // Case studies (sub-pages excluded until real customer content is live)
+    { url: `${base}/case-studies`, lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
 
     // Resources
     { url: `${base}/resources`,                                                        lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
@@ -42,10 +38,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${base}/resources/templates-tools/roi-calculator`,                          lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
     { url: `${base}/resources/templates-tools/process-mapping-template`,                lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
     { url: `${base}/resources/templates-tools/automation-readiness-checklist`,          lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
-    { url: `${base}/resources/video-guides`,                                            lastModified: now, changeFrequency: 'monthly', priority: 0.5 },
+    // video-guides excluded until content is live
+
+    // FAQ & Help
+    { url: `${base}/faq`,  lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
+    { url: `${base}/help`, lastModified: now, changeFrequency: 'monthly', priority: 0.5 },
 
     // Legal
-    { url: `${base}/privacy-policy`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
-    { url: `${base}/terms-of-use`,   lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
+    { url: `${base}/privacy-policy`,       lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
+    { url: `${base}/terms-of-use`,         lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
+    { url: `${base}/legal/media-release`,  lastModified: now, changeFrequency: 'yearly', priority: 0.2 },
   ]
 }
