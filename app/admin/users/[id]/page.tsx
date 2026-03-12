@@ -38,7 +38,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
   const isSuspended = !!bannedUntil && new Date(bannedUntil) > new Date()
 
   // Fetch all user data in parallel
-  const [profileRes, subRes, creditsRes, reportsRes, emailLogsRes, supportRes, notesRes, testimonialsRes, consentsRes] = await Promise.all([
+  const [profileRes, subRes, creditsRes, reportsRes, emailLogsRes, supportRes, notesRes, testimonialsRes, consentsRes, exportLogsRes] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', id).single(),
     supabase.from('subscriptions').select('*').eq('user_id', id).order('created_at', { ascending: false }).limit(1).single(),
     supabase.from('credits').select('balance, expires_at, purchased_at, product').eq('user_id', id).order('purchased_at', { ascending: false }),
@@ -48,10 +48,12 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
     supabase.from('admin_notes').select('id, note, created_at, created_by').eq('user_id', id).order('created_at', { ascending: false }),
     supabase.from('testimonials').select('id, type, status, pull_quote, content, video_url, credits_granted, admin_note, created_at').eq('user_id', id).order('created_at', { ascending: false }),
     supabase.from('testimonial_consents').select('id, testimonial_id, email, name, ip_address, user_agent, consent_text_version, consented_at, confirmation_sent_at').eq('user_id', id).order('consented_at', { ascending: false }),
+    supabase.from('data_export_logs').select('exported_at').eq('user_id', id).order('exported_at', { ascending: false }),
   ])
 
   const profile = profileRes.data
   if (!profile) notFound()
+  const exportLogs = exportLogsRes.data ?? []
 
   const sub = subRes.data
   const credits = creditsRes.data ?? []
@@ -140,6 +142,9 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
             currentEmail={profile.email ?? ''}
             currentPhone={profile.phone ?? ''}
             isSuspended={isSuspended}
+            dataExportLocked={profile.data_export_locked ?? false}
+            exportCount={exportLogs.length}
+            lastExportAt={exportLogs[0]?.exported_at ?? null}
           />
 
           {/* Notes */}

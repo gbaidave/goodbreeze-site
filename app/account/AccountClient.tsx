@@ -46,6 +46,12 @@ interface Props {
   creditExpiry?: string
   creditHistory?: CreditHistoryItem[]
   initialEmailPrefs: { nudge_emails: boolean; support_emails: boolean; referral_credit: boolean; report_ready: boolean; support_confirmation: boolean; report_failure: boolean; testimonial_approved: boolean }
+  isEmailUser: boolean
+  dataExportLocked: boolean
+  hasRecentPackCredits: boolean
+  openTicketCount: number
+  openRefundExists: boolean
+  openDisputeExists: boolean
 }
 
 export default function AccountClient({
@@ -64,6 +70,12 @@ export default function AccountClient({
   creditExpiry,
   creditHistory,
   initialEmailPrefs,
+  isEmailUser,
+  dataExportLocked,
+  hasRecentPackCredits,
+  openTicketCount,
+  openRefundExists,
+  openDisputeExists,
 }: Props) {
   const [name, setName] = useState(initialName)
   const [phone, setPhone] = useState(initialPhone)
@@ -94,6 +106,15 @@ export default function AccountClient({
   const [showAllCredits, setShowAllCredits] = useState(false)
   const [emailPrefsSaving, setEmailPrefsSaving] = useState(false)
   const [emailPrefsMsg, setEmailPrefsMsg] = useState('')
+  // Data export
+  const [exporting, setExporting] = useState(false)
+  const [exportError, setExportError] = useState('')
+  // Account deletion
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [deletePassword, setDeletePassword] = useState('')
+  const [deleteConfirmText, setDeleteConfirmText] = useState('')
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState('')
 
   const hasChanges = name !== initialName || phone !== initialPhone || smsOk !== initialSmsOk
   const phoneChanged = phone !== initialPhone
@@ -224,6 +245,64 @@ export default function AccountClient({
       setEmailPrefsMsg('Failed to save. Try again.')
     } finally {
       setEmailPrefsSaving(false)
+    }
+  }
+
+  async function downloadData() {
+    setExporting(true)
+    setExportError('')
+    try {
+      const res = await fetch('/api/account/export')
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        if (data.error === 'DATA_EXPORT_LOCKED') {
+          setExportError('LOCKED')
+        } else {
+          setExportError('Export failed. Please try again.')
+        }
+        return
+      }
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      const dateStr = new Date().toISOString().split('T')[0]
+      a.href = url
+      a.download = `goodbreeze-data-export-${dateStr}.zip`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } catch {
+      setExportError('Export failed. Please try again.')
+    } finally {
+      setExporting(false)
+    }
+  }
+
+  async function deleteAccount() {
+    setDeleting(true)
+    setDeleteError('')
+    try {
+      const body: Record<string, string> = {}
+      if (isEmailUser) body.password = deletePassword
+      const res = await fetch('/api/account/delete', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        setDeleteError(data.message || 'Deletion failed. Please try again.')
+        return
+      }
+      // Sign out and redirect
+      const supabase = createClient()
+      await supabase.auth.signOut()
+      window.location.href = '/'
+    } catch {
+      setDeleteError('Deletion failed. Please try again.')
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -748,6 +827,176 @@ export default function AccountClient({
             </div>
           )}
         </motion.div>
+
+        {/* Your Data Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="bg-dark-700 border border-primary/20 rounded-2xl p-6 space-y-4"
+        >
+          <h2 className="text-lg font-semibold text-white">Your Data</h2>
+          <p className="text-sm text-gray-400">
+            Download a copy of all data associated with your account — profile, reports, credits, support history, and referrals.
+          </p>
+          {exportError === 'LOCKED' || dataExportLocked ? (
+            <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl px-4 py-3">
+              <p className="text-sm text-yellow-400">
+                Data export is locked.{' '}
+                <a href="/support" className="underline hover:text-yellow-300 transition-colors">Contact support</a>
+                {' '}to request access.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <button
+                onClick={downloadData}
+                disabled={exporting}
+                className="px-5 py-2.5 border border-primary/30 text-primary text-sm font-medium rounded-xl hover:bg-primary/10 transition-colors disabled:opacity-40"
+              >
+                {exporting ? 'Preparing download…' : 'Download my data'}
+              </button>
+              {exportError && <p className="text-xs text-red-400">{exportError}</p>}
+            </div>
+          )}
+        </motion.div>
+
+        {/* Danger Zone Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35 }}
+          className="bg-dark-700 border border-red-500/30 rounded-2xl p-6 space-y-4"
+        >
+          <h2 className="text-lg font-semibold text-red-400">Danger Zone</h2>
+          <p className="text-sm text-gray-400">
+            Permanently delete your account and all associated data. This action cannot be undone.
+          </p>
+          <button
+            onClick={() => { setShowDeleteModal(true); setDeleteError(''); setDeletePassword(''); setDeleteConfirmText('') }}
+            className="px-5 py-2.5 bg-red-500/10 border border-red-500/40 text-red-400 text-sm font-medium rounded-xl hover:bg-red-500/20 transition-colors"
+          >
+            Delete account
+          </button>
+        </motion.div>
+
+        {/* Delete account modal */}
+        {showDeleteModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+            <div className="bg-[#111118] border border-red-500/30 rounded-2xl p-6 w-full max-w-md space-y-5 shadow-2xl">
+              <div>
+                <h3 className="text-lg font-semibold text-white">Permanently delete your account?</h3>
+                <p className="text-sm text-gray-500 mt-1">This cannot be undone.</p>
+              </div>
+
+              {/* What gets deleted */}
+              <ul className="space-y-1.5 text-sm text-gray-400">
+                <li className="flex gap-2"><span className="text-red-400 mt-0.5">✕</span> Your profile, email, and login credentials</li>
+                <li className="flex gap-2"><span className="text-red-400 mt-0.5">✕</span> All reports you&apos;ve generated</li>
+                <li className="flex gap-2"><span className="text-red-400 mt-0.5">✕</span> Your credits and referral history</li>
+                {(status === 'active' || status === 'trialing') && isSubscription && (
+                  <li className="flex gap-2"><span className="text-red-400 mt-0.5">✕</span> Your <strong className="text-white">{planLabel}</strong> subscription — cancelled immediately</li>
+                )}
+              </ul>
+
+              {/* Credit pack refund nudge */}
+              {hasRecentPackCredits && (
+                <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl px-4 py-3 text-sm text-yellow-400">
+                  You have unused report credits from a recent purchase. If you may be eligible for a refund,{' '}
+                  <a href="/support?category=refund" className="underline hover:text-yellow-300 transition-colors">submit a refund request</a>
+                  {' '}before deleting.
+                </div>
+              )}
+
+              {/* Subscription refund nudge */}
+              {(status === 'active' || status === 'trialing') && isSubscription && (
+                <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl px-4 py-3 text-sm text-yellow-400">
+                  Your <strong className="text-white">{planLabel}</strong> subscription will be cancelled immediately. If you may be eligible for a refund,{' '}
+                  <a href="/support?category=refund" className="underline hover:text-yellow-300 transition-colors">submit a refund request</a>
+                  {' '}before deleting.
+                </div>
+              )}
+
+              {/* Open refund/dispute block */}
+              {(openRefundExists || openDisputeExists) && (
+                <div className="bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 text-sm text-red-400">
+                  You have an open {openDisputeExists ? 'dispute' : 'refund request'}. Please wait for it to be resolved before deleting your account.
+                </div>
+              )}
+
+              {/* Open support ticket warning */}
+              {openTicketCount > 0 && (
+                <div className="bg-white/5 border border-gray-700 rounded-xl px-4 py-3 text-sm text-gray-400">
+                  You have <strong className="text-white">{openTicketCount}</strong> open support request{openTicketCount !== 1 ? 's' : ''}.
+                  {' '}Check your <a href="/support" className="underline hover:text-gray-300 transition-colors">support history</a> and make sure nothing critical needs resolution — everything will be permanently deleted and unrecoverable.
+                </div>
+              )}
+
+              {/* Download nudge */}
+              <div className="text-sm text-gray-500">
+                {dataExportLocked
+                  ? <span className="text-yellow-500">Data export is locked — <a href="/support" className="underline hover:text-yellow-400 transition-colors">contact support</a> to unlock before deleting.</span>
+                  : <button type="button" onClick={downloadData} disabled={exporting} className="text-primary underline hover:text-primary/80 transition-colors disabled:opacity-40">{exporting ? 'Preparing…' : 'Download your data first →'}</button>
+                }
+              </div>
+
+              {/* Password field — email/password users only */}
+              {isEmailUser && (
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1.5">Confirm your password</label>
+                  <input
+                    type="password"
+                    value={deletePassword}
+                    onChange={(e) => setDeletePassword(e.target.value)}
+                    autoComplete="current-password"
+                    placeholder="Your current password"
+                    className="w-full bg-dark border border-gray-700 text-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-red-500/60 transition-colors"
+                  />
+                </div>
+              )}
+
+              {/* Type DELETE to confirm */}
+              <div>
+                <label className="block text-sm text-gray-400 mb-1.5">
+                  Type <span className="font-mono text-white">DELETE</span> to confirm
+                </label>
+                <input
+                  type="text"
+                  value={deleteConfirmText}
+                  onChange={(e) => setDeleteConfirmText(e.target.value)}
+                  autoComplete="off"
+                  placeholder="DELETE"
+                  className="w-full bg-dark border border-gray-700 text-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-red-500/60 transition-colors font-mono"
+                />
+              </div>
+
+              {deleteError && <p className="text-sm text-red-400">{deleteError}</p>}
+
+              <div className="flex gap-3 pt-1">
+                <button
+                  onClick={deleteAccount}
+                  disabled={
+                    deleting ||
+                    openRefundExists ||
+                    openDisputeExists ||
+                    deleteConfirmText !== 'DELETE' ||
+                    (isEmailUser && !deletePassword)
+                  }
+                  className="flex-1 py-2.5 bg-red-500/20 border border-red-500/40 text-red-400 text-sm font-semibold rounded-xl hover:bg-red-500/30 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  {deleting ? 'Deleting…' : 'Delete my account'}
+                </button>
+                <button
+                  onClick={() => setShowDeleteModal(false)}
+                  disabled={deleting}
+                  className="flex-1 py-2.5 border border-gray-700 text-gray-400 text-sm rounded-xl hover:border-gray-500 transition-colors disabled:opacity-40"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Footer actions */}
         <div className="flex items-center justify-between pt-2">

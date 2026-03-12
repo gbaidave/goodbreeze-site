@@ -104,14 +104,32 @@ export default function TermsOfUse() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-white mb-4">9. Governing Law</h2>
+            <h2 className="text-2xl font-bold text-white mb-4">9. Account Deletion and Data Portability</h2>
+            <p className="text-gray-300 leading-relaxed mb-3">
+              Registered users may permanently delete their account at any time from their Account Settings page. Deletion is immediate and irreversible. Upon deletion:
+            </p>
+            <ul className="list-disc pl-6 text-gray-300 space-y-2 mb-4">
+              <li>Your profile, credentials, reports, credits, and activity are permanently removed from our systems</li>
+              <li>Any active subscription is cancelled immediately at the time of deletion</li>
+              <li>Certain records (financial transactions, anonymized support correspondence, and a deletion event log) are retained as required by law or for legitimate operational purposes, as described in our <a href="/privacy-policy" className="text-primary hover:underline">Privacy Policy</a></li>
+            </ul>
+            <p className="text-gray-300 leading-relaxed mb-3">
+              Before deleting your account, you may download a copy of your personal data from Account Settings. We recommend reviewing any open support tickets or pending requests, as these will be permanently removed and cannot be recovered after deletion.
+            </p>
+            <p className="text-gray-300 leading-relaxed">
+              We reserve the right to delete accounts that violate these Terms, including accounts involved in fraud, abuse, or unauthorized activity.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-bold text-white mb-4">10. Governing Law</h2>
             <p className="text-gray-300 leading-relaxed">
               These Terms are governed by and interpreted under the laws of the State of California. Any disputes shall be resolved in the courts located in Orange County, California.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-white mb-4">10. Contact</h2>
+            <h2 className="text-2xl font-bold text-white mb-4">11. Contact</h2>
             <p className="text-gray-300 leading-relaxed">
               Questions about these Terms? Contact us at <a href="mailto:contact@goodbreeze.ai" className="text-primary hover:underline">contact@goodbreeze.ai</a>.
             </p>

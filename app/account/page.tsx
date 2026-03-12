@@ -16,10 +16,12 @@ export default async function AccountPage() {
   }
   if (!user) redirect('/login')
 
-  const [profileRes, subRes, creditsRes, creditHistoryRes] = await Promise.all([
+  const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString()
+
+  const [profileRes, subRes, creditsRes, creditHistoryRes, recentPackRes, openTicketsRes, openRefundRes, openDisputeRes] = await Promise.all([
     supabase
       .from('profiles')
-      .select('name, email, phone, sms_ok, stripe_customer_id, role, email_preferences')
+      .select('name, email, phone, sms_ok, stripe_customer_id, role, email_preferences, data_export_locked')
       .eq('id', user.id)
       .single(),
     supabase
@@ -42,6 +44,39 @@ export default async function AccountPage() {
       .eq('user_id', user.id)
       .order('purchased_at', { ascending: false })
       .limit(20),
+    // Recent credit pack with balance — for refund warning in delete modal
+    supabase
+      .from('credits')
+      .select('id')
+      .eq('user_id', user.id)
+      .gt('balance', 0)
+      .gte('purchased_at', fourteenDaysAgo)
+      .not('product', 'in', '("free_credit","signup_credit","signup_bonus","testimonial_reward","referral_credit","admin_grant","credit_grant")')
+      .limit(1)
+      .maybeSingle(),
+    // Open support tickets count
+    supabase
+      .from('support_tickets')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .in('status', ['open', 'in_progress']),
+    // Open refund request
+    supabase
+      .from('refund_requests')
+      .select('id')
+      .eq('user_id', user.id)
+      .in('status', ['pending', 'in_progress'])
+      .limit(1)
+      .maybeSingle(),
+    // Open dispute ticket
+    supabase
+      .from('support_tickets')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('category', 'dispute')
+      .in('status', ['open', 'in_progress'])
+      .limit(1)
+      .maybeSingle(),
   ])
 
   const profile = profileRes.data
@@ -50,6 +85,9 @@ export default async function AccountPage() {
   const creditHistory = creditHistoryRes.data ?? []
   const packCredits = credits.reduce((sum, c) => sum + (c.balance ?? 0), 0)
   const creditsRemaining = sub?.credits_remaining ?? 0
+
+  // Determine if user has email/password identity (vs OAuth-only)
+  const isEmailUser = user.identities?.some(i => i.provider === 'email') ?? false
 
   return (
     <AccountClient
@@ -76,6 +114,12 @@ export default async function AccountPage() {
         report_failure: profile?.email_preferences?.report_failure !== false,
         testimonial_approved: profile?.email_preferences?.testimonial_approved !== false,
       }}
+      isEmailUser={isEmailUser}
+      dataExportLocked={profile?.data_export_locked ?? false}
+      hasRecentPackCredits={!!recentPackRes.data}
+      openTicketCount={openTicketsRes.count ?? 0}
+      openRefundExists={!!openRefundRes.data}
+      openDisputeExists={!!openDisputeRes.data}
     />
   )
 }

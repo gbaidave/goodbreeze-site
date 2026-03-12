@@ -3,7 +3,8 @@
 import { revalidatePath } from 'next/cache'
 import { createServiceClient } from '@/lib/supabase/service-client'
 import { createClient } from '@/lib/supabase/server'
-import { sendCreditGrantedEmail } from '@/lib/email'
+import { sendCreditGrantedEmail, sendAccountDeletedEmail } from '@/lib/email'
+import { stripe } from '@/lib/stripe'
 import { canDo, assignableRoles } from '@/lib/permissions'
 
 // Guard: caller must have view_users permission (admin or superadmin)
@@ -229,10 +230,55 @@ export async function unsuspendAccount(userId: string) {
   revalidatePath(`/admin/users/${userId}`)
 }
 
-export async function deleteAccount(userId: string) {
-  await requireSuperadmin()
-  const supabase = createServiceClient()
-  const { error } = await supabase.auth.admin.deleteUser(userId)
+export async function deleteAccount(userId: string, sendEmail = false) {
+  const { adminId } = await requireSuperadmin()
+  const svc = createServiceClient()
+
+  // Fetch profile for audit record and optional email
+  const { data: profile } = await svc
+    .from('profiles')
+    .select('email, name, stripe_customer_id')
+    .eq('id', userId)
+    .single()
+
+  const deletedAt = new Date().toISOString()
+
+  // 1. Create deleted_accounts audit record
+  await svc.from('deleted_accounts').insert({
+    id: userId,
+    email: profile?.email ?? '',
+    name: profile?.name ?? null,
+    stripe_customer_id: profile?.stripe_customer_id ?? null,
+    deleted_at: deletedAt,
+    deleted_by: adminId,
+    deletion_ip: null,
+  })
+
+  // 2. Copy former_user_id on SET NULL tables
+  await Promise.all([
+    svc.from('support_tickets').update({ former_user_id: userId }).eq('user_id', userId),
+    svc.from('support_messages').update({ former_user_id: userId }).eq('sender_id', userId),
+    svc.from('refund_requests').update({ former_user_id: userId }).eq('user_id', userId),
+    svc.from('email_logs').update({ former_user_id: userId }).eq('user_id', userId).catch(() => {}),
+  ])
+
+  // 3. Cancel Stripe subscription
+  const { data: activeSub } = await svc
+    .from('subscriptions')
+    .select('stripe_subscription_id')
+    .eq('user_id', userId)
+    .in('status', ['active', 'trialing'])
+    .maybeSingle()
+  if (activeSub?.stripe_subscription_id) {
+    await stripe.subscriptions.cancel(activeSub.stripe_subscription_id).catch(console.error)
+  }
+
+  // 4. Optionally send deletion confirmation email
+  if (sendEmail && profile?.email) {
+    await sendAccountDeletedEmail(profile.email, profile.name ?? '', deletedAt).catch(console.error)
+  }
+
+  // 5. Hard-delete auth user (cascades to profiles and all FK tables)
+  const { error } = await svc.auth.admin.deleteUser(userId)
   if (error) throw new Error(error.message)
-  // Profile/reports cascade-deleted via FK or RLS — no revalidatePath needed
 }

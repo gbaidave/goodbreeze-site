@@ -13,6 +13,7 @@
 import { createServiceClient } from './supabase/service-client'
 import { resend, FROM, FROM_NAME, REPLY_TO } from './resend'
 import { welcomeEmail } from './emails/welcome'
+import { accountDeletedEmail } from './emails/account-deleted'
 import { paymentConfirmationEmail } from './emails/payment-confirmation'
 import { paymentFailedEmail } from './emails/payment-failed'
 import { magicLinkSetupEmail } from './emails/magic-link-setup'
@@ -308,6 +309,19 @@ export async function sendSecurityAlertEmail(
   return sendAndLog(
     () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject, html }),
     { userId, toEmail: to, type: 'security_alert', subject }
+  )
+}
+
+export async function sendAccountDeletedEmail(
+  to: string,
+  name: string,
+  deletedAt: string,
+) {
+  const { subject, html } = accountDeletedEmail({ userName: name, userEmail: to, deletedAt })
+  // userId is intentionally omitted — the auth row is about to be deleted
+  return sendAndLog(
+    () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject, html }),
+    { toEmail: to, type: 'security_alert', subject, notifyOnFail: false }
   )
 }
 

@@ -18,6 +18,9 @@ interface Props {
   currentEmail: string
   currentPhone: string
   isSuspended: boolean
+  dataExportLocked: boolean
+  exportCount: number
+  lastExportAt: string | null
 }
 
 const CONFIRM_ROLES = new Set(['tester', 'support', 'admin', 'superadmin'])
@@ -32,6 +35,9 @@ export function UserActionsPanel({
   currentEmail,
   currentPhone,
   isSuspended,
+  dataExportLocked,
+  exportCount,
+  lastExportAt,
 }: Props) {
   const isSuperadmin = callerRole === 'superadmin'
   const roleOptions = assignableRoles(callerRole)
@@ -40,7 +46,9 @@ export function UserActionsPanel({
   const [feedback, setFeedback] = useState<{ type: 'ok' | 'err'; msg: string } | null>(null)
   const [confirming, setConfirming] = useState<string | null>(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [sendDeleteEmail, setSendDeleteEmail] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [unlockingExport, setUnlockingExport] = useState(false)
   const [overrideType, setOverrideType] = useState(currentOverrideType ?? '')
   const [overrideTypeOpen, setOverrideTypeOpen] = useState(false)
   const grantFormRef = useRef<HTMLFormElement>(null)
@@ -61,12 +69,26 @@ export function UserActionsPanel({
   async function handleDeleteAccount() {
     setDeleting(true)
     try {
-      await deleteAccount(userId)
+      await deleteAccount(userId, sendDeleteEmail)
       router.push('/admin/users')
     } catch (e: any) {
       setFeedback({ type: 'err', msg: e.message ?? 'Delete failed.' })
       setDeleting(false)
       setConfirmDelete(false)
+    }
+  }
+
+  async function handleUnlockExport() {
+    setUnlockingExport(true)
+    try {
+      const res = await fetch(`/api/admin/users/${userId}/unlock-export`, { method: 'POST' })
+      if (!res.ok) throw new Error('Unlock failed')
+      setFeedback({ type: 'ok', msg: 'Data export unlocked.' })
+      router.refresh()
+    } catch (e: any) {
+      setFeedback({ type: 'err', msg: e.message ?? 'Unlock failed.' })
+    } finally {
+      setUnlockingExport(false)
     }
   }
 
@@ -369,21 +391,32 @@ export function UserActionsPanel({
               Delete account
             </button>
           ) : (
-            <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-red-900/20 border border-red-700/40 text-sm w-full">
-              <span className="text-red-300 flex-1">Permanently delete this account?</span>
-              <button
-                onClick={handleDeleteAccount}
-                disabled={deleting}
-                className="px-3 py-1 bg-red-700 text-white rounded-md text-xs font-medium hover:bg-red-600 disabled:opacity-50"
-              >
-                {deleting ? 'Deleting…' : 'Yes, delete'}
-              </button>
-              <button
-                onClick={() => setConfirmDelete(false)}
-                className="px-3 py-1 border border-gray-600 text-gray-400 rounded-md text-xs hover:text-white"
-              >
-                Cancel
-              </button>
+            <div className="flex flex-col gap-3 px-3 py-3 rounded-lg bg-red-900/20 border border-red-700/40 text-sm w-full">
+              <span className="text-red-300 font-medium">Permanently delete this account?</span>
+              <label className="flex items-center gap-2 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={sendDeleteEmail}
+                  onChange={(e) => setSendDeleteEmail(e.target.checked)}
+                  className="w-4 h-4 accent-primary"
+                />
+                <span className="text-xs text-gray-400">Send deletion confirmation email to user</span>
+              </label>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleDeleteAccount}
+                  disabled={deleting}
+                  className="px-3 py-1.5 bg-red-700 text-white rounded-md text-xs font-medium hover:bg-red-600 disabled:opacity-50"
+                >
+                  {deleting ? 'Deleting…' : 'Yes, delete'}
+                </button>
+                <button
+                  onClick={() => setConfirmDelete(false)}
+                  className="px-3 py-1.5 border border-gray-600 text-gray-400 rounded-md text-xs hover:text-white"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           ))}
         </div>
@@ -391,6 +424,31 @@ export function UserActionsPanel({
           <p className="text-xs text-yellow-400">Account is currently suspended.</p>
         )}
       </section>
+
+      {/* Data Export — superadmin only */}
+      {isSuperadmin && (
+        <section className="space-y-2">
+          <p className="text-gray-400 text-xs uppercase tracking-wider">Data Export</p>
+          <div className="text-xs text-gray-500 space-y-0.5">
+            <p>Downloads: <span className="text-white">{exportCount}</span> / 3</p>
+            {lastExportAt && (
+              <p>Last export: <span className="text-white">{new Date(lastExportAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span></p>
+            )}
+          </div>
+          {dataExportLocked && (
+            <button
+              onClick={handleUnlockExport}
+              disabled={unlockingExport}
+              className="px-4 py-2 bg-yellow-900/40 text-yellow-400 border border-yellow-800 rounded-lg text-sm font-medium hover:bg-yellow-900/60 transition-colors disabled:opacity-50"
+            >
+              {unlockingExport ? 'Unlocking…' : 'Unlock data export'}
+            </button>
+          )}
+          {!dataExportLocked && exportCount > 0 && (
+            <p className="text-xs text-green-400">Export unlocked.</p>
+          )}
+        </section>
+      )}
 
       {/* Stripe deep link — superadmin only */}
       {isSuperadmin && stripeCustomerId && (

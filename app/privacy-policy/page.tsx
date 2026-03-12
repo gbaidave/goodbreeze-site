@@ -91,6 +91,7 @@ export default function PrivacyPolicy() {
               <li>Access the personal data we hold about you</li>
               <li>Request correction or deletion of your data</li>
               <li>Withdraw consent or unsubscribe from communications</li>
+              <li>Receive a portable copy of your data in a machine-readable format</li>
             </ul>
             <p className="text-gray-300 leading-relaxed mt-4">
               To exercise your rights, contact us at <a href="mailto:contact@goodbreeze.ai" className="text-primary hover:underline">contact@goodbreeze.ai</a>. We will respond within the legally required timeframes.
@@ -98,9 +99,28 @@ export default function PrivacyPolicy() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-white mb-4">8. Data Retention</h2>
+            <h2 className="text-2xl font-bold text-white mb-4">8. Data Download &amp; Account Deletion</h2>
             <p className="text-gray-300 leading-relaxed mb-3">
-              We retain client or user data only as long as necessary to:
+              Registered users may download a copy of their personal data or permanently delete their account at any time from their Account Settings page.
+            </p>
+            <ul className="list-disc pl-6 text-gray-300 space-y-2 mb-4">
+              <li><strong className="text-white">Data download</strong> — exports your profile, reports, credits, support history, and referral data as a ZIP file containing structured JSON and a human-readable HTML summary.</li>
+              <li><strong className="text-white">Account deletion</strong> — permanently and irreversibly removes your profile, credentials, reports, and activity from our systems. Active subscriptions are cancelled immediately. A confirmation email is sent at the time of deletion.</li>
+            </ul>
+            <p className="text-gray-300 leading-relaxed mb-3">
+              The following information may be retained after account deletion as required by law or for legitimate operational purposes:
+            </p>
+            <ul className="list-disc pl-6 text-gray-300 space-y-2">
+              <li>Financial transaction and payment records (required for tax and financial compliance)</li>
+              <li>Support correspondence, anonymized — retained for legal and dispute resolution purposes</li>
+              <li>Deletion event records — a log that the deletion occurred, used to comply with data retention obligations</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-bold text-white mb-4">9. Data Retention</h2>
+            <p className="text-gray-300 leading-relaxed mb-3">
+              We retain account data only as long as necessary to:
             </p>
             <ul className="list-disc pl-6 text-gray-300 space-y-2">
               <li>Deliver or support services</li>
@@ -108,19 +128,19 @@ export default function PrivacyPolicy() {
               <li>Maintain records or project history</li>
             </ul>
             <p className="text-gray-300 leading-relaxed mt-4">
-              You may request deletion of your data at any time, subject to applicable legal or contractual retention requirements.
+              You may delete your account and associated data at any time from your Account Settings page. Certain records are retained as described in Section 8 above.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-white mb-4">9. Security</h2>
+            <h2 className="text-2xl font-bold text-white mb-4">10. Security</h2>
             <p className="text-gray-300 leading-relaxed">
               We take commercially reasonable measures to protect data shared with us. However, no system is completely secure. We advise clients and users to avoid sharing unnecessary sensitive data and to follow strong security practices, especially regarding credentials or regulated information.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-white mb-4">10. Changes to This Policy</h2>
+            <h2 className="text-2xl font-bold text-white mb-4">11. Changes to This Policy</h2>
             <p className="text-gray-300 leading-relaxed mb-3">
               We may update this Privacy Policy from time to time. We will update the "Effective Date" and post the latest version on our website.
             </p>
@@ -130,7 +150,7 @@ export default function PrivacyPolicy() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-white mb-4">11. Contact</h2>
+            <h2 className="text-2xl font-bold text-white mb-4">12. Contact</h2>
             <p className="text-gray-300 leading-relaxed">
               Questions about this policy? Email us at <a href="mailto:contact@goodbreeze.ai" className="text-primary hover:underline">contact@goodbreeze.ai</a>.
             </p>
