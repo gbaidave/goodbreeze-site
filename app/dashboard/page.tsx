@@ -169,7 +169,7 @@ export default async function DashboardPage({
             <div>
               <p className="text-gray-400 text-sm mb-1">Current plan</p>
               <p className="text-2xl font-bold text-white capitalize">
-                {isTester ? 'Tester Account' : isAdmin ? 'Admin Account' : plan}
+                {profile?.role === 'support' ? 'Support Account' : isTester ? 'Tester Account' : (profile?.role === 'superadmin' || profile?.role === 'admin') ? 'Admin Account' : plan}
               </p>
               {!isAdmin && sub?.current_period_end && (
                 <p className="text-gray-500 text-xs mt-1">

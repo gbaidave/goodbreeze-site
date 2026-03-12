@@ -41,6 +41,8 @@ export function UserActionsPanel({
   const [confirming, setConfirming] = useState<string | null>(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [overrideType, setOverrideType] = useState(currentOverrideType ?? '')
+  const [overrideTypeOpen, setOverrideTypeOpen] = useState(false)
   const grantFormRef = useRef<HTMLFormElement>(null)
   const deductFormRef = useRef<HTMLFormElement>(null)
 
@@ -129,24 +131,39 @@ export function UserActionsPanel({
           onSubmit={(e) => {
             e.preventDefault()
             const fd = new FormData(e.currentTarget)
-            const type = fd.get('override_type') as string || null
             const until = fd.get('override_until') as string || null
-            act(() => setPlanOverride(userId, type || null, until || null))
+            act(() => setPlanOverride(userId, overrideType || null, until || null))
           }}
           className="flex flex-wrap gap-2 items-end"
         >
           <div className="space-y-1">
             <label className="text-xs text-gray-500">Type</label>
-            <select
-              name="override_type"
-              defaultValue={currentOverrideType ?? ''}
-              className="bg-dark border border-primary/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary"
-            >
-              <option value="">No override</option>
-              <option value="starter">Starter</option>
-              <option value="impulse">Impulse</option>
-              <option value="custom">Custom</option>
-            </select>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setOverrideTypeOpen((v) => !v)}
+                className="flex items-center gap-1 px-3 py-2 bg-dark border border-primary/20 rounded-lg text-sm text-white hover:border-primary/60 transition-colors min-w-[120px]"
+              >
+                <span className="flex-1 text-left">{overrideType || 'No override'}</span>
+                <svg className="w-4 h-4 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              {overrideTypeOpen && (
+                <div className="absolute top-full left-0 mt-1 w-40 bg-[#2a2a2a] border border-primary/40 rounded-lg shadow-xl z-50 overflow-hidden">
+                  {['', 'starter', 'impulse', 'custom'].map((opt) => (
+                    <button
+                      key={opt}
+                      type="button"
+                      onClick={() => { setOverrideType(opt); setOverrideTypeOpen(false) }}
+                      className="block w-full text-left px-3 py-2 text-sm text-white hover:bg-primary/20 transition-colors"
+                    >
+                      {opt || 'No override'}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
           <div className="space-y-1">
             <label className="text-xs text-gray-500">Until</label>

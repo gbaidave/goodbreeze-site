@@ -38,6 +38,17 @@ const REPORT_TYPE_LABELS: Record<string, string> = {
   multi_page:        'Multi-Page Audit',
 }
 
+const REPORT_TYPE_URLS: Record<string, string> = {
+  landing_page:      '/reports/landing-page-optimizer',
+  seo_audit:         '/reports/seo-audit',
+  seo_comprehensive: '/reports/seo-comprehensive',
+  ai_seo:            '/reports/ai-seo',
+  keyword_research:  '/reports/keyword-research',
+  h2h:               '/reports/competitive-analyzer',
+  t3c:               '/reports/competitive-analyzer',
+  cp:                '/reports/competitive-analyzer',
+}
+
 const STATUS_STYLES: Record<string, string> = {
   pending:             'bg-yellow-900/40 text-yellow-400 border-yellow-800',
   processing:          'bg-blue-900/40 text-blue-400 border-blue-800',
@@ -171,7 +182,15 @@ function ReportCard({ report, onDelete }: { report: Report; onDelete: (id: strin
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
           </svg>
         )}
-        {isFailed && !confirming && (
+        {report.status === 'failed_site_blocked' && !confirming && REPORT_TYPE_URLS[report.report_type] && (
+          <a
+            href={REPORT_TYPE_URLS[report.report_type]}
+            className="text-xs text-primary hover:text-primary/80 underline transition-colors whitespace-nowrap"
+          >
+            Try a different URL →
+          </a>
+        )}
+        {report.status === 'failed' && !confirming && (
           <button
             onClick={() => setConfirming(true)}
             className="text-xs text-amber-400 hover:text-amber-300 underline transition-colors"
@@ -211,7 +230,7 @@ function ReportCard({ report, onDelete }: { report: Report; onDelete: (id: strin
         {/* Delete control */}
         {confirming ? (
           <span className="flex items-center gap-2 text-sm">
-            <span className="text-gray-400">{isFailed ? 'Cancel for Credit Refund?' : 'Delete this report?'}</span>
+            <span className="text-gray-400">{report.status === 'failed' ? 'Cancel for Credit Refund?' : 'Delete this report?'}</span>
             <button
               onClick={handleDelete}
               disabled={deleting}

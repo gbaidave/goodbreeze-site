@@ -56,9 +56,10 @@ const CATEGORY_OPTIONS = [
   { value: 'feedback',       label: 'Feedback',            placeholder: 'e.g. Feature request: …' },
 ]
 
-const CATEGORY_LABELS: Record<string, string> = Object.fromEntries(
-  CATEGORY_OPTIONS.map((c) => [c.value, c.label])
-)
+const CATEGORY_LABELS: Record<string, string> = {
+  ...Object.fromEntries(CATEGORY_OPTIONS.map((c) => [c.value, c.label])),
+  bug_report: 'Bug Report',
+}
 
 const CATEGORY_BADGES: Record<string, string> = {
   help:           'bg-gray-800 text-gray-400',
@@ -68,6 +69,7 @@ const CATEGORY_BADGES: Record<string, string> = {
   dispute:        'bg-red-900/40 text-red-400',
   account_access: 'bg-purple-900/40 text-purple-400',
   feedback:       'bg-green-900/40 text-green-400',
+  bug_report:     'bg-pink-900/40 text-pink-400',
 }
 
 const MAX_ATTACH = 3

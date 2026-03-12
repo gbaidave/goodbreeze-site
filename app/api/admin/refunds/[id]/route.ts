@@ -110,6 +110,31 @@ export async function PATCH(
       )
     }
 
+    // Revoke product access — must happen here because the charge.refunded webhook
+    // will see status='refunded' (set below) and skip, so this route owns revocation.
+    if (refundReq.product_type === 'subscription') {
+      const { data: subRow } = await svc
+        .from('subscriptions')
+        .select('stripe_subscription_id')
+        .eq('user_id', refundReq.user_id)
+        .in('status', ['active', 'trialing'])
+        .maybeSingle()
+      if (subRow?.stripe_subscription_id) {
+        await stripe.subscriptions.cancel(subRow.stripe_subscription_id).catch(console.error)
+        await svc.from('subscriptions').update({
+          status: 'canceled',
+          credits_remaining: 0,
+        }).eq('stripe_subscription_id', subRow.stripe_subscription_id)
+      }
+    } else if (refundReq.product_type === 'credit_pack' || refundReq.product_type === 'credits') {
+      if (refundReq.stripe_payment_id) {
+        await svc.from('credits')
+          .update({ balance: 0 })
+          .eq('user_id', refundReq.user_id)
+          .eq('stripe_payment_intent_id', refundReq.stripe_payment_id)
+      }
+    }
+
     await svc.from('refund_requests').update({
       status: 'refunded',
       stripe_refund_id: stripeRefund.id,

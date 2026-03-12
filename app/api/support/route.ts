@@ -19,6 +19,7 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { createServiceClient } from '@/lib/supabase/service-client'
 import { sendSupportNotificationEmail } from '@/lib/email'
+import { stripe } from '@/lib/stripe'
 
 const MIN_MESSAGE_LEN = 10
 const MAX_MESSAGE_LEN = 2000
@@ -187,6 +188,7 @@ export async function POST(request: NextRequest) {
       void (async () => {
         try {
           let creditsUsedAtRequest = 0
+          let autoPaymentId: string | null = null
           // Monthly credit caps — must match PLAN_MONTHLY_CAPS in entitlement.ts
           const PLAN_CAPS: Record<string, number> = { starter: 25, growth: 40, pro: 50 }
 
@@ -194,7 +196,7 @@ export async function POST(request: NextRequest) {
             // Use credits_remaining to derive usage — avoids timing issue where
             // the subscription webhook hasn't fired yet (current_period_start would be stale)
             const { data: sub } = await svc.from('subscriptions')
-              .select('plan, credits_remaining')
+              .select('plan, credits_remaining, stripe_subscription_id')
               .eq('user_id', user.id)
               .in('status', ['active', 'trialing'])
               .order('created_at', { ascending: false })
@@ -203,17 +205,27 @@ export async function POST(request: NextRequest) {
             const cap = PLAN_CAPS[sub?.plan ?? ''] ?? 0
             const remaining = sub?.credits_remaining ?? 0
             creditsUsedAtRequest = Math.max(0, cap - remaining)
+
+            // Auto-populate PI from Stripe latest invoice on the subscription
+            if (sub?.stripe_subscription_id) {
+              try {
+                const stripeSub = await stripe.subscriptions.retrieve(
+                  sub.stripe_subscription_id,
+                  { expand: ['latest_invoice.payment_intent'] }
+                )
+                const inv = (stripeSub as any).latest_invoice
+                autoPaymentId = inv?.payment_intent?.id ?? null
+              } catch {
+                // Non-fatal — admin can manually set PI via the refund ticket
+              }
+            }
           } else {
             // Credit pack: count all completed reports
             const { count } = await svc.from('reports').select('id', { count: 'exact', head: true })
               .eq('user_id', user.id).eq('status', 'complete')
             creditsUsedAtRequest = count ?? 0
-          }
 
-          // Auto-populate stripe_payment_id for credit pack refunds
-          // Look up the most recent credit pack purchase with a PI on file
-          let autoPaymentId: string | null = null
-          if (resolvedProductType === 'credits') {
+            // Auto-populate PI from the most recent credit pack purchase
             const { data: latestCredit } = await svc
               .from('credits')
               .select('stripe_payment_intent_id')

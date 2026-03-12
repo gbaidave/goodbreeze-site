@@ -2,14 +2,32 @@
 
 import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { createBrowserClient } from '@supabase/ssr'
 
 function WelcomeContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const next = searchParams.get('next') || '/dashboard'
   const [countdown, setCountdown] = useState(3)
+  const [sessionChecked, setSessionChecked] = useState(false)
+
+  // Guard: if no valid session (e.g. stale tab after token already consumed), redirect to login
+  useEffect(() => {
+    const supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+    supabase.auth.getSession().then(({ data }) => {
+      if (!data.session) {
+        router.replace('/login')
+      } else {
+        setSessionChecked(true)
+      }
+    })
+  }, [router])
 
   useEffect(() => {
+    if (!sessionChecked) return
     const interval = setInterval(() => {
       setCountdown(c => {
         if (c <= 1) {
@@ -20,7 +38,9 @@ function WelcomeContent() {
       })
     }, 1000)
     return () => clearInterval(interval)
-  }, [next, router])
+  }, [next, router, sessionChecked])
+
+  if (!sessionChecked) return null
 
   return (
     <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-8 text-center">

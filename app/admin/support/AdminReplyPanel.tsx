@@ -58,6 +58,7 @@ export function AdminReplyPanel({
   const [ticketStatus, setTicketStatus] = useState(status)
   const [currentAssigneeId, setCurrentAssigneeId] = useState(assigneeId ?? '')
   const [savingAssignee, setSavingAssignee] = useState(false)
+  const [assigneeOpen, setAssigneeOpen] = useState(false)
 
   const isDone = ticketStatus === 'resolved' || ticketStatus === 'closed'
 
@@ -149,19 +150,46 @@ export function AdminReplyPanel({
       {/* Assignee */}
       <div className="flex items-center gap-2">
         <label className="text-xs text-gray-500 whitespace-nowrap">Assigned to:</label>
-        <select
-          value={currentAssigneeId}
-          onChange={(e) => handleAssigneeChange(e.target.value)}
-          disabled={savingAssignee}
-          className="flex-1 max-w-[200px] px-2 py-1 bg-dark border border-gray-700 text-white text-xs rounded-lg focus:outline-none focus:border-primary transition-colors disabled:opacity-50 [color-scheme:dark]"
-        >
-          <option value="">Unassigned</option>
-          {assignableUsers.map((u) => (
-            <option key={u.id} value={u.id}>
-              {u.name ? `${u.name} (${u.email ?? u.id})` : (u.email ?? u.id)}
-            </option>
-          ))}
-        </select>
+        <div className="relative">
+          <button
+            type="button"
+            disabled={savingAssignee}
+            onClick={() => setAssigneeOpen((v) => !v)}
+            className="flex items-center gap-1 max-w-[200px] px-2 py-1 bg-dark border border-gray-700 text-white text-xs rounded-lg hover:border-primary/60 transition-colors disabled:opacity-50"
+          >
+            <span className="truncate">
+              {currentAssigneeId
+                ? assignableUsers.find((u) => u.id === currentAssigneeId)?.name
+                  || assignableUsers.find((u) => u.id === currentAssigneeId)?.email
+                  || 'Assigned'
+                : 'Unassigned'}
+            </span>
+            <svg className="w-3 h-3 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          {assigneeOpen && (
+            <div className="absolute top-full left-0 mt-1 w-56 bg-[#2a2a2a] border border-primary/40 rounded-lg shadow-xl z-50 overflow-hidden">
+              <button
+                type="button"
+                onClick={() => { handleAssigneeChange(''); setAssigneeOpen(false) }}
+                className="block w-full text-left px-3 py-2 text-xs text-gray-400 hover:bg-primary/20 hover:text-white transition-colors"
+              >
+                Unassigned
+              </button>
+              {assignableUsers.map((u) => (
+                <button
+                  key={u.id}
+                  type="button"
+                  onClick={() => { handleAssigneeChange(u.id); setAssigneeOpen(false) }}
+                  className="block w-full text-left px-3 py-2 text-xs text-white hover:bg-primary/20 transition-colors"
+                >
+                  {u.name ? `${u.name} (${u.email ?? u.id})` : (u.email ?? u.id)}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
         {!assignableUsers.find((u) => u.id === actorUserId) && actorUserId && (
           <button
             type="button"

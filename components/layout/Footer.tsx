@@ -74,8 +74,8 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/reports/brand-visibility" className="hover:text-primary transition-colors">
-                  Brand Visibility
+                <Link href="/reports/seo-intelligence" className="hover:text-primary transition-colors">
+                  SEO Intelligence Suite
                 </Link>
               </li>
               <li>
