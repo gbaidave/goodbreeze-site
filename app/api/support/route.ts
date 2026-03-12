@@ -181,18 +181,28 @@ export async function POST(request: NextRequest) {
         ? `Subscription — ${refundMethodLabel}`
         : `Credit Pack — ${refundMethodLabel}`
 
-      // Count credits used at time of request to determine eligibility for auto-refund
-      // Subscription: reports completed in current billing period
-      // Credit pack: all completed reports (credits are non-refundable once used)
+      // Credits used at time of request — used to determine refund eligibility.
+      // Subscription: plan_cap - credits_remaining (accurate regardless of webhook timing)
+      // Credit pack: count all completed reports (non-refundable once used)
       void (async () => {
         try {
           let creditsUsedAtRequest = 0
+          // Monthly credit caps — must match PLAN_MONTHLY_CAPS in entitlement.ts
+          const PLAN_CAPS: Record<string, number> = { starter: 25, growth: 40, pro: 50 }
+
           if (resolvedProductType === 'subscription') {
-            const { data: sub } = await svc.from('subscriptions').select('current_period_start').eq('user_id', user.id).single()
-            const periodStart = sub?.current_period_start ?? new Date(0).toISOString()
-            const { count } = await svc.from('reports').select('id', { count: 'exact', head: true })
-              .eq('user_id', user.id).eq('status', 'complete').gte('created_at', periodStart)
-            creditsUsedAtRequest = count ?? 0
+            // Use credits_remaining to derive usage — avoids timing issue where
+            // the subscription webhook hasn't fired yet (current_period_start would be stale)
+            const { data: sub } = await svc.from('subscriptions')
+              .select('plan, credits_remaining')
+              .eq('user_id', user.id)
+              .in('status', ['active', 'trialing'])
+              .order('created_at', { ascending: false })
+              .limit(1)
+              .maybeSingle()
+            const cap = PLAN_CAPS[sub?.plan ?? ''] ?? 0
+            const remaining = sub?.credits_remaining ?? 0
+            creditsUsedAtRequest = Math.max(0, cap - remaining)
           } else {
             // Credit pack: count all completed reports
             const { count } = await svc.from('reports').select('id', { count: 'exact', head: true })

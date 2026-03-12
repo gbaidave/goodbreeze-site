@@ -18,6 +18,7 @@ const CATEGORY_STYLES: Record<string, string> = {
   dispute:        'bg-red-900/40 text-red-400 border-red-800',
   account_access: 'bg-purple-900/40 text-purple-400 border-purple-800',
   feedback:       'bg-green-900/40 text-green-400 border-green-800',
+  bug_report:     'bg-pink-900/40 text-pink-400 border-pink-800',
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -28,6 +29,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   dispute:        'Dispute',
   help:           'General Help',
   feedback:       'Feedback',
+  bug_report:     'Bug Report',
 }
 
 interface SearchParams { status?: string; category?: string; assignee?: string }

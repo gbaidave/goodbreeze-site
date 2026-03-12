@@ -23,14 +23,15 @@ export function ReportSubmittedModal({
 }: ReportSubmittedModalProps) {
   const router = useRouter()
   const [blocked, setBlocked] = useState(false)
+  const [failed, setFailed] = useState(false)
   const [cancelling, setCancelling] = useState(false)
 
-  // Poll report status while modal is open — switch to blocked state if site was blocked
+  // Poll report status while modal is open — switch to blocked/failed state when n8n reports back
   useEffect(() => {
     if (!reportId || isGuest) return
     let stopped = false
     const POLL_INTERVAL = 3000
-    const MAX_POLLS = 30 // 90 seconds total
+    const MAX_POLLS = 200 // ~10 minutes — matches n8n workflow timeout
 
     async function poll(count: number) {
       if (stopped || count >= MAX_POLLS) return
@@ -42,8 +43,12 @@ export function ReportSubmittedModal({
             setBlocked(true)
             return
           }
-          // Stop polling on any terminal status
-          if (['complete', 'failed'].includes(data.status)) return
+          if (data.status === 'failed') {
+            setFailed(true)
+            return
+          }
+          // Stop polling on complete — user already sees the modal
+          if (data.status === 'complete') return
         }
       } catch {
         // ignore fetch errors — keep polling
@@ -67,6 +72,43 @@ export function ReportSubmittedModal({
 
   function handleClose() {
     router.push(isGuest ? '/login' : '/dashboard')
+  }
+
+  if (failed) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center px-6 bg-black/60 backdrop-blur-sm">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="relative max-w-lg w-full p-10 rounded-2xl bg-dark-700 border border-red-500/40 text-center shadow-2xl"
+        >
+          <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg className="w-8 h-8 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-3">Report failed to generate</h2>
+          <p className="text-gray-400 mb-2">
+            Something went wrong while generating your report. Your credit has been refunded automatically.
+          </p>
+          <p className="text-gray-500 text-sm">Check your dashboard for details, or contact support if this keeps happening.</p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center mt-8">
+            <button
+              onClick={onRunAnother}
+              className="px-6 py-3 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full hover:shadow-lg hover:shadow-primary/30 transition-all"
+            >
+              Try Again
+            </button>
+            <button
+              onClick={handleClose}
+              className="px-6 py-3 border border-primary/40 text-gray-300 rounded-full hover:border-primary hover:text-white transition-all"
+            >
+              Go to Dashboard
+            </button>
+          </div>
+        </motion.div>
+      </div>
+    )
   }
 
   if (blocked) {

@@ -60,12 +60,9 @@ export function AdminReplyPanel({
   const [savingAssignee, setSavingAssignee] = useState(false)
 
   const isDone = ticketStatus === 'resolved' || ticketStatus === 'closed'
-  const isSupport = actorRole === 'support'
 
-  // Support role can only self-assign; admin/superadmin can assign to any eligible user
-  const assignableUsers = isSupport
-    ? adminUsers.filter((u) => u.id === actorUserId)
-    : adminUsers
+  // All roles (support, admin, superadmin) can assign to any eligible user
+  const assignableUsers = adminUsers
 
   async function handleAssigneeChange(newAssigneeId: string) {
     setCurrentAssigneeId(newAssigneeId)
@@ -156,7 +153,7 @@ export function AdminReplyPanel({
           value={currentAssigneeId}
           onChange={(e) => handleAssigneeChange(e.target.value)}
           disabled={savingAssignee}
-          className="flex-1 max-w-[200px] px-2 py-1 bg-dark border border-gray-700 text-white text-xs rounded-lg focus:outline-none focus:border-primary transition-colors disabled:opacity-50"
+          className="flex-1 max-w-[200px] px-2 py-1 bg-dark border border-gray-700 text-white text-xs rounded-lg focus:outline-none focus:border-primary transition-colors disabled:opacity-50 [color-scheme:dark]"
         >
           <option value="">Unassigned</option>
           {assignableUsers.map((u) => (
@@ -165,7 +162,7 @@ export function AdminReplyPanel({
             </option>
           ))}
         </select>
-        {isSupport && !assignableUsers.find((u) => u.id === actorUserId) && (
+        {!assignableUsers.find((u) => u.id === actorUserId) && actorUserId && (
           <button
             type="button"
             onClick={() => handleAssigneeChange(actorUserId)}
