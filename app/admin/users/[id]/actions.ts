@@ -259,8 +259,8 @@ export async function deleteAccount(userId: string, sendEmail = false) {
     svc.from('support_tickets').update({ former_user_id: userId }).eq('user_id', userId),
     svc.from('support_messages').update({ former_user_id: userId }).eq('sender_id', userId),
     svc.from('refund_requests').update({ former_user_id: userId }).eq('user_id', userId),
-    svc.from('email_logs').update({ former_user_id: userId }).eq('user_id', userId).catch(() => {}),
-  ])
+    svc.from('email_logs').update({ former_user_id: userId }).eq('user_id', userId),
+  ]).catch(() => {})
 
   // 3. Cancel Stripe subscription
   const { data: activeSub } = await svc

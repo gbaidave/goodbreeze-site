@@ -65,15 +65,17 @@ export async function GET(req: NextRequest) {
       .update({ data_export_locked: true })
       .eq('id', user.id)
 
-    // Fire admin bell notification
-    await svc.from('notifications').insert({
-      user_id: null,
-      type: 'export_abuse',
-      title: 'Data export locked',
-      message: `User ${profile?.email ?? user.email} has been locked from data export after ${EXPORT_LIMIT} downloads. Review for potential abuse.`,
-      link: `/admin/users/${user.id}`,
-      for_admin: true,
-    }).catch(() => {})
+    // Fire admin bell notification (non-fatal)
+    try {
+      await svc.from('notifications').insert({
+        user_id: null,
+        type: 'export_abuse',
+        title: 'Data export locked',
+        message: `User ${profile?.email ?? user.email} has been locked from data export after ${EXPORT_LIMIT} downloads. Review for potential abuse.`,
+        link: `/admin/users/${user.id}`,
+        for_admin: true,
+      })
+    } catch { /* non-fatal */ }
 
     return NextResponse.json(
       { error: 'DATA_EXPORT_LOCKED', message: 'Data export limit reached. Contact support to request access.' },
@@ -149,7 +151,7 @@ export async function GET(req: NextRequest) {
   })
 
   const dateStr = new Date().toISOString().split('T')[0]
-  return new NextResponse(zipData, {
+  return new NextResponse(Buffer.from(zipData), {
     status: 200,
     headers: {
       'Content-Type': 'application/zip',

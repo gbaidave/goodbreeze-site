@@ -109,8 +109,8 @@ export async function DELETE(req: NextRequest) {
     svc.from('support_tickets').update({ former_user_id: user.id }).eq('user_id', user.id),
     svc.from('support_messages').update({ former_user_id: user.id }).eq('sender_id', user.id),
     svc.from('refund_requests').update({ former_user_id: user.id }).eq('user_id', user.id),
-    svc.from('email_logs').update({ former_user_id: user.id }).eq('user_id', user.id).catch(() => {}),
-  ])
+    svc.from('email_logs').update({ former_user_id: user.id }).eq('user_id', user.id),
+  ]).catch(() => {})
 
   // ── 3. Cancel Stripe subscription ────────────────────────────────────────────
   const { data: activeSub } = await svc
