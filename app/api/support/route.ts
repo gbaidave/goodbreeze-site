@@ -178,9 +178,6 @@ export async function POST(request: NextRequest) {
         ? productType
         : 'subscription'
       const refundMethodLabel = refundMethod === 'payment_method' ? 'Payment method' : 'Credits'
-      const productLabel = resolvedProductType === 'subscription'
-        ? `Subscription — ${refundMethodLabel}`
-        : `Credit Pack — ${refundMethodLabel}`
 
       // Credits used at time of request — used to determine refund eligibility.
       // Subscription: plan_cap - credits_remaining (accurate regardless of webhook timing)
@@ -191,15 +188,18 @@ export async function POST(request: NextRequest) {
           let autoPaymentId: string | null = null
           // Monthly credit caps — must match PLAN_MONTHLY_CAPS in entitlement.ts
           const PLAN_CAPS: Record<string, number> = { starter: 25, growth: 40, pro: 50 }
+          const PLAN_LABELS: Record<string, string> = { starter: 'Starter Plan', growth: 'Growth Plan', pro: 'Pro Plan' }
 
           let amountPaidCents: number | null = null
           let purchaseDate: string | null = null
+          // productLabel built inside IIFE so it can use the actual plan name
+          let productLabel = resolvedProductType === 'subscription' ? 'Subscription' : 'Credit Pack'
 
           if (resolvedProductType === 'subscription') {
             // Use credits_remaining to derive usage — avoids timing issue where
             // the subscription webhook hasn't fired yet (current_period_start would be stale)
             const { data: sub } = await svc.from('subscriptions')
-              .select('plan, credits_remaining, stripe_subscription_id')
+              .select('plan, credits_remaining, stripe_subscription_id, stripe_customer_id')
               .eq('user_id', user.id)
               .in('status', ['active', 'trialing'])
               .order('created_at', { ascending: false })
@@ -208,6 +208,9 @@ export async function POST(request: NextRequest) {
             const cap = PLAN_CAPS[sub?.plan ?? ''] ?? 0
             const remaining = sub?.credits_remaining ?? 0
             creditsUsedAtRequest = Math.max(0, cap - remaining)
+            // Use specific plan name (e.g. "Starter Plan") instead of generic "Subscription"
+            const planName = PLAN_LABELS[sub?.plan ?? ''] ?? 'Subscription'
+            productLabel = `${planName} — ${refundMethodLabel}`
 
             // Auto-populate PI + amount + date from Stripe latest invoice on the subscription
             if (sub?.stripe_subscription_id) {
@@ -226,6 +229,26 @@ export async function POST(request: NextRequest) {
                     : null
                 }
               } catch {
+                // Non-fatal — will try customer fallback below
+              }
+            }
+
+            // Fallback: list recent PIs for the Stripe customer if invoice expand returned nothing
+            if (!autoPaymentId && sub?.stripe_customer_id) {
+              try {
+                const piList = await stripe.paymentIntents.list({
+                  customer: sub.stripe_customer_id,
+                  limit: 1,
+                })
+                const latestPi = piList.data[0]
+                if (latestPi) {
+                  autoPaymentId = latestPi.id
+                  amountPaidCents = latestPi.amount ?? null
+                  purchaseDate = latestPi.created
+                    ? new Date(latestPi.created * 1000).toISOString()
+                    : null
+                }
+              } catch {
                 // Non-fatal — admin can manually set PI via the refund ticket
               }
             }
@@ -234,6 +257,7 @@ export async function POST(request: NextRequest) {
             const { count } = await svc.from('reports').select('id', { count: 'exact', head: true })
               .eq('user_id', user.id).eq('status', 'complete')
             creditsUsedAtRequest = count ?? 0
+            productLabel = `Credit Pack — ${refundMethodLabel}`
 
             // Auto-populate PI + amount + date from the most recent credit pack purchase
             const { data: latestCredit } = await svc
