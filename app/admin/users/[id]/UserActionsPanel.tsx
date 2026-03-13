@@ -4,7 +4,7 @@ import { useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   setUserRole, setPlanOverride, grantCredits, deductCredits,
-  updateEmail, updatePhone, suspendAccount, unsuspendAccount, deleteAccount,
+  updateEmail, updatePhone, suspendAccount, unsuspendAccount,
 } from './actions'
 import { assignableRoles, canDo } from '@/lib/permissions'
 
@@ -69,7 +69,15 @@ export function UserActionsPanel({
   async function handleDeleteAccount() {
     setDeleting(true)
     try {
-      await deleteAccount(userId, sendDeleteEmail)
+      const res = await fetch(`/api/admin/users/${userId}/delete`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sendEmail: sendDeleteEmail }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error ?? 'Delete failed.')
+      }
       router.push('/admin/users')
     } catch (e: any) {
       setFeedback({ type: 'err', msg: e.message ?? 'Delete failed.' })
