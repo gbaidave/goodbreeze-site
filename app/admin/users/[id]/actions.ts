@@ -1,7 +1,6 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
 import { createServiceClient } from '@/lib/supabase/service-client'
 import { createClient } from '@/lib/supabase/server'
 import { sendCreditGrantedEmail, sendAccountDeletedEmail } from '@/lib/email'
@@ -263,7 +262,7 @@ export async function deleteAccount(userId: string, sendEmail = false) {
 
     // 2. Copy former_user_id on SET NULL tables (best-effort)
     await Promise.all([
-      svc.from('support_tickets').update({ former_user_id: userId }).eq('user_id', userId),
+      svc.from('support_requests').update({ former_user_id: userId }).eq('user_id', userId),
       svc.from('support_messages').update({ former_user_id: userId }).eq('sender_id', userId),
       svc.from('refund_requests').update({ former_user_id: userId }).eq('user_id', userId),
       svc.from('email_logs').update({ former_user_id: userId }).eq('user_id', userId),
@@ -296,9 +295,4 @@ export async function deleteAccount(userId: string, sendEmail = false) {
     const msg = err instanceof Error ? err.message : String(err)
     throw new Error(msg)
   }
-  // Redirect outside the try/catch so NEXT_REDIRECT is not swallowed by the catch block.
-  // This causes Next.js to navigate away before re-rendering /admin/users/[id],
-  // preventing the notFound() call on the now-deleted profile from surfacing as a
-  // "Server Components render error" in production.
-  redirect('/admin/users')
 }
