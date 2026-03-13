@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
+import { revalidatePath } from 'next/cache'
 import { createServiceClient } from '@/lib/supabase/service-client'
 import { stripe } from '@/lib/stripe'
 import { canDo } from '@/lib/permissions'
@@ -179,6 +180,9 @@ export async function PATCH(
       reviewed_by: user.id,
       reviewed_at: new Date().toISOString(),
     }).eq('id', requestId)
+
+    // Bust server-side cache for the admin user detail page
+    revalidatePath(`/admin/users/${refundReq.user_id}`)
 
     // Notify user via bell
     await svc.from('notifications').insert({
