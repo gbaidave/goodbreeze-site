@@ -1,6 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
 import { createServiceClient } from '@/lib/supabase/service-client'
 import { createClient } from '@/lib/supabase/server'
 import { sendCreditGrantedEmail, sendAccountDeletedEmail } from '@/lib/email'
@@ -295,4 +296,9 @@ export async function deleteAccount(userId: string, sendEmail = false) {
     const msg = err instanceof Error ? err.message : String(err)
     throw new Error(msg)
   }
+  // Redirect outside the try/catch so NEXT_REDIRECT is not swallowed by the catch block.
+  // This causes Next.js to navigate away before re-rendering /admin/users/[id],
+  // preventing the notFound() call on the now-deleted profile from surfacing as a
+  // "Server Components render error" in production.
+  redirect('/admin/users')
 }
