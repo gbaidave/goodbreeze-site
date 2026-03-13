@@ -137,16 +137,16 @@ export async function PATCH(
         .eq('user_id', refundReq.user_id)
         .in('status', ['active', 'trialing'])
         .maybeSingle()
+      // Cancel in Stripe only if we have a subscription ID
       if (subRow?.stripe_subscription_id) {
         await stripe.subscriptions.cancel(subRow.stripe_subscription_id).catch(console.error)
-        // Use user_id for reliability — stripe_subscription_id may be stale
-        // Set plan back to 'free' — this is a refund, not a cancellation
-        await svc.from('subscriptions').update({
-          plan: 'free',
-          status: 'canceled',
-          credits_remaining: 0,
-        }).eq('user_id', refundReq.user_id)
       }
+      // Always reset plan/credits — DB update must not be gated on Stripe ID
+      await svc.from('subscriptions').update({
+        plan: 'free',
+        status: 'canceled',
+        credits_remaining: 0,
+      }).eq('user_id', refundReq.user_id)
     } else if (refundReq.product_type === 'credit_pack' || refundReq.product_type === 'credits') {
       if (refundReq.stripe_payment_id) {
         await svc.from('credits')
