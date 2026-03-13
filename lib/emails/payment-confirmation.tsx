@@ -13,8 +13,8 @@ export function paymentConfirmationEmail(
   }
 
   const PACK_PLANS: Record<string, { label: string; credits: string }> = {
-    'Spark Pack': { label: 'Spark Pack', credits: '3 reports' },
-    'Boost Pack': { label: 'Boost Pack', credits: '10 reports' },
+    'Spark Pack': { label: 'Spark Pack', credits: '3 credits' },
+    'Boost Pack': { label: 'Boost Pack', credits: '10 credits' },
   }
 
   const sub = SUBSCRIPTION_PLANS[plan]
@@ -55,7 +55,7 @@ export function paymentConfirmationEmail(
 
           <table width="100%" cellpadding="0" cellspacing="0" style="background:#27272a;border-radius:10px;padding:20px;margin-bottom:28px;">
             <tr>
-              <td style="font-size:14px;color:#a1a1aa;">Plan</td>
+              <td style="font-size:14px;color:#a1a1aa;">${isSubscription ? 'Plan' : 'Purchase'}</td>
               <td align="right" style="font-size:14px;font-weight:600;color:#ffffff;">${planLabel}</td>
             </tr>
             <tr><td colspan="2" style="padding:8px 0;"><hr style="border:none;border-top:1px solid #3f3f46;"></td></tr>

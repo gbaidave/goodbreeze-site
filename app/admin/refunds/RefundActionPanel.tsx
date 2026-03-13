@@ -109,7 +109,7 @@ export function RefundActionPanel({ requestId, stripePaymentId, amountPaidCents,
           title={!isEligible ? (creditsUsed > 0 ? 'Credits have been used' : 'Enter Stripe payment ID first') : undefined}
           className="px-4 py-2 bg-green-700 hover:bg-green-600 text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {loading ? 'Processing…' : amountPaidCents > 0 ? `Issue Stripe Refund ($${(amountPaidCents / 100).toFixed(2)})` : 'Issue Stripe Refund'}
+          {loading ? 'Processing…' : 'Issue Stripe Refund'}
         </button>
         <button
           onClick={() => handleAction('deny')}

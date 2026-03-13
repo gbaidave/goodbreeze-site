@@ -380,11 +380,19 @@ export async function POST(request: NextRequest) {
           break
         }
 
-        // Get refund amount from the most recent refund on this charge
-        const latestRefund = charge.refunds?.data?.[0]
-        const amountCents = latestRefund?.amount ?? charge.amount_refunded
+        // Fetch charge with refunds expanded — webhook payload does NOT include refund list by default
+        let stripeRefundId: string | null = null
+        let amountCents: number | null = null
+        try {
+          const fullCharge = await stripe.charges.retrieve(charge.id, { expand: ['refunds'] })
+          const latestRefund = fullCharge.refunds?.data?.[0]
+          stripeRefundId = latestRefund?.id ?? null
+          amountCents = latestRefund?.amount ?? fullCharge.amount_refunded ?? null
+        } catch {
+          // Fall back to what's in the webhook payload
+          amountCents = charge.amount_refunded ?? null
+        }
         const amountStr = amountCents ? `$${(amountCents / 100).toFixed(2)}` : ''
-        const stripeRefundId = latestRefund?.id ?? null
 
         await supabase.from('refund_requests').update({
           status: 'refunded',
@@ -411,7 +419,9 @@ export async function POST(request: NextRequest) {
             .maybeSingle()
           if (sub?.stripe_subscription_id) {
             await stripe.subscriptions.cancel(sub.stripe_subscription_id).catch(console.error)
+            // Set plan back to 'free' — this is a refund, not just a cancellation
             await supabase.from('subscriptions').update({
+              plan: 'free',
               status: 'canceled',
               credits_remaining: 0,
             }).eq('user_id', refundReq.user_id)
@@ -421,7 +431,7 @@ export async function POST(request: NextRequest) {
 
         await supabase.from('notifications').insert({
           user_id: refundReq.user_id,
-          type: 'info',
+          type: 'refund_processed',
           message: `Your refund${amountStr ? ` of ${amountStr}` : ''} for ${refundReq.product_label} has been processed.`,
         })
 

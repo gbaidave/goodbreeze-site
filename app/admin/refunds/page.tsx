@@ -175,6 +175,30 @@ export default async function AdminRefundsPage({
                   </div>
                 </div>
 
+                {/* Payment details — shown when amount or purchase date is available */}
+                {(req.amount_paid_cents || req.purchase_date) && (
+                  <div className="bg-zinc-800/50 border border-zinc-700 rounded-lg px-4 py-3 flex flex-wrap gap-6 text-sm">
+                    {req.amount_paid_cents ? (
+                      <div>
+                        <p className="text-gray-500 text-xs mb-0.5">Amount paid</p>
+                        <p className="font-semibold text-white">${(req.amount_paid_cents / 100).toFixed(2)}</p>
+                      </div>
+                    ) : null}
+                    {req.purchase_date ? (
+                      <div>
+                        <p className="text-gray-500 text-xs mb-0.5">Purchase date</p>
+                        <p className="font-semibold text-white">
+                          {new Date(req.purchase_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </p>
+                      </div>
+                    ) : null}
+                    <div>
+                      <p className="text-gray-500 text-xs mb-0.5">Product</p>
+                      <p className="font-semibold text-white">{req.product_label?.split(' — ')[0] ?? req.product_label}</p>
+                    </div>
+                  </div>
+                )}
+
                 {req.admin_notes && (
                   <p className="text-sm text-gray-400 italic border-l-2 border-zinc-700 pl-3">{req.admin_notes}</p>
                 )}

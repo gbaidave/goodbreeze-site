@@ -71,7 +71,23 @@ export async function PATCH(
       if (!pid.startsWith('pi_')) {
         return NextResponse.json({ error: 'Invalid payment intent ID — must start with pi_.' }, { status: 400 })
       }
-      await svc.from('refund_requests').update({ stripe_payment_id: pid }).eq('id', requestId)
+
+      // Look up the payment details from Stripe to populate amount and date
+      let amountPaidCents: number | null = null
+      let purchaseDate: string | null = null
+      try {
+        const pi = await stripe.paymentIntents.retrieve(pid)
+        amountPaidCents = pi.amount ?? null
+        purchaseDate = pi.created ? new Date(pi.created * 1000).toISOString() : null
+      } catch {
+        // Non-fatal — save the ID even if Stripe lookup fails
+      }
+
+      await svc.from('refund_requests').update({
+        stripe_payment_id: pid,
+        ...(amountPaidCents !== null && { amount_paid_cents: amountPaidCents }),
+        ...(purchaseDate !== null && { purchase_date: purchaseDate }),
+      }).eq('id', requestId)
       return NextResponse.json({ success: true })
     }
 
@@ -123,7 +139,9 @@ export async function PATCH(
       if (subRow?.stripe_subscription_id) {
         await stripe.subscriptions.cancel(subRow.stripe_subscription_id).catch(console.error)
         // Use user_id for reliability — stripe_subscription_id may be stale
+        // Set plan back to 'free' — this is a refund, not a cancellation
         await svc.from('subscriptions').update({
+          plan: 'free',
           status: 'canceled',
           credits_remaining: 0,
         }).eq('user_id', refundReq.user_id)
@@ -165,7 +183,7 @@ export async function PATCH(
     // Notify user via bell
     await svc.from('notifications').insert({
       user_id: refundReq.user_id,
-      type: 'info',
+      type: 'refund_processed',
       message: `Your refund request for ${refundReq.product_label} has been approved and processed.`,
     })
 

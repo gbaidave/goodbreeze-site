@@ -192,6 +192,9 @@ export async function POST(request: NextRequest) {
           // Monthly credit caps — must match PLAN_MONTHLY_CAPS in entitlement.ts
           const PLAN_CAPS: Record<string, number> = { starter: 25, growth: 40, pro: 50 }
 
+          let amountPaidCents: number | null = null
+          let purchaseDate: string | null = null
+
           if (resolvedProductType === 'subscription') {
             // Use credits_remaining to derive usage — avoids timing issue where
             // the subscription webhook hasn't fired yet (current_period_start would be stale)
@@ -206,7 +209,7 @@ export async function POST(request: NextRequest) {
             const remaining = sub?.credits_remaining ?? 0
             creditsUsedAtRequest = Math.max(0, cap - remaining)
 
-            // Auto-populate PI from Stripe latest invoice on the subscription
+            // Auto-populate PI + amount + date from Stripe latest invoice on the subscription
             if (sub?.stripe_subscription_id) {
               try {
                 const stripeSub = await stripe.subscriptions.retrieve(
@@ -215,6 +218,13 @@ export async function POST(request: NextRequest) {
                 )
                 const inv = (stripeSub as any).latest_invoice
                 autoPaymentId = inv?.payment_intent?.id ?? null
+                // Get amount and date from the invoice
+                if (inv) {
+                  amountPaidCents = inv.amount_paid ?? inv.total ?? null
+                  purchaseDate = inv.created
+                    ? new Date(inv.created * 1000).toISOString()
+                    : null
+                }
               } catch {
                 // Non-fatal — admin can manually set PI via the refund ticket
               }
@@ -225,26 +235,40 @@ export async function POST(request: NextRequest) {
               .eq('user_id', user.id).eq('status', 'complete')
             creditsUsedAtRequest = count ?? 0
 
-            // Auto-populate PI from the most recent credit pack purchase
+            // Auto-populate PI + amount + date from the most recent credit pack purchase
             const { data: latestCredit } = await svc
               .from('credits')
-              .select('stripe_payment_intent_id')
+              .select('stripe_payment_intent_id, purchased_at')
               .eq('user_id', user.id)
+              .eq('source', 'pack')
               .not('stripe_payment_intent_id', 'is', null)
               .order('purchased_at', { ascending: false })
               .limit(1)
               .maybeSingle()
             autoPaymentId = latestCredit?.stripe_payment_intent_id ?? null
+            purchaseDate = latestCredit?.purchased_at ?? null
+
+            // Fetch amount from Stripe PI
+            if (autoPaymentId) {
+              try {
+                const pi = await stripe.paymentIntents.retrieve(autoPaymentId)
+                amountPaidCents = pi.amount ?? null
+              } catch {
+                // Non-fatal
+              }
+            }
           }
 
           const { error } = await svc.from('refund_requests').insert({
             user_id: user.id,
-            stripe_payment_id: autoPaymentId,
+            stripe_payment_id: autoPaymentId ?? null,
             product_type: resolvedProductType,
             product_label: productLabel,
             status: 'pending',
             support_request_id: ticketId,
             credits_used_at_request: creditsUsedAtRequest,
+            amount_paid_cents: amountPaidCents,
+            purchase_date: purchaseDate,
           })
           if (error) console.error('Auto refund_request insert error:', error)
         } catch (e) {
