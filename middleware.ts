@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { canDo } from '@/lib/permissions'
 
 // Routes that require authentication
-const PROTECTED_ROUTES = ['/dashboard', '/account', '/api/reports', '/admin', '/api/admin', '/welcome']
+const PROTECTED_ROUTES = ['/dashboard', '/account', '/api/reports', '/admin', '/api/admin']
 // Routes that redirect to dashboard if already logged in
 const AUTH_ROUTES = ['/login', '/signup']
 
