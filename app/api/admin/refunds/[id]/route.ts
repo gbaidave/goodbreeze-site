@@ -181,8 +181,9 @@ export async function PATCH(
       reviewed_at: new Date().toISOString(),
     }).eq('id', requestId)
 
-    // Bust server-side cache for the admin user detail page
+    // Bust server-side cache for admin user pages
     revalidatePath(`/admin/users/${refundReq.user_id}`)
+    revalidatePath('/admin/users')
 
     // Notify user via bell
     await svc.from('notifications').insert({
