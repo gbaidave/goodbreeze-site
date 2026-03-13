@@ -86,8 +86,10 @@ export default async function AccountPage() {
   const packCredits = credits.reduce((sum, c) => sum + (c.balance ?? 0), 0)
   const creditsRemaining = sub?.credits_remaining ?? 0
 
-  // Determine if user has email/password identity (vs OAuth-only)
-  const isEmailUser = user.identities?.some(i => i.provider === 'email') ?? false
+  // True only if user has NO OAuth providers — pure email/password accounts.
+  // A user with both 'email' and 'google' identities is treated as OAuth (no password field).
+  const isEmailUser = (user.identities?.length ?? 0) > 0 &&
+    !user.identities?.some(i => i.provider !== 'email')
 
   return (
     <AccountClient

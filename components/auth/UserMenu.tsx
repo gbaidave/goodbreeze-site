@@ -55,7 +55,13 @@ export function UserMenu() {
 
       {open && (
         <div className="absolute right-0 top-full mt-2 w-52 bg-zinc-900 border border-zinc-800 rounded-xl shadow-xl py-1 z-50">
-          <a href="/dashboard" className="block px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors">Dashboard</a>
+          <a href="/dashboard" className="block px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors">
+            {role === 'superadmin' || role === 'admin' ? 'Admin Dashboard'
+              : role === 'support' ? 'Support Dashboard'
+              : role === 'tester' ? 'Tester Dashboard'
+              : role === 'client' ? 'Client Dashboard'
+              : 'Dashboard'}
+          </a>
           <a href="/account" className="block px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors">Account settings</a>
           <a href="/support" className="block px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors">Support requests</a>
           {canDo(role, 'view_admin_panel') && (

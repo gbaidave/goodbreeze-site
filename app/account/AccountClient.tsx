@@ -283,6 +283,20 @@ export default function AccountClient({
     setDeleting(true)
     setDeleteError('')
     try {
+      // Verify password client-side for email/password users before calling the delete API.
+      // Server-side signInWithPassword is unreliable (CAPTCHA context, session mismatches),
+      // so we verify here where we have the full auth context.
+      if (isEmailUser) {
+        const supabase = createClient()
+        const { error: authError } = await supabase.auth.signInWithPassword({
+          email,
+          password: deletePassword,
+        })
+        if (authError) {
+          setDeleteError('Incorrect password. Please try again.')
+          return
+        }
+      }
       const body: Record<string, string> = {}
       if (isEmailUser) body.password = deletePassword
       const res = await fetch('/api/account/delete', {

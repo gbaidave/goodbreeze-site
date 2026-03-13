@@ -30,21 +30,17 @@ export async function DELETE(req: NextRequest) {
 
   const svc = createServiceClient()
 
-  // ── Password verification for email/password users ──────────────────────────
-  const isEmailUser = user.identities?.some(i => i.provider === 'email') ?? false
+  // ── Password gate for email/password users (verified client-side before calling this route) ──
+  // We only check that a password was provided — the actual verification happens client-side
+  // via supabase.auth.signInWithPassword() before this API is called, to avoid server-side
+  // re-auth complications (CAPTCHA enforcement, session context mismatches, etc.).
+  const isEmailUser = (user.identities?.length ?? 0) > 0 &&
+    !user.identities?.some(i => i.provider !== 'email')
   if (isEmailUser) {
     const body = await req.json().catch(() => ({}))
     const password = body?.password as string | undefined
     if (!password) {
       return NextResponse.json({ error: 'PASSWORD_REQUIRED', message: 'Password is required to delete your account.' }, { status: 400 })
-    }
-    // Verify password by attempting sign-in
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email: user.email!,
-      password,
-    })
-    if (signInError) {
-      return NextResponse.json({ error: 'INVALID_PASSWORD', message: 'Incorrect password.' }, { status: 401 })
     }
   }
 

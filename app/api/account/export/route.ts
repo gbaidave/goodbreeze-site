@@ -42,6 +42,12 @@ export async function GET(req: NextRequest) {
     )
   }
 
+  // ── Count previous exports BEFORE logging this one ──────────────────────────
+  const { count: prevCount } = await svc
+    .from('data_export_logs')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', user.id)
+
   // ── Log this attempt ────────────────────────────────────────────────────────
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? null
   const ua = req.headers.get('user-agent') ?? null
@@ -52,36 +58,6 @@ export async function GET(req: NextRequest) {
     user_agent: ua,
     success: true,
   })
-
-  // ── Count total exports — enforce 3-strike limit ────────────────────────────
-  const { count } = await svc
-    .from('data_export_logs')
-    .select('id', { count: 'exact', head: true })
-    .eq('user_id', user.id)
-
-  if ((count ?? 0) >= EXPORT_LIMIT) {
-    await svc
-      .from('profiles')
-      .update({ data_export_locked: true })
-      .eq('id', user.id)
-
-    // Fire admin bell notification (non-fatal)
-    try {
-      await svc.from('notifications').insert({
-        user_id: null,
-        type: 'export_abuse',
-        title: 'Data export locked',
-        message: `User ${profile?.email ?? user.email} has been locked from data export after ${EXPORT_LIMIT} downloads. Review for potential abuse.`,
-        link: `/admin/users/${user.id}`,
-        for_admin: true,
-      })
-    } catch { /* non-fatal */ }
-
-    return NextResponse.json(
-      { error: 'DATA_EXPORT_LOCKED', message: 'Data export limit reached. Contact support to request access.' },
-      { status: 423 }
-    )
-  }
 
   // ── Gather all user data ────────────────────────────────────────────────────
   const [
@@ -149,6 +125,22 @@ export async function GET(req: NextRequest) {
     'referrals.json': enc(referralsData),
     'index.html':     strToU8(html),
   })
+
+  // ── Lock after this download if limit reached (serves file first, locks for next) ──
+  const newCount = (prevCount ?? 0) + 1
+  if (newCount >= EXPORT_LIMIT) {
+    await svc.from('profiles').update({ data_export_locked: true }).eq('id', user.id)
+    try {
+      await svc.from('notifications').insert({
+        user_id: null,
+        type: 'export_abuse',
+        title: 'Data export locked',
+        message: `User ${profile?.email ?? user.email} has been locked from data export after ${EXPORT_LIMIT} downloads. Review for potential abuse.`,
+        link: `/admin/users/${user.id}`,
+        for_admin: true,
+      })
+    } catch { /* non-fatal */ }
+  }
 
   const dateStr = new Date().toISOString().split('T')[0]
   return new NextResponse(Buffer.from(zipData), {

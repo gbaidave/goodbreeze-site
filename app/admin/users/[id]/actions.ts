@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { createServiceClient } from '@/lib/supabase/service-client'
 import { createClient } from '@/lib/supabase/server'
 import { sendCreditGrantedEmail, sendAccountDeletedEmail } from '@/lib/email'
+import { logSystemError } from '@/lib/log-system-error'
 import { stripe } from '@/lib/stripe'
 import { canDo, assignableRoles } from '@/lib/permissions'
 
@@ -234,51 +235,64 @@ export async function deleteAccount(userId: string, sendEmail = false) {
   const { adminId } = await requireSuperadmin()
   const svc = createServiceClient()
 
-  // Fetch profile for audit record and optional email
-  const { data: profile } = await svc
-    .from('profiles')
-    .select('email, name, stripe_customer_id')
-    .eq('id', userId)
-    .single()
+  try {
+    // Fetch profile for audit record and optional email
+    const { data: profile } = await svc
+      .from('profiles')
+      .select('email, name, stripe_customer_id')
+      .eq('id', userId)
+      .single()
 
-  const deletedAt = new Date().toISOString()
+    const deletedAt = new Date().toISOString()
 
-  // 1. Create deleted_accounts audit record
-  await svc.from('deleted_accounts').insert({
-    id: userId,
-    email: profile?.email ?? '',
-    name: profile?.name ?? null,
-    stripe_customer_id: profile?.stripe_customer_id ?? null,
-    deleted_at: deletedAt,
-    deleted_by: adminId,
-    deletion_ip: null,
-  })
+    // 1. Create deleted_accounts audit record (best-effort — ignore duplicate key)
+    const { error: auditError } = await svc.from('deleted_accounts').insert({
+      id: userId,
+      email: profile?.email ?? '',
+      name: profile?.name ?? null,
+      stripe_customer_id: profile?.stripe_customer_id ?? null,
+      deleted_at: deletedAt,
+      deleted_by: adminId,
+      deletion_ip: null,
+    })
+    if (auditError && auditError.code !== '23505') {
+      // Log non-duplicate errors but don't block deletion
+      logSystemError('api', `admin deleteAccount — deleted_accounts insert failed: ${auditError.message}`, { userId }, '/admin/users/[id]')
+    }
 
-  // 2. Copy former_user_id on SET NULL tables
-  await Promise.all([
-    svc.from('support_tickets').update({ former_user_id: userId }).eq('user_id', userId),
-    svc.from('support_messages').update({ former_user_id: userId }).eq('sender_id', userId),
-    svc.from('refund_requests').update({ former_user_id: userId }).eq('user_id', userId),
-    svc.from('email_logs').update({ former_user_id: userId }).eq('user_id', userId),
-  ]).catch(() => {})
+    // 2. Copy former_user_id on SET NULL tables (best-effort)
+    await Promise.all([
+      svc.from('support_tickets').update({ former_user_id: userId }).eq('user_id', userId),
+      svc.from('support_messages').update({ former_user_id: userId }).eq('sender_id', userId),
+      svc.from('refund_requests').update({ former_user_id: userId }).eq('user_id', userId),
+      svc.from('email_logs').update({ former_user_id: userId }).eq('user_id', userId),
+    ]).catch(() => {})
 
-  // 3. Cancel Stripe subscription
-  const { data: activeSub } = await svc
-    .from('subscriptions')
-    .select('stripe_subscription_id')
-    .eq('user_id', userId)
-    .in('status', ['active', 'trialing'])
-    .maybeSingle()
-  if (activeSub?.stripe_subscription_id) {
-    await stripe.subscriptions.cancel(activeSub.stripe_subscription_id).catch(console.error)
+    // 3. Cancel Stripe subscription
+    const { data: activeSub } = await svc
+      .from('subscriptions')
+      .select('stripe_subscription_id')
+      .eq('user_id', userId)
+      .in('status', ['active', 'trialing'])
+      .maybeSingle()
+    if (activeSub?.stripe_subscription_id) {
+      await stripe.subscriptions.cancel(activeSub.stripe_subscription_id).catch(console.error)
+    }
+
+    // 4. Optionally send deletion confirmation email
+    if (sendEmail && profile?.email) {
+      await sendAccountDeletedEmail(profile.email, profile.name ?? '', deletedAt).catch(console.error)
+    }
+
+    // 5. Hard-delete auth user (cascades to profiles and all FK tables)
+    const { error: deleteError } = await svc.auth.admin.deleteUser(userId)
+    if (deleteError) {
+      throw new Error(deleteError.message ?? 'Failed to delete user account')
+    }
+  } catch (err: unknown) {
+    // Normalize any error to a plain string message so Next.js can serialize it
+    // back to the client without triggering a Server Components render error
+    const msg = err instanceof Error ? err.message : String(err)
+    throw new Error(msg)
   }
-
-  // 4. Optionally send deletion confirmation email
-  if (sendEmail && profile?.email) {
-    await sendAccountDeletedEmail(profile.email, profile.name ?? '', deletedAt).catch(console.error)
-  }
-
-  // 5. Hard-delete auth user (cascades to profiles and all FK tables)
-  const { error } = await svc.auth.admin.deleteUser(userId)
-  if (error) throw new Error(error.message)
 }

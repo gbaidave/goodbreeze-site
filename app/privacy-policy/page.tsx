@@ -99,21 +99,19 @@ export default function PrivacyPolicy() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-white mb-4">8. Data Download &amp; Account Deletion</h2>
-            <p className="text-gray-300 leading-relaxed mb-3">
-              Registered users may download a copy of their personal data or permanently delete their account at any time from their Account Settings page.
+            <h2 className="text-2xl font-bold text-white mb-4">8. Data Download and Account Deletion</h2>
+            <p className="text-gray-300 leading-relaxed mb-4">
+              You can download your data or delete your account at any time from your Account Settings page.
             </p>
-            <ul className="list-disc pl-6 text-gray-300 space-y-2 mb-4">
-              <li><strong className="text-white">Data download</strong> — exports your profile, reports, credits, support history, and referral data as a ZIP file containing structured JSON and a human-readable HTML summary.</li>
-              <li><strong className="text-white">Account deletion</strong> — permanently and irreversibly removes your profile, credentials, reports, and activity from our systems. Active subscriptions are cancelled immediately. A confirmation email is sent at the time of deletion.</li>
-            </ul>
+            <p className="text-gray-300 leading-relaxed mb-2"><strong className="text-white">Downloading your data</strong> exports your profile, reports, credits, support history, and referral activity as a ZIP file. It includes both structured JSON files and a human-readable HTML summary.</p>
+            <p className="text-gray-300 leading-relaxed mb-4"><strong className="text-white">Deleting your account</strong> permanently removes your profile, login credentials, reports, credits, and all associated data. Any active subscription is cancelled at the time of deletion. You will receive a confirmation email.</p>
             <p className="text-gray-300 leading-relaxed mb-3">
-              The following information may be retained after account deletion as required by law or for legitimate operational purposes:
+              Some data is kept after deletion:
             </p>
             <ul className="list-disc pl-6 text-gray-300 space-y-2">
-              <li>Financial transaction and payment records (required for tax and financial compliance)</li>
-              <li>Support correspondence, anonymized — retained for legal and dispute resolution purposes</li>
-              <li>Deletion event records — a log that the deletion occurred, used to comply with data retention obligations</li>
+              <li>Payment and transaction records — kept for tax and financial compliance</li>
+              <li>Support messages — anonymized and retained for legal and dispute purposes</li>
+              <li>A deletion record — confirms that your account was removed, as required by data retention law</li>
             </ul>
           </section>
 

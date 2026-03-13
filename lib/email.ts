@@ -27,6 +27,7 @@ import { testimonialAdminNotificationEmail } from './emails/testimonial-admin-no
 import { securityAlertEmail } from './emails/security-alert'
 import { creditGrantedEmail } from './emails/credit-granted'
 import { consentConfirmationEmail } from './emails/consent-confirmation'
+import { refundProcessedEmail } from './emails/refund-processed'
 import { logEmail } from './email-logger'
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -322,6 +323,20 @@ export async function sendAccountDeletedEmail(
   return sendAndLog(
     () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject, html }),
     { toEmail: to, type: 'security_alert', subject, notifyOnFail: false }
+  )
+}
+
+export async function sendRefundProcessedEmail(
+  to: string,
+  name: string,
+  productLabel: string,
+  amountStr?: string,
+  userId?: string
+) {
+  const { subject, html } = refundProcessedEmail({ userName: name, productLabel, amountStr })
+  return sendAndLog(
+    () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject, html }),
+    { userId, toEmail: to, type: 'plan_changed', subject }
   )
 }
 

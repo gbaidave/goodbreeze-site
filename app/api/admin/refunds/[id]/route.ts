@@ -11,6 +11,7 @@ import { cookies } from 'next/headers'
 import { createServiceClient } from '@/lib/supabase/service-client'
 import { stripe } from '@/lib/stripe'
 import { canDo } from '@/lib/permissions'
+import { sendRefundProcessedEmail } from '@/lib/email'
 
 export async function PATCH(
   request: NextRequest,
@@ -121,10 +122,11 @@ export async function PATCH(
         .maybeSingle()
       if (subRow?.stripe_subscription_id) {
         await stripe.subscriptions.cancel(subRow.stripe_subscription_id).catch(console.error)
+        // Use user_id for reliability — stripe_subscription_id may be stale
         await svc.from('subscriptions').update({
           status: 'canceled',
           credits_remaining: 0,
-        }).eq('stripe_subscription_id', subRow.stripe_subscription_id)
+        }).eq('user_id', refundReq.user_id)
       }
     } else if (refundReq.product_type === 'credit_pack' || refundReq.product_type === 'credits') {
       if (refundReq.stripe_payment_id) {
@@ -132,8 +134,24 @@ export async function PATCH(
           .update({ balance: 0 })
           .eq('user_id', refundReq.user_id)
           .eq('stripe_payment_intent_id', refundReq.stripe_payment_id)
+      } else {
+        // No PI on file — zero the most recent non-zero pack credit row
+        const { data: latestCredit } = await svc
+          .from('credits')
+          .select('id')
+          .eq('user_id', refundReq.user_id)
+          .gt('balance', 0)
+          .not('source', 'in', '("admin_grant","signup_credit","signup_bonus","free_credit","testimonial_reward","referral_credit","credit_grant")')
+          .order('purchased_at', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+        if (latestCredit) {
+          await svc.from('credits').update({ balance: 0 }).eq('id', latestCredit.id)
+        }
       }
     }
+
+    const amountStr = stripeRefund.amount ? `$${(stripeRefund.amount / 100).toFixed(2)}` : undefined
 
     await svc.from('refund_requests').update({
       status: 'refunded',
@@ -148,8 +166,24 @@ export async function PATCH(
     await svc.from('notifications').insert({
       user_id: refundReq.user_id,
       type: 'info',
-      message: `Your refund request for ${refundReq.product_label} has been approved and processed. Please allow 5–10 business days for the amount to appear on your statement.`,
+      message: `Your refund request for ${refundReq.product_label} has been approved and processed.`,
     })
+
+    // Email notification (fire and forget)
+    const { data: userProfile } = await svc
+      .from('profiles')
+      .select('name, email')
+      .eq('id', refundReq.user_id)
+      .single()
+    if (userProfile?.email) {
+      sendRefundProcessedEmail(
+        userProfile.email,
+        userProfile.name || userProfile.email,
+        refundReq.product_label,
+        amountStr,
+        refundReq.user_id
+      ).catch(console.error)
+    }
 
     return NextResponse.json({ success: true })
 

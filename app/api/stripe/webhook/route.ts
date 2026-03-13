@@ -18,6 +18,7 @@ import Stripe from 'stripe'
 import {
   sendPaymentConfirmationEmail,
   sendPaymentFailedEmail,
+  sendRefundProcessedEmail,
 } from '@/lib/email'
 import { logSystemError } from '@/lib/log-system-error'
 
@@ -393,7 +394,7 @@ export async function POST(request: NextRequest) {
         }).eq('id', refundReq.id)
 
         // Revoke product access based on what was refunded
-        if (refundReq.product_type === 'credits') {
+        if (refundReq.product_type === 'credit_pack' || refundReq.product_type === 'credits') {
           // Zero out the refunded credit pack row
           await supabase.from('credits')
             .update({ balance: 0 })
@@ -413,7 +414,7 @@ export async function POST(request: NextRequest) {
             await supabase.from('subscriptions').update({
               status: 'canceled',
               credits_remaining: 0,
-            }).eq('stripe_subscription_id', sub.stripe_subscription_id)
+            }).eq('user_id', refundReq.user_id)
             console.log('[webhook] charge.refunded — canceled subscription', sub.stripe_subscription_id, 'for user', refundReq.user_id)
           }
         }
@@ -421,8 +422,24 @@ export async function POST(request: NextRequest) {
         await supabase.from('notifications').insert({
           user_id: refundReq.user_id,
           type: 'info',
-          message: `Your refund${amountStr ? ` of ${amountStr}` : ''} for ${refundReq.product_label} has been processed. Please allow 5–10 business days for the amount to appear on your statement.`,
+          message: `Your refund${amountStr ? ` of ${amountStr}` : ''} for ${refundReq.product_label} has been processed.`,
         })
+
+        // Email notification (fire and forget)
+        const { data: refundUserProfile } = await supabase
+          .from('profiles')
+          .select('name, email')
+          .eq('id', refundReq.user_id)
+          .single()
+        if (refundUserProfile?.email) {
+          sendRefundProcessedEmail(
+            refundUserProfile.email,
+            refundUserProfile.name || refundUserProfile.email,
+            refundReq.product_label,
+            amountStr || undefined,
+            refundReq.user_id
+          ).catch(console.error)
+        }
 
         console.log('[webhook] charge.refunded — synced refund_request', refundReq.id, 'for user', refundReq.user_id)
         break
