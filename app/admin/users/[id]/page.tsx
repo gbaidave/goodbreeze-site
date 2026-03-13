@@ -1,4 +1,4 @@
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service-client'
 import { UserActionsPanel } from './UserActionsPanel'
@@ -52,7 +52,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
   ])
 
   const profile = profileRes.data
-  if (!profile) notFound()
+  if (!profile) redirect('/admin/users')
   const exportLogs = exportLogsRes.data ?? []
 
   const sub = subRes.data
