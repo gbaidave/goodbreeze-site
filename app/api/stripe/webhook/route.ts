@@ -314,6 +314,20 @@ export async function POST(request: NextRequest) {
       case 'customer.subscription.deleted': {
         const sub = event.data.object as Stripe.Subscription
 
+        // If the subscription is already 'refunded' in our DB, this deletion was
+        // triggered by an admin refund (we called stripe.subscriptions.cancel() after
+        // setting the status). Don't overwrite 'refunded' with 'cancelled'.
+        const { data: existingSub } = await supabase
+          .from('subscriptions')
+          .select('status')
+          .eq('stripe_subscription_id', sub.id)
+          .maybeSingle()
+
+        if (existingSub?.status === 'refunded') {
+          console.log('[webhook] customer.subscription.deleted — skipping, subscription already marked refunded:', sub.id)
+          break
+        }
+
         const { error: deleteError } = await supabase
           .from('subscriptions')
           .update({ status: 'cancelled', updated_at: new Date().toISOString() })
@@ -410,21 +424,27 @@ export async function POST(request: NextRequest) {
             .eq('stripe_payment_intent_id', paymentIntentId)
           console.log('[webhook] charge.refunded — zeroed credit pack for user', refundReq.user_id)
         } else if (refundReq.product_type === 'subscription') {
-          // Cancel the active subscription in Stripe + update local DB
+          // Fetch stripe_subscription_id before updating DB (filter by active/trialing)
           const { data: sub } = await supabase
             .from('subscriptions')
             .select('stripe_subscription_id')
             .eq('user_id', refundReq.user_id)
             .in('status', ['active', 'trialing'])
             .maybeSingle()
+
+          // Always reset plan/credits — not conditional on having a Stripe sub ID.
+          // Set to 'refunded' (not 'cancelled') — money was returned, access revoked.
+          // Do this BEFORE cancelling in Stripe so customer.subscription.deleted
+          // webhook sees 'refunded' and skips rather than overwriting to 'cancelled'.
+          await supabase.from('subscriptions').update({
+            plan: 'free',
+            status: 'refunded',
+            credits_remaining: 0,
+          }).eq('user_id', refundReq.user_id)
+
+          // Cancel in Stripe only if we have a sub ID (stops future billing)
           if (sub?.stripe_subscription_id) {
             await stripe.subscriptions.cancel(sub.stripe_subscription_id).catch(console.error)
-            // Set plan back to 'free' — this is a refund, not just a cancellation
-            await supabase.from('subscriptions').update({
-              plan: 'free',
-              status: 'canceled',
-              credits_remaining: 0,
-            }).eq('user_id', refundReq.user_id)
             console.log('[webhook] charge.refunded — canceled subscription', sub.stripe_subscription_id, 'for user', refundReq.user_id)
           }
         }
