@@ -23,7 +23,7 @@ export default async function AdminDisputesPage({
 
   let query = supabase
     .from('support_requests')
-    .select('id, user_id, email, plan_at_time, message, status, subject, priority, created_at')
+    .select('id, user_id, email, plan_at_time, message, status, category, subject, priority, created_at')
     .eq('category', 'dispute')
     .order('created_at', { ascending: false })
 
@@ -126,6 +126,7 @@ export default async function AdminDisputesPage({
                 requestId={r.id}
                 userEmail={r.email}
                 status={r.status}
+                category={r.category ?? undefined}
                 messages={(messagesByRequest[r.id] ?? []) as any}
               />
             </div>

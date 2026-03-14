@@ -48,7 +48,7 @@ export default async function AdminBugReportsPage({
 
   let query = svc
     .from('support_requests')
-    .select('id, user_id, email, plan_at_time, last_report_context, message, status, assigned_to, assignee_id, created_at')
+    .select('id, user_id, email, plan_at_time, last_report_context, message, status, category, assigned_to, assignee_id, created_at')
     .eq('category', 'bug_report')
     .order('created_at', { ascending: false })
 
@@ -203,6 +203,7 @@ export default async function AdminBugReportsPage({
                 requestId={r.id}
                 userEmail={r.email}
                 status={r.status}
+                category={r.category ?? undefined}
                 messages={(messagesByRequest[r.id] ?? []) as any}
                 assignedTo={(r as any).assigned_to ?? null}
                 assigneeId={(r as any).assignee_id ?? null}

@@ -26,7 +26,7 @@ const MAX_MESSAGE_LEN = 2000
 const MAX_SUBJECT_LEN = 120
 
 const VALID_CATEGORIES = [
-  'account_access', 'report_issue', 'billing', 'refund', 'dispute', 'help', 'feedback',
+  'account_access', 'report_issue', 'billing', 'refund', 'dispute', 'help', 'feedback', 'bug_report',
 ] as const
 
 const VALID_PRODUCT_TYPES = ['subscription', 'credit_pack'] as const

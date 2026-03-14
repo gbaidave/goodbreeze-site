@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 
 interface AttachmentMeta {
@@ -73,6 +73,16 @@ export function AdminReplyPanel({
   const [assigneeOpen, setAssigneeOpen] = useState(false)
   const [currentCategory, setCurrentCategory] = useState(category ?? 'help')
   const [savingCategory, setSavingCategory] = useState(false)
+  const [categoryOpen, setCategoryOpen] = useState(false)
+  const categoryRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (categoryRef.current && !categoryRef.current.contains(e.target as Node)) setCategoryOpen(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
 
   const isDone = ticketStatus === 'resolved' || ticketStatus === 'closed'
 
@@ -235,16 +245,33 @@ export function AdminReplyPanel({
       {/* Category */}
       <div className="flex items-center gap-2">
         <label className="text-xs text-gray-500 whitespace-nowrap">Category:</label>
-        <select
-          value={currentCategory}
-          onChange={(e) => handleCategoryChange(e.target.value)}
-          disabled={savingCategory}
-          className="px-2 py-1 bg-dark border border-gray-700 text-white text-xs rounded-lg focus:outline-none focus:border-primary/60 transition-colors disabled:opacity-50"
-        >
-          {CATEGORY_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>{opt.label}</option>
-          ))}
-        </select>
+        <div className="relative" ref={categoryRef}>
+          <button
+            type="button"
+            disabled={savingCategory}
+            onClick={() => setCategoryOpen((v) => !v)}
+            className="flex items-center gap-1 px-2 py-1 bg-dark border border-gray-700 text-white text-xs rounded-lg hover:border-primary/60 transition-colors disabled:opacity-50"
+          >
+            <span>{CATEGORY_OPTIONS.find((o) => o.value === currentCategory)?.label ?? currentCategory}</span>
+            <svg className="w-3 h-3 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          {categoryOpen && (
+            <div className="absolute top-full left-0 mt-1 w-44 bg-[#2a2a2a] border border-primary/40 rounded-lg shadow-xl z-50 overflow-hidden">
+              {CATEGORY_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => { handleCategoryChange(opt.value); setCategoryOpen(false) }}
+                  className={`block w-full text-left px-3 py-2 text-xs hover:bg-primary/20 transition-colors ${opt.value === currentCategory ? 'text-primary' : 'text-white'}`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
         {savingCategory && <span className="text-xs text-gray-500">Saving…</span>}
       </div>
 
