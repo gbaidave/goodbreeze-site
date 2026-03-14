@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { isValidPhone, normalizePhone } from '@/lib/phone'
+import TurnstileWidget from '@/components/auth/TurnstileWidget'
 
 const CREDIT_PRODUCT_LABELS: Record<string, string> = {
   spark_pack: 'Spark Pack',
@@ -115,6 +116,7 @@ export default function AccountClient({
   const [deleteConfirmText, setDeleteConfirmText] = useState('')
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState('')
+  const [deleteCaptchaToken, setDeleteCaptchaToken] = useState('')
 
   const hasChanges = name !== initialName || phone !== initialPhone || smsOk !== initialSmsOk
   const phoneChanged = phone !== initialPhone
@@ -291,8 +293,10 @@ export default function AccountClient({
         const { error: authError } = await supabase.auth.signInWithPassword({
           email,
           password: deletePassword,
+          options: deleteCaptchaToken ? { captchaToken: deleteCaptchaToken } : undefined,
         })
         if (authError) {
+          setDeleteCaptchaToken('')
           setDeleteError('Incorrect password. Please try again.')
           return
         }
@@ -966,6 +970,10 @@ export default function AccountClient({
                     placeholder="Your current password"
                     className="w-full bg-dark border border-gray-700 text-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-red-500/60 transition-colors"
                   />
+                  <TurnstileWidget
+                    onVerify={setDeleteCaptchaToken}
+                    onError={() => setDeleteCaptchaToken('')}
+                  />
                 </div>
               )}
 
@@ -994,7 +1002,8 @@ export default function AccountClient({
                     openRefundExists ||
                     openDisputeExists ||
                     deleteConfirmText !== 'DELETE' ||
-                    (isEmailUser && !deletePassword)
+                    (isEmailUser && !deletePassword) ||
+                    (isEmailUser && !!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && !deleteCaptchaToken)
                   }
                   className="flex-1 py-2.5 bg-red-500/20 border border-red-500/40 text-red-400 text-sm font-semibold rounded-xl hover:bg-red-500/30 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >

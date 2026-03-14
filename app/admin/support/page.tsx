@@ -265,6 +265,7 @@ export default async function AdminSupportPage({
                 requestId={r.id}
                 userEmail={r.email}
                 status={r.status}
+                category={r.category ?? undefined}
                 messages={(messagesByRequest[r.id] ?? []) as any}
                 assignedTo={(r as any).assigned_to ?? null}
                 assigneeId={(r as any).assignee_id ?? null}

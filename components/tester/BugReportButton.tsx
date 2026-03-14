@@ -28,7 +28,8 @@ export function BugReportButton() {
     })
   }, [])
 
-  if (role !== 'tester') return null
+  const BUG_REPORT_ROLES = ['tester', 'support', 'admin', 'superadmin']
+  if (!role || !BUG_REPORT_ROLES.includes(role)) return null
 
   function handleClose() {
     setOpen(false)

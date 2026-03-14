@@ -100,6 +100,13 @@ export async function PATCH(
         reviewed_at: new Date().toISOString(),
       }).eq('id', requestId)
 
+      // Auto-close the associated open refund support ticket
+      await svc.from('support_requests')
+        .update({ status: 'closed' })
+        .eq('user_id', refundReq.user_id)
+        .eq('category', 'refund')
+        .in('status', ['open', 'in_progress'])
+
       return NextResponse.json({ success: true })
     }
 
@@ -114,6 +121,10 @@ export async function PATCH(
       return NextResponse.json({ error: 'No Stripe payment ID on file for this request. Cannot issue automated refund — process manually in Stripe dashboard.' }, { status: 422 })
     }
 
+    // Mark as 'refunded' BEFORE calling Stripe so the charge.refunded webhook
+    // sees this status and skips — prevents duplicate email/processing.
+    await svc.from('refund_requests').update({ status: 'refunded' }).eq('id', requestId)
+
     // Issue via Stripe
     let stripeRefund: Awaited<ReturnType<typeof stripe.refunds.create>> | null = null
     try {
@@ -121,6 +132,8 @@ export async function PATCH(
         payment_intent: refundReq.stripe_payment_id,
       })
     } catch (stripeErr: any) {
+      // Stripe failed — revert status to 'pending' so admin can retry
+      await svc.from('refund_requests').update({ status: 'pending' }).eq('id', requestId)
       console.error('[admin/refunds] Stripe refund failed:', stripeErr?.message)
       return NextResponse.json(
         { error: `Stripe refund failed: ${stripeErr?.message ?? 'Unknown error'}` },
@@ -176,8 +189,8 @@ export async function PATCH(
 
     const amountStr = stripeRefund.amount ? `$${(stripeRefund.amount / 100).toFixed(2)}` : undefined
 
+    // status already set to 'refunded' before Stripe call — just update remaining fields
     await svc.from('refund_requests').update({
-      status: 'refunded',
       stripe_refund_id: stripeRefund.id,
       refund_amount_cents: stripeRefund.amount,
       admin_notes: notes || null,

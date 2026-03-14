@@ -28,6 +28,7 @@ interface Props {
   requestId: string
   userEmail: string
   status: string
+  category?: string
   messages: Message[]
   assignedTo?: string | null
   assigneeId?: string | null
@@ -35,6 +36,17 @@ interface Props {
   actorRole?: string
   actorUserId?: string
 }
+
+const CATEGORY_OPTIONS = [
+  { value: 'help', label: 'General Help' },
+  { value: 'report_issue', label: 'Report Issue' },
+  { value: 'billing', label: 'Billing' },
+  { value: 'refund', label: 'Refund Request' },
+  { value: 'dispute', label: 'Dispute' },
+  { value: 'account_access', label: 'Account Access' },
+  { value: 'feedback', label: 'Feedback' },
+  { value: 'bug_report', label: 'Bug Report' },
+]
 
 function formatBytes(bytes: number | null): string {
   if (!bytes) return ''
@@ -44,7 +56,7 @@ function formatBytes(bytes: number | null): string {
 }
 
 export function AdminReplyPanel({
-  requestId, userEmail, status, messages, assignedTo,
+  requestId, userEmail, status, category, messages, assignedTo,
   assigneeId, adminUsers = [], actorRole = 'admin', actorUserId = '',
 }: Props) {
   const router = useRouter()
@@ -59,11 +71,28 @@ export function AdminReplyPanel({
   const [currentAssigneeId, setCurrentAssigneeId] = useState(assigneeId ?? '')
   const [savingAssignee, setSavingAssignee] = useState(false)
   const [assigneeOpen, setAssigneeOpen] = useState(false)
+  const [currentCategory, setCurrentCategory] = useState(category ?? 'help')
+  const [savingCategory, setSavingCategory] = useState(false)
 
   const isDone = ticketStatus === 'resolved' || ticketStatus === 'closed'
 
   // All roles (support, admin, superadmin) can assign to any eligible user
   const assignableUsers = adminUsers
+
+  async function handleCategoryChange(newCategory: string) {
+    setCurrentCategory(newCategory)
+    setSavingCategory(true)
+    try {
+      await fetch(`/api/admin/support/${requestId}/category`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category: newCategory }),
+      })
+      router.refresh()
+    } finally {
+      setSavingCategory(false)
+    }
+  }
 
   async function handleAssigneeChange(newAssigneeId: string) {
     setCurrentAssigneeId(newAssigneeId)
@@ -201,6 +230,22 @@ export function AdminReplyPanel({
           </button>
         )}
         {savingAssignee && <span className="text-xs text-gray-500">Saving…</span>}
+      </div>
+
+      {/* Category */}
+      <div className="flex items-center gap-2">
+        <label className="text-xs text-gray-500 whitespace-nowrap">Category:</label>
+        <select
+          value={currentCategory}
+          onChange={(e) => handleCategoryChange(e.target.value)}
+          disabled={savingCategory}
+          className="px-2 py-1 bg-dark border border-gray-700 text-white text-xs rounded-lg focus:outline-none focus:border-primary/60 transition-colors disabled:opacity-50"
+        >
+          {CATEGORY_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          ))}
+        </select>
+        {savingCategory && <span className="text-xs text-gray-500">Saving…</span>}
       </div>
 
       {/* Thread */}

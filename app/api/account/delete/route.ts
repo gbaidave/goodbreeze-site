@@ -62,7 +62,7 @@ export async function DELETE(req: NextRequest) {
 
   // ── Block if open dispute ticket ────────────────────────────────────────────
   const { data: openDispute } = await svc
-    .from('support_tickets')
+    .from('support_requests')
     .select('id')
     .eq('user_id', user.id)
     .eq('category', 'dispute')
@@ -100,12 +100,15 @@ export async function DELETE(req: NextRequest) {
     deletion_ip: ip,
   })
 
-  // ── 2. Copy former_user_id on SET NULL tables ────────────────────────────────
+  // ── 2. Copy former_user_id on SET NULL tables before cascade ─────────────────
   await Promise.all([
-    svc.from('support_tickets').update({ former_user_id: user.id }).eq('user_id', user.id),
+    svc.from('support_requests').update({ former_user_id: user.id }).eq('user_id', user.id),
     svc.from('support_messages').update({ former_user_id: user.id }).eq('sender_id', user.id),
     svc.from('refund_requests').update({ former_user_id: user.id }).eq('user_id', user.id),
     svc.from('email_logs').update({ former_user_id: user.id }).eq('user_id', user.id),
+    // Financial records — SET NULL so they survive deletion for compliance
+    svc.from('subscriptions').update({ former_user_id: user.id }).eq('user_id', user.id),
+    svc.from('credits').update({ former_user_id: user.id }).eq('user_id', user.id),
   ]).catch(() => {})
 
   // ── 3. Cancel Stripe subscription ────────────────────────────────────────────

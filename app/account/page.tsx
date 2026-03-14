@@ -56,7 +56,7 @@ export default async function AccountPage() {
       .maybeSingle(),
     // Open support tickets count
     supabase
-      .from('support_tickets')
+      .from('support_requests')
       .select('id', { count: 'exact', head: true })
       .eq('user_id', user.id)
       .in('status', ['open', 'in_progress']),
@@ -70,7 +70,7 @@ export default async function AccountPage() {
       .maybeSingle(),
     // Open dispute ticket
     supabase
-      .from('support_tickets')
+      .from('support_requests')
       .select('id')
       .eq('user_id', user.id)
       .eq('category', 'dispute')

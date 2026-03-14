@@ -71,7 +71,7 @@ export async function GET(req: NextRequest) {
     svc.from('subscriptions').select('plan, status, current_period_end, cancel_at_period_end, credits_remaining, created_at').eq('user_id', user.id),
     svc.from('credits').select('amount, balance, purchased_at, stripe_payment_intent_id').eq('user_id', user.id).order('purchased_at', { ascending: false }),
     svc.from('reports').select('id, report_type, status, created_at, expires_at, input_url, keyword, target_company').eq('user_id', user.id).order('created_at', { ascending: false }),
-    svc.from('support_tickets').select('id, category, subject, status, created_at').eq('user_id', user.id).order('created_at', { ascending: false }),
+    svc.from('support_requests').select('id, category, subject, status, created_at').eq('user_id', user.id).order('created_at', { ascending: false }),
     svc.from('referral_codes').select('code, credits_earned, created_at').eq('user_id', user.id),
     svc.from('refund_requests').select('id, product_type, status, created_at, amount_cents').eq('user_id', user.id).order('created_at', { ascending: false }),
   ])

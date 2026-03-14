@@ -11,6 +11,14 @@ interface Props {
   userId: string
 }
 
+const DENY_REASONS = [
+  'Credits already used',
+  'Outside 14-day window',
+  'Policy violation',
+  'Duplicate request',
+  'Other',
+]
+
 export function RefundActionPanel({ requestId, stripePaymentId, amountPaidCents, creditsUsed }: Props) {
   const router = useRouter()
   const [notes, setNotes] = useState('')
@@ -19,6 +27,8 @@ export function RefundActionPanel({ requestId, stripePaymentId, amountPaidCents,
   const [paymentIdInput, setPaymentIdInput] = useState('')
   const [savingPaymentId, setSavingPaymentId] = useState(false)
   const [paymentIdError, setPaymentIdError] = useState('')
+  const [showDenyForm, setShowDenyForm] = useState(false)
+  const [denyReason, setDenyReason] = useState(DENY_REASONS[0])
 
   const hasPaymentId = !!stripePaymentId && stripePaymentId.trim() !== ''
   const isEligible = creditsUsed === 0 && hasPaymentId
@@ -27,10 +37,13 @@ export function RefundActionPanel({ requestId, stripePaymentId, amountPaidCents,
     setLoading(true)
     setError('')
     try {
+      const combinedNotes = action === 'deny' && denyReason
+        ? notes.trim() ? `${denyReason} — ${notes.trim()}` : denyReason
+        : notes
       const res = await fetch(`/api/admin/refunds/${requestId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action, notes }),
+        body: JSON.stringify({ action, notes: combinedNotes }),
       })
       const data = await res.json()
       if (!res.ok) {
@@ -102,6 +115,39 @@ export function RefundActionPanel({ requestId, stripePaymentId, amountPaidCents,
         className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 text-white text-sm rounded-lg focus:outline-none focus:border-primary transition-colors resize-none placeholder-zinc-600"
       />
       {error && <p className="text-red-400 text-xs">{error}</p>}
+
+      {/* Deny form — shown when deny is clicked */}
+      {showDenyForm && (
+        <div className="bg-zinc-800/60 border border-zinc-700 rounded-lg px-3 py-3 space-y-2">
+          <p className="text-xs text-gray-400 font-medium">Reason for denial</p>
+          <select
+            value={denyReason}
+            onChange={(e) => setDenyReason(e.target.value)}
+            className="w-full px-2 py-1.5 bg-zinc-900 border border-zinc-600 text-white text-sm rounded-lg focus:outline-none focus:border-primary transition-colors"
+          >
+            {DENY_REASONS.map((r) => (
+              <option key={r} value={r}>{r}</option>
+            ))}
+          </select>
+          <div className="flex gap-2">
+            <button
+              onClick={() => handleAction('deny')}
+              disabled={loading}
+              className="px-4 py-2 bg-zinc-600 hover:bg-zinc-500 text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-50"
+            >
+              {loading ? 'Processing…' : 'Confirm Deny'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowDenyForm(false)}
+              className="px-3 py-2 text-gray-500 text-sm hover:text-gray-300 transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="flex gap-3 flex-wrap">
         <button
           onClick={() => handleAction('refund')}
@@ -111,13 +157,15 @@ export function RefundActionPanel({ requestId, stripePaymentId, amountPaidCents,
         >
           {loading ? 'Processing…' : 'Issue Stripe Refund'}
         </button>
-        <button
-          onClick={() => handleAction('deny')}
-          disabled={loading}
-          className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-gray-200 text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
-        >
-          Deny
-        </button>
+        {!showDenyForm && (
+          <button
+            onClick={() => setShowDenyForm(true)}
+            disabled={loading}
+            className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-gray-200 text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+          >
+            Deny
+          </button>
+        )}
       </div>
       {creditsUsed > 0 && (
         <p className="text-xs text-amber-400">Credits have been used — not eligible for automated refund per policy. You can still deny or add notes.</p>

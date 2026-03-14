@@ -59,7 +59,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       {/* Sidebar */}
       <aside className="w-56 flex-shrink-0 border-r border-primary/20 flex flex-col">
         <div className="px-6 py-6 border-b border-primary/20">
-          <p className="text-xs font-semibold text-primary uppercase tracking-wider">Admin</p>
+          <p className="text-xs font-semibold text-primary uppercase tracking-wider">
+            {profile?.role === 'support' ? 'Support' : 'Admin'}
+          </p>
           <p className="text-white font-semibold mt-1 truncate">{profile?.name ?? profile?.email}</p>
         </div>
         <nav className="flex-1 px-3 py-4 space-y-1">

@@ -54,6 +54,7 @@ const CATEGORY_OPTIONS = [
   { value: 'dispute',        label: 'Dispute',             placeholder: 'e.g. I was charged incorrectly' },
   { value: 'account_access', label: 'Account Access',      placeholder: 'e.g. I can\'t log in to my account' },
   { value: 'feedback',       label: 'Feedback',            placeholder: 'e.g. Feature request: …' },
+  { value: 'bug_report',     label: 'Bug Report',          placeholder: 'e.g. Something isn\'t working the way it should' },
 ]
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -180,12 +181,16 @@ function FilePickerInput({
   )
 }
 
-function SuccessState({ isAuthenticated }: { isAuthenticated: boolean }) {
+function SuccessState({ isAuthenticated, onDismiss }: { isAuthenticated: boolean; onDismiss: () => void }) {
   return (
-    <div className="min-h-screen bg-dark flex items-center justify-center px-6">
+    <div
+      className="min-h-screen bg-dark flex items-center justify-center px-6 cursor-pointer"
+      onClick={onDismiss}
+    >
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
+        onClick={(e) => e.stopPropagation()}
         className="max-w-lg w-full p-10 rounded-2xl bg-dark-700 border border-primary text-center"
       >
         <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -202,12 +207,22 @@ function SuccessState({ isAuthenticated }: { isAuthenticated: boolean }) {
             ? "We'll reply here and via email."
             : "We'll reply to the email address you provided."}
         </p>
-        <Link
-          href={isAuthenticated ? '/support' : '/'}
-          className="inline-block px-6 py-3 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full hover:shadow-lg hover:shadow-primary/30 transition-all"
-        >
-          {isAuthenticated ? 'View Support Requests' : 'Back to Home'}
-        </Link>
+        {isAuthenticated ? (
+          <button
+            onClick={onDismiss}
+            className="inline-block px-6 py-3 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full hover:shadow-lg hover:shadow-primary/30 transition-all"
+          >
+            View Support Requests
+          </button>
+        ) : (
+          <Link
+            href="/"
+            className="inline-block px-6 py-3 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full hover:shadow-lg hover:shadow-primary/30 transition-all"
+          >
+            Back to Home
+          </Link>
+        )}
+        <p className="text-xs text-gray-600 mt-4">Click anywhere to dismiss</p>
       </motion.div>
     </div>
   )
@@ -600,7 +615,7 @@ export default function SupportForm({ isAuthenticated, userName, userEmail, plan
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
 
-  if (submitted) return <SuccessState isAuthenticated={isAuthenticated} />
+  if (submitted) return <SuccessState isAuthenticated={isAuthenticated} onDismiss={() => setSubmitted(false)} />
 
   const selectedCategory = CATEGORY_OPTIONS.find((c) => c.value === category)
   const subjectPlaceholder = selectedCategory?.placeholder ?? 'Optional — brief summary of your issue'

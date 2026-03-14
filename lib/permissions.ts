@@ -32,6 +32,7 @@ export type Action =
   | 'close_ticket'
   | 'resolve_ticket'
   | 'view_bug_reports'
+  | 'change_ticket_category'
 
   // Admin operations (admin role and above)
   | 'grant_credits'
@@ -61,7 +62,8 @@ const PERMISSIONS: Record<Action, string[]> = {
   assign_ticket:         SUPPORT_ROLES,
   close_ticket:          SUPPORT_ROLES,
   resolve_ticket:        SUPPORT_ROLES,
-  view_bug_reports:      SUPPORT_ROLES,
+  view_bug_reports:          SUPPORT_ROLES,
+  change_ticket_category:    SUPPORT_ROLES,
 
   // Admin-only operations
   grant_credits:         ADMIN_ROLES,

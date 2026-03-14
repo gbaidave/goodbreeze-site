@@ -103,15 +103,15 @@ export default function PrivacyPolicy() {
             <p className="text-gray-300 leading-relaxed mb-4">
               You can download your data or delete your account at any time from your Account Settings page.
             </p>
-            <p className="text-gray-300 leading-relaxed mb-2"><strong className="text-white">Downloading your data</strong> exports your profile, reports, credits, support history, and referral activity as a ZIP file. It includes both structured JSON files and a human-readable HTML summary.</p>
+            <p className="text-gray-300 leading-relaxed mb-2"><strong className="text-white">Downloading your data</strong> creates a ZIP file containing your profile, reports, credits, support history, and referral activity. The download includes a data file and a readable summary you can open in any browser.</p>
             <p className="text-gray-300 leading-relaxed mb-4"><strong className="text-white">Deleting your account</strong> permanently removes your profile, login credentials, reports, credits, and all associated data. Any active subscription is cancelled at the time of deletion. You will receive a confirmation email.</p>
             <p className="text-gray-300 leading-relaxed mb-3">
-              Some data is kept after deletion:
+              Some information is retained after deletion:
             </p>
             <ul className="list-disc pl-6 text-gray-300 space-y-2">
-              <li>Payment and transaction records — kept for tax and financial compliance</li>
-              <li>Support messages — anonymized and retained for legal and dispute purposes</li>
-              <li>A deletion record — confirms that your account was removed, as required by data retention law</li>
+              <li>Payment and transaction records are kept for tax and financial compliance.</li>
+              <li>Support messages are anonymized and retained for legal and dispute purposes.</li>
+              <li>A record of your account deletion is kept as required by data retention law.</li>
             </ul>
           </section>
 
