@@ -57,7 +57,8 @@ export async function middleware(request: NextRequest) {
         .select('role')
         .eq('id', user.id)
         .single()
-      if (!canDo(profile?.role, 'view_admin_panel')) {
+      const isBugReportsOnly = pathname.startsWith('/admin/bug-reports')
+      if (!canDo(profile?.role, 'view_admin_panel') && !(isBugReportsOnly && canDo(profile?.role, 'view_bug_reports'))) {
         return NextResponse.redirect(new URL('/dashboard', request.url))
       }
     }
