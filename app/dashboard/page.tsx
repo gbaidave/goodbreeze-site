@@ -148,7 +148,15 @@ export default async function DashboardPage({
                 href="/admin"
                 className="text-sm text-gray-500 hover:text-gray-300 transition-colors"
               >
-                Admin Panel →
+                {profile?.role === 'support' ? 'Support Dashboard' : 'Admin Dashboard'} →
+              </a>
+            )}
+            {isTester && (
+              <a
+                href="/admin/bug-reports"
+                className="text-sm text-gray-500 hover:text-gray-300 transition-colors"
+              >
+                Tester Dashboard →
               </a>
             )}
             <a

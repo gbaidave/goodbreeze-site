@@ -8,7 +8,7 @@
  * user:        Regular customer
  * client:      Future high-end client (custom billing/project dashboard — not built yet)
  * affiliate:   Partner with referral link; earns revenue share on conversions (dashboard not built yet)
- * tester:      Internal QA — infinite credits, bug report button, no admin access
+ * tester:      Internal QA — infinite credits, bug report button, bug reports panel access only
  * support:     Support staff — limited admin panel (tickets, disputes, bug reports)
  * admin:       Full admin except Stripe, account deletion, role promotion, and system settings
  * superadmin:  Full access — Stripe, delete accounts, promote roles, system settings
@@ -53,6 +53,7 @@ export type Action =
 
 const ADMIN_ROLES: string[] = ['superadmin', 'admin']
 const SUPPORT_ROLES: string[] = ['superadmin', 'admin', 'support']
+const TESTER_ROLES: string[] = ['superadmin', 'admin', 'support', 'tester']
 
 const PERMISSIONS: Record<Action, string[]> = {
   // Ticket operations — support and above
@@ -62,7 +63,7 @@ const PERMISSIONS: Record<Action, string[]> = {
   assign_ticket:         SUPPORT_ROLES,
   close_ticket:          SUPPORT_ROLES,
   resolve_ticket:        SUPPORT_ROLES,
-  view_bug_reports:          SUPPORT_ROLES,
+  view_bug_reports:          TESTER_ROLES,
   change_ticket_category:    SUPPORT_ROLES,
 
   // Admin-only operations

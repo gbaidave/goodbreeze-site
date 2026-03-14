@@ -55,7 +55,10 @@ export function UserMenu() {
 
       {open && (
         <div className="absolute right-0 top-full mt-2 w-52 bg-zinc-900 border border-zinc-800 rounded-xl shadow-xl py-1 z-50">
-          <a href="/dashboard" className="block px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors">
+          <a
+            href={canDo(role, 'view_admin_panel') ? '/admin' : role === 'tester' ? '/admin/bug-reports' : '/dashboard'}
+            className="block px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors"
+          >
             {role === 'superadmin' || role === 'admin' ? 'Admin Dashboard'
               : role === 'support' ? 'Support Dashboard'
               : role === 'tester' ? 'Tester Dashboard'
@@ -64,9 +67,6 @@ export function UserMenu() {
           </a>
           <a href="/account" className="block px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors">Account settings</a>
           <a href="/support" className="block px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors">Support requests</a>
-          {canDo(role, 'view_admin_panel') && (
-            <a href="/admin" className="block px-4 py-2.5 text-sm text-primary hover:bg-zinc-800 hover:text-primary/80 transition-colors">Admin panel</a>
-          )}
           <div className="border-t border-zinc-800 my-1" />
           <button onClick={signOut} className="w-full text-left px-4 py-2.5 text-sm text-zinc-400 hover:bg-zinc-800 hover:text-red-400 transition-colors">Sign out</button>
         </div>

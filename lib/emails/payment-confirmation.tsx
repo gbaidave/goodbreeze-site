@@ -7,9 +7,9 @@ export function paymentConfirmationEmail(
   const firstName = name.split(' ')[0]
 
   const SUBSCRIPTION_PLANS: Record<string, { label: string; reports: string; price: string }> = {
-    starter: { label: 'Starter Plan', reports: '25 reports/month', price: '$20/month' },
-    growth:  { label: 'Growth Plan',  reports: '40 reports/month', price: '$30/month' },
-    pro:     { label: 'Pro Plan',     reports: '50 reports/month', price: '$40/month' },
+    starter: { label: 'Starter Plan', reports: '25 credits/month', price: '$20/month' },
+    growth:  { label: 'Growth Plan',  reports: '40 credits/month', price: '$30/month' },
+    pro:     { label: 'Pro Plan',     reports: '50 credits/month', price: '$40/month' },
   }
 
   const PACK_PLANS: Record<string, { label: string; credits: string }> = {
@@ -60,7 +60,7 @@ export function paymentConfirmationEmail(
             </tr>
             <tr><td colspan="2" style="padding:8px 0;"><hr style="border:none;border-top:1px solid #3f3f46;"></td></tr>
             <tr>
-              <td style="font-size:14px;color:#a1a1aa;">${isSubscription ? 'Reports' : 'Credits added'}</td>
+              <td style="font-size:14px;color:#a1a1aa;">${isSubscription ? 'Credits' : 'Credits added'}</td>
               <td align="right" style="font-size:14px;font-weight:600;color:#22d3ee;">${reportsLine}</td>
             </tr>
             <tr><td colspan="2" style="padding:8px 0;"><hr style="border:none;border-top:1px solid #3f3f46;"></td></tr>

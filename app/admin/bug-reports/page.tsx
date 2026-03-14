@@ -36,14 +36,14 @@ export default async function AdminBugReportsPage({
   const actorRole = actorProfile?.role ?? 'support'
 
   if (!canDo(actorRole, 'view_bug_reports')) {
-    redirect('/admin')
+    redirect('/dashboard')
   }
 
   // Load admin/support users for assignee dropdown
   const { data: adminUsers } = await svc
     .from('profiles')
     .select('id, name, email')
-    .in('role', ['superadmin', 'admin', 'support'])
+    .in('role', ['superadmin', 'admin', 'support', 'tester'])
     .order('name', { ascending: true })
 
   let query = svc

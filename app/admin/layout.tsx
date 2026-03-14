@@ -36,6 +36,11 @@ const SUPPORT_NAV = [
   { href: '/admin/bug-reports', label: 'Bug Reports' },
 ]
 
+// Tester nav — bug reports only
+const TESTER_NAV = [
+  { href: '/admin/bug-reports', label: 'Bug Reports' },
+]
+
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -47,11 +52,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     .eq('id', user.id)
     .single()
 
-  if (!canDo(profile?.role, 'view_admin_panel')) redirect('/dashboard')
+  if (!canDo(profile?.role, 'view_admin_panel') && !canDo(profile?.role, 'view_bug_reports')) redirect('/dashboard')
 
   const NAV_ITEMS =
     profile?.role === 'superadmin' ? SUPERADMIN_NAV :
     profile?.role === 'admin'      ? ADMIN_NAV :
+    profile?.role === 'tester'     ? TESTER_NAV :
     SUPPORT_NAV
 
   return (
@@ -60,7 +66,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <aside className="w-56 flex-shrink-0 border-r border-primary/20 flex flex-col">
         <div className="px-6 py-6 border-b border-primary/20">
           <p className="text-xs font-semibold text-primary uppercase tracking-wider">
-            {profile?.role === 'support' ? 'Support' : 'Admin'}
+            {profile?.role === 'support' ? 'Support Dashboard' : profile?.role === 'tester' ? 'Tester Dashboard' : 'Admin Dashboard'}
           </p>
           <p className="text-white font-semibold mt-1 truncate">{profile?.name ?? profile?.email}</p>
         </div>

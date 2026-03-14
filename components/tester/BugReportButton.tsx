@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
+import { BugReportGuide } from './BugReportGuide'
 
 export function BugReportButton() {
   const [role, setRole] = useState<string | null>(null)
@@ -138,6 +139,7 @@ export function BugReportButton() {
                         placeholder="Short summary of the issue"
                       />
                     </div>
+                    <BugReportGuide />
                     <div>
                       <label className="block text-sm font-medium text-zinc-300 mb-1.5">Description *</label>
                       <textarea
