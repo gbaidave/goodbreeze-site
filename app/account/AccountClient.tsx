@@ -222,10 +222,7 @@ export default function AccountClient({
 
   async function sendPasswordReset() {
     setResetLoading(true)
-    const supabase = createClient()
-    await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/callback?returnUrl=/reset-password`,
-    })
+    await fetch('/api/auth/send-password-reset', { method: 'POST' })
     setResetLoading(false)
     setResetSent(true)
   }
