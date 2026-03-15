@@ -28,8 +28,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const origin = new URL(request.url).origin
-    const redirectTo = `${origin}/auth/callback?returnUrl=/reset-password`
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://goodbreeze.ai'
+    const redirectTo = `${siteUrl}/auth/callback?returnUrl=/reset-password`
 
     const admin = createServiceClient()
     const { data, error: linkError } = await admin.auth.admin.generateLink({
