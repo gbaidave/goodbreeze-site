@@ -79,12 +79,16 @@ export async function GET(request: NextRequest) {
   }
 
   // Token hash flow — used by admin.generateLink magic links (frictionless sign-in)
+  // Also used by account-settings password reset (recovery type)
   if (tokenHash && type) {
     const { error } = await supabase.auth.verifyOtp({
       token_hash: tokenHash,
       type: type as 'email' | 'signup' | 'magiclink' | 'recovery' | 'email_change',
     })
     if (!error) {
+      if (type === 'recovery') {
+        return NextResponse.redirect(`${origin}/reset-password`)
+      }
       return postAuthRedirect()
     }
   }

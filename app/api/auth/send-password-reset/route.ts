@@ -38,10 +38,16 @@ export async function POST(request: Request) {
       options: { redirectTo },
     })
 
-    if (linkError || !data?.properties?.action_link) {
+    if (linkError || !data?.properties?.hashed_token) {
       console.error('generateLink error:', linkError)
       return NextResponse.json({ error: 'Failed to generate reset link' }, { status: 500 })
     }
+
+    // Build the callback URL using token_hash so the server-side /auth/callback
+    // route can process it via verifyOtp. Using action_link directly causes
+    // Supabase to use the implicit/hash flow which puts tokens in the URL fragment
+    // — fragment is never sent to the server so the callback route can't read it.
+    const resetLink = `${siteUrl}/auth/callback?token_hash=${data.properties.hashed_token}&type=recovery&returnUrl=/reset-password`
 
     const { data: profile } = await admin
       .from('profiles')
@@ -50,7 +56,7 @@ export async function POST(request: Request) {
       .single()
 
     const name = profile?.name || user.email!
-    const { subject, html } = passwordResetEmail(name, data.properties.action_link)
+    const { subject, html } = passwordResetEmail(name, resetLink)
 
     await resend.emails.send({
       from: `${FROM_NAME} <${FROM}>`,
