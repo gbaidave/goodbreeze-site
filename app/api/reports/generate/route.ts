@@ -227,8 +227,9 @@ export async function POST(request: NextRequest) {
     const userEmail = body.userEmail || profile?.email || user.email!
     const userName = body.userName || profile?.name || userEmail.split('@')[0]
     // Only count active/trialing subscriptions when determining report expiry
-    const activeSub = ((profile as any)?.subscriptions ?? [])
-      .find((s: { plan: string; status: string }) => s.status === 'active' || s.status === 'trialing')
+    const subsRaw = (profile as any)?.subscriptions
+    const subs: { plan: string; status: string }[] = Array.isArray(subsRaw) ? subsRaw : subsRaw ? [subsRaw] : []
+    const activeSub = subs.find((s) => s.status === 'active' || s.status === 'trialing')
     const plan = activeSub?.plan ?? 'free'
 
     // 4. Check entitlement
