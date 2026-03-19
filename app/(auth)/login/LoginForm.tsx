@@ -22,6 +22,7 @@ export default function LoginForm() {
   const [oauthLoading, setOauthLoading] = useState(false)
   const [captchaToken, setCaptchaToken] = useState<string | null>(null)
   const [captchaError, setCaptchaError] = useState(false)
+  const [captchaResetKey, setCaptchaResetKey] = useState(0)
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -47,6 +48,10 @@ export default function LoginForm() {
     }
     const body = await res.json()
     setServerError(body.error ?? 'Sign in failed. Please try again.')
+    // Turnstile tokens are single-use — reset after any failed attempt
+    setCaptchaToken(null)
+    setCaptchaError(false)
+    setCaptchaResetKey((k) => k + 1)
   }
 
   async function signInWithGoogle() {
@@ -123,6 +128,7 @@ export default function LoginForm() {
         </div>
 
         <TurnstileWidget
+          key={captchaResetKey}
           onVerify={(token) => setCaptchaToken(token)}
           onError={() => setCaptchaError(true)}
         />
