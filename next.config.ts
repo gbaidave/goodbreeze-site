@@ -4,6 +4,7 @@ import type { NextConfig } from "next";
 // canonical names the codebase uses. Vercel sets exactly one of each pair
 // per environment — _PRODUCTION on production deploys, _STAGING on preview.
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL_PRODUCTION || process.env.NEXT_PUBLIC_SUPABASE_URL_STAGING || ''
+const isStaging = process.env.NEXT_PUBLIC_SITE_ENV === 'staging'
 
 const nextConfig: NextConfig = {
   env: {
@@ -71,11 +72,11 @@ const nextConfig: NextConfig = {
         key: 'Content-Security-Policy',
         value: [
           "default-src 'self'",
-          "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://js.stripe.com https://us-assets.i.posthog.com https://challenges.cloudflare.com",
+          `script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://js.stripe.com https://us-assets.i.posthog.com https://challenges.cloudflare.com${isStaging ? ' https://vercel.live' : ''}`,
           "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
           "font-src 'self' https://fonts.gstatic.com",
           "img-src 'self' data: blob: https:",
-          `connect-src 'self' ${supabaseUrl} https://www.google-analytics.com https://api.stripe.com https://n8n.goodbreeze.ai https://us.i.posthog.com https://us-assets.i.posthog.com https://app.posthog.com https://www.googleapis.com`,
+          `connect-src 'self' ${supabaseUrl} https://www.google-analytics.com https://api.stripe.com https://n8n.goodbreeze.ai https://us.i.posthog.com https://us-assets.i.posthog.com https://app.posthog.com https://www.googleapis.com${isStaging ? ' https://vercel.live' : ''}`,
           "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://challenges.cloudflare.com",
           "object-src 'none'",
           "base-uri 'self'",
