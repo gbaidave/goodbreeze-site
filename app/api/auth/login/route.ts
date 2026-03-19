@@ -26,19 +26,6 @@ function getLockoutDuration(lockoutCount: number): number | null {
   return null // 3rd+ lockout: contact support
 }
 
-async function verifyTurnstile(token: string): Promise<boolean> {
-  const secret = process.env.TURNSTILE_SECRET_KEY
-  if (!secret) return true // CAPTCHA not configured — skip verification
-
-  const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ secret, response: token }),
-  })
-  const data = await res.json()
-  return data.success === true
-}
-
 export async function POST(request: NextRequest) {
   try {
     const { email, password, captchaToken } = await request.json()
@@ -47,15 +34,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Email and password are required.' }, { status: 400 })
     }
 
-    // 1. Verify CAPTCHA when both the secret key and a token are present.
-    // When Turnstile fails to load (e.g., staging domain not in allowlist), the widget
-    // fires its error-callback and the client sends no token. We degrade gracefully:
-    // skip verification rather than hard-blocking, so login still works in those cases.
-    if (process.env.TURNSTILE_SECRET_KEY && captchaToken) {
-      const valid = await verifyTurnstile(captchaToken)
-      if (!valid) {
-        return NextResponse.json({ error: 'CAPTCHA verification failed. Please try again.' }, { status: 400 })
-      }
+    // 1. CAPTCHA presence check.
+    // Do NOT verify the token here — Cloudflare tokens are single-use, and Supabase
+    // also calls Cloudflare's siteverify when captchaToken is passed to signInWithPassword.
+    // Calling verifyTurnstile() here first consumes the token, so Supabase's verification
+    // always fails and the error surfaces as "Invalid login credentials."
+    // Correct pattern: presence check only here, let Supabase do the one verification.
+    if (process.env.TURNSTILE_SECRET_KEY && !captchaToken) {
+      return NextResponse.json({ error: 'CAPTCHA verification failed. Please try again.' }, { status: 400 })
     }
 
     // 2. Load profile (bypasses RLS to read lockout state by email)
