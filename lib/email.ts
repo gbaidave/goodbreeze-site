@@ -11,7 +11,7 @@
  */
 
 import { createServiceClient } from './supabase/service-client'
-import { resend, FROM, FROM_NAME, REPLY_TO } from './resend'
+import { resend, FROM, FROM_NAME, REPLY_TO, stagingPrefix } from './resend'
 import { welcomeEmail } from './emails/welcome'
 import { accountDeletedEmail } from './emails/account-deleted'
 import { paymentConfirmationEmail } from './emails/payment-confirmation'
@@ -91,7 +91,7 @@ async function sendAndLog(
 export async function sendWelcomeEmail(to: string, name: string, userId?: string) {
   const { subject, html } = welcomeEmail(name)
   return sendAndLog(
-    () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject, html }),
+    () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject: stagingPrefix + subject, html }),
     { userId, toEmail: to, type: 'welcome', subject }
   )
 }
@@ -106,7 +106,7 @@ export async function sendPaymentConfirmationEmail(
 ) {
   const { subject, html } = paymentConfirmationEmail(name, plan, amount, receiptRef)
   return sendAndLog(
-    () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject, html }),
+    () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject: stagingPrefix + subject, html }),
     { userId, toEmail: to, type: 'plan_changed', subject }
   )
 }
@@ -114,7 +114,7 @@ export async function sendPaymentConfirmationEmail(
 export async function sendPaymentFailedEmail(to: string, name: string, userId?: string) {
   const { subject, html } = paymentFailedEmail(name)
   return sendAndLog(
-    () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject, html }),
+    () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject: stagingPrefix + subject, html }),
     { userId, toEmail: to, type: 'plan_changed', subject }
   )
 }
@@ -127,7 +127,7 @@ export async function sendMagicLinkSetupEmail(
 ) {
   const { subject, html } = magicLinkSetupEmail(magicLink, reportTypeLabel)
   return sendAndLog(
-    () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject, html }),
+    () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject: stagingPrefix + subject, html }),
     { userId, toEmail: to, type: 'magic_link', subject }
   )
 }
@@ -136,7 +136,7 @@ export async function sendReportsExhaustedEmail(to: string, name: string, userId
   if (!await checkEmailPref(userId, 'nudge_emails')) return { data: null, error: null }
   const { subject, html } = reportsExhaustedEmail(name)
   return sendAndLog(
-    () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject, html }),
+    () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject: stagingPrefix + subject, html }),
     { userId, toEmail: to, type: 'nudge_exhausted', subject }
   )
 }
@@ -150,7 +150,7 @@ export async function sendSupportReplyEmail(
   if (!await checkEmailPref(userId, 'support_emails')) return { data: null, error: null }
   const { subject, html } = supportReplyEmail(name, replyMessage)
   return sendAndLog(
-    () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject, html }),
+    () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject: stagingPrefix + subject, html }),
     { userId, toEmail: to, type: 'support_reply', subject }
   )
 }
@@ -159,7 +159,7 @@ export async function sendSupportResolvedEmail(to: string, name: string, userId?
   if (!await checkEmailPref(userId, 'support_emails')) return { data: null, error: null }
   const { subject, html } = supportResolvedEmail(name)
   return sendAndLog(
-    () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject, html }),
+    () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject: stagingPrefix + subject, html }),
     { userId, toEmail: to, type: 'support_resolved', subject }
   )
 }
@@ -181,14 +181,14 @@ export async function sendBugReportNotificationEmail(
       from: `${FROM_NAME} <${FROM}>`,
       to: bugReportEmail,
       replyTo: data.userEmail,
-      subject: `[Bug Report] ${subject}`,
+      subject: stagingPrefix + `[Bug Report] ${subject}`,
       html,
     }),
     {
       userId,
       toEmail: bugReportEmail,
       type: 'support_confirmation',
-      subject: `[Bug Report] ${subject}`,
+      subject: stagingPrefix + `[Bug Report] ${subject}`,
       notifyOnFail: false,
     }
   )
@@ -203,7 +203,7 @@ export async function sendSupportClosedEmail(
   if (!await checkEmailPref(userId, 'support_emails')) return { data: null, error: null }
   const { subject, html } = supportClosedEmail({ userName: name, closeReason })
   return sendAndLog(
-    () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject, html }),
+    () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject: stagingPrefix + subject, html }),
     { userId, toEmail: to, type: 'support_closed', subject }
   )
 }
@@ -226,7 +226,7 @@ export async function sendSupportAdminNotificationEmail(
       from: `${FROM_NAME} <${FROM}>`,
       to: supportEmail,
       replyTo: data.userEmail,
-      subject,
+      subject: stagingPrefix + subject,
       html,
     }),
     { userId, toEmail: supportEmail, type: 'support_followup', subject, notifyOnFail: false }
@@ -252,7 +252,7 @@ export async function sendSupportNotificationEmail(
       from: `${FROM_NAME} <${FROM}>`,
       to: supportEmail,
       replyTo: data.userEmail,
-      subject,
+      subject: stagingPrefix + subject,
       html,
     }),
     {
@@ -284,7 +284,7 @@ export async function sendTestimonialAdminNotificationEmail(
       from: `${FROM_NAME} <${FROM}>`,
       to: adminEmail,
       replyTo: data.userEmail,
-      subject,
+      subject: stagingPrefix + subject,
       html,
     }),
     { userId, toEmail: adminEmail, type: 'support_confirmation', subject, notifyOnFail: false }
@@ -295,7 +295,7 @@ export async function sendCreditGrantedEmail(to: string, name: string, credits: 
   if (!await checkEmailPref(userId, 'referral_credit')) return { data: null, error: null }
   const { subject, html } = creditGrantedEmail(name, credits)
   return sendAndLog(
-    () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject, html }),
+    () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject: stagingPrefix + subject, html }),
     { userId, toEmail: to, type: 'plan_changed', subject }
   )
 }
@@ -308,7 +308,7 @@ export async function sendSecurityAlertEmail(
 ) {
   const { subject, html } = securityAlertEmail(name, action)
   return sendAndLog(
-    () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject, html }),
+    () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject: stagingPrefix + subject, html }),
     { userId, toEmail: to, type: 'security_alert', subject }
   )
 }
@@ -321,7 +321,7 @@ export async function sendAccountDeletedEmail(
   const { subject, html } = accountDeletedEmail({ userName: name, userEmail: to, deletedAt })
   // userId is intentionally omitted — the auth row is about to be deleted
   return sendAndLog(
-    () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject, html }),
+    () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject: stagingPrefix + subject, html }),
     { toEmail: to, type: 'security_alert', subject, notifyOnFail: false }
   )
 }
@@ -335,7 +335,7 @@ export async function sendRefundProcessedEmail(
 ) {
   const { subject, html } = refundProcessedEmail({ userName: name, productLabel, amountStr })
   return sendAndLog(
-    () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject, html }),
+    () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject: stagingPrefix + subject, html }),
     { userId, toEmail: to, type: 'plan_changed', subject }
   )
 }
@@ -354,7 +354,7 @@ export async function sendConsentConfirmationEmail(
 ) {
   const { subject, html } = consentConfirmationEmail(data)
   return sendAndLog(
-    () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to: data.userEmail, replyTo: REPLY_TO, subject, html }),
+    () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to: data.userEmail, replyTo: REPLY_TO, subject: stagingPrefix + subject, html }),
     { userId, toEmail: data.userEmail, type: 'security_alert', subject, notifyOnFail: false }
   )
 }

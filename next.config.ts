@@ -1,6 +1,46 @@
 import type { NextConfig } from "next";
 
+// Resolve environment-specific variable names (PRODUCTION/STAGING) to the
+// canonical names the codebase uses. Vercel sets exactly one of each pair
+// per environment — _PRODUCTION on production deploys, _STAGING on preview.
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL_PRODUCTION || process.env.NEXT_PUBLIC_SUPABASE_URL_STAGING || ''
+
 const nextConfig: NextConfig = {
+  env: {
+    // Supabase
+    NEXT_PUBLIC_SUPABASE_URL:      supabaseUrl,
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY_PRODUCTION || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY_STAGING || '',
+    SUPABASE_SERVICE_ROLE_KEY:     process.env.SUPABASE_SERVICE_ROLE_KEY_PRODUCTION     || process.env.SUPABASE_SERVICE_ROLE_KEY_STAGING     || '',
+
+    // Site URL
+    NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL_PRODUCTION || process.env.NEXT_PUBLIC_SITE_URL_STAGING || '',
+
+    // Stripe — keys and webhook secret
+    STRIPE_SECRET_KEY:     process.env.STRIPE_SECRET_KEY_PRODUCTION     || process.env.STRIPE_SECRET_KEY_STAGING     || '',
+    STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET_PRODUCTION || process.env.STRIPE_WEBHOOK_SECRET_STAGING || '',
+
+    // Stripe price IDs
+    STRIPE_STARTER_PLAN_PRICE_ID: process.env.STRIPE_STARTER_PLAN_PRICE_ID_PRODUCTION || process.env.STRIPE_STARTER_PLAN_PRICE_ID_STAGING || '',
+    STRIPE_GROWTH_PLAN_PRICE_ID:  process.env.STRIPE_GROWTH_PLAN_PRICE_ID_PRODUCTION  || process.env.STRIPE_GROWTH_PLAN_PRICE_ID_STAGING  || '',
+    STRIPE_PRO_PLAN_PRICE_ID:     process.env.STRIPE_PRO_PLAN_PRICE_ID_PRODUCTION     || process.env.STRIPE_PRO_PLAN_PRICE_ID_STAGING     || '',
+    STRIPE_BOOST_PACK_PRICE_ID:   process.env.STRIPE_BOOST_PACK_PRICE_ID_PRODUCTION   || process.env.STRIPE_BOOST_PACK_PRICE_ID_STAGING   || '',
+    STRIPE_SPARK_PACK_PRICE_ID:   process.env.STRIPE_SPARK_PACK_PRICE_ID_PRODUCTION   || process.env.STRIPE_SPARK_PACK_PRICE_ID_STAGING   || '',
+
+    // Stripe publishable key
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY_PRODUCTION || process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY_STAGING || '',
+
+    // Turnstile (fallback to original name until Vercel vars are renamed)
+    NEXT_PUBLIC_TURNSTILE_SITE_KEY: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY_PRODUCTION || process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY_STAGING || process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '',
+    TURNSTILE_SECRET_KEY:           process.env.TURNSTILE_SECRET_KEY_PRODUCTION           || process.env.TURNSTILE_SECRET_KEY_STAGING           || process.env.TURNSTILE_SECRET_KEY           || '',
+
+    // Testimonial videos folder (fallback to original name until Vercel vars are renamed)
+    TESTIMONIAL_VIDEOS_FOLDER_ID: process.env.TESTIMONIAL_VIDEOS_FOLDER_ID_PRODUCTION || process.env.TESTIMONIAL_VIDEOS_FOLDER_ID_STAGING || process.env.TESTIMONIAL_VIDEOS_FOLDER_ID || '',
+
+    // PostHog (fallback to original name — currently All Environments)
+    NEXT_PUBLIC_POSTHOG_KEY:  process.env.NEXT_PUBLIC_POSTHOG_KEY_PRODUCTION  || process.env.NEXT_PUBLIC_POSTHOG_KEY_STAGING  || process.env.NEXT_PUBLIC_POSTHOG_KEY  || '',
+    NEXT_PUBLIC_POSTHOG_HOST: process.env.NEXT_PUBLIC_POSTHOG_HOST_PRODUCTION || process.env.NEXT_PUBLIC_POSTHOG_HOST_STAGING || process.env.NEXT_PUBLIC_POSTHOG_HOST || '',
+  },
+
   /* config options here */
   compiler: {
     removeConsole: process.env.NODE_ENV === "production",
@@ -35,7 +75,7 @@ const nextConfig: NextConfig = {
           "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
           "font-src 'self' https://fonts.gstatic.com",
           "img-src 'self' data: blob: https:",
-          "connect-src 'self' https://ktvomvlweyqxxewuqubw.supabase.co https://www.google-analytics.com https://api.stripe.com https://n8n.goodbreeze.ai https://us.i.posthog.com https://us-assets.i.posthog.com https://app.posthog.com https://www.googleapis.com",
+          `connect-src 'self' ${supabaseUrl} https://www.google-analytics.com https://api.stripe.com https://n8n.goodbreeze.ai https://us.i.posthog.com https://us-assets.i.posthog.com https://app.posthog.com https://www.googleapis.com`,
           "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://challenges.cloudflare.com",
           "object-src 'none'",
           "base-uri 'self'",

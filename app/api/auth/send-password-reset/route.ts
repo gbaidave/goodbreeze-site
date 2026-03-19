@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { createServiceClient } from '@/lib/supabase/service-client'
-import { resend, FROM, FROM_NAME } from '@/lib/resend'
+import { resend, FROM, FROM_NAME, stagingPrefix } from '@/lib/resend'
 import { passwordResetEmail } from '@/lib/emails/password-reset'
 
 export async function POST(request: Request) {
@@ -61,7 +61,7 @@ export async function POST(request: Request) {
     await resend.emails.send({
       from: `${FROM_NAME} <${FROM}>`,
       to: user.email!,
-      subject,
+      subject: stagingPrefix + subject,
       html,
     })
 

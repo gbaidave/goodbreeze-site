@@ -26,12 +26,8 @@ export async function POST(request: NextRequest) {
   const body = await request.text()
   const sig = request.headers.get('stripe-signature')
 
-  // Try all configured webhook secrets — we have two Stripe destinations:
-  // goodbreeze.ai (STRIPE_WEBHOOK_SECRET) and goodbreeze-site.vercel.app (STRIPE_WEBHOOK_SECRET_VERCEL).
-  // Both route to the same Vercel deployment so we must accept both signing secrets.
   const secrets = [
     process.env.STRIPE_WEBHOOK_SECRET,
-    process.env.STRIPE_WEBHOOK_SECRET_VERCEL,
   ].filter(Boolean) as string[]
 
   if (!sig || secrets.length === 0) {

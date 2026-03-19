@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
     const isSubscription = price.type === 'recurring'
 
     // 6. Create checkout session
-    const ALLOWED_ORIGINS = ['https://goodbreeze.ai', 'https://goodbreeze-site.vercel.app', 'http://localhost:3000']
+    const ALLOWED_ORIGINS = ['https://goodbreeze.ai', 'https://staging.goodbreeze.ai', 'https://goodbreeze-site.vercel.app', 'http://localhost:3000']
     const rawOrigin = request.headers.get('origin') || ''
     const origin = ALLOWED_ORIGINS.includes(rawOrigin) ? rawOrigin : 'https://goodbreeze.ai'
 

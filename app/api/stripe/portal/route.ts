@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No billing account found' }, { status: 400 })
     }
 
-    const ALLOWED_ORIGINS = ['https://goodbreeze.ai', 'https://goodbreeze-site.vercel.app', 'http://localhost:3000']
+    const ALLOWED_ORIGINS = ['https://goodbreeze.ai', 'https://staging.goodbreeze.ai', 'https://goodbreeze-site.vercel.app', 'http://localhost:3000']
     const rawOrigin = request.headers.get('origin') || ''
     const origin = ALLOWED_ORIGINS.includes(rawOrigin) ? rawOrigin : 'https://goodbreeze.ai'
 
