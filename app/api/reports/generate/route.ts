@@ -22,6 +22,7 @@ import {
   recordUsage,
   createReportRow,
   type ReportType,
+  type Plan,
 } from '@/lib/entitlement'
 import { createServiceClient } from '@/lib/supabase/service-client'
 import { sendReportsExhaustedEmail } from '@/lib/email'
@@ -228,7 +229,7 @@ export async function POST(request: NextRequest) {
     const userName = body.userName || profile?.name || userEmail.split('@')[0]
     // Only count active/trialing subscriptions when determining report expiry
     const subsRaw = (profile as any)?.subscriptions
-    const subs: { plan: string; status: string }[] = Array.isArray(subsRaw) ? subsRaw : subsRaw ? [subsRaw] : []
+    const subs: { plan: Plan; status: string }[] = Array.isArray(subsRaw) ? subsRaw : subsRaw ? [subsRaw] : []
     const activeSub = subs.find((s) => s.status === 'active' || s.status === 'trialing')
     const plan = activeSub?.plan ?? 'free'
 
