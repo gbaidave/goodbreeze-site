@@ -16,6 +16,9 @@ const nextConfig: NextConfig = {
     // Site URL
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL_PRODUCTION || process.env.NEXT_PUBLIC_SITE_URL_STAGING || '',
 
+    // Site environment — used for robots.txt guard, email prefix, GTM gate, etc.
+    NEXT_PUBLIC_SITE_ENV: process.env.NEXT_PUBLIC_SITE_ENV_PRODUCTION || process.env.NEXT_PUBLIC_SITE_ENV_STAGING || '',
+
     // Stripe — keys and webhook secret
     STRIPE_SECRET_KEY:     process.env.STRIPE_SECRET_KEY_PRODUCTION     || process.env.STRIPE_SECRET_KEY_STAGING     || '',
     STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET_PRODUCTION || process.env.STRIPE_WEBHOOK_SECRET_STAGING || '',
