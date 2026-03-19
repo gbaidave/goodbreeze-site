@@ -106,10 +106,6 @@ export async function POST(request: NextRequest) {
     })
 
     // 6. Update lockout state in DB
-    if (authError) {
-      // TEMP DEBUG — remove after diagnosis
-      await svc.from('system_errors').insert({ type: 'auth', message: authError.message ?? 'unknown', context: { code: (authError as any).code, status: authError.status, name: authError.name }, route: '/api/auth/login' }).then(() => {})
-    }
     if (profile) {
       if (authError) {
         const newAttempts = currentAttempts + 1
