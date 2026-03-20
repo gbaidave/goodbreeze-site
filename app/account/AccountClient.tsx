@@ -8,20 +8,52 @@ import { isValidPhone, normalizePhone } from '@/lib/phone'
 import TurnstileWidget from '@/components/auth/TurnstileWidget'
 
 const CREDIT_PRODUCT_LABELS: Record<string, string> = {
-  spark_pack: 'Spark Pack',
-  spark_pack_credits: 'Spark Pack',
-  boost_pack: 'Boost Pack',
-  boost_pack_credits: 'Boost Pack',
-  impulse: 'Impulse Pack',
-  impulse_pack: 'Impulse Pack',
-  impulse_pack_credits: 'Impulse Pack',
+  spark_pack: 'Spark Pack purchase',
+  spark_pack_credits: 'Spark Pack purchase',
+  boost_pack: 'Boost Pack purchase',
+  boost_pack_credits: 'Boost Pack purchase',
+  impulse: 'Impulse Pack purchase',
+  impulse_pack: 'Impulse Pack purchase',
+  impulse_pack_credits: 'Impulse Pack purchase',
   free_credit: 'Free credit',
   signup_credit: 'Signup bonus',
   signup_bonus: 'Signup bonus',
   testimonial_reward: 'Testimonial reward',
-  referral_credit: 'Referral credit',
-  admin_grant: 'Admin grant',
-  credit_grant: 'Credit added',
+  referral_credit: 'Referral reward',
+  admin_grant: 'Granted by admin',
+  credit_grant: 'Granted by admin',
+}
+
+const CREDIT_SOURCE_LABELS: Record<string, string> = {
+  signup: 'Signup bonus',
+  pack: 'Credit pack purchase',
+  referral: 'Referral reward',
+  testimonial: 'Testimonial reward',
+  admin_grant: 'Granted by admin',
+  subscription: 'Subscription credit',
+}
+
+function creditRowLabel(
+  product: string | null,
+  source: string | null,
+  balance: number,
+  stripePiId: string | null,
+  refundedPaymentIds: Set<string>
+): string {
+  // If balance is 0, determine why
+  if (balance === 0) {
+    // Check if this payment was refunded
+    if (stripePiId && refundedPaymentIds.has(stripePiId)) {
+      const packLabel = product ? (CREDIT_PRODUCT_LABELS[product] ?? null) : null
+      return packLabel ? `Refunded — ${packLabel.replace(' purchase', '')}` : 'Refunded'
+    }
+    return 'Used on report'
+  }
+  // Balance > 0 — show what it's from
+  if (product && CREDIT_PRODUCT_LABELS[product]) return CREDIT_PRODUCT_LABELS[product]!
+  if (source && CREDIT_SOURCE_LABELS[source]) return CREDIT_SOURCE_LABELS[source]!
+  if (product) return product.replace(/_/g, ' ').replace(/\b\w/g, ch => ch.toUpperCase())
+  return 'Credit added'
 }
 
 interface CreditHistoryItem {
@@ -29,6 +61,8 @@ interface CreditHistoryItem {
   balance: number
   product: string | null
   purchased_at: string
+  source: string | null
+  stripe_payment_intent_id: string | null
 }
 
 interface Props {
@@ -46,6 +80,7 @@ interface Props {
   creditsRemaining: number  // subscription credits (subscriptions.credits_remaining)
   creditExpiry?: string
   creditHistory?: CreditHistoryItem[]
+  refundedPaymentIds?: Set<string>
   initialEmailPrefs: { nudge_emails: boolean; support_emails: boolean; referral_credit: boolean; report_ready: boolean; support_confirmation: boolean; report_failure: boolean; testimonial_approved: boolean }
   isEmailUser: boolean
   dataExportLocked: boolean
@@ -70,6 +105,7 @@ export default function AccountClient({
   creditsRemaining,
   creditExpiry,
   creditHistory,
+  refundedPaymentIds = new Set(),
   initialEmailPrefs,
   isEmailUser,
   dataExportLocked,
@@ -574,7 +610,7 @@ export default function AccountClient({
                   <div key={c.id} className="flex items-center justify-between px-4 py-2.5">
                     <div>
                       <p className="text-sm text-white">
-                        {CREDIT_PRODUCT_LABELS[c.product ?? ''] ?? (c.product ? c.product.replace(/_/g, ' ').replace(/\b\w/g, ch => ch.toUpperCase()) : 'Credit added')}
+                        {creditRowLabel(c.product, c.source, c.balance, c.stripe_payment_intent_id ?? null, refundedPaymentIds)}
                       </p>
                       <p className="text-xs text-gray-500">
                         {new Date(c.purchased_at).toLocaleDateString('en-US', {
@@ -582,8 +618,8 @@ export default function AccountClient({
                         })}
                       </p>
                     </div>
-                    <span className={`text-sm font-medium ${c.balance > 0 ? 'text-white' : 'text-gray-600'}`}>
-                      {c.balance > 0 ? `${c.balance} remaining` : 'Used'}
+                    <span className={`text-sm font-medium ${c.balance > 0 ? 'text-white' : 'text-gray-500'}`}>
+                      {c.balance > 0 ? `${c.balance} remaining` : ''}
                     </span>
                   </div>
                 ))}

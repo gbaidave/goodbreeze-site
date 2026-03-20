@@ -2,7 +2,7 @@
  * PATCH /api/admin/support/[id]
  *
  * Admin-only. Updates admin-facing fields on a support request.
- * Currently supports: assigned_to (free text, nullable).
+ * Supports: assigned_to (free text, nullable), priority, status.
  */
 
 import { NextRequest, NextResponse } from 'next/server'
@@ -51,6 +51,24 @@ export async function PATCH(
       return NextResponse.json({ error: 'assigned_to must be a string or null' }, { status: 400 })
     }
     updates.assigned_to = val ? val.trim().slice(0, 100) || null : null
+  }
+
+  if ('priority' in body) {
+    const val = body.priority
+    const valid = ['low', 'medium', 'high', 'critical', null]
+    if (!valid.includes(val)) {
+      return NextResponse.json({ error: 'Invalid priority value.' }, { status: 400 })
+    }
+    updates.priority = val
+  }
+
+  if ('status' in body) {
+    const val = body.status
+    const valid = ['open', 'in_progress', 'resolved', 'closed']
+    if (!valid.includes(val)) {
+      return NextResponse.json({ error: 'Invalid status value.' }, { status: 400 })
+    }
+    updates.status = val
   }
 
   if (Object.keys(updates).length === 0) {

@@ -102,12 +102,13 @@ export async function sendPaymentConfirmationEmail(
   plan: string,
   amount: string,
   userId?: string,
-  receiptRef?: string
+  receiptRef?: string,
+  purchaseType: 'pack_purchase' | 'subscription_purchase' = 'subscription_purchase'
 ) {
   const { subject, html } = paymentConfirmationEmail(name, plan, amount, receiptRef)
   return sendAndLog(
     () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject: stagingPrefix + subject, html }),
-    { userId, toEmail: to, type: 'plan_changed', subject }
+    { userId, toEmail: to, type: purchaseType, subject }
   )
 }
 
@@ -115,7 +116,7 @@ export async function sendPaymentFailedEmail(to: string, name: string, userId?: 
   const { subject, html } = paymentFailedEmail(name)
   return sendAndLog(
     () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject: stagingPrefix + subject, html }),
-    { userId, toEmail: to, type: 'plan_changed', subject }
+    { userId, toEmail: to, type: 'payment_failed', subject }
   )
 }
 
@@ -187,7 +188,7 @@ export async function sendBugReportNotificationEmail(
     {
       userId,
       toEmail: bugReportEmail,
-      type: 'support_confirmation',
+      type: 'bug_report_notification',
       subject: stagingPrefix + `[Bug Report] ${subject}`,
       notifyOnFail: false,
     }
@@ -287,7 +288,7 @@ export async function sendTestimonialAdminNotificationEmail(
       subject: stagingPrefix + subject,
       html,
     }),
-    { userId, toEmail: adminEmail, type: 'support_confirmation', subject, notifyOnFail: false }
+    { userId, toEmail: adminEmail, type: 'testimonial_admin_notification', subject, notifyOnFail: false }
   )
 }
 
@@ -296,7 +297,7 @@ export async function sendCreditGrantedEmail(to: string, name: string, credits: 
   const { subject, html } = creditGrantedEmail(name, credits)
   return sendAndLog(
     () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject: stagingPrefix + subject, html }),
-    { userId, toEmail: to, type: 'plan_changed', subject }
+    { userId, toEmail: to, type: 'referral_credit', subject }
   )
 }
 
@@ -322,7 +323,7 @@ export async function sendAccountDeletedEmail(
   // userId is intentionally omitted — the auth row is about to be deleted
   return sendAndLog(
     () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject: stagingPrefix + subject, html }),
-    { toEmail: to, type: 'security_alert', subject, notifyOnFail: false }
+    { toEmail: to, type: 'account_deleted', subject, notifyOnFail: false }
   )
 }
 
@@ -336,7 +337,7 @@ export async function sendRefundProcessedEmail(
   const { subject, html } = refundProcessedEmail({ userName: name, productLabel, amountStr })
   return sendAndLog(
     () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject: stagingPrefix + subject, html }),
-    { userId, toEmail: to, type: 'plan_changed', subject }
+    { userId, toEmail: to, type: 'refund_processed', subject }
   )
 }
 
@@ -355,6 +356,6 @@ export async function sendConsentConfirmationEmail(
   const { subject, html } = consentConfirmationEmail(data)
   return sendAndLog(
     () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to: data.userEmail, replyTo: REPLY_TO, subject: stagingPrefix + subject, html }),
-    { userId, toEmail: data.userEmail, type: 'security_alert', subject, notifyOnFail: false }
+    { userId, toEmail: data.userEmail, type: 'consent_confirmation', subject, notifyOnFail: false }
   )
 }
