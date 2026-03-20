@@ -414,7 +414,7 @@ export async function POST(request: NextRequest) {
                 user_id: directProfile.id,
                 type: 'refund_processed',
                 message: `Your refund${amountStr ? ` of ${amountStr}` : ''} has been processed.`,
-              }).catch(console.error)
+              }).then(null, console.error)
               sendRefundProcessedEmail(
                 directProfile.email,
                 directProfile.name || directProfile.email,
