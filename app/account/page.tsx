@@ -21,7 +21,7 @@ export default async function AccountPage() {
   const [profileRes, subRes, creditsRes, creditHistoryRes, recentPackRes, openTicketsRes, openRefundRes, openDisputeRes, refundedPacksRes] = await Promise.all([
     supabase
       .from('profiles')
-      .select('name, email, phone, sms_ok, stripe_customer_id, role, email_preferences, data_export_locked')
+      .select('name, email, phone, sms_ok, stripe_customer_id, role, email_preferences, notification_preferences, data_export_locked')
       .eq('id', user.id)
       .single(),
     supabase
@@ -126,6 +126,17 @@ export default async function AccountPage() {
         support_confirmation: profile?.email_preferences?.support_confirmation !== false,
         report_failure: profile?.email_preferences?.report_failure !== false,
         testimonial_approved: profile?.email_preferences?.testimonial_approved !== false,
+        bug_updates: profile?.email_preferences?.bug_updates !== false,
+      }}
+      initialNotifPrefs={{
+        nudge_emails: profile?.notification_preferences?.nudge_emails !== false,
+        support_emails: profile?.notification_preferences?.support_emails !== false,
+        referral_credit: profile?.notification_preferences?.referral_credit !== false,
+        report_ready: profile?.notification_preferences?.report_ready !== false,
+        support_confirmation: profile?.notification_preferences?.support_confirmation !== false,
+        report_failure: profile?.notification_preferences?.report_failure !== false,
+        testimonial_approved: profile?.notification_preferences?.testimonial_approved !== false,
+        bug_updates: profile?.notification_preferences?.bug_updates !== false,
       }}
       isEmailUser={isEmailUser}
       dataExportLocked={profile?.data_export_locked ?? false}

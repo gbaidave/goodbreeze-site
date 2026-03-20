@@ -399,7 +399,19 @@ export async function POST(request: NextRequest) {
         const amountStr = amountCents ? `$${(amountCents / 100).toFixed(2)}` : ''
 
         if (!refundReq) {
-          // No matching refund_request — this was a Stripe-direct refund (no support ticket).
+          // Check if a refund_request exists but was already processed (status != 'pending').
+          // This happens when the admin panel processed the refund first — it already sent the
+          // email + notification. The charge.refunded webhook fires after, finds no PENDING row,
+          // and would incorrectly send a second email. Skip it.
+          const { data: alreadyProcessed } = await supabase
+            .from('refund_requests')
+            .select('id')
+            .eq('stripe_payment_id', paymentIntentId)
+            .neq('status', 'pending')
+            .maybeSingle()
+          if (alreadyProcessed) break
+
+          // No refund_request at all — this was a Stripe-direct refund (no support ticket).
           // We can't revoke product access without knowing what was refunded,
           // but we can still notify the user by looking them up via stripe_customer_id.
           const customerId = charge.customer as string | null

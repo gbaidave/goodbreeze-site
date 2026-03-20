@@ -136,7 +136,7 @@ export async function POST(request: NextRequest) {
         bug_category: bug_category || null,
         category: 'bug_report',
       })
-      .select('id')
+      .select('id, bug_number')
       .single()
 
     if (insertError || !insertedRequest) {
@@ -170,7 +170,16 @@ export async function POST(request: NextRequest) {
     const messageId = insertedMessage.id
 
     // 6. Email dave@goodbreeze.ai (fire and forget)
-    sendBugReportNotificationEmail({ userName, userEmail, planAtTime: plan, lastReportContext, message: `[${subject}]\n\n${description}` }, user.id)
+    sendBugReportNotificationEmail({
+      userName,
+      userEmail,
+      planAtTime: plan,
+      lastReportContext,
+      message: description,
+      bugSubject: subject,
+      importance: importance || null,
+      bugNumber: insertedRequest.bug_number ?? null,
+    }, user.id)
       .catch((err) => console.error('Bug report notification email failed:', err))
 
     // 7. Bell notification for all admin users (fire and forget)

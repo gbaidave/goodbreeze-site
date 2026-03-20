@@ -64,7 +64,7 @@ export async function PATCH(
 
   if ('status' in body) {
     const val = body.status
-    const valid = ['open', 'in_progress', 'resolved', 'closed']
+    const valid = ['open', 'in_progress', 'resolved', 'closed', 'info_needed', 'dupe', 'reopened']
     if (!valid.includes(val)) {
       return NextResponse.json({ error: 'Invalid status value.' }, { status: 400 })
     }
@@ -75,6 +75,13 @@ export async function PATCH(
     return NextResponse.json({ error: 'Nothing to update' }, { status: 400 })
   }
 
+  // Fetch the request before update so we can notify the reporter
+  const { data: existing } = await svc
+    .from('support_requests')
+    .select('user_id, subject, bug_number, status')
+    .eq('id', id)
+    .single()
+
   const { error } = await svc
     .from('support_requests')
     .update(updates)
@@ -83,6 +90,19 @@ export async function PATCH(
   if (error) {
     console.error('[api/admin/support/[id]] Update error:', error)
     return NextResponse.json({ error: 'Update failed' }, { status: 500 })
+  }
+
+  // Bell notification to reporter when status or priority changes
+  if (existing?.user_id && ('status' in updates || 'priority' in updates)) {
+    const bugRef = existing.bug_number ? `Bug #${existing.bug_number}` : 'Your bug report'
+    const what = 'status' in updates
+      ? `status changed to ${(updates.status as string).replace('_', ' ')}`
+      : `priority updated`
+    void svc.from('notifications').insert({
+      user_id: existing.user_id,
+      type: 'support_request',
+      message: `${bugRef} — ${what}.`,
+    }).then(null, console.error)
   }
 
   return NextResponse.json({ success: true })

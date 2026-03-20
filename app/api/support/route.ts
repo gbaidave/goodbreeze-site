@@ -252,6 +252,22 @@ export async function POST(request: NextRequest) {
                 // Non-fatal — admin can manually set PI via the refund ticket
               }
             }
+
+            // Skip this PI if it was already refunded — prevents showing same purchase as eligible
+            if (autoPaymentId) {
+              const { data: alreadyRefunded } = await svc
+                .from('refund_requests')
+                .select('id')
+                .eq('user_id', user.id)
+                .eq('stripe_payment_id', autoPaymentId)
+                .neq('status', 'pending')
+                .maybeSingle()
+              if (alreadyRefunded) {
+                autoPaymentId = null
+                amountPaidCents = null
+                purchaseDate = null
+              }
+            }
           } else {
             // Credit pack: count all completed reports
             const { count } = await svc.from('reports').select('id', { count: 'exact', head: true })
@@ -259,16 +275,28 @@ export async function POST(request: NextRequest) {
             creditsUsedAtRequest = count ?? 0
             productLabel = `Credit Pack — ${refundMethodLabel}`
 
-            // Auto-populate PI + amount + date from the most recent credit pack purchase
-            const { data: latestCredit } = await svc
-              .from('credits')
-              .select('stripe_payment_intent_id, purchased_at')
-              .eq('user_id', user.id)
-              .eq('source', 'pack')
-              .not('stripe_payment_intent_id', 'is', null)
-              .order('purchased_at', { ascending: false })
-              .limit(1)
-              .maybeSingle()
+            // Auto-populate PI + amount + date from most recent non-refunded credit pack purchase
+            const [packCreditsRes, refundedIdsRes] = await Promise.all([
+              svc
+                .from('credits')
+                .select('stripe_payment_intent_id, purchased_at')
+                .eq('user_id', user.id)
+                .eq('source', 'pack')
+                .not('stripe_payment_intent_id', 'is', null)
+                .order('purchased_at', { ascending: false }),
+              svc
+                .from('refund_requests')
+                .select('stripe_payment_id')
+                .eq('user_id', user.id)
+                .eq('status', 'refunded')
+                .not('stripe_payment_id', 'is', null),
+            ])
+            const alreadyRefundedIds = new Set(
+              (refundedIdsRes.data ?? []).map((r: any) => r.stripe_payment_id).filter(Boolean)
+            )
+            const latestCredit = (packCreditsRes.data ?? []).find(
+              (c: any) => c.stripe_payment_intent_id && !alreadyRefundedIds.has(c.stripe_payment_intent_id)
+            ) ?? null
             autoPaymentId = latestCredit?.stripe_payment_intent_id ?? null
             purchaseDate = latestCredit?.purchased_at ?? null
 

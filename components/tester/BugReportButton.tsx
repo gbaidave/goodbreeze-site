@@ -46,7 +46,19 @@ export function BugReportButton({ hideFloatingButton, forceOpen, onClose }: BugR
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
+  const [categoryOpen, setCategoryOpen] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const categoryRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (categoryRef.current && !categoryRef.current.contains(e.target as Node)) {
+        setCategoryOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
 
   useEffect(() => {
     const supabase = createClient()
@@ -221,8 +233,8 @@ export function BugReportButton({ hideFloatingButton, forceOpen, onClose }: BugR
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
-                  <h3 className="text-white font-semibold mb-1">Bug report sent</h3>
-                  <p className="text-zinc-400 text-sm">Dave has been notified. Thanks!</p>
+                  <h3 className="text-white font-semibold mb-1">Bug report submitted.</h3>
+                  <p className="text-zinc-400 text-sm">Thanks for helping improve the app!</p>
                 </div>
               ) : (
                 <>
@@ -279,20 +291,42 @@ export function BugReportButton({ hideFloatingButton, forceOpen, onClose }: BugR
                       <label className="block text-sm font-medium text-zinc-300 mb-1.5">
                         Category <span className="text-zinc-500 font-normal">(optional)</span>
                       </label>
-                      <div className="relative">
-                        <select
-                          value={bugCategory}
-                          onChange={e => setBugCategory(e.target.value)}
-                          className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 text-white rounded-xl focus:outline-none focus:border-primary transition-colors text-sm appearance-none"
+                      <div ref={categoryRef} className="relative">
+                        <button
+                          type="button"
+                          onClick={() => setCategoryOpen(v => !v)}
+                          className="w-full flex items-center justify-between px-4 py-3 bg-zinc-800 border border-zinc-700 text-sm rounded-xl hover:border-primary/60 transition-colors"
                         >
-                          <option value="">Select a category</option>
-                          {BUG_CATEGORY_OPTIONS.map(opt => (
-                            <option key={opt.value} value={opt.value}>{opt.label}</option>
-                          ))}
-                        </select>
-                        <svg className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                        </svg>
+                          <span className={bugCategory ? 'text-white' : 'text-zinc-500'}>
+                            {bugCategory
+                              ? BUG_CATEGORY_OPTIONS.find(o => o.value === bugCategory)?.label ?? bugCategory
+                              : 'Select a category'}
+                          </span>
+                          <svg className="w-4 h-4 text-zinc-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </button>
+                        {categoryOpen && (
+                          <div className="absolute top-full left-0 right-0 mt-1 bg-[#2a2a2a] border border-primary/40 rounded-xl shadow-xl z-50 overflow-hidden">
+                            <button
+                              type="button"
+                              onClick={() => { setBugCategory(''); setCategoryOpen(false) }}
+                              className={`block w-full text-left px-4 py-2.5 text-sm hover:bg-primary/20 transition-colors ${!bugCategory ? 'text-primary' : 'text-zinc-400'}`}
+                            >
+                              Select a category
+                            </button>
+                            {BUG_CATEGORY_OPTIONS.map(opt => (
+                              <button
+                                key={opt.value}
+                                type="button"
+                                onClick={() => { setBugCategory(opt.value); setCategoryOpen(false) }}
+                                className={`block w-full text-left px-4 py-2.5 text-sm hover:bg-primary/20 transition-colors ${bugCategory === opt.value ? 'text-primary' : 'text-white'}`}
+                              >
+                                {opt.label}
+                              </button>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
 

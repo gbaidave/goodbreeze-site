@@ -1,28 +1,22 @@
 /**
  * PATCH /api/admin/support/[id]/assign
  *
- * Assign or unassign a support ticket's assignee_id.
- * Body: { assignee_id: string | null }
- *
- * Access rules:
- * - admin/superadmin: can assign to any user with role in [superadmin, admin, support]
- * - support: can only self-assign (assignee_id must equal their own user.id or null)
- *
- * On assignment: bell notification to the new assignee.
- * On unassignment: no notification.
+ * Updates the assignee_id on a support request.
+ * Permission rules:
+ *   - superadmin / admin: can assign any bug to anyone
+ *   - support / tester: can only reassign if they ARE the current assignee
  */
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { createServiceClient } from '@/lib/supabase/service-client'
-import { canDo } from '@/lib/permissions'
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id: ticketId } = await params
+  const { id } = await params
 
   const cookieStore = await cookies()
   const supabase = createServerClient(
@@ -43,63 +37,57 @@ export async function PATCH(
   if (!user) return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
 
   const svc = createServiceClient()
-  const { data: actorProfile } = await svc
+  const { data: profile } = await svc
     .from('profiles').select('role').eq('id', user.id).single()
-  const actorRole = actorProfile?.role
+  const role = profile?.role ?? ''
 
-  if (!canDo(actorRole, 'assign_ticket')) {
-    return NextResponse.json({ error: 'Access denied' }, { status: 403 })
+  if (!['superadmin', 'admin', 'support', 'tester'].includes(role)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
   const body = await request.json()
-  const { assignee_id } = body as { assignee_id: string | null }
+  const newAssigneeId: string | null = body.assignee_id ?? null
 
-  // support role: can only self-assign or unassign
-  if (actorRole === 'support') {
-    if (assignee_id !== null && assignee_id !== user.id) {
-      return NextResponse.json({ error: 'Support role can only self-assign.' }, { status: 403 })
+  // Non-admin roles can only reassign if they ARE the current assignee
+  if (!['superadmin', 'admin'].includes(role)) {
+    const { data: existing } = await svc
+      .from('support_requests')
+      .select('assignee_id')
+      .eq('id', id)
+      .single()
+    if (existing?.assignee_id !== user.id) {
+      return NextResponse.json({ error: 'You can only reassign bugs assigned to you.' }, { status: 403 })
     }
   }
 
-  // If assigning, verify the target user exists and has an eligible role
-  if (assignee_id !== null) {
+  // Resolve the new assignee name for the assigned_to text field
+  let assignedToName: string | null = null
+  if (newAssigneeId) {
     const { data: assigneeProfile } = await svc
-      .from('profiles').select('role, name').eq('id', assignee_id).single()
-    if (!assigneeProfile || !['superadmin', 'admin', 'support'].includes(assigneeProfile.role)) {
-      return NextResponse.json({ error: 'Invalid assignee — must be admin or support role.' }, { status: 400 })
-    }
+      .from('profiles')
+      .select('name, email')
+      .eq('id', newAssigneeId)
+      .single()
+    assignedToName = assigneeProfile?.name || assigneeProfile?.email || null
   }
 
-  // Verify ticket exists
-  const { data: ticket } = await svc
+  const { error } = await svc
     .from('support_requests')
-    .select('id, user_id')
-    .eq('id', ticketId)
-    .single()
-  if (!ticket) {
-    return NextResponse.json({ error: 'Ticket not found.' }, { status: 404 })
+    .update({ assignee_id: newAssigneeId, assigned_to: assignedToName })
+    .eq('id', id)
+
+  if (error) {
+    console.error('[api/admin/support/[id]/assign] Update error:', error)
+    return NextResponse.json({ error: 'Update failed' }, { status: 500 })
   }
 
-  // Update assignee_id
-  const { error: updateError } = await svc
-    .from('support_requests')
-    .update({ assignee_id: assignee_id ?? null })
-    .eq('id', ticketId)
-
-  if (updateError) {
-    console.error('[assign] Update error:', updateError)
-    return NextResponse.json({ error: 'Assignment failed.' }, { status: 500 })
-  }
-
-  // Bell notification to new assignee (fire and forget)
-  if (assignee_id) {
+  // Bell notification to newly assigned user
+  if (newAssigneeId && newAssigneeId !== user.id) {
     void svc.from('notifications').insert({
-      user_id: assignee_id,
+      user_id: newAssigneeId,
       type: 'support_request',
-      message: `You have been assigned a support ticket.`,
-    }).then(({ error }) => {
-      if (error) console.error('[assign] Notification error:', error)
-    })
+      message: `A bug report has been assigned to you.`,
+    }).then(null, console.error)
   }
 
   return NextResponse.json({ success: true })

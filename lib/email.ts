@@ -40,6 +40,7 @@ type EmailPrefKey =
   | 'support_confirmation'
   | 'report_failure'
   | 'testimonial_approved'
+  | 'bug_updates'
 
 /**
  * Returns true if the user has the given email preference enabled (or if userId is missing).
@@ -172,24 +173,44 @@ export async function sendBugReportNotificationEmail(
     planAtTime: string
     lastReportContext: string
     message: string
+    bugSubject?: string | null
+    importance?: string | null
+    bugNumber?: number | null
   },
   userId?: string
 ) {
-  const { subject, html } = supportNotificationEmail(data)
+  const { html: baseHtml } = supportNotificationEmail(data)
   const bugReportEmail = process.env.BUG_REPORT_EMAIL || 'dave@goodbreeze.ai'
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://goodbreeze.ai'
+
+  // Build enriched subject: Bug #42 [High] Short subject — Name
+  const bugRef = data.bugNumber ? `Bug #${data.bugNumber}` : 'Bug Report'
+  const importanceTag = data.importance ? ` [${data.importance.charAt(0).toUpperCase() + data.importance.slice(1)}]` : ''
+  const subjectSnippet = data.bugSubject ? ` ${data.bugSubject}` : ''
+  const emailSubject = `${bugRef}${importanceTag}${subjectSnippet} — ${data.userName}`
+
+  // Inject "View Bug Report" button before the footer in the HTML
+  const viewBugButton = `
+    <tr><td style="padding-top:20px;">
+      <a href="${baseUrl}/admin/bug-reports" style="display:inline-block;padding:10px 20px;background:#22d3ee;color:#09090b;font-size:14px;font-weight:600;text-decoration:none;border-radius:8px;">
+        View Bug Report
+      </a>
+    </td></tr>`
+  const html = baseHtml.replace('<!-- Footer -->', `${viewBugButton}\n        <!-- Footer -->`)
+
   return sendAndLog(
     () => resend.emails.send({
       from: `${FROM_NAME} <${FROM}>`,
       to: bugReportEmail,
       replyTo: data.userEmail,
-      subject: stagingPrefix + `[Bug Report] ${subject}`,
+      subject: stagingPrefix + emailSubject,
       html,
     }),
     {
       userId,
       toEmail: bugReportEmail,
       type: 'bug_report_notification',
-      subject: stagingPrefix + `[Bug Report] ${subject}`,
+      subject: stagingPrefix + emailSubject,
       notifyOnFail: false,
     }
   )
