@@ -80,7 +80,7 @@ export function ReportSubmittedModal({
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="relative max-w-lg w-full p-10 rounded-2xl bg-dark-700 border border-red-500/40 text-center shadow-2xl"
+          className="relative max-w-lg w-full p-10 rounded-2xl bg-zinc-900 border border-red-500/40 text-center shadow-2xl"
         >
           <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
             <svg className="w-8 h-8 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -117,7 +117,7 @@ export function ReportSubmittedModal({
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="relative max-w-lg w-full p-10 rounded-2xl bg-dark-700 border border-amber-500/40 text-center shadow-2xl"
+          className="relative max-w-lg w-full p-10 rounded-2xl bg-zinc-900 border border-amber-500/40 text-center shadow-2xl"
         >
           <div className="w-16 h-16 bg-amber-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
             <svg className="w-8 h-8 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -155,7 +155,7 @@ export function ReportSubmittedModal({
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="relative max-w-lg w-full p-10 rounded-2xl bg-dark-700 border border-primary text-center shadow-2xl"
+        className="relative max-w-lg w-full p-10 rounded-2xl bg-zinc-900 border border-primary text-center shadow-2xl"
       >
         {/* Close button */}
         <button

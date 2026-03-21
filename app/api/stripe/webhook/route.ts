@@ -83,9 +83,9 @@ export async function POST(request: NextRequest) {
         if (subscriptionPriceIds.includes(priceId)) break
 
         // One-time credit packs
-        const packMap: Record<string, { credits: number; amount: string; label: string }> = {
-          [process.env.STRIPE_SPARK_PACK_PRICE_ID!]: { credits: 3,  amount: '$5.00',  label: 'Spark Pack' },
-          [process.env.STRIPE_BOOST_PACK_PRICE_ID!]: { credits: 10, amount: '$10.00', label: 'Boost Pack' },
+        const packMap: Record<string, { credits: number; amount: string; label: string; product: string }> = {
+          [process.env.STRIPE_SPARK_PACK_PRICE_ID!]: { credits: 3,  amount: '$5.00',  label: 'Spark Pack', product: 'spark_pack' },
+          [process.env.STRIPE_BOOST_PACK_PRICE_ID!]: { credits: 10, amount: '$10.00', label: 'Boost Pack', product: 'boost_pack' },
         }
         const pack = priceId ? packMap[priceId] : undefined
         if (pack) {
@@ -93,6 +93,7 @@ export async function POST(request: NextRequest) {
             user_id: userId,
             balance: pack.credits,
             source: 'pack',
+            product: pack.product,
             stripe_payment_intent_id: session.payment_intent as string,
             purchased_at: new Date().toISOString(),
             expires_at: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),

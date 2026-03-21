@@ -4,17 +4,7 @@ import { createServiceClient } from '@/lib/supabase/service-client'
 import { canDo } from '@/lib/permissions'
 import { BugReportsTable } from './BugReportsTable'
 
-interface SearchParams { status?: string; assignee?: string }
-
-export default async function AdminBugReportsPage({
-  searchParams,
-}: {
-  searchParams: Promise<SearchParams>
-}) {
-  const params = await searchParams
-  const statusFilter = params.status ?? 'open'
-  const assigneeFilter = params.assignee ?? 'all'
-
+export default async function AdminBugReportsPage() {
   // Authenticate actor
   const supabaseAuth = await createClient()
   const { data: { user: actor } } = await supabaseAuth.auth.getUser()
@@ -37,23 +27,13 @@ export default async function AdminBugReportsPage({
     .in('role', ['superadmin', 'admin', 'support', 'tester'])
     .order('name', { ascending: true })
 
-  // Query bug reports with new columns
-  let query = svc
+  // Load all bug reports — client handles all filtering
+  const { data: requests } = await svc
     .from('support_requests')
     .select('id, user_id, email, plan_at_time, last_report_context, message, status, category, assigned_to, assignee_id, created_at, subject, importance, priority, bug_number, bug_category')
     .eq('category', 'bug_report')
     .order('created_at', { ascending: false })
-
-  if (statusFilter !== 'all') {
-    query = query.eq('status', statusFilter)
-  }
-  if (assigneeFilter === 'mine' && actor) {
-    query = query.eq('assignee_id', actor.id)
-  } else if (assigneeFilter === 'unassigned') {
-    query = query.is('assignee_id', null)
-  }
-
-  const { data: requests } = await query.limit(100)
+    .limit(500)
 
   // Load messages for all requests
   const requestIds = requests?.map((r) => r.id) ?? []
@@ -103,8 +83,6 @@ export default async function AdminBugReportsPage({
         adminUsers={(adminUsers ?? []) as { id: string; name: string; email?: string }[]}
         actorRole={actorRole}
         actorUserId={actor?.id ?? ''}
-        statusFilter={statusFilter}
-        assigneeFilter={assigneeFilter}
       />
     </div>
   )

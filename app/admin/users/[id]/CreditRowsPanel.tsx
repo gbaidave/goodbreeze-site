@@ -6,6 +6,7 @@ type CreditRow = {
   expires_at: string | null
   purchased_at: string
   product: string | null
+  source: string | null
 }
 
 const CREDIT_PRODUCT_LABELS: Record<string, string> = {
@@ -158,7 +159,13 @@ export function CreditRowsPanel({ credits }: { credits: CreditRow[] }) {
           <tbody>
             {filtered.map((c, i) => {
               const expired = isExpired(c)
-              const label = c.product ? (CREDIT_PRODUCT_LABELS[c.product] ?? c.product.replace(/_/g, ' ').replace(/\b\w/g, ch => ch.toUpperCase())) : 'Credit added'
+              // product is source of truth; fall back to source for old pack rows where product wasn't stored
+              const label = c.product
+                ? (CREDIT_PRODUCT_LABELS[c.product] ?? c.product.replace(/_/g, ' ').replace(/\b\w/g, ch => ch.toUpperCase()))
+                : c.source === 'pack' ? 'Credit Pack'
+                : c.source === 'subscription' ? 'Subscription credit'
+                : c.source === 'refund' ? `Refunded (${Math.abs(c.balance)} credit${Math.abs(c.balance) !== 1 ? 's' : ''})`
+                : 'Credit added'
               return (
                 <tr key={i} className={`border-b border-primary/10 last:border-0 ${expired ? 'opacity-50' : ''}`}>
                   <td className="px-4 py-2 text-gray-300">{label}</td>

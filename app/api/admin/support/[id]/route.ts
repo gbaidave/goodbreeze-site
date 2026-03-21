@@ -10,6 +10,7 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { createServiceClient } from '@/lib/supabase/service-client'
 import { canDo } from '@/lib/permissions'
+import { insertBellIfAllowed } from '@/lib/bell-notifications'
 
 export async function PATCH(
   request: NextRequest,
@@ -92,17 +93,16 @@ export async function PATCH(
     return NextResponse.json({ error: 'Update failed' }, { status: 500 })
   }
 
-  // Bell notification to reporter when status or priority changes
+  // Bell notification to reporter when status or priority changes (checks support_emails pref)
   if (existing?.user_id && ('status' in updates || 'priority' in updates)) {
     const bugRef = existing.bug_number ? `Bug #${existing.bug_number}` : 'Your bug report'
     const what = 'status' in updates
       ? `status changed to ${(updates.status as string).replace('_', ' ')}`
       : `priority updated`
-    void svc.from('notifications').insert({
-      user_id: existing.user_id,
+    void insertBellIfAllowed(svc, existing.user_id, {
       type: 'support_request',
       message: `${bugRef} — ${what}.`,
-    }).then(null, console.error)
+    }, 'support_emails')
   }
 
   return NextResponse.json({ success: true })

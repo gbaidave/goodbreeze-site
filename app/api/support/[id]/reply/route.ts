@@ -17,6 +17,7 @@ import { cookies } from 'next/headers'
 import { createServiceClient } from '@/lib/supabase/service-client'
 import { sendSupportReplyEmail } from '@/lib/email'
 import { canDo } from '@/lib/permissions'
+import { insertBellIfAllowed } from '@/lib/bell-notifications'
 
 export async function POST(
   request: NextRequest,
@@ -98,15 +99,12 @@ export async function POST(
     // closes them. Auto-changing to in_progress caused tickets to disappear from
     // the "Open" filter immediately after the admin replied (ANA5-K-T7 fix).
 
-    // 5. Bell notification for the user (fire and forget)
+    // 5. Bell notification for the user (fire and forget — checks support_emails pref)
     if (supportReq.user_id) {
-      void svc.from('notifications').insert({
-        user_id: supportReq.user_id,
+      void insertBellIfAllowed(svc, supportReq.user_id, {
         type: 'support_reply',
         message: 'Good Breeze AI replied to your support request.',
-      }).then(({ error }) => {
-        if (error) console.error('Support reply notification error:', error)
-      })
+      }, 'support_emails')
     }
 
     // 6. Email the user (fire and forget)

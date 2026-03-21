@@ -87,9 +87,9 @@ export function AdminReplyPanel({
 
   const isDone = ticketStatus === 'resolved' || ticketStatus === 'closed'
 
-  // superadmin/admin can always assign; support can only reassign if they are the current assignee
+  // superadmin/admin can always assign; support/tester can only reassign if they are the current assignee
   const canAssign = ['superadmin', 'admin'].includes(actorRole) ||
-    (actorRole === 'support' && currentAssigneeId === actorUserId)
+    (['support', 'tester'].includes(actorRole) && currentAssigneeId === actorUserId)
 
   const assignableUsers = adminUsers
 

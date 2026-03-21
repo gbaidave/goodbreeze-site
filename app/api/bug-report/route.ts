@@ -169,39 +169,41 @@ export async function POST(request: NextRequest) {
 
     const messageId = insertedMessage.id
 
-    // 6. Email dave@goodbreeze.ai (fire and forget)
-    sendBugReportNotificationEmail({
-      userName,
-      userEmail,
-      planAtTime: plan,
-      lastReportContext,
-      message: description,
-      bugSubject: subject,
-      importance: importance || null,
-      bugNumber: insertedRequest.bug_number ?? null,
-    }, user.id)
-      .catch((err) => console.error('Bug report notification email failed:', err))
+    // 6 + 7. Email dave@goodbreeze.ai + bell notification for eligible admins.
+    // Must be awaited before returning — Vercel serverless terminates the function
+    // immediately after the response is sent, killing any pending async work.
+    await Promise.allSettled([
+      sendBugReportNotificationEmail({
+        userName,
+        userEmail,
+        planAtTime: plan,
+        lastReportContext,
+        message: description,
+        bugSubject: subject,
+        importance: importance || null,
+        bugNumber: insertedRequest.bug_number ?? null,
+      }, user.id).catch((err) => console.error('Bug report notification email failed:', err)),
 
-    // 7. Bell notification for all admin users (fire and forget)
-    void (async () => {
-      try {
+      (async () => {
         const { data: admins } = await svc
           .from('profiles')
-          .select('id')
+          .select('id, notification_preferences')
           .in('role', ['superadmin', 'admin', 'support'])
-        if (admins?.length) {
+        const eligible = (admins ?? []).filter((a) => {
+          const prefs = (a.notification_preferences as Record<string, boolean> | null) ?? {}
+          return prefs['bug_updates'] !== false
+        })
+        if (eligible.length) {
           await svc.from('notifications').insert(
-            admins.map((a) => ({
+            eligible.map((a) => ({
               user_id: a.id,
               type: 'support_request',
               message: `[Bug Report] ${subject} — from ${userName} (${userEmail})`,
             }))
           )
         }
-      } catch (e) {
-        console.error('Bug report admin notification error:', e)
-      }
-    })()
+      })().catch((e) => console.error('Bug report admin notification error:', e)),
+    ])
 
     return NextResponse.json({ success: true, requestId, messageId })
 

@@ -18,6 +18,7 @@ import { cookies } from 'next/headers'
 import { createServiceClient } from '@/lib/supabase/service-client'
 import { sendSupportClosedEmail } from '@/lib/email'
 import { canDo } from '@/lib/permissions'
+import { insertBellIfAllowed } from '@/lib/bell-notifications'
 
 export async function PATCH(
   request: NextRequest,
@@ -98,15 +99,12 @@ export async function PATCH(
       return NextResponse.json({ error: 'Failed to close ticket.' }, { status: 500 })
     }
 
-    // 5. Bell notification for user (fire and forget)
+    // 5. Bell notification for user (fire and forget — checks support_emails pref)
     if (supportReq.user_id) {
-      void svc.from('notifications').insert({
-        user_id: supportReq.user_id,
+      void insertBellIfAllowed(svc, supportReq.user_id, {
         type: 'support_closed',
         message: 'Your support request has been closed.',
-      }).then(({ error }) => {
-        if (error) console.error('Support admin-close notification error:', error)
-      })
+      }, 'support_emails')
     }
 
     // 6. Email user with reason (fire and forget)

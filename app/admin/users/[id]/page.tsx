@@ -41,7 +41,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
   const [profileRes, subRes, creditsRes, reportsRes, emailLogsRes, supportRes, notesRes, testimonialsRes, consentsRes, exportLogsRes] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', id).single(),
     supabase.from('subscriptions').select('*').eq('user_id', id).order('created_at', { ascending: false }).limit(1).single(),
-    supabase.from('credits').select('balance, expires_at, purchased_at, product').eq('user_id', id).order('purchased_at', { ascending: false }),
+    supabase.from('credits').select('balance, expires_at, purchased_at, product, source').eq('user_id', id).order('purchased_at', { ascending: false }),
     supabase.from('reports').select('id, report_type, status, created_at, pdf_url, input_data, n8n_execution_id').eq('user_id', id).order('created_at', { ascending: false }).limit(25),
     supabase.from('email_logs').select('id, type, subject, status, created_at, error').eq('user_id', id).order('created_at', { ascending: false }).limit(20),
     supabase.from('support_requests').select('id, message, status, created_at').eq('user_id', id).order('created_at', { ascending: false }).limit(10),
