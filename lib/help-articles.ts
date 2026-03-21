@@ -148,6 +148,18 @@ This is the right choice if you're actively working on SEO, monitoring competito
 Your subscription renews monthly. You can cancel at any time from the Account page, and you'll retain access until the end of your current billing period.`,
   },
   {
+    slug: 'how-to-request-refund',
+    title: 'Can I get a refund?',
+    topic: 'Billing & Plans',
+    content: `Yes. Refunds are available for both monthly subscriptions and credit packs within 14 days of purchase, provided no credits have been used.
+
+For credit packs (Spark Pack, Boost Pack): submit a support ticket and select Billing as the category. Include your purchase date. We'll process it manually — there's no automated refund flow for packs.
+
+For monthly subscriptions: same process. Open a support ticket under Billing. If you haven't used any credits during the current billing period and it's within 14 days of your billing date, you're eligible for a full refund.
+
+No partial refunds are issued in either case. If any credits have been used, the purchase is non-refundable. See the full refund policy at goodbreeze.ai/refund-policy.`,
+  },
+  {
     slug: 'how-to-cancel-subscription',
     title: 'How do I cancel my subscription?',
     topic: 'Billing & Plans',

@@ -41,7 +41,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
   const [profileRes, subRes, creditsRes, reportsRes, emailLogsRes, supportRes, notesRes, testimonialsRes, consentsRes, exportLogsRes] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', id).single(),
     supabase.from('subscriptions').select('*').eq('user_id', id).order('created_at', { ascending: false }).limit(1).single(),
-    supabase.from('credits').select('balance, expires_at, purchased_at, product').eq('user_id', id).order('purchased_at', { ascending: false }),
+    supabase.from('credits').select('balance, expires_at, purchased_at, product, source').eq('user_id', id).order('purchased_at', { ascending: false }),
     supabase.from('reports').select('id, report_type, status, created_at, pdf_url, input_data, n8n_execution_id').eq('user_id', id).order('created_at', { ascending: false }).limit(25),
     supabase.from('email_logs').select('id, type, subject, status, created_at, error').eq('user_id', id).order('created_at', { ascending: false }).limit(20),
     supabase.from('support_requests').select('id, message, status, created_at').eq('user_id', id).order('created_at', { ascending: false }).limit(10),
@@ -76,9 +76,9 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
   const plan = sub?.plan ?? 'free'
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-4 md:p-8 space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between flex-wrap gap-3">
         <div>
           <a href="/admin/users" className="text-xs text-gray-500 hover:text-gray-300 transition-colors">← Users</a>
           <h1 className="text-2xl font-bold text-white mt-1">{profile.name ?? profile.email}</h1>
@@ -158,7 +158,8 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
             {reports.length === 0 ? (
               <p className="text-gray-500 text-sm px-4 py-3">No reports yet.</p>
             ) : (
-              <table className="w-full text-sm">
+              <div className={`overflow-x-auto${reports.length > 6 ? ' max-h-72 overflow-y-auto' : ''}`}>
+              <table className="w-full min-w-[480px] text-sm">
                 <thead>
                   <tr className="border-b border-primary/10">
                     <th className="text-left px-4 py-2 text-gray-400 font-medium">Type</th>
@@ -193,6 +194,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
                   ))}
                 </tbody>
               </table>
+              </div>
             )}
           </Section>
 
@@ -201,7 +203,8 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
             {emailLogs.length === 0 ? (
               <p className="text-gray-500 text-sm px-4 py-3">No emails logged.</p>
             ) : (
-              <table className="w-full text-sm">
+              <div className={`overflow-x-auto${emailLogs.length > 6 ? ' max-h-72 overflow-y-auto' : ''}`}>
+              <table className="w-full min-w-[520px] text-sm">
                 <thead>
                   <tr className="border-b border-primary/10">
                     <th className="text-left px-4 py-2 text-gray-400 font-medium">Type</th>
@@ -223,13 +226,14 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
                           {e.status}
                         </span>
                       </td>
-                      <td className="px-4 py-2 text-gray-500 text-xs">
-                        {new Date(e.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      <td className="px-4 py-2 text-gray-500 text-xs whitespace-nowrap">
+                        {new Date(e.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+              </div>
             )}
           </Section>
 
@@ -238,7 +242,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
             {supportRequests.length === 0 ? (
               <p className="text-gray-500 text-sm px-4 py-3">No support requests.</p>
             ) : (
-              <div className="divide-y divide-primary/10">
+              <div className={`divide-y divide-primary/10 ${supportRequests.length > 6 ? 'max-h-72 overflow-y-auto' : ''}`}>
                 {supportRequests.map((s: any) => (
                   <div key={s.id} className="px-4 py-3">
                     <div className="flex items-center justify-between mb-1">

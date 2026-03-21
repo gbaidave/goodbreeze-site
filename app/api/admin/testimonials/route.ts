@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service-client'
 import { canDo } from '@/lib/permissions'
+import { insertBellIfAllowed } from '@/lib/bell-notifications'
 
 const VALID_STATUSES = ['pending', 'approved', 'rejected'] as const
 
@@ -69,11 +70,10 @@ export async function POST(request: NextRequest) {
     const approvalMessage = credits > 0
       ? `Thank you for your ${testimonial.type} testimonial submission! ${creditLabel} have been added to your account.`
       : `Thank you for your ${testimonial.type} testimonial submission! It has been approved.`
-    await serviceClient.from('notifications').insert({
-      user_id: testimonial.user_id,
+    await insertBellIfAllowed(serviceClient, testimonial.user_id, {
       type: 'testimonial_credit',
       message: approvalMessage,
-    })
+    }, 'testimonial_approved')
   } else if (status === 'rejected') {
     const rejectionMessages: Record<string, string> = {
       not_enough_detail: `Your ${testimonial.type} testimonial wasn\u2019t selected \u2014 it could use more detail about your specific results. Feel free to resubmit.`,
@@ -86,11 +86,10 @@ export async function POST(request: NextRequest) {
       other: `Your ${testimonial.type} testimonial wasn\u2019t selected this time. You\u2019re welcome to submit a new one.`,
     }
     const message = rejectionMessages[rejectionReason] ?? rejectionMessages.not_a_fit
-    await serviceClient.from('notifications').insert({
-      user_id: testimonial.user_id,
+    await insertBellIfAllowed(serviceClient, testimonial.user_id, {
       type: 'testimonial_rejected',
       message,
-    })
+    }, 'testimonial_approved')
   }
 
   // Redirect back to testimonials page (form POST → redirect)

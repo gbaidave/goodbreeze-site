@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid product type.' }, { status: 400 })
     }
 
-    const priority = category === 'dispute' ? 'high' : 'normal'
+    const priority = category === 'dispute' ? 'high' : null
 
     // 3. Fetch user context (skip for unauthenticated guests)
     const svc = createServiceClient()
@@ -233,23 +233,46 @@ export async function POST(request: NextRequest) {
               }
             }
 
-            // Fallback: list recent PIs for the Stripe customer if invoice expand returned nothing
-            if (!autoPaymentId && sub?.stripe_customer_id) {
+            // Fallback: list invoices for THIS subscription only — avoids picking up
+            // credit pack payment intents (which also belong to the same Stripe customer)
+            if (!autoPaymentId && sub?.stripe_subscription_id) {
               try {
-                const piList = await stripe.paymentIntents.list({
-                  customer: sub.stripe_customer_id,
-                  limit: 1,
+                const invList = await stripe.invoices.list({
+                  subscription: sub.stripe_subscription_id,
+                  limit: 5,
                 })
-                const latestPi = piList.data[0]
-                if (latestPi) {
-                  autoPaymentId = latestPi.id
-                  amountPaidCents = latestPi.amount ?? null
-                  purchaseDate = latestPi.created
-                    ? new Date(latestPi.created * 1000).toISOString()
-                    : null
+                const fallbackInv = invList.data.find((inv: any) =>
+                  inv.payment_intent && (inv.amount_paid ?? 0) > 0
+                )
+                if (fallbackInv) {
+                  const pi = (fallbackInv as any).payment_intent
+                  const piId = typeof pi === 'string' ? pi : pi?.id ?? null
+                  if (piId) {
+                    autoPaymentId = piId
+                    amountPaidCents = fallbackInv.amount_paid ?? fallbackInv.total ?? null
+                    purchaseDate = fallbackInv.created
+                      ? new Date(fallbackInv.created * 1000).toISOString()
+                      : null
+                  }
                 }
               } catch {
                 // Non-fatal — admin can manually set PI via the refund ticket
+              }
+            }
+
+            // Skip this PI if it was already refunded — prevents showing same purchase as eligible
+            if (autoPaymentId) {
+              const { data: alreadyRefunded } = await svc
+                .from('refund_requests')
+                .select('id')
+                .eq('user_id', user.id)
+                .eq('stripe_payment_id', autoPaymentId)
+                .neq('status', 'pending')
+                .maybeSingle()
+              if (alreadyRefunded) {
+                autoPaymentId = null
+                amountPaidCents = null
+                purchaseDate = null
               }
             }
           } else {
@@ -259,16 +282,28 @@ export async function POST(request: NextRequest) {
             creditsUsedAtRequest = count ?? 0
             productLabel = `Credit Pack — ${refundMethodLabel}`
 
-            // Auto-populate PI + amount + date from the most recent credit pack purchase
-            const { data: latestCredit } = await svc
-              .from('credits')
-              .select('stripe_payment_intent_id, purchased_at')
-              .eq('user_id', user.id)
-              .eq('source', 'pack')
-              .not('stripe_payment_intent_id', 'is', null)
-              .order('purchased_at', { ascending: false })
-              .limit(1)
-              .maybeSingle()
+            // Auto-populate PI + amount + date from most recent non-refunded credit pack purchase
+            const [packCreditsRes, refundedIdsRes] = await Promise.all([
+              svc
+                .from('credits')
+                .select('stripe_payment_intent_id, purchased_at')
+                .eq('user_id', user.id)
+                .eq('source', 'pack')
+                .not('stripe_payment_intent_id', 'is', null)
+                .order('purchased_at', { ascending: false }),
+              svc
+                .from('refund_requests')
+                .select('stripe_payment_id')
+                .eq('user_id', user.id)
+                .eq('status', 'refunded')
+                .not('stripe_payment_id', 'is', null),
+            ])
+            const alreadyRefundedIds = new Set(
+              (refundedIdsRes.data ?? []).map((r: any) => r.stripe_payment_id).filter(Boolean)
+            )
+            const latestCredit = (packCreditsRes.data ?? []).find(
+              (c: any) => c.stripe_payment_intent_id && !alreadyRefundedIds.has(c.stripe_payment_intent_id)
+            ) ?? null
             autoPaymentId = latestCredit?.stripe_payment_intent_id ?? null
             purchaseDate = latestCredit?.purchased_at ?? null
 

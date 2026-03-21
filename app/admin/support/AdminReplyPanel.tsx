@@ -66,6 +66,7 @@ export function AdminReplyPanel({
   const [showCloseForm, setShowCloseForm] = useState(false)
   const [closeReason, setCloseReason] = useState('')
   const [closing, setClosing] = useState(false)
+  const [reopening, setReopening] = useState(false)
   const [error, setError] = useState('')
   const [ticketStatus, setTicketStatus] = useState(status)
   const [currentAssigneeId, setCurrentAssigneeId] = useState(assigneeId ?? '')
@@ -86,7 +87,10 @@ export function AdminReplyPanel({
 
   const isDone = ticketStatus === 'resolved' || ticketStatus === 'closed'
 
-  // All roles (support, admin, superadmin) can assign to any eligible user
+  // superadmin/admin can always assign; support/tester can only reassign if they are the current assignee
+  const canAssign = ['superadmin', 'admin'].includes(actorRole) ||
+    (['support', 'tester'].includes(actorRole) && currentAssigneeId === actorUserId)
+
   const assignableUsers = adminUsers
 
   async function handleCategoryChange(newCategory: string) {
@@ -184,6 +188,26 @@ export function AdminReplyPanel({
     }
   }
 
+  async function handleReopen() {
+    setReopening(true)
+    setError('')
+    try {
+      const res = await fetch(`/api/admin/support/${requestId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'reopened' }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setError(data.error || 'Failed to reopen.'); return }
+      setTicketStatus('reopened')
+      router.refresh()
+    } catch {
+      setError('Something went wrong. Please try again.')
+    } finally {
+      setReopening(false)
+    }
+  }
+
   return (
     <div className="mt-4 space-y-4">
       {/* Assignee */}
@@ -192,9 +216,9 @@ export function AdminReplyPanel({
         <div className="relative">
           <button
             type="button"
-            disabled={savingAssignee}
+            disabled={savingAssignee || !canAssign}
             onClick={() => setAssigneeOpen((v) => !v)}
-            className="flex items-center gap-1 max-w-[200px] px-2 py-1 bg-dark border border-gray-700 text-white text-xs rounded-lg hover:border-primary/60 transition-colors disabled:opacity-50"
+            className="flex items-center gap-1 max-w-[200px] px-2 py-1 bg-dark border border-gray-700 text-white text-xs rounded-lg hover:border-primary/60 transition-colors disabled:opacity-50 disabled:cursor-default"
           >
             <span className="truncate">
               {currentAssigneeId
@@ -405,11 +429,21 @@ export function AdminReplyPanel({
         </>
       )}
 
-      {/* Status indicator when done */}
+      {/* Status indicator + Reopen button when done */}
       {isDone && (
-        <p className={`text-xs font-medium ${ticketStatus === 'resolved' ? 'text-green-400' : 'text-gray-400'}`}>
-          {ticketStatus === 'resolved' ? 'Resolved' : 'Closed'}
-        </p>
+        <div className="flex items-center gap-3">
+          <p className={`text-xs font-medium ${ticketStatus === 'resolved' ? 'text-green-400' : 'text-gray-400'}`}>
+            {ticketStatus === 'resolved' ? 'Resolved' : 'Closed'}
+          </p>
+          <button
+            type="button"
+            onClick={handleReopen}
+            disabled={reopening}
+            className="px-3 py-1.5 bg-zinc-800 text-zinc-300 border border-zinc-700 text-xs font-medium rounded-lg hover:bg-zinc-700 transition-colors disabled:opacity-50"
+          >
+            {reopening ? 'Reopening…' : 'Reopen'}
+          </button>
+        </div>
       )}
     </div>
   )

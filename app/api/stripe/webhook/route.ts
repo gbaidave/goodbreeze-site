@@ -83,9 +83,9 @@ export async function POST(request: NextRequest) {
         if (subscriptionPriceIds.includes(priceId)) break
 
         // One-time credit packs
-        const packMap: Record<string, { credits: number; amount: string; label: string }> = {
-          [process.env.STRIPE_SPARK_PACK_PRICE_ID!]: { credits: 3,  amount: '$5.00',  label: 'Spark Pack' },
-          [process.env.STRIPE_BOOST_PACK_PRICE_ID!]: { credits: 10, amount: '$10.00', label: 'Boost Pack' },
+        const packMap: Record<string, { credits: number; amount: string; label: string; product: string }> = {
+          [process.env.STRIPE_SPARK_PACK_PRICE_ID!]: { credits: 3,  amount: '$5.00',  label: 'Spark Pack', product: 'spark_pack' },
+          [process.env.STRIPE_BOOST_PACK_PRICE_ID!]: { credits: 10, amount: '$10.00', label: 'Boost Pack', product: 'boost_pack' },
         }
         const pack = priceId ? packMap[priceId] : undefined
         if (pack) {
@@ -93,6 +93,7 @@ export async function POST(request: NextRequest) {
             user_id: userId,
             balance: pack.credits,
             source: 'pack',
+            product: pack.product,
             stripe_payment_intent_id: session.payment_intent as string,
             purchased_at: new Date().toISOString(),
             expires_at: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
@@ -108,7 +109,7 @@ export async function POST(request: NextRequest) {
           if (profile?.email) {
             const receiptRef = (session.payment_intent as string | null) ?? session.id
             await sendPaymentConfirmationEmail(
-              profile.email, profile.name || profile.email, pack.label, pack.amount, userId, receiptRef
+              profile.email, profile.name || profile.email, pack.label, pack.amount, userId, receiptRef, 'pack_purchase'
             ).catch(console.error)
           }
         }
@@ -168,7 +169,7 @@ export async function POST(request: NextRequest) {
           const planLabel = priceId ? planMap[priceId] ?? 'starter' : 'starter'
           const planAmount = priceId ? planAmountMap[priceId] ?? '$20.00' : '$20.00'
           await sendPaymentConfirmationEmail(
-            profile.email, profile.name || profile.email, planLabel, planAmount, profile.id, sub.id
+            profile.email, profile.name || profile.email, planLabel, planAmount, profile.id, sub.id, 'subscription_purchase'
           ).catch(console.error)
         }
 
@@ -385,11 +386,6 @@ export async function POST(request: NextRequest) {
           .eq('status', 'pending')
           .maybeSingle()
 
-        if (!refundReq) {
-          // Already processed by admin panel or no matching request — nothing to do
-          break
-        }
-
         // Fetch charge with refunds expanded — webhook payload does NOT include refund list by default
         let stripeRefundId: string | null = null
         let amountCents: number | null = null
@@ -399,10 +395,51 @@ export async function POST(request: NextRequest) {
           stripeRefundId = latestRefund?.id ?? null
           amountCents = latestRefund?.amount ?? fullCharge.amount_refunded ?? null
         } catch {
-          // Fall back to what's in the webhook payload
           amountCents = charge.amount_refunded ?? null
         }
         const amountStr = amountCents ? `$${(amountCents / 100).toFixed(2)}` : ''
+
+        if (!refundReq) {
+          // Check if a refund_request exists but was already processed (status != 'pending').
+          // This happens when the admin panel processed the refund first — it already sent the
+          // email + notification. The charge.refunded webhook fires after, finds no PENDING row,
+          // and would incorrectly send a second email. Skip it.
+          const { data: alreadyProcessed } = await supabase
+            .from('refund_requests')
+            .select('id')
+            .eq('stripe_payment_id', paymentIntentId)
+            .neq('status', 'pending')
+            .maybeSingle()
+          if (alreadyProcessed) break
+
+          // No refund_request at all — this was a Stripe-direct refund (no support ticket).
+          // We can't revoke product access without knowing what was refunded,
+          // but we can still notify the user by looking them up via stripe_customer_id.
+          const customerId = charge.customer as string | null
+          if (customerId) {
+            const { data: directProfile } = await supabase
+              .from('profiles')
+              .select('id, name, email')
+              .eq('stripe_customer_id', customerId)
+              .maybeSingle()
+            if (directProfile?.email) {
+              await supabase.from('notifications').insert({
+                user_id: directProfile.id,
+                type: 'refund_processed',
+                message: `Your refund${amountStr ? ` of ${amountStr}` : ''} has been processed.`,
+              }).then(null, console.error)
+              sendRefundProcessedEmail(
+                directProfile.email,
+                directProfile.name || directProfile.email,
+                'your purchase',
+                amountStr || undefined,
+                directProfile.id
+              ).catch(console.error)
+              console.log('[webhook] charge.refunded — Stripe-direct refund, notified user', directProfile.id)
+            }
+          }
+          break
+        }
 
         await supabase.from('refund_requests').update({
           status: 'refunded',

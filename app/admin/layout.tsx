@@ -61,27 +61,35 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     SUPPORT_NAV
 
   return (
-    <div className="min-h-screen bg-dark flex">
+    <div className="min-h-screen bg-dark flex flex-col md:flex-row">
       {/* Sidebar */}
-      <aside className="w-56 flex-shrink-0 border-r border-primary/20 flex flex-col">
-        <div className="px-6 py-6 border-b border-primary/20">
+      <aside className="md:w-56 flex-shrink-0 border-b border-primary/20 md:border-b-0 md:border-r flex flex-col md:min-h-screen">
+        {/* Desktop header */}
+        <div className="px-6 py-6 border-b border-primary/20 hidden md:block">
           <p className="text-xs font-semibold text-primary uppercase tracking-wider">
             {profile?.role === 'support' ? 'Support Dashboard' : profile?.role === 'tester' ? 'Tester Dashboard' : 'Admin Dashboard'}
           </p>
           <p className="text-white font-semibold mt-1 truncate">{profile?.name ?? profile?.email}</p>
         </div>
-        <nav className="flex-1 px-3 py-4 space-y-1">
+        {/* Mobile header */}
+        <div className="flex items-center justify-between px-4 py-3 border-b border-primary/20 md:hidden">
+          <p className="text-xs font-semibold text-primary uppercase tracking-wider">
+            {profile?.role === 'support' ? 'Support' : profile?.role === 'tester' ? 'Tester' : 'Admin'}
+          </p>
+          <Link href="/dashboard" className="text-xs text-gray-500 hover:text-gray-300 transition-colors">← App</Link>
+        </div>
+        <nav className="flex overflow-x-auto md:flex-col md:overflow-visible flex-shrink-0 px-2 py-2 md:px-3 md:py-4 gap-0.5 md:gap-0 md:space-y-1">
           {NAV_ITEMS.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="block px-3 py-2 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-dark-700 transition-colors"
+              className="whitespace-nowrap flex-shrink-0 px-3 py-2 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-dark-700 transition-colors"
             >
               {item.label}
             </Link>
           ))}
         </nav>
-        <div className="px-6 py-4 border-t border-primary/20">
+        <div className="px-6 py-4 border-t border-primary/20 hidden md:block">
           <Link href="/dashboard" className="text-xs text-gray-500 hover:text-gray-300 transition-colors">
             ← Back to app
           </Link>
@@ -89,7 +97,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       </aside>
 
       {/* Main */}
-      <main className="flex-1 overflow-auto">
+      <main className="flex-1 overflow-auto min-w-0">
         {children}
       </main>
     </div>

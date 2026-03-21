@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { createServiceClient } from '@/lib/supabase/service-client'
+import { UsersTableClient } from './UsersTableClient'
 
 const PAGE_SIZE = 25
 
@@ -75,7 +76,7 @@ export default async function AdminUsersPage({
   }
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-4 md:p-8 space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white">Users</h1>
@@ -125,8 +126,8 @@ export default async function AdminUsersPage({
       </form>
 
       {/* Table */}
-      <div className="bg-dark-700 border border-primary/20 rounded-2xl overflow-hidden">
-        <table className="w-full text-sm">
+      <div className="bg-dark-700 border border-primary/20 rounded-2xl overflow-x-auto">
+        <table className="w-full min-w-[600px] text-sm">
           <thead>
             <tr className="border-b border-primary/10">
               <th className="text-left px-4 py-3 text-gray-400 font-medium">Name</th>
@@ -138,29 +139,7 @@ export default async function AdminUsersPage({
             </tr>
           </thead>
           <tbody>
-            {filtered.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="px-4 py-12 text-center text-gray-500">No users found.</td>
-              </tr>
-            ) : (
-              filtered.map((u) => (
-                <tr key={u.id} className="border-b border-primary/10 last:border-0 hover:bg-primary/5 transition-colors">
-                  <td className="px-4 py-3 text-white font-medium">{u.name ?? <span className="text-gray-500 italic">—</span>}</td>
-                  <td className="px-4 py-3 text-gray-300">{u.email}</td>
-                  <td className="px-4 py-3"><RoleBadge role={u.role} /></td>
-                  <td className="px-4 py-3"><PlanBadge plan={u.plan} /></td>
-                  <td className="px-4 py-3 text-gray-500">
-                    {new Date(u.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <Link href={`/admin/users/${u.id}`}
-                      className="text-primary text-xs hover:underline">
-                      View →
-                    </Link>
-                  </td>
-                </tr>
-              ))
-            )}
+            <UsersTableClient users={filtered} />
           </tbody>
         </table>
       </div>
@@ -187,30 +166,3 @@ export default async function AdminUsersPage({
   )
 }
 
-function RoleBadge({ role }: { role: string }) {
-  const styles: Record<string, string> = {
-    admin:     'bg-purple-900/40 text-purple-400 border-purple-800',
-    tester:    'bg-blue-900/40 text-blue-400 border-blue-800',
-    affiliate: 'bg-yellow-900/40 text-yellow-400 border-yellow-800',
-    user:      'bg-gray-800 text-gray-400 border-gray-700',
-  }
-  return (
-    <span className={`text-xs font-medium px-2 py-0.5 rounded-full border capitalize ${styles[role] ?? styles.user}`}>
-      {role}
-    </span>
-  )
-}
-
-function PlanBadge({ plan }: { plan: string }) {
-  const styles: Record<string, string> = {
-    starter: 'bg-green-900/40 text-green-400 border-green-800',
-    impulse: 'bg-yellow-900/40 text-yellow-400 border-yellow-800',
-    custom:  'bg-purple-900/40 text-purple-400 border-purple-800',
-    free:    'bg-gray-800 text-gray-400 border-gray-700',
-  }
-  return (
-    <span className={`text-xs font-medium px-2 py-0.5 rounded-full border capitalize ${styles[plan] ?? styles.free}`}>
-      {plan}
-    </span>
-  )
-}

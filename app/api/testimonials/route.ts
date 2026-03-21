@@ -16,6 +16,7 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { createServiceClient } from '@/lib/supabase/service-client'
 import { sendTestimonialAdminNotificationEmail, sendConsentConfirmationEmail } from '@/lib/email'
+import { insertBellIfAllowed } from '@/lib/bell-notifications'
 
 const CREDIT_AMOUNTS: Record<string, number> = {
   written: 1,
@@ -260,12 +261,11 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // User bell notification — confirm receipt, no credits mention
-    await serviceSupabase.from('notifications').insert({
-      user_id: user.id,
+    // User bell notification — confirm receipt, no credits mention (checks testimonial_approved pref)
+    await insertBellIfAllowed(serviceSupabase, user.id, {
       type: 'testimonial_credit',
       message: `We received your ${type} testimonial — thank you! Credits will be added once it's reviewed.`,
-    })
+    }, 'testimonial_approved')
 
     // Admin bell notification
     const { data: admins } = await serviceSupabase

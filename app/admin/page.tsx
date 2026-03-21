@@ -56,7 +56,7 @@ export default async function AdminOverviewPage() {
     .limit(10)
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="p-4 md:p-8 space-y-8">
       <div>
         <h1 className="text-2xl font-bold text-white">Overview</h1>
         <p className="text-gray-400 text-sm mt-1">Good Breeze AI admin dashboard</p>
@@ -111,8 +111,8 @@ export default async function AdminOverviewPage() {
         {!recentUsers?.length ? (
           <p className="text-gray-500 text-sm">No new signups this week.</p>
         ) : (
-          <div className="bg-dark-700 border border-primary/20 rounded-2xl overflow-hidden">
-            <table className="w-full text-sm">
+          <div className="bg-dark-700 border border-primary/20 rounded-2xl overflow-x-auto">
+            <table className="w-full min-w-[480px] text-sm">
               <thead>
                 <tr className="border-b border-primary/10">
                   <th className="text-left px-4 py-3 text-gray-400 font-medium">Name</th>

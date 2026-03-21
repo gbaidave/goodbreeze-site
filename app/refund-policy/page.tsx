@@ -81,6 +81,14 @@ export default function RefundPolicyPage() {
                   If any credits from the pack have been used, the entire pack is non-refundable.
                   No partial refunds are issued based on remaining credit balance.
                 </p>
+                <p className="mt-3 text-sm text-gray-300">
+                  To request a pack refund,{' '}
+                  <Link href="/support" className="text-primary hover:text-primary/80 transition-colors">
+                    submit a support ticket
+                  </Link>{' '}
+                  and select <strong className="text-white">Billing</strong> as the category. Include your
+                  purchase date and we&rsquo;ll handle it from there.
+                </p>
               </div>
             </div>
           </section>

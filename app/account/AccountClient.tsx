@@ -8,20 +8,52 @@ import { isValidPhone, normalizePhone } from '@/lib/phone'
 import TurnstileWidget from '@/components/auth/TurnstileWidget'
 
 const CREDIT_PRODUCT_LABELS: Record<string, string> = {
-  spark_pack: 'Spark Pack',
-  spark_pack_credits: 'Spark Pack',
-  boost_pack: 'Boost Pack',
-  boost_pack_credits: 'Boost Pack',
-  impulse: 'Impulse Pack',
-  impulse_pack: 'Impulse Pack',
-  impulse_pack_credits: 'Impulse Pack',
+  spark_pack: 'Spark Pack purchase',
+  spark_pack_credits: 'Spark Pack purchase',
+  boost_pack: 'Boost Pack purchase',
+  boost_pack_credits: 'Boost Pack purchase',
+  impulse: 'Impulse Pack purchase',
+  impulse_pack: 'Impulse Pack purchase',
+  impulse_pack_credits: 'Impulse Pack purchase',
   free_credit: 'Free credit',
   signup_credit: 'Signup bonus',
   signup_bonus: 'Signup bonus',
   testimonial_reward: 'Testimonial reward',
-  referral_credit: 'Referral credit',
-  admin_grant: 'Admin grant',
-  credit_grant: 'Credit added',
+  referral_credit: 'Referral reward',
+  admin_grant: 'Granted by admin',
+  credit_grant: 'Granted by admin',
+}
+
+const CREDIT_SOURCE_LABELS: Record<string, string> = {
+  signup: 'Signup bonus',
+  pack: 'Credit pack purchase',
+  referral: 'Referral reward',
+  testimonial: 'Testimonial reward',
+  admin_grant: 'Granted by admin',
+  subscription: 'Subscription credit',
+}
+
+function creditRowLabel(
+  product: string | null,
+  source: string | null,
+  balance: number,
+  stripePiId: string | null,
+  refundedPaymentIds: Set<string>
+): string {
+  // If balance is 0, determine why
+  if (balance === 0) {
+    // Check if this payment was refunded
+    if (stripePiId && refundedPaymentIds.has(stripePiId)) {
+      const packLabel = product ? (CREDIT_PRODUCT_LABELS[product] ?? null) : null
+      return packLabel ? `Refunded — ${packLabel.replace(' purchase', '')}` : 'Refunded'
+    }
+    return 'Used on report'
+  }
+  // Balance > 0 — show what it's from
+  if (product && CREDIT_PRODUCT_LABELS[product]) return CREDIT_PRODUCT_LABELS[product]!
+  if (source && CREDIT_SOURCE_LABELS[source]) return CREDIT_SOURCE_LABELS[source]!
+  if (product) return product.replace(/_/g, ' ').replace(/\b\w/g, ch => ch.toUpperCase())
+  return 'Credit added'
 }
 
 interface CreditHistoryItem {
@@ -29,6 +61,8 @@ interface CreditHistoryItem {
   balance: number
   product: string | null
   purchased_at: string
+  source: string | null
+  stripe_payment_intent_id: string | null
 }
 
 interface Props {
@@ -46,7 +80,9 @@ interface Props {
   creditsRemaining: number  // subscription credits (subscriptions.credits_remaining)
   creditExpiry?: string
   creditHistory?: CreditHistoryItem[]
-  initialEmailPrefs: { nudge_emails: boolean; support_emails: boolean; referral_credit: boolean; report_ready: boolean; support_confirmation: boolean; report_failure: boolean; testimonial_approved: boolean }
+  refundedPaymentIds?: Set<string>
+  initialEmailPrefs: { nudge_emails: boolean; support_emails: boolean; referral_credit: boolean; report_ready: boolean; support_confirmation: boolean; report_failure: boolean; testimonial_approved: boolean; bug_updates: boolean }
+  initialNotifPrefs: { nudge_emails: boolean; support_emails: boolean; referral_credit: boolean; report_ready: boolean; support_confirmation: boolean; report_failure: boolean; testimonial_approved: boolean; bug_updates: boolean }
   isEmailUser: boolean
   dataExportLocked: boolean
   hasRecentPackCredits: boolean
@@ -70,7 +106,9 @@ export default function AccountClient({
   creditsRemaining,
   creditExpiry,
   creditHistory,
+  refundedPaymentIds = new Set(),
   initialEmailPrefs,
+  initialNotifPrefs,
   isEmailUser,
   dataExportLocked,
   hasRecentPackCredits,
@@ -104,6 +142,16 @@ export default function AccountClient({
   const [supportConfirmation, setSupportConfirmation] = useState(initialEmailPrefs.support_confirmation)
   const [reportFailure, setReportFailure] = useState(initialEmailPrefs.report_failure)
   const [testimonialApproved, setTestimonialApproved] = useState(initialEmailPrefs.testimonial_approved)
+  const [bugUpdates, setBugUpdates] = useState(initialEmailPrefs.bug_updates)
+  // Push notification preferences
+  const [pushReportReady, setPushReportReady] = useState(initialNotifPrefs.report_ready)
+  const [pushNudgeEmails, setPushNudgeEmails] = useState(initialNotifPrefs.nudge_emails)
+  const [pushSupportEmails, setPushSupportEmails] = useState(initialNotifPrefs.support_emails)
+  const [pushSupportConfirmation, setPushSupportConfirmation] = useState(initialNotifPrefs.support_confirmation)
+  const [pushReportFailure, setPushReportFailure] = useState(initialNotifPrefs.report_failure)
+  const [pushReferralCredit, setPushReferralCredit] = useState(initialNotifPrefs.referral_credit)
+  const [pushTestimonialApproved, setPushTestimonialApproved] = useState(initialNotifPrefs.testimonial_approved)
+  const [pushBugUpdates, setPushBugUpdates] = useState(initialNotifPrefs.bug_updates)
   const [showAllCredits, setShowAllCredits] = useState(false)
   const [emailPrefsSaving, setEmailPrefsSaving] = useState(false)
   const [emailPrefsMsg, setEmailPrefsMsg] = useState('')
@@ -236,7 +284,10 @@ export default function AccountClient({
       if (!user) throw new Error('Not authenticated')
       const { error } = await supabase
         .from('profiles')
-        .update({ email_preferences: { nudge_emails: nudgeEmails, support_emails: supportEmails, referral_credit: referralCredit, report_ready: reportReady, support_confirmation: supportConfirmation, report_failure: reportFailure, testimonial_approved: testimonialApproved } })
+        .update({
+          email_preferences: { nudge_emails: nudgeEmails, support_emails: supportEmails, referral_credit: referralCredit, report_ready: reportReady, support_confirmation: supportConfirmation, report_failure: reportFailure, testimonial_approved: testimonialApproved, bug_updates: bugUpdates },
+          notification_preferences: { report_ready: pushReportReady, nudge_emails: pushNudgeEmails, support_emails: pushSupportEmails, support_confirmation: pushSupportConfirmation, report_failure: pushReportFailure, referral_credit: pushReferralCredit, testimonial_approved: pushTestimonialApproved, bug_updates: pushBugUpdates },
+        })
         .eq('id', user.id)
       if (error) throw error
       setEmailPrefsMsg('Saved!')
@@ -574,7 +625,7 @@ export default function AccountClient({
                   <div key={c.id} className="flex items-center justify-between px-4 py-2.5">
                     <div>
                       <p className="text-sm text-white">
-                        {CREDIT_PRODUCT_LABELS[c.product ?? ''] ?? (c.product ? c.product.replace(/_/g, ' ').replace(/\b\w/g, ch => ch.toUpperCase()) : 'Credit added')}
+                        {creditRowLabel(c.product, c.source, c.balance, c.stripe_payment_intent_id ?? null, refundedPaymentIds)}
                       </p>
                       <p className="text-xs text-gray-500">
                         {new Date(c.purchased_at).toLocaleDateString('en-US', {
@@ -582,8 +633,8 @@ export default function AccountClient({
                         })}
                       </p>
                     </div>
-                    <span className={`text-sm font-medium ${c.balance > 0 ? 'text-white' : 'text-gray-600'}`}>
-                      {c.balance > 0 ? `${c.balance} remaining` : 'Used'}
+                    <span className={`text-sm font-medium ${c.balance > 0 ? 'text-white' : 'text-gray-500'}`}>
+                      {c.balance > 0 ? `${c.balance} remaining` : ''}
                     </span>
                   </div>
                 ))}
@@ -705,7 +756,7 @@ export default function AccountClient({
           </div>
         </motion.div>
 
-        {/* Email Notifications Card */}
+        {/* Notifications Card */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -717,7 +768,7 @@ export default function AccountClient({
             onClick={() => setEmailPrefsOpen(!emailPrefsOpen)}
             className="w-full flex items-center justify-between p-6 text-left hover:bg-white/5 transition-colors"
           >
-            <h2 className="text-lg font-semibold text-white">Email Notifications</h2>
+            <h2 className="text-lg font-semibold text-white">Notifications</h2>
             <svg
               className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${emailPrefsOpen ? 'rotate-180' : ''}`}
               fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
@@ -727,105 +778,72 @@ export default function AccountClient({
           </button>
 
           {emailPrefsOpen && (
-            <div className="px-6 pb-6 space-y-4 border-t border-gray-800 pt-4">
-              <p className="text-sm text-gray-500">
-                Mandatory emails (account, billing, security) are always sent.
+            <div className="px-6 pb-6 border-t border-gray-800 pt-4">
+              <p className="text-sm text-gray-500 mb-4">
+                Mandatory notifications (account, billing, security) are always sent.
               </p>
 
-              <div className="space-y-3">
-                <label className="flex items-start gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={reportReady}
-                    onChange={(e) => setReportReady(e.target.checked)}
-                    className="w-4 h-4 mt-0.5 accent-primary flex-shrink-0"
-                  />
-                  <div>
-                    <p className="text-sm text-white font-medium">Report delivery</p>
-                    <p className="text-xs text-gray-500 mt-0.5">Email when your report is ready to view.</p>
-                  </div>
-                </label>
-
-                <label className="flex items-start gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={nudgeEmails}
-                    onChange={(e) => setNudgeEmails(e.target.checked)}
-                    className="w-4 h-4 mt-0.5 accent-primary flex-shrink-0"
-                  />
-                  <div>
-                    <p className="text-sm text-white font-medium">Credit reminders</p>
-                    <p className="text-xs text-gray-500 mt-0.5">Notification when your credits are running low or exhausted.</p>
-                  </div>
-                </label>
-
-                <label className="flex items-start gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={supportEmails}
-                    onChange={(e) => setSupportEmails(e.target.checked)}
-                    className="w-4 h-4 mt-0.5 accent-primary flex-shrink-0"
-                  />
-                  <div>
-                    <p className="text-sm text-white font-medium">Support updates</p>
-                    <p className="text-xs text-gray-500 mt-0.5">Emails when your support request gets a reply, is resolved, or closed.</p>
-                  </div>
-                </label>
-
-                <label className="flex items-start gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={supportConfirmation}
-                    onChange={(e) => setSupportConfirmation(e.target.checked)}
-                    className="w-4 h-4 mt-0.5 accent-primary flex-shrink-0"
-                  />
-                  <div>
-                    <p className="text-sm text-white font-medium">Request confirmation</p>
-                    <p className="text-xs text-gray-500 mt-0.5">Confirmation email when you submit a support request.</p>
-                  </div>
-                </label>
-
-                <label className="flex items-start gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={reportFailure}
-                    onChange={(e) => setReportFailure(e.target.checked)}
-                    className="w-4 h-4 mt-0.5 accent-primary flex-shrink-0"
-                  />
-                  <div>
-                    <p className="text-sm text-white font-medium">Report failure alerts</p>
-                    <p className="text-xs text-gray-500 mt-0.5">Notification when a report fails and needs attention.</p>
-                  </div>
-                </label>
-
-                <label className="flex items-start gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={referralCredit}
-                    onChange={(e) => setReferralCredit(e.target.checked)}
-                    className="w-4 h-4 mt-0.5 accent-primary flex-shrink-0"
-                  />
-                  <div>
-                    <p className="text-sm text-white font-medium">Referral credits</p>
-                    <p className="text-xs text-gray-500 mt-0.5">Notification when you earn credits for referring someone.</p>
-                  </div>
-                </label>
-
-                <label className="flex items-start gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={testimonialApproved}
-                    onChange={(e) => setTestimonialApproved(e.target.checked)}
-                    className="w-4 h-4 mt-0.5 accent-primary flex-shrink-0"
-                  />
-                  <div>
-                    <p className="text-sm text-white font-medium">Testimonial approval</p>
-                    <p className="text-xs text-gray-500 mt-0.5">Notification when your testimonial is approved and your reward is added.</p>
-                  </div>
-                </label>
+              {/* Notification preferences table */}
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-800">
+                      <th className="text-left py-2 pr-4 text-xs font-medium text-gray-500 uppercase tracking-wide w-full">Type</th>
+                      <th className="text-center py-2 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">Email</th>
+                      <th className="text-center py-2 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">Push</th>
+                      <th className="text-center py-2 px-4 text-xs font-medium text-gray-400 uppercase tracking-wide whitespace-nowrap">
+                        SMS
+                        <span className="block text-[10px] text-gray-600 font-normal normal-case tracking-normal">Coming soon</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-800/60">
+                    {([
+                      { key: 'report_ready',        label: 'Report delivery',       desc: 'When your report is ready to view.',                           email: reportReady,         setEmail: setReportReady,         push: pushReportReady,         setPush: setPushReportReady },
+                      { key: 'nudge_emails',        label: 'Credit reminders',      desc: 'When credits are running low or exhausted.',                   email: nudgeEmails,         setEmail: setNudgeEmails,         push: pushNudgeEmails,         setPush: setPushNudgeEmails },
+                      { key: 'support_emails',      label: 'Support updates',       desc: 'When a support request gets a reply, is resolved, or closed.', email: supportEmails,       setEmail: setSupportEmails,       push: pushSupportEmails,       setPush: setPushSupportEmails },
+                      { key: 'support_confirmation',label: 'Request confirmation',  desc: 'Confirmation when you submit a support request.',              email: supportConfirmation, setEmail: setSupportConfirmation, push: pushSupportConfirmation, setPush: setPushSupportConfirmation },
+                      { key: 'report_failure',      label: 'Report failure alerts', desc: 'When a report fails and needs attention.',                     email: reportFailure,       setEmail: setReportFailure,       push: pushReportFailure,       setPush: setPushReportFailure },
+                      { key: 'referral_credit',     label: 'Referral credits',      desc: 'When you earn credits for referring someone.',                 email: referralCredit,      setEmail: setReferralCredit,      push: pushReferralCredit,      setPush: setPushReferralCredit },
+                      { key: 'testimonial_approved',label: 'Testimonial approval',  desc: 'When your testimonial is approved and reward is added.',       email: testimonialApproved, setEmail: setTestimonialApproved, push: pushTestimonialApproved, setPush: setPushTestimonialApproved },
+                      { key: 'bug_updates',         label: 'Bug report updates',    desc: 'When your bug report gets a reply or status change.',          email: bugUpdates,          setEmail: setBugUpdates,          push: pushBugUpdates,          setPush: setPushBugUpdates },
+                    ] as { key: string; label: string; desc: string; email: boolean; setEmail: (v: boolean) => void; push: boolean; setPush: (v: boolean) => void }[]).map((row) => (
+                      <tr key={row.key}>
+                        <td className="py-3 pr-4">
+                          <p className="text-white font-medium text-sm">{row.label}</p>
+                          <p className="text-xs text-gray-500 mt-0.5">{row.desc}</p>
+                        </td>
+                        <td className="text-center px-4">
+                          <input
+                            type="checkbox"
+                            checked={row.email}
+                            onChange={(e) => row.setEmail(e.target.checked)}
+                            className="w-4 h-4 accent-primary cursor-pointer"
+                          />
+                        </td>
+                        <td className="text-center px-4">
+                          <input
+                            type="checkbox"
+                            checked={row.push}
+                            onChange={(e) => row.setPush(e.target.checked)}
+                            className="w-4 h-4 accent-primary cursor-pointer"
+                          />
+                        </td>
+                        <td className="text-center px-4">
+                          <input
+                            type="checkbox"
+                            checked={false}
+                            disabled
+                            className="w-4 h-4 opacity-30 cursor-not-allowed"
+                          />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
 
-              <div className="flex items-center gap-3 pt-1">
+              <div className="flex items-center gap-3 pt-4">
                 <button
                   onClick={saveEmailPrefs}
                   disabled={emailPrefsSaving}

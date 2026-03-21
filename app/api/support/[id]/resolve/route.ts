@@ -16,6 +16,7 @@ import { cookies } from 'next/headers'
 import { createServiceClient } from '@/lib/supabase/service-client'
 import { sendSupportResolvedEmail } from '@/lib/email'
 import { canDo } from '@/lib/permissions'
+import { insertBellIfAllowed } from '@/lib/bell-notifications'
 
 export async function PATCH(
   request: NextRequest,
@@ -84,15 +85,12 @@ export async function PATCH(
       return NextResponse.json({ error: 'Failed to resolve ticket.' }, { status: 500 })
     }
 
-    // 4. Bell notification for the user (fire and forget)
+    // 4. Bell notification for the user (fire and forget — checks support_emails pref)
     if (supportReq.user_id) {
-      void svc.from('notifications').insert({
-        user_id: supportReq.user_id,
+      void insertBellIfAllowed(svc, supportReq.user_id, {
         type: 'support_resolved',
         message: 'Your support request has been resolved.',
-      }).then(({ error }) => {
-        if (error) console.error('Support resolved notification error:', error)
-      })
+      }, 'support_emails')
     }
 
     // 5. Email the user (fire and forget)

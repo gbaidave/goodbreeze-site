@@ -40,6 +40,7 @@ type EmailPrefKey =
   | 'support_confirmation'
   | 'report_failure'
   | 'testimonial_approved'
+  | 'bug_updates'
 
 /**
  * Returns true if the user has the given email preference enabled (or if userId is missing).
@@ -102,12 +103,13 @@ export async function sendPaymentConfirmationEmail(
   plan: string,
   amount: string,
   userId?: string,
-  receiptRef?: string
+  receiptRef?: string,
+  purchaseType: 'pack_purchase' | 'subscription_purchase' = 'subscription_purchase'
 ) {
   const { subject, html } = paymentConfirmationEmail(name, plan, amount, receiptRef)
   return sendAndLog(
     () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject: stagingPrefix + subject, html }),
-    { userId, toEmail: to, type: 'plan_changed', subject }
+    { userId, toEmail: to, type: purchaseType, subject }
   )
 }
 
@@ -115,7 +117,7 @@ export async function sendPaymentFailedEmail(to: string, name: string, userId?: 
   const { subject, html } = paymentFailedEmail(name)
   return sendAndLog(
     () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject: stagingPrefix + subject, html }),
-    { userId, toEmail: to, type: 'plan_changed', subject }
+    { userId, toEmail: to, type: 'payment_failed', subject }
   )
 }
 
@@ -171,24 +173,44 @@ export async function sendBugReportNotificationEmail(
     planAtTime: string
     lastReportContext: string
     message: string
+    bugSubject?: string | null
+    importance?: string | null
+    bugNumber?: number | null
   },
   userId?: string
 ) {
-  const { subject, html } = supportNotificationEmail(data)
+  const { html: baseHtml } = supportNotificationEmail(data)
   const bugReportEmail = process.env.BUG_REPORT_EMAIL || 'dave@goodbreeze.ai'
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://goodbreeze.ai'
+
+  // Build enriched subject: Bug #42 [High] Short subject — Name
+  const bugRef = data.bugNumber ? `Bug #${data.bugNumber}` : 'Bug Report'
+  const importanceTag = data.importance ? ` [${data.importance.charAt(0).toUpperCase() + data.importance.slice(1)}]` : ''
+  const subjectSnippet = data.bugSubject ? ` ${data.bugSubject}` : ''
+  const emailSubject = `${bugRef}${importanceTag}${subjectSnippet} — ${data.userName}`
+
+  // Inject "View Bug Report" button before the footer in the HTML
+  const viewBugButton = `
+    <tr><td style="padding-top:20px;">
+      <a href="${baseUrl}/admin/bug-reports" style="display:inline-block;padding:10px 20px;background:#22d3ee;color:#09090b;font-size:14px;font-weight:600;text-decoration:none;border-radius:8px;">
+        View Bug Report
+      </a>
+    </td></tr>`
+  const html = baseHtml.replace('<!-- Footer -->', `${viewBugButton}\n        <!-- Footer -->`)
+
   return sendAndLog(
     () => resend.emails.send({
       from: `${FROM_NAME} <${FROM}>`,
       to: bugReportEmail,
       replyTo: data.userEmail,
-      subject: stagingPrefix + `[Bug Report] ${subject}`,
+      subject: stagingPrefix + emailSubject,
       html,
     }),
     {
       userId,
       toEmail: bugReportEmail,
-      type: 'support_confirmation',
-      subject: stagingPrefix + `[Bug Report] ${subject}`,
+      type: 'bug_report_notification',
+      subject: stagingPrefix + emailSubject,
       notifyOnFail: false,
     }
   )
@@ -287,7 +309,7 @@ export async function sendTestimonialAdminNotificationEmail(
       subject: stagingPrefix + subject,
       html,
     }),
-    { userId, toEmail: adminEmail, type: 'support_confirmation', subject, notifyOnFail: false }
+    { userId, toEmail: adminEmail, type: 'testimonial_admin_notification', subject, notifyOnFail: false }
   )
 }
 
@@ -296,7 +318,7 @@ export async function sendCreditGrantedEmail(to: string, name: string, credits: 
   const { subject, html } = creditGrantedEmail(name, credits)
   return sendAndLog(
     () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject: stagingPrefix + subject, html }),
-    { userId, toEmail: to, type: 'plan_changed', subject }
+    { userId, toEmail: to, type: 'referral_credit', subject }
   )
 }
 
@@ -322,7 +344,7 @@ export async function sendAccountDeletedEmail(
   // userId is intentionally omitted — the auth row is about to be deleted
   return sendAndLog(
     () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject: stagingPrefix + subject, html }),
-    { toEmail: to, type: 'security_alert', subject, notifyOnFail: false }
+    { toEmail: to, type: 'account_deleted', subject, notifyOnFail: false }
   )
 }
 
@@ -336,7 +358,7 @@ export async function sendRefundProcessedEmail(
   const { subject, html } = refundProcessedEmail({ userName: name, productLabel, amountStr })
   return sendAndLog(
     () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject: stagingPrefix + subject, html }),
-    { userId, toEmail: to, type: 'plan_changed', subject }
+    { userId, toEmail: to, type: 'refund_processed', subject }
   )
 }
 
@@ -355,6 +377,6 @@ export async function sendConsentConfirmationEmail(
   const { subject, html } = consentConfirmationEmail(data)
   return sendAndLog(
     () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to: data.userEmail, replyTo: REPLY_TO, subject: stagingPrefix + subject, html }),
-    { userId, toEmail: data.userEmail, type: 'security_alert', subject, notifyOnFail: false }
+    { userId, toEmail: data.userEmail, type: 'consent_confirmation', subject, notifyOnFail: false }
   )
 }

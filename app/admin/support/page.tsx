@@ -134,7 +134,7 @@ export default async function AdminSupportPage({
   }
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-4 md:p-8 space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-white">Support Requests</h1>
         <p className="text-gray-400 text-sm mt-1">{requests?.length ?? 0} shown</p>

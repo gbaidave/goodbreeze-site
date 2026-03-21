@@ -2,8 +2,11 @@
  * POST /api/bug-report
  *
  * Tester-only endpoint for submitting bug reports.
- * Creates a support_requests entry (appears in admin support inbox),
- * emails dave@goodbreeze.ai, and notifies all admin users via the bell.
+ * Creates a support_requests entry with structured fields, creates the initial
+ * support_message, and returns { requestId, messageId } so the client can
+ * upload attachments via /api/support/attachments.
+ *
+ * Also emails dave@goodbreeze.ai and notifies all admin users via the bell.
  */
 
 import { NextRequest, NextResponse } from 'next/server'
@@ -12,8 +15,21 @@ import { cookies } from 'next/headers'
 import { createServiceClient } from '@/lib/supabase/service-client'
 import { sendBugReportNotificationEmail } from '@/lib/email'
 
-const MIN_MESSAGE_LEN = 10
-const MAX_MESSAGE_LEN = 2000
+const MIN_SUBJECT_LEN = 5
+const MAX_SUBJECT_LEN = 120
+const MIN_DESC_LEN = 10
+const MAX_DESC_LEN = 2000
+
+const VALID_IMPORTANCE = ['low', 'medium', 'high'] as const
+const VALID_BUG_CATEGORIES = [
+  'login_auth',
+  'account_profile',
+  'dashboard_reports',
+  'payments_credits',
+  'pdf_report_content',
+  'navigation_ui',
+  'other',
+] as const
 
 export async function POST(request: NextRequest) {
   try {
@@ -39,21 +55,42 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
 
-    // 2. Validate message
+    // 2. Parse and validate body
     const body = await request.json()
-    const message = (body.message ?? '').trim()
+    const subject = (body.subject ?? '').trim()
+    const description = (body.description ?? '').trim()
+    const importance = body.importance ?? null
+    const bug_category = body.bug_category ?? null
 
-    if (message.length < MIN_MESSAGE_LEN) {
+    if (subject.length < MIN_SUBJECT_LEN) {
+      return NextResponse.json(
+        { error: `Subject must be at least ${MIN_SUBJECT_LEN} characters.` },
+        { status: 400 }
+      )
+    }
+    if (subject.length > MAX_SUBJECT_LEN) {
+      return NextResponse.json(
+        { error: `Subject is too long (max ${MAX_SUBJECT_LEN} characters).` },
+        { status: 400 }
+      )
+    }
+    if (description.length < MIN_DESC_LEN) {
       return NextResponse.json(
         { error: 'Please describe the bug (at least 10 characters).' },
         { status: 400 }
       )
     }
-    if (message.length > MAX_MESSAGE_LEN) {
+    if (description.length > MAX_DESC_LEN) {
       return NextResponse.json(
-        { error: `Message is too long (max ${MAX_MESSAGE_LEN} characters).` },
+        { error: `Description is too long (max ${MAX_DESC_LEN} characters).` },
         { status: 400 }
       )
+    }
+    if (importance && !VALID_IMPORTANCE.includes(importance)) {
+      return NextResponse.json({ error: 'Invalid importance value.' }, { status: 400 })
+    }
+    if (bug_category && !VALID_BUG_CATEGORIES.includes(bug_category)) {
+      return NextResponse.json({ error: 'Invalid bug category.' }, { status: 400 })
     }
 
     // 3. Fetch user context
@@ -93,10 +130,13 @@ export async function POST(request: NextRequest) {
         email: userEmail,
         plan_at_time: plan,
         last_report_context: lastReportContext,
-        message,
+        message: description,
+        subject,
+        importance: importance || null,
+        bug_category: bug_category || null,
         category: 'bug_report',
       })
-      .select('id')
+      .select('id, bug_number')
       .single()
 
     if (insertError || !insertedRequest) {
@@ -107,42 +147,65 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 5. Email dave@goodbreeze.ai (fire and forget)
-    sendBugReportNotificationEmail({ userName, userEmail, planAtTime: plan, lastReportContext, message }, user.id)
-      .catch((err) => console.error('Bug report notification email failed:', err))
+    const requestId = insertedRequest.id
 
-    // 5b. Initial message in support thread
-    void svc.from('support_messages').insert({
-      request_id: insertedRequest.id,
-      sender_id: user.id,
-      sender_role: 'user',
-      message,
-    }).then(({ error }) => {
-      if (error) console.error('Bug report initial message insert error:', error)
-    })
+    // 5. Create initial support message (awaited — we need messageId for attachment uploads)
+    const { data: insertedMessage, error: messageError } = await svc
+      .from('support_messages')
+      .insert({
+        request_id: requestId,
+        sender_id: user.id,
+        sender_role: 'user',
+        message: description,
+      })
+      .select('id')
+      .single()
 
-    // 5c. Bell notification for all admin users (fire and forget)
-    void (async () => {
-      try {
+    if (messageError || !insertedMessage) {
+      console.error('Bug report initial message insert error:', messageError)
+      // Request was created — return requestId even if message failed (non-fatal)
+      return NextResponse.json({ success: true, requestId, messageId: null })
+    }
+
+    const messageId = insertedMessage.id
+
+    // 6 + 7. Email dave@goodbreeze.ai + bell notification for eligible admins.
+    // Must be awaited before returning — Vercel serverless terminates the function
+    // immediately after the response is sent, killing any pending async work.
+    await Promise.allSettled([
+      sendBugReportNotificationEmail({
+        userName,
+        userEmail,
+        planAtTime: plan,
+        lastReportContext,
+        message: description,
+        bugSubject: subject,
+        importance: importance || null,
+        bugNumber: insertedRequest.bug_number ?? null,
+      }, user.id).catch((err) => console.error('Bug report notification email failed:', err)),
+
+      (async () => {
         const { data: admins } = await svc
           .from('profiles')
-          .select('id')
+          .select('id, notification_preferences')
           .in('role', ['superadmin', 'admin', 'support'])
-        if (admins?.length) {
+        const eligible = (admins ?? []).filter((a) => {
+          const prefs = (a.notification_preferences as Record<string, boolean> | null) ?? {}
+          return prefs['bug_updates'] !== false
+        })
+        if (eligible.length) {
           await svc.from('notifications').insert(
-            admins.map((a) => ({
+            eligible.map((a) => ({
               user_id: a.id,
               type: 'support_request',
-              message: `[Bug Report] from ${userName} (${userEmail})`,
+              message: `[Bug Report] ${subject} — from ${userName} (${userEmail})`,
             }))
           )
         }
-      } catch (e) {
-        console.error('Bug report admin notification error:', e)
-      }
-    })()
+      })().catch((e) => console.error('Bug report admin notification error:', e)),
+    ])
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true, requestId, messageId })
 
   } catch (error) {
     console.error('Bug report error:', error)

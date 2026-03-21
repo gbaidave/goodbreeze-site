@@ -65,6 +65,11 @@ export function UserMenu() {
               : role === 'client' ? 'Client Dashboard'
               : 'Dashboard'}
           </a>
+          {(canDo(role, 'view_admin_panel') || role === 'tester') && (
+            <a href="/dashboard" className="block px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors">
+              Dashboard
+            </a>
+          )}
           <a href="/account" className="block px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors">Account settings</a>
           <a href="/support" className="block px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors">Support requests</a>
           <div className="border-t border-zinc-800 my-1" />

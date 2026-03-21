@@ -39,7 +39,7 @@ export default async function AdminEmailLogsPage({
   }
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-4 md:p-8 space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-white">Email Logs</h1>
         <p className="text-gray-400 text-sm mt-1">{logs?.length ?? 0} shown (latest 100)</p>
@@ -78,8 +78,8 @@ export default async function AdminEmailLogsPage({
       </div>
 
       {/* Table */}
-      <div className="bg-dark-700 border border-primary/20 rounded-2xl overflow-hidden">
-        <table className="w-full text-sm">
+      <div className="bg-dark-700 border border-primary/20 rounded-2xl overflow-x-auto">
+        <table className="w-full min-w-[600px] text-sm">
           <thead>
             <tr className="border-b border-primary/10">
               <th className="text-left px-4 py-3 text-gray-400 font-medium">To</th>

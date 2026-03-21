@@ -8,6 +8,7 @@
  */
 
 import { createServiceClient } from '@/lib/supabase/service-client'
+import { insertBellIfAllowed } from '@/lib/bell-notifications'
 
 export async function processReferral(
   newUserId: string,
@@ -63,12 +64,11 @@ export async function processReferral(
       .eq('referral_code_id', codeRow.id)
       .eq('new_user_id', newUserId)
 
-    // 6. Notify the referrer
-    await supabase.from('notifications').insert({
-      user_id: codeRow.user_id,
+    // 6. Notify the referrer (checks referral_credit pref)
+    await insertBellIfAllowed(supabase, codeRow.user_id, {
       type: 'referral_credit',
       message: 'You earned 3 free credits. Someone signed up using your referral link!',
-    })
+    }, 'referral_credit')
 
   } catch (err) {
     console.error('processReferral error:', err)

@@ -18,10 +18,10 @@ export default async function AccountPage() {
 
   const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString()
 
-  const [profileRes, subRes, creditsRes, creditHistoryRes, recentPackRes, openTicketsRes, openRefundRes, openDisputeRes] = await Promise.all([
+  const [profileRes, subRes, creditsRes, creditHistoryRes, recentPackRes, openTicketsRes, openRefundRes, openDisputeRes, refundedPacksRes] = await Promise.all([
     supabase
       .from('profiles')
-      .select('name, email, phone, sms_ok, stripe_customer_id, role, email_preferences, data_export_locked')
+      .select('name, email, phone, sms_ok, stripe_customer_id, role, email_preferences, notification_preferences, data_export_locked')
       .eq('id', user.id)
       .single(),
     supabase
@@ -40,7 +40,7 @@ export default async function AccountPage() {
       .order('purchased_at', { ascending: true }),
     supabase
       .from('credits')
-      .select('id, balance, product, purchased_at')
+      .select('id, balance, product, purchased_at, source, stripe_payment_intent_id')
       .eq('user_id', user.id)
       .order('purchased_at', { ascending: false })
       .limit(20),
@@ -77,12 +77,22 @@ export default async function AccountPage() {
       .in('status', ['open', 'in_progress'])
       .limit(1)
       .maybeSingle(),
+    // Refunded credit pack payment IDs — to label zeroed credits as "Refunded" vs "Used"
+    supabase
+      .from('refund_requests')
+      .select('stripe_payment_id')
+      .eq('user_id', user.id)
+      .eq('status', 'refunded')
+      .not('stripe_payment_id', 'is', null),
   ])
 
   const profile = profileRes.data
   const sub = subRes.data
   const credits = creditsRes.data ?? []
   const creditHistory = creditHistoryRes.data ?? []
+  const refundedPaymentIds = new Set(
+    (refundedPacksRes.data ?? []).map((r: any) => r.stripe_payment_id).filter(Boolean)
+  )
   const packCredits = credits.reduce((sum, c) => sum + (c.balance ?? 0), 0)
   const creditsRemaining = sub?.credits_remaining ?? 0
 
@@ -107,6 +117,7 @@ export default async function AccountPage() {
       creditsRemaining={creditsRemaining}
       creditExpiry={credits[0]?.expires_at}
       creditHistory={creditHistory}
+      refundedPaymentIds={refundedPaymentIds}
       initialEmailPrefs={{
         nudge_emails: profile?.email_preferences?.nudge_emails !== false,
         support_emails: profile?.email_preferences?.support_emails !== false,
@@ -115,6 +126,17 @@ export default async function AccountPage() {
         support_confirmation: profile?.email_preferences?.support_confirmation !== false,
         report_failure: profile?.email_preferences?.report_failure !== false,
         testimonial_approved: profile?.email_preferences?.testimonial_approved !== false,
+        bug_updates: profile?.email_preferences?.bug_updates !== false,
+      }}
+      initialNotifPrefs={{
+        nudge_emails: profile?.notification_preferences?.nudge_emails !== false,
+        support_emails: profile?.notification_preferences?.support_emails !== false,
+        referral_credit: profile?.notification_preferences?.referral_credit !== false,
+        report_ready: profile?.notification_preferences?.report_ready !== false,
+        support_confirmation: profile?.notification_preferences?.support_confirmation !== false,
+        report_failure: profile?.notification_preferences?.report_failure !== false,
+        testimonial_approved: profile?.notification_preferences?.testimonial_approved !== false,
+        bug_updates: profile?.notification_preferences?.bug_updates !== false,
       }}
       isEmailUser={isEmailUser}
       dataExportLocked={profile?.data_export_locked ?? false}

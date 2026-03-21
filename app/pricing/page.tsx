@@ -17,9 +17,9 @@ const SUBSCRIPTION_PLANS = [
     name: "Starter",
     price: "$20",
     period: "/month",
-    reports: "25 reports/month",
+    reports: "25 credits/month",
     features: [
-      "25 reports per month (all types)",
+      "25 credits per month — all report types",
       "Head-to-Head, Top 3 & Competitive Position",
       "AI SEO, Keyword Research, Landing Page Optimizer",
       "SEO Audit & SEO Comprehensive Report",
@@ -35,9 +35,9 @@ const SUBSCRIPTION_PLANS = [
     name: "Growth",
     price: "$30",
     period: "/month",
-    reports: "40 reports/month",
+    reports: "40 credits/month",
     features: [
-      "40 reports per month (all types)",
+      "40 credits per month — all report types",
       "Head-to-Head, Top 3 & Competitive Position",
       "AI SEO, Keyword Research, Landing Page Optimizer",
       "SEO Audit & SEO Comprehensive Report",
@@ -53,9 +53,9 @@ const SUBSCRIPTION_PLANS = [
     name: "Pro",
     price: "$40",
     period: "/month",
-    reports: "50 reports/month",
+    reports: "50 credits/month",
     features: [
-      "50 reports per month (all types)",
+      "50 credits per month — all report types",
       "Head-to-Head, Top 3 & Competitive Position",
       "AI SEO, Keyword Research, Landing Page Optimizer",
       "SEO Audit & SEO Comprehensive Report",
@@ -86,7 +86,7 @@ const ENTRY_OPTIONS = [
     name: "Spark Pack",
     price: "$5",
     subtitle: "One-time purchase",
-    description: "3 reports, use anytime",
+    description: "3 credits, use anytime",
     features: [
       "3 credits (no expiry)",
       "All standard report types",
@@ -98,7 +98,7 @@ const ENTRY_OPTIONS = [
     name: "Boost Pack",
     price: "$10",
     subtitle: "One-time purchase",
-    description: "10 reports, use anytime",
+    description: "10 credits, use anytime",
     features: [
       "10 credits (no expiry)",
       "All standard report types",
@@ -475,11 +475,15 @@ export default function PricingPage() {
               },
               {
                 q: "What's the difference between credit packs and monthly plans?",
-                a: "Credit packs (Spark: 3 reports / Boost: 10 reports) are one-time purchases with no commitment. Monthly plans give you a set number of reports per month and access to all 9 report types. If you run reports regularly, a monthly plan is better value.",
+                a: "Credit packs (Spark: 3 credits / Boost: 10 credits) are one-time purchases with no commitment. Monthly plans give you a set number of credits per month and access to all 9 report types. If you run reports regularly, a monthly plan is better value.",
               },
               {
                 q: "Which plan is best for my business?",
-                a: "Start free to see the value. If you need more reports, a credit pack is the easiest next step. If you run reports regularly for SEO, competitive tracking, or client work, the Growth plan at $30/month covers most businesses at 40 reports/month.",
+                a: "Start free to see the value. If you need more reports, a credit pack is the easiest next step. If you run reports regularly for SEO, competitive tracking, or client work, the Growth plan at $30/month covers most businesses at 40 credits/month.",
+              },
+              {
+                q: "Can I get a refund on a credit pack?",
+                a: "Yes, within 14 days of purchase if you haven't used all the credits. Submit a support request and select Billing as the category — we'll process it manually.",
               },
             ].map(({ q, a }, i) => (
               <div key={i} className="p-6 rounded-xl bg-dark-700 border border-primary/10">

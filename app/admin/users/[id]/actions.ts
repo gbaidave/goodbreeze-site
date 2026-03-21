@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { createServiceClient } from '@/lib/supabase/service-client'
 import { createClient } from '@/lib/supabase/server'
 import { sendCreditGrantedEmail, sendAccountDeletedEmail } from '@/lib/email'
+import { insertBellIfAllowed } from '@/lib/bell-notifications'
 import { logSystemError } from '@/lib/log-system-error'
 import { stripe } from '@/lib/stripe'
 import { canDo, assignableRoles } from '@/lib/permissions'
@@ -87,14 +88,11 @@ export async function grantCredits(userId: string, amount: number, note: string)
   })
   if (noteError) throw new Error(noteError.message)
 
-  // Bell notification for the user
-  await supabase.from('notifications').insert({
-    user_id: userId,
+  // Bell notification for the user (checks referral_credit pref)
+  await insertBellIfAllowed(supabase, userId, {
     type: 'referral_credit',
     message: `The Good Breeze AI team added ${amount} free credit${amount !== 1 ? 's' : ''} to your account.`,
-  }).then(({ error }) => {
-    if (error) console.error('[grantCredits] notification error:', error)
-  })
+  }, 'referral_credit')
 
   // Email notification (fire and forget)
   const { data: profile } = await supabase
