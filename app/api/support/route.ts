@@ -241,13 +241,12 @@ export async function POST(request: NextRequest) {
                   subscription: sub.stripe_subscription_id,
                   limit: 5,
                 })
-                const fallbackInv = invList.data.find(inv =>
+                const fallbackInv = invList.data.find((inv: any) =>
                   inv.payment_intent && (inv.amount_paid ?? 0) > 0
                 )
                 if (fallbackInv) {
-                  const piId = typeof fallbackInv.payment_intent === 'string'
-                    ? fallbackInv.payment_intent
-                    : (fallbackInv.payment_intent as any)?.id ?? null
+                  const pi = (fallbackInv as any).payment_intent
+                  const piId = typeof pi === 'string' ? pi : pi?.id ?? null
                   if (piId) {
                     autoPaymentId = piId
                     amountPaidCents = fallbackInv.amount_paid ?? fallbackInv.total ?? null
