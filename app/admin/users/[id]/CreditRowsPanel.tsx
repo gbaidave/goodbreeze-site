@@ -147,7 +147,7 @@ export function CreditRowsPanel({ credits }: { credits: CreditRow[] }) {
       {filtered.length === 0 ? (
         <p className="text-gray-500 text-xs px-4 py-3">No credit rows match filters.</p>
       ) : (
-        <div className={`overflow-x-auto${filtered.length > 6 ? ' max-h-72 overflow-y-auto' : ''}`}>
+        <div className="overflow-x-auto" style={filtered.length > 6 ? { maxHeight: '18rem', overflowY: 'auto' } : {}}>
         <table className="w-full text-xs">
           <thead>
             <tr className="border-b border-primary/10">
