@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid product type.' }, { status: 400 })
     }
 
-    const priority = category === 'dispute' ? 'high' : 'normal'
+    const priority = category === 'dispute' ? 'high' : null
 
     // 3. Fetch user context (skip for unauthenticated guests)
     const svc = createServiceClient()
@@ -233,20 +233,28 @@ export async function POST(request: NextRequest) {
               }
             }
 
-            // Fallback: list recent PIs for the Stripe customer if invoice expand returned nothing
-            if (!autoPaymentId && sub?.stripe_customer_id) {
+            // Fallback: list invoices for THIS subscription only — avoids picking up
+            // credit pack payment intents (which also belong to the same Stripe customer)
+            if (!autoPaymentId && sub?.stripe_subscription_id) {
               try {
-                const piList = await stripe.paymentIntents.list({
-                  customer: sub.stripe_customer_id,
-                  limit: 1,
+                const invList = await stripe.invoices.list({
+                  subscription: sub.stripe_subscription_id,
+                  limit: 5,
                 })
-                const latestPi = piList.data[0]
-                if (latestPi) {
-                  autoPaymentId = latestPi.id
-                  amountPaidCents = latestPi.amount ?? null
-                  purchaseDate = latestPi.created
-                    ? new Date(latestPi.created * 1000).toISOString()
-                    : null
+                const fallbackInv = invList.data.find(inv =>
+                  inv.payment_intent && (inv.amount_paid ?? 0) > 0
+                )
+                if (fallbackInv) {
+                  const piId = typeof fallbackInv.payment_intent === 'string'
+                    ? fallbackInv.payment_intent
+                    : (fallbackInv.payment_intent as any)?.id ?? null
+                  if (piId) {
+                    autoPaymentId = piId
+                    amountPaidCents = fallbackInv.amount_paid ?? fallbackInv.total ?? null
+                    purchaseDate = fallbackInv.created
+                      ? new Date(fallbackInv.created * 1000).toISOString()
+                      : null
+                  }
                 }
               } catch {
                 // Non-fatal — admin can manually set PI via the refund ticket
