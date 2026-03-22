@@ -808,7 +808,7 @@ export default function AccountClient({
                       { label: 'Refund decisions',     desc: 'When your refund request is approved or denied.',          push: pushRefundDecisions, setPush: setPushRefundDecisions },
                       { label: 'Account security',     desc: 'Security alerts such as phone number changes.',            push: pushAccountSecurity, setPush: setPushAccountSecurity },
                     ]).map((row) => (
-                      <tr key={row.label} className="opacity-70">
+                      <tr key={row.label}>
                         <td className="py-3 pr-4">
                           <div className="flex items-center gap-1.5">
                             <p className="text-white font-medium text-sm">{row.label}</p>

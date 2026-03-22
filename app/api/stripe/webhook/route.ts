@@ -376,15 +376,8 @@ export async function POST(request: NextRequest) {
         // If the refund_request was already marked 'refunded' by the admin panel, we skip it (idempotent).
         const charge = event.data.object as Stripe.Charge
         const paymentIntentId = charge.payment_intent as string | null
-        if (!paymentIntentId) break
-
-        // Find the refund_request matching this PI that isn't already processed
-        const { data: refundReq } = await supabase
-          .from('refund_requests')
-          .select('id, user_id, product_label, product_type, stripe_refund_id')
-          .eq('stripe_payment_id', paymentIntentId)
-          .eq('status', 'pending')
-          .maybeSingle()
+        const invoiceId = (charge as any).invoice as string | null
+        const customerId = charge.customer as string | null
 
         // Fetch charge with refunds expanded — webhook payload does NOT include refund list by default
         let stripeRefundId: string | null = null
@@ -399,24 +392,38 @@ export async function POST(request: NextRequest) {
         }
         const amountStr = amountCents ? `$${(amountCents / 100).toFixed(2)}` : ''
 
-        if (!refundReq) {
-          // Check if a refund_request exists but was already processed (status != 'pending').
-          // This happens when the admin panel processed the refund first — it already sent the
-          // email + notification. The charge.refunded webhook fires after, finds no PENDING row,
-          // and would incorrectly send a second email. Skip it.
-          const { data: alreadyProcessed } = await supabase
+        // ── Primary match: by stored payment intent ID ───────────────────────────
+        let refundReq: { id: string; user_id: string; product_label: string; product_type: string; stripe_refund_id: string | null } | null = null
+        if (paymentIntentId) {
+          const { data } = await supabase
             .from('refund_requests')
-            .select('id')
+            .select('id, user_id, product_label, product_type, stripe_refund_id')
             .eq('stripe_payment_id', paymentIntentId)
-            .neq('status', 'pending')
+            .eq('status', 'pending')
             .maybeSingle()
-          if (alreadyProcessed) break
+          refundReq = data
 
-          // Secondary match attempt: subscription charges store PI but refund_requests may have
-          // been created before the PI was stored (NOPI bug). Try matching via subscription ID
-          // from the invoice associated with this charge.
-          let subMatchedReq: { id: string; user_id: string; product_label: string; product_type: string } | null = null
-          const invoiceId = (charge as any).invoice as string | null
+          if (!refundReq) {
+            // Check if already processed by admin panel — skip to avoid duplicate notifications.
+            const { data: alreadyProcessed } = await supabase
+              .from('refund_requests')
+              .select('id')
+              .eq('stripe_payment_id', paymentIntentId)
+              .neq('status', 'pending')
+              .maybeSingle()
+            if (alreadyProcessed) break
+          }
+        }
+
+        // ── Secondary + tertiary matches for subscription refunds ────────────────
+        // These handle two cases:
+        //   (a) charge.invoice is set  → resolve subscription via invoice
+        //   (b) charge.invoice is null → find pending sub refund_request by customer
+        // Both cases occur when the PI wasn't stored on the refund_request at creation.
+        let subMatchedReq: { id: string; user_id: string; product_label: string; product_type: string } | null = null
+
+        if (!refundReq) {
+          // Secondary: invoice → subscription ID
           if (invoiceId) {
             try {
               const inv = await stripe.invoices.retrieve(invoiceId)
@@ -430,10 +437,40 @@ export async function POST(request: NextRequest) {
                   .maybeSingle()
                 if (subMatch) {
                   subMatchedReq = subMatch
-                  // Store the PI so future lookups work
-                  await supabase.from('refund_requests').update({
-                    stripe_payment_id: paymentIntentId,
-                  }).eq('id', subMatch.id)
+                  if (paymentIntentId) {
+                    await supabase.from('refund_requests').update({
+                      stripe_payment_id: paymentIntentId,
+                    }).eq('id', subMatch.id)
+                  }
+                }
+              }
+            } catch { /* non-fatal */ }
+          }
+
+          // Tertiary: customer → pending subscription refund_request
+          // Handles charges where invoice is null (test data / legacy billing paths).
+          if (!subMatchedReq && customerId) {
+            try {
+              const { data: userByCust } = await supabase
+                .from('profiles')
+                .select('id')
+                .eq('stripe_customer_id', customerId)
+                .maybeSingle()
+              if (userByCust) {
+                const { data: pendingSubReq } = await supabase
+                  .from('refund_requests')
+                  .select('id, user_id, product_label, product_type')
+                  .eq('user_id', userByCust.id)
+                  .eq('product_type', 'subscription')
+                  .eq('status', 'pending')
+                  .maybeSingle()
+                if (pendingSubReq) {
+                  subMatchedReq = pendingSubReq
+                  if (paymentIntentId) {
+                    await supabase.from('refund_requests').update({
+                      stripe_payment_id: paymentIntentId,
+                    }).eq('id', pendingSubReq.id)
+                  }
                 }
               }
             } catch { /* non-fatal */ }
@@ -448,8 +485,7 @@ export async function POST(request: NextRequest) {
               reviewed_at: new Date().toISOString(),
             }).eq('id', subMatchedReq.id)
 
-            // Revoke subscription access
-            const { data: sub } = await supabase
+            const { data: subRow } = await supabase
               .from('subscriptions')
               .select('stripe_subscription_id')
               .eq('user_id', subMatchedReq.user_id)
@@ -460,8 +496,8 @@ export async function POST(request: NextRequest) {
               plan: 'free', status: 'refunded', credits_remaining: 0,
             }).eq('user_id', subMatchedReq.user_id)
 
-            if (sub?.stripe_subscription_id) {
-              await stripe.subscriptions.cancel(sub.stripe_subscription_id).catch(console.error)
+            if (subRow?.stripe_subscription_id) {
+              await stripe.subscriptions.cancel(subRow.stripe_subscription_id).catch(console.error)
             }
 
             await supabase.from('notifications').insert({
@@ -481,13 +517,12 @@ export async function POST(request: NextRequest) {
                 subMatchedReq.user_id
               ).catch(console.error)
             }
-            console.log('[webhook] charge.refunded — matched via subscription ID, processed refund_request', subMatchedReq.id)
+            console.log('[webhook] charge.refunded — matched via subscription, processed refund_request', subMatchedReq.id)
             break
           }
 
           // No refund_request at all — Stripe-direct refund with no support ticket.
           // Look up user via stripe_customer_id, notify them, and revoke access if subscription charge.
-          const customerId = charge.customer as string | null
           if (customerId) {
             const { data: directProfile } = await supabase
               .from('profiles')
@@ -495,7 +530,7 @@ export async function POST(request: NextRequest) {
               .eq('stripe_customer_id', customerId)
               .maybeSingle()
             if (directProfile) {
-              // Revoke subscription if this was a subscription charge (has invoice)
+              // Revoke subscription if this was a subscription invoice charge
               if (invoiceId) {
                 const { data: activeSub } = await supabase
                   .from('subscriptions')

@@ -261,6 +261,46 @@ export async function PATCH(
       } catch { /* non-fatal */ }
     }
 
+    // Quaternary fallback: invoice has no payment_intent link (test data / legacy billing).
+    // Look up succeeded PIs directly for the customer, matching the subscription amount.
+    if ((!stripePaymentId || stripePaymentId.trim() === '') &&
+        refundReq.product_type === 'subscription') {
+      try {
+        const { data: userProfile } = await svc
+          .from('profiles')
+          .select('stripe_customer_id')
+          .eq('id', refundReq.user_id)
+          .single()
+        const customerId = userProfile?.stripe_customer_id
+        const subId = refundReq.user_selected_product_id
+
+        if (customerId) {
+          // Get expected amount from the Stripe subscription when available
+          let expectedAmount: number | null = null
+          if (subId) {
+            try {
+              const stripeSub = await stripe.subscriptions.retrieve(subId)
+              expectedAmount = stripeSub.items.data[0]?.price?.unit_amount ?? null
+            } catch { /* non-fatal */ }
+          }
+
+          const piList = await stripe.paymentIntents.list({ customer: customerId, limit: 20 })
+          const match = piList.data.find((pi: any) =>
+            pi.status === 'succeeded' &&
+            (!expectedAmount || pi.amount === expectedAmount)
+          )
+          if (match) {
+            stripePaymentId = match.id
+            await svc.from('refund_requests').update({
+              stripe_payment_id: stripePaymentId,
+              amount_paid_cents: match.amount ?? null,
+              purchase_date: match.created ? new Date(match.created * 1000).toISOString() : null,
+            }).eq('id', requestId)
+          }
+        }
+      } catch { /* non-fatal */ }
+    }
+
     if (!stripePaymentId || stripePaymentId.trim() === '') {
       return NextResponse.json({
         error: 'No Stripe payment ID found for this request. Use "Set Payment ID" to enter it manually.',

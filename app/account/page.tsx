@@ -129,6 +129,9 @@ export default async function AccountPage() {
         bug_updates: profile?.email_preferences?.bug_updates !== false,
       }}
       initialNotifPrefs={{
+        billing_payments: profile?.notification_preferences?.billing_payments === true,
+        refund_decisions: profile?.notification_preferences?.refund_decisions === true,
+        account_security: profile?.notification_preferences?.account_security === true,
         nudge_emails: profile?.notification_preferences?.nudge_emails !== false,
         support_emails: profile?.notification_preferences?.support_emails !== false,
         referral_credit: profile?.notification_preferences?.referral_credit !== false,

@@ -282,6 +282,7 @@ function TicketThread({ ticket, userEmail }: { ticket: Ticket; userEmail: string
         created_at: new Date().toISOString(),
         attachments: [],
       }])
+      if (ticketStatus === 'denied') setTicketStatus('open')
       setReplyText('')
       setReplyFiles([])
       if (attachErr) setReplyError(`Reply sent, but attachments failed: ${attachErr}`)
