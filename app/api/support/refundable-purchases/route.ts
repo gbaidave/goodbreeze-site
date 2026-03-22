@@ -142,7 +142,7 @@ export async function GET(request: NextRequest) {
         )
 
         const productName = pack.product
-          ? pack.product.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+          ? pack.product.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())
           : 'Credit Pack'
         const purchaseDateFormatted = purchaseDate
           ? purchaseDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
