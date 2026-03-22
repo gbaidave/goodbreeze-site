@@ -798,6 +798,34 @@ export default function AccountClient({
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-800/60">
+                    {/* Forced-on rows — always sent, cannot be disabled */}
+                    {([
+                      { label: 'Billing & payments',  desc: 'Payment confirmations and receipts.' },
+                      { label: 'Refund decisions',     desc: 'When your refund request is approved or denied.' },
+                      { label: 'Account security',     desc: 'Security alerts such as phone number changes.' },
+                    ]).map((row) => (
+                      <tr key={row.label} className="opacity-70">
+                        <td className="py-3 pr-4">
+                          <div className="flex items-center gap-1.5">
+                            <p className="text-white font-medium text-sm">{row.label}</p>
+                            <span className="text-[10px] font-medium text-gray-500 border border-gray-700 rounded px-1">Required</span>
+                          </div>
+                          <p className="text-xs text-gray-500 mt-0.5">{row.desc}</p>
+                        </td>
+                        <td className="text-center px-4">
+                          <input type="checkbox" checked disabled className="w-4 h-4 opacity-60 cursor-not-allowed" />
+                        </td>
+                        <td className="text-center px-4">
+                          <input type="checkbox" checked={false} disabled className="w-4 h-4 opacity-30 cursor-not-allowed" />
+                        </td>
+                        <td className="text-center px-4">
+                          <input type="checkbox" checked={false} disabled className="w-4 h-4 opacity-30 cursor-not-allowed" />
+                        </td>
+                      </tr>
+                    ))}
+                    {/* Divider */}
+                    <tr><td colSpan={4} className="py-1" /></tr>
+                    {/* Toggleable rows */}
                     {([
                       { key: 'report_ready',        label: 'Report delivery',       desc: 'When your report is ready to view.',                           email: reportReady,         setEmail: setReportReady,         push: pushReportReady,         setPush: setPushReportReady },
                       { key: 'nudge_emails',        label: 'Credit reminders',      desc: 'When credits are running low or exhausted.',                   email: nudgeEmails,         setEmail: setNudgeEmails,         push: pushNudgeEmails,         setPush: setPushNudgeEmails },

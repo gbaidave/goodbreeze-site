@@ -59,7 +59,11 @@ export async function POST(request: NextRequest) {
     const category: string = body.category ?? 'help'
     const subject = body.subject ? String(body.subject).trim().slice(0, MAX_SUBJECT_LEN) : null
     const productType: string | null = body.product_type ?? null
-    const refundMethod: string = body.refund_method === 'payment_method' ? 'payment_method' : 'credits'
+    const userSelectedProductId: string | null = body.user_selected_product_id ?? null
+    const userSelectedProductLabel: string | null = body.user_selected_product_label ?? null
+    const clientCreditsUsed: number | null = typeof body.credits_used === 'number' ? body.credits_used : null
+    const clientIsEligible: boolean | null = typeof body.is_eligible === 'boolean' ? body.is_eligible : null
+    const clientIneligibilityReasons: string[] | null = Array.isArray(body.ineligibility_reasons) ? body.ineligibility_reasons : null
 
     // Guest fields (only used when no authenticated user)
     const guestName: string = body.guest_name ? String(body.guest_name).trim().slice(0, 120) : ''
@@ -320,12 +324,16 @@ export async function POST(request: NextRequest) {
 
           const { error } = await svc.from('refund_requests').insert({
             user_id: user.id,
+            support_request_id: ticketId,
+            user_selected_product_id: userSelectedProductId ?? null,
+            user_selected_product_label: userSelectedProductLabel ?? null,
             stripe_payment_id: autoPaymentId ?? null,
             product_type: resolvedProductType,
             product_label: productLabel,
             status: 'pending',
-            support_request_id: ticketId,
-            credits_used_at_request: creditsUsedAtRequest,
+            credits_used_at_request: clientCreditsUsed ?? creditsUsedAtRequest,
+            is_eligible: clientIsEligible ?? (creditsUsedAtRequest === 0),
+            ineligibility_reasons: clientIneligibilityReasons ?? null,
             amount_paid_cents: amountPaidCents,
             purchase_date: purchaseDate,
           })

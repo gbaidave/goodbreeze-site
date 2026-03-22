@@ -61,7 +61,7 @@ export async function POST(
       return NextResponse.json({ error: 'Ticket not found.' }, { status: 404 })
     }
 
-    const wasClosedOrResolved = ticket.status === 'resolved' || ticket.status === 'closed'
+    const wasClosedOrResolved = ticket.status === 'resolved' || ticket.status === 'closed' || ticket.status === 'denied'
 
     const { data: insertedMsg, error: msgError } = await svc.from('support_messages').insert({
       request_id: requestId,
