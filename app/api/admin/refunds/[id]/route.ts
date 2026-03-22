@@ -62,7 +62,7 @@ export async function PATCH(
     const body = await request.json()
     const { action, notes, stripePaymentId: incomingPaymentId, denyReason, denyReasonDetail } = body
 
-    if (!['refund', 'deny', 'set_payment_id'].includes(action)) {
+    if (!['refund', 'deny', 'set_payment_id', 'reopen'].includes(action)) {
       return NextResponse.json({ error: 'Invalid action.' }, { status: 400 })
     }
 
@@ -76,6 +76,22 @@ export async function PATCH(
     if (!refundReq) {
       return NextResponse.json({ error: 'Refund request not found.' }, { status: 404 })
     }
+
+    // ── reopen ───────────────────────────────────────────────────────────────
+    if (action === 'reopen') {
+      if (!['denied', 'open'].includes(refundReq.status)) {
+        return NextResponse.json({ error: 'Only denied requests can be reopened.' }, { status: 409 })
+      }
+      await svc.from('refund_requests').update({ status: 'pending' }).eq('id', requestId)
+      if (refundReq.support_request_id) {
+        await svc.from('support_requests')
+          .update({ status: 'open' })
+          .eq('id', refundReq.support_request_id)
+      }
+      revalidatePath(`/admin/refunds`)
+      return NextResponse.json({ success: true })
+    }
+
     if (refundReq.status !== 'pending') {
       return NextResponse.json({ error: 'This request has already been processed.' }, { status: 409 })
     }
@@ -208,6 +224,41 @@ export async function PATCH(
           }
         }
       } catch { /* non-fatal — will fall through to error below */ }
+    }
+
+    // Tertiary fallback: if still no PI and product_type is subscription,
+    // look up the user's active subscription directly from Supabase.
+    if ((!stripePaymentId || stripePaymentId.trim() === '') &&
+        refundReq.product_type === 'subscription') {
+      try {
+        const { data: sub } = await svc
+          .from('subscriptions')
+          .select('stripe_subscription_id')
+          .eq('user_id', refundReq.user_id)
+          .in('status', ['active', 'trialing', 'refunded'])
+          .order('updated_at', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+        const subId = sub?.stripe_subscription_id
+        if (subId) {
+          const invList = await stripe.invoices.list({ subscription: subId, limit: 5 })
+          const paidInv = invList.data.find((inv: any) =>
+            inv.payment_intent && (inv.amount_paid ?? 0) > 0
+          )
+          if (paidInv) {
+            const pi = (paidInv as any).payment_intent
+            stripePaymentId = typeof pi === 'string' ? pi : pi?.id ?? ''
+            if (stripePaymentId) {
+              await svc.from('refund_requests').update({
+                stripe_payment_id: stripePaymentId,
+                user_selected_product_id: subId,
+                amount_paid_cents: paidInv.amount_paid ?? null,
+                purchase_date: paidInv.created ? new Date(paidInv.created * 1000).toISOString() : null,
+              }).eq('id', requestId)
+            }
+          }
+        }
+      } catch { /* non-fatal */ }
     }
 
     if (!stripePaymentId || stripePaymentId.trim() === '') {

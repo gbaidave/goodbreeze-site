@@ -117,6 +117,11 @@ export default function Footer() {
                   Help Center
                 </Link>
               </li>
+              <li>
+                <Link href="/support" className="hover:text-primary transition-colors">
+                  Support
+                </Link>
+              </li>
             </ul>
           </div>
 

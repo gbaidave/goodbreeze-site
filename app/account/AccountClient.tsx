@@ -82,7 +82,7 @@ interface Props {
   creditHistory?: CreditHistoryItem[]
   refundedPaymentIds?: Set<string>
   initialEmailPrefs: { nudge_emails: boolean; support_emails: boolean; referral_credit: boolean; report_ready: boolean; support_confirmation: boolean; report_failure: boolean; testimonial_approved: boolean; bug_updates: boolean }
-  initialNotifPrefs: { nudge_emails: boolean; support_emails: boolean; referral_credit: boolean; report_ready: boolean; support_confirmation: boolean; report_failure: boolean; testimonial_approved: boolean; bug_updates: boolean }
+  initialNotifPrefs: { billing_payments?: boolean; refund_decisions?: boolean; account_security?: boolean; nudge_emails: boolean; support_emails: boolean; referral_credit: boolean; report_ready: boolean; support_confirmation: boolean; report_failure: boolean; testimonial_approved: boolean; bug_updates: boolean }
   isEmailUser: boolean
   dataExportLocked: boolean
   hasRecentPackCredits: boolean
@@ -143,6 +143,10 @@ export default function AccountClient({
   const [reportFailure, setReportFailure] = useState(initialEmailPrefs.report_failure)
   const [testimonialApproved, setTestimonialApproved] = useState(initialEmailPrefs.testimonial_approved)
   const [bugUpdates, setBugUpdates] = useState(initialEmailPrefs.bug_updates)
+  // Push notification preferences — forced rows (email locked, push toggleable)
+  const [pushBillingPayments, setPushBillingPayments] = useState(initialNotifPrefs.billing_payments ?? false)
+  const [pushRefundDecisions, setPushRefundDecisions] = useState(initialNotifPrefs.refund_decisions ?? false)
+  const [pushAccountSecurity, setPushAccountSecurity] = useState(initialNotifPrefs.account_security ?? false)
   // Push notification preferences
   const [pushReportReady, setPushReportReady] = useState(initialNotifPrefs.report_ready)
   const [pushNudgeEmails, setPushNudgeEmails] = useState(initialNotifPrefs.nudge_emails)
@@ -286,7 +290,7 @@ export default function AccountClient({
         .from('profiles')
         .update({
           email_preferences: { nudge_emails: nudgeEmails, support_emails: supportEmails, referral_credit: referralCredit, report_ready: reportReady, support_confirmation: supportConfirmation, report_failure: reportFailure, testimonial_approved: testimonialApproved, bug_updates: bugUpdates },
-          notification_preferences: { report_ready: pushReportReady, nudge_emails: pushNudgeEmails, support_emails: pushSupportEmails, support_confirmation: pushSupportConfirmation, report_failure: pushReportFailure, referral_credit: pushReferralCredit, testimonial_approved: pushTestimonialApproved, bug_updates: pushBugUpdates },
+          notification_preferences: { billing_payments: pushBillingPayments, refund_decisions: pushRefundDecisions, account_security: pushAccountSecurity, report_ready: pushReportReady, nudge_emails: pushNudgeEmails, support_emails: pushSupportEmails, support_confirmation: pushSupportConfirmation, report_failure: pushReportFailure, referral_credit: pushReferralCredit, testimonial_approved: pushTestimonialApproved, bug_updates: pushBugUpdates },
         })
         .eq('id', user.id)
       if (error) throw error
@@ -798,11 +802,11 @@ export default function AccountClient({
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-800/60">
-                    {/* Forced-on rows — always sent, cannot be disabled */}
+                    {/* Forced-on rows — email always sent (locked), push is toggleable */}
                     {([
-                      { label: 'Billing & payments',  desc: 'Payment confirmations and receipts.' },
-                      { label: 'Refund decisions',     desc: 'When your refund request is approved or denied.' },
-                      { label: 'Account security',     desc: 'Security alerts such as phone number changes.' },
+                      { label: 'Billing & payments',  desc: 'Payment confirmations and receipts.',                      push: pushBillingPayments, setPush: setPushBillingPayments },
+                      { label: 'Refund decisions',     desc: 'When your refund request is approved or denied.',          push: pushRefundDecisions, setPush: setPushRefundDecisions },
+                      { label: 'Account security',     desc: 'Security alerts such as phone number changes.',            push: pushAccountSecurity, setPush: setPushAccountSecurity },
                     ]).map((row) => (
                       <tr key={row.label} className="opacity-70">
                         <td className="py-3 pr-4">
@@ -816,7 +820,12 @@ export default function AccountClient({
                           <input type="checkbox" checked disabled className="w-4 h-4 opacity-60 cursor-not-allowed" />
                         </td>
                         <td className="text-center px-4">
-                          <input type="checkbox" checked={false} disabled className="w-4 h-4 opacity-30 cursor-not-allowed" />
+                          <input
+                            type="checkbox"
+                            checked={row.push}
+                            onChange={(e) => row.setPush(e.target.checked)}
+                            className="w-4 h-4 accent-primary cursor-pointer"
+                          />
                         </td>
                         <td className="text-center px-4">
                           <input type="checkbox" checked={false} disabled className="w-4 h-4 opacity-30 cursor-not-allowed" />

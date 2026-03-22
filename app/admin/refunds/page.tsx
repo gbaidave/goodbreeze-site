@@ -204,13 +204,14 @@ export default async function AdminRefundsPage({
                 )}
 
                 {/* Action panel — client component */}
-                {req.status === 'pending' && (
+                {(req.status === 'pending' || req.status === 'denied') && (
                   <RefundActionPanel
                     requestId={req.id}
                     stripePaymentId={req.stripe_payment_id}
                     amountPaidCents={req.amount_paid_cents ?? 0}
                     creditsUsed={req.credits_used_at_request}
                     userId={req.user_id}
+                    status={req.status}
                   />
                 )}
 

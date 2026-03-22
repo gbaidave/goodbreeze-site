@@ -59,8 +59,8 @@ export async function POST(request: NextRequest) {
     const category: string = body.category ?? 'help'
     const subject = body.subject ? String(body.subject).trim().slice(0, MAX_SUBJECT_LEN) : null
     const productType: string | null = body.product_type ?? null
-    const userSelectedProductId: string | null = body.user_selected_product_id ?? null
-    const userSelectedProductLabel: string | null = body.user_selected_product_label ?? null
+    const userSelectedProductId: string | null = body.user_selected_product_id || null
+    const userSelectedProductLabel: string | null = body.user_selected_product_label || null
     const clientCreditsUsed: number | null = typeof body.credits_used === 'number' ? body.credits_used : null
     const clientIsEligible: boolean | null = typeof body.is_eligible === 'boolean' ? body.is_eligible : null
     const clientIneligibilityReasons: string[] | null = Array.isArray(body.ineligibility_reasons) ? body.ineligibility_reasons : null

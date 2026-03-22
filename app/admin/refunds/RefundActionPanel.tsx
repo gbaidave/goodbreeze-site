@@ -9,6 +9,7 @@ interface Props {
   amountPaidCents: number
   creditsUsed: number
   userId: string
+  status: string
 }
 
 const DENY_REASONS = [
@@ -19,7 +20,7 @@ const DENY_REASONS = [
   'Other',
 ]
 
-export function RefundActionPanel({ requestId, stripePaymentId, amountPaidCents, creditsUsed }: Props) {
+export function RefundActionPanel({ requestId, stripePaymentId, amountPaidCents, creditsUsed, status }: Props) {
   const router = useRouter()
   const [notes, setNotes] = useState('')
   const [loading, setLoading] = useState(false)
@@ -83,6 +84,25 @@ export function RefundActionPanel({ requestId, stripePaymentId, amountPaidCents,
     }
   }
 
+  async function handleReopen() {
+    setLoading(true)
+    setError('')
+    try {
+      const res = await fetch(`/api/admin/refunds/${requestId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'reopen' }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setError(data.error || 'Action failed. Try again.'); return }
+      router.refresh()
+    } catch {
+      setError('Something went wrong. Try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   async function savePaymentId() {
     const id = paymentIdInput.trim()
     if (!id) { setPaymentIdError('Enter a payment intent ID.'); return }
@@ -103,6 +123,23 @@ export function RefundActionPanel({ requestId, stripePaymentId, amountPaidCents,
     } finally {
       setSavingPaymentId(false)
     }
+  }
+
+  // Denied requests: show reopen button only
+  if (status === 'denied') {
+    return (
+      <div className="border-t border-zinc-800 pt-4 space-y-3">
+        <p className="text-xs text-amber-400">This request was denied. Reopen it to allow processing.</p>
+        {error && <p className="text-red-400 text-xs">{error}</p>}
+        <button
+          onClick={handleReopen}
+          disabled={loading}
+          className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-50"
+        >
+          {loading ? 'Reopening…' : 'Reopen Request'}
+        </button>
+      </div>
+    )
   }
 
   return (

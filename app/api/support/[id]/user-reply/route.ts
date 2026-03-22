@@ -76,9 +76,18 @@ export async function POST(
 
     const messageId = insertedMsg?.id ?? null
 
-    // Auto-reopen if ticket was resolved/closed — user follow-up implies they need more help
+    // Auto-reopen if ticket was resolved/closed/denied — user follow-up implies they need more help
     if (wasClosedOrResolved) {
       await svc.from('support_requests').update({ status: 'open' }).eq('id', requestId)
+
+      // If the ticket was denied, also reset the linked refund_request back to pending
+      // so admin can process it — without this the admin route blocks non-pending requests
+      if (ticket.status === 'denied') {
+        await svc.from('refund_requests')
+          .update({ status: 'pending' })
+          .eq('support_request_id', requestId)
+          .eq('status', 'denied')
+      }
     }
 
     // Fetch user profile for notification context
