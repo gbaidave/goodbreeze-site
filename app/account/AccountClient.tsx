@@ -1,11 +1,21 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { isValidPhone, normalizePhone } from '@/lib/phone'
 import TurnstileWidget from '@/components/auth/TurnstileWidget'
+
+/** Reads ?security=expired from the URL and calls onExpired. Must live inside Suspense. */
+function SecurityParamWatcher({ onExpired }: { onExpired: () => void }) {
+  const searchParams = useSearchParams()
+  useEffect(() => {
+    if (searchParams.get('security') === 'expired') onExpired()
+  }, [searchParams, onExpired])
+  return null
+}
 
 const CREDIT_PRODUCT_LABELS: Record<string, string> = {
   spark_pack: 'Spark Pack purchase',
@@ -84,6 +94,7 @@ interface Props {
   initialEmailPrefs: { nudge_emails: boolean; support_emails: boolean; referral_credit: boolean; report_ready: boolean; support_confirmation: boolean; report_failure: boolean; testimonial_approved: boolean; bug_updates: boolean }
   initialNotifPrefs: { billing_payments?: boolean; refund_decisions?: boolean; account_security?: boolean; nudge_emails: boolean; support_emails: boolean; referral_credit: boolean; report_ready: boolean; support_confirmation: boolean; report_failure: boolean; testimonial_approved: boolean; bug_updates: boolean }
   isEmailUser: boolean
+  passwordLastChangedAt?: string | null
   dataExportLocked: boolean
   hasRecentPackCredits: boolean
   openTicketCount: number
@@ -110,6 +121,7 @@ export default function AccountClient({
   initialEmailPrefs,
   initialNotifPrefs,
   isEmailUser,
+  passwordLastChangedAt,
   dataExportLocked,
   hasRecentPackCredits,
   openTicketCount,
@@ -169,6 +181,24 @@ export default function AccountClient({
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState('')
   const [deleteCaptchaToken, setDeleteCaptchaToken] = useState('')
+  // Change password (in-app form for email users)
+  const [showChangePassword, setShowChangePassword] = useState(false)
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [changePwLoading, setChangePwLoading] = useState(false)
+  const [changePwError, setChangePwError] = useState('')
+  const [changePwSuccess, setChangePwSuccess] = useState(false)
+
+  // Password expiry — compute from passwordLastChangedAt
+  const pwExpiryDate = passwordLastChangedAt
+    ? new Date(new Date(passwordLastChangedAt).getTime() + 90 * 86400000)
+    : null
+  const daysUntilExpiry = pwExpiryDate
+    ? Math.ceil((pwExpiryDate.getTime() - Date.now()) / 86400000)
+    : null
+  const pwExpired = daysUntilExpiry !== null && daysUntilExpiry <= 0
+  const pwWarningSoon = daysUntilExpiry !== null && daysUntilExpiry > 0 && daysUntilExpiry <= 7
 
   const hasChanges = name !== initialName || phone !== initialPhone || smsOk !== initialSmsOk
   const phoneChanged = phone !== initialPhone
@@ -277,6 +307,32 @@ export default function AccountClient({
     await fetch('/api/auth/send-password-reset', { method: 'POST' })
     setResetLoading(false)
     setResetSent(true)
+  }
+
+  async function changePassword(e: React.FormEvent) {
+    e.preventDefault()
+    setChangePwError('')
+    if (newPassword.length < 12) { setChangePwError('New password must be at least 12 characters.'); return }
+    if (newPassword !== confirmPassword) { setChangePwError('Passwords do not match.'); return }
+    setChangePwLoading(true)
+    try {
+      const res = await fetch('/api/auth/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setChangePwError(data.error || 'Failed to change password.'); return }
+      setChangePwSuccess(true)
+      setCurrentPassword('')
+      setNewPassword('')
+      setConfirmPassword('')
+      setShowChangePassword(false)
+    } catch {
+      setChangePwError('Something went wrong. Please try again.')
+    } finally {
+      setChangePwLoading(false)
+    }
   }
 
   async function saveEmailPrefs() {
@@ -395,6 +451,11 @@ export default function AccountClient({
 
   return (
     <div className="min-h-screen bg-dark py-12 px-6">
+      {/* Auto-open change password form when redirected with ?security=expired */}
+      <Suspense fallback={null}>
+        <SecurityParamWatcher onExpired={() => setShowChangePassword(true)} />
+      </Suspense>
+
       <div className="max-w-2xl mx-auto space-y-6">
 
         {/* Header */}
@@ -733,6 +794,25 @@ export default function AccountClient({
           )}
         </motion.div>
 
+        {/* Password expiry warning banner — shown 7 days before or when expired */}
+        {isEmailUser && (pwExpired || pwWarningSoon) && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`rounded-xl px-4 py-3 text-sm flex items-start gap-3 ${pwExpired ? 'bg-red-950/60 border border-red-700/50 text-red-300' : 'bg-amber-950/60 border border-amber-700/50 text-amber-300'}`}
+          >
+            <svg className="w-4 h-4 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+            </svg>
+            <span>
+              {pwExpired
+                ? <>Your password expired on {pwExpiryDate!.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}. <button onClick={() => setShowChangePassword(true)} className="underline font-medium">Update it now</button> to regain full access.</>
+                : <>Your password expires on {pwExpiryDate!.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}. <button onClick={() => setShowChangePassword(true)} className="underline font-medium">Update it now</button> in Account Settings → Security.</>
+              }
+            </span>
+          </motion.div>
+        )}
+
         {/* Security Card */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
@@ -741,21 +821,110 @@ export default function AccountClient({
           className="bg-dark-700 border border-primary/20 rounded-2xl p-6 space-y-4"
         >
           <h2 className="text-lg font-semibold text-white">Security</h2>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-white font-medium">Password</p>
-              <p className="text-xs text-gray-500 mt-0.5">Send a reset link to {email}</p>
+
+          {/* Password row */}
+          <div className="space-y-3">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-sm text-white font-medium">Password</p>
+                {isEmailUser && pwExpiryDate && (
+                  <p className={`text-xs mt-0.5 ${pwExpired ? 'text-red-400' : daysUntilExpiry !== null && daysUntilExpiry <= 7 ? 'text-amber-400' : 'text-gray-500'}`}>
+                    {pwExpired
+                      ? `Expired on ${pwExpiryDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+                      : `Expires ${pwExpiryDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`}
+                  </p>
+                )}
+                {!isEmailUser && (
+                  <p className="text-xs text-gray-500 mt-0.5">Managed by Google — no password to change</p>
+                )}
+              </div>
+              {isEmailUser && (
+                <div className="flex items-center gap-2 shrink-0">
+                  {changePwSuccess && <p className="text-xs text-green-400">Password updated!</p>}
+                  <button
+                    onClick={() => { setShowChangePassword(!showChangePassword); setChangePwError(''); setChangePwSuccess(false) }}
+                    className="px-3 py-1.5 text-sm border border-primary/30 text-primary rounded-xl hover:bg-primary/10 transition-colors"
+                  >
+                    Change password
+                  </button>
+                </div>
+              )}
             </div>
-            {resetSent ? (
-              <p className="text-sm text-green-400">Reset link sent!</p>
-            ) : (
-              <button
-                onClick={sendPasswordReset}
-                disabled={resetLoading}
-                className="px-4 py-2 text-sm border border-primary/30 text-primary rounded-xl hover:bg-primary/10 transition-colors disabled:opacity-40"
-              >
-                {resetLoading ? 'Sending…' : 'Send reset link'}
-              </button>
+
+            {/* Inline change password form */}
+            {isEmailUser && showChangePassword && (
+              <form onSubmit={changePassword} className="space-y-3 pt-1 border-t border-gray-800">
+                {changePwError && (
+                  <p className="text-xs text-red-400">{changePwError}</p>
+                )}
+                <div>
+                  <label className="block text-xs font-medium text-gray-400 mb-1">Current password</label>
+                  <input
+                    type="password"
+                    value={currentPassword}
+                    onChange={e => setCurrentPassword(e.target.value)}
+                    required
+                    className="w-full bg-dark-600 border border-gray-700 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-primary/60 transition-colors"
+                    placeholder="Enter your current password"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-400 mb-1">New password</label>
+                  <input
+                    type="password"
+                    value={newPassword}
+                    onChange={e => setNewPassword(e.target.value)}
+                    required
+                    className="w-full bg-dark-600 border border-gray-700 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-primary/60 transition-colors"
+                    placeholder="At least 12 characters"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-400 mb-1">Confirm new password</label>
+                  <input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={e => setConfirmPassword(e.target.value)}
+                    required
+                    className="w-full bg-dark-600 border border-gray-700 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-primary/60 transition-colors"
+                    placeholder="Same password again"
+                  />
+                </div>
+                <div className="flex gap-2 pt-1">
+                  <button
+                    type="submit"
+                    disabled={changePwLoading}
+                    className="px-4 py-2 text-sm bg-primary text-dark-950 font-semibold rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-40"
+                  >
+                    {changePwLoading ? 'Updating…' : 'Update password'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setShowChangePassword(false); setChangePwError(''); setCurrentPassword(''); setNewPassword(''); setConfirmPassword('') }}
+                    className="px-4 py-2 text-sm border border-gray-700 text-gray-400 rounded-xl hover:bg-gray-800 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {/* Forgot password / reset link */}
+            {isEmailUser && (
+              <div className="flex items-center justify-between pt-1 border-t border-gray-800/60">
+                <p className="text-xs text-gray-500">Forgot your current password? Send a reset link to {email}</p>
+                {resetSent ? (
+                  <p className="text-xs text-green-400 shrink-0 ml-4">Sent!</p>
+                ) : (
+                  <button
+                    onClick={sendPasswordReset}
+                    disabled={resetLoading}
+                    className="text-xs text-gray-400 hover:text-primary transition-colors shrink-0 ml-4 disabled:opacity-40"
+                  >
+                    {resetLoading ? 'Sending…' : 'Send reset link'}
+                  </button>
+                )}
+              </div>
             )}
           </div>
         </motion.div>

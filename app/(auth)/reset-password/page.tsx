@@ -27,6 +27,8 @@ export default function ResetPasswordPage() {
     const supabase = createClient()
     const { error } = await supabase.auth.updateUser({ password: data.password })
     if (error) { setError(error.message); return }
+    // Reset the 90-day rotation clock after a forgot-password reset
+    fetch('/api/auth/stamp-password-changed', { method: 'POST' }).catch(() => {})
     router.push('/dashboard?message=password_updated')
   }
 
