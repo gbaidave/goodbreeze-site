@@ -56,7 +56,9 @@ export async function POST(request: NextRequest) {
       .update({ password_last_changed_at: new Date().toISOString() })
       .eq('id', user.id)
 
-    return NextResponse.json({ success: true })
+    const response = NextResponse.json({ success: true })
+    response.cookies.set('pw_expired', '', { maxAge: 0, path: '/' })
+    return response
   } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }

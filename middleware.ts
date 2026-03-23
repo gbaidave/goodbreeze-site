@@ -63,17 +63,22 @@ export async function middleware(request: NextRequest) {
       }
     }
 
-    // Password rotation: email/password users must change their password every 90 days.
-    // Skip: /account (user can visit freely), /expired-password (where they fix it), /auth/ routes, OAuth-only users.
-    // API routes ARE checked — an expired user should not be able to call /api/reports.
+    // Password rotation: block ALL routes for authenticated email users with expired password.
+    // Exceptions: /expired-password (the fix page), /auth/ (Supabase flows), /api/auth/ (change-password API).
+    // Cookie pw_expired=1 caches the expired state for 5 min to avoid repeated DB hits.
     const hasPasswordProvider = (user?.app_metadata?.providers as string[] | undefined)?.includes('email')
-    const isExpiryCheckRoute = user && hasPasswordProvider &&
-      PROTECTED_ROUTES.some(r => pathname.startsWith(r)) &&
-      !pathname.startsWith('/account') &&
+    const shouldCheckExpiry = user && hasPasswordProvider &&
       !pathname.startsWith('/expired-password') &&
-      !pathname.startsWith('/auth/')
+      !pathname.startsWith('/auth/') &&
+      !pathname.startsWith('/api/auth/')
 
-    if (isExpiryCheckRoute) {
+    if (shouldCheckExpiry) {
+      const pwExpiredCookie = request.cookies.get('pw_expired')?.value
+
+      if (pwExpiredCookie === '1') {
+        return NextResponse.redirect(new URL('/expired-password', request.url))
+      }
+
       const { data: pwProfile } = await supabase
         .from('profiles')
         .select('password_last_changed_at')
@@ -83,7 +88,14 @@ export async function middleware(request: NextRequest) {
       if (pwProfile?.password_last_changed_at) {
         const daysSince = (Date.now() - new Date(pwProfile.password_last_changed_at).getTime()) / 86400000
         if (daysSince >= 90) {
-          return NextResponse.redirect(new URL('/expired-password', request.url))
+          const redirectRes = NextResponse.redirect(new URL('/expired-password', request.url))
+          redirectRes.cookies.set('pw_expired', '1', {
+            httpOnly: true,
+            sameSite: 'lax',
+            path: '/',
+            maxAge: 300,
+          })
+          return redirectRes
         }
       }
     }

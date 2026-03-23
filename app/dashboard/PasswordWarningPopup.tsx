@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 
 interface Props {
   daysUntilExpiry: number
@@ -8,17 +8,7 @@ interface Props {
 }
 
 export function PasswordWarningPopup({ daysUntilExpiry, expiryDate }: Props) {
-  const [visible, setVisible] = useState(false)
-
-  useEffect(() => {
-    const dismissed = sessionStorage.getItem('pw_warning_dismissed')
-    if (!dismissed) setVisible(true)
-  }, [])
-
-  function dismiss() {
-    sessionStorage.setItem('pw_warning_dismissed', '1')
-    setVisible(false)
-  }
+  const [visible, setVisible] = useState(true)
 
   if (!visible) return null
 
@@ -39,13 +29,13 @@ export function PasswordWarningPopup({ daysUntilExpiry, expiryDate }: Props) {
             <div className="flex items-center gap-3 mt-5">
               <a
                 href="/expired-password"
-                onClick={dismiss}
+                onClick={() => setVisible(false)}
                 className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-zinc-950 font-semibold text-sm rounded-xl transition-colors"
               >
                 Update password
               </a>
               <button
-                onClick={dismiss}
+                onClick={() => setVisible(false)}
                 className="px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors"
               >
                 Remind me later
