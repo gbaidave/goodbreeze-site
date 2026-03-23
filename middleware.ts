@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { canDo } from '@/lib/permissions'
 
 // Routes that require authentication
-const PROTECTED_ROUTES = ['/dashboard', '/account', '/api/reports', '/admin', '/api/admin']
+const PROTECTED_ROUTES = ['/dashboard', '/account', '/api/reports', '/admin', '/api/admin', '/expired-password']
 // Routes that redirect to dashboard if already logged in
 const AUTH_ROUTES = ['/login', '/signup']
 
@@ -64,12 +64,13 @@ export async function middleware(request: NextRequest) {
     }
 
     // Password rotation: email/password users must change their password every 90 days.
-    // Skip: API routes, /account itself (would loop), /auth/ routes, and OAuth-only users.
+    // Skip: /account (user can visit freely), /expired-password (where they fix it), /auth/ routes, OAuth-only users.
+    // API routes ARE checked — an expired user should not be able to call /api/reports.
     const hasPasswordProvider = (user?.app_metadata?.providers as string[] | undefined)?.includes('email')
     const isExpiryCheckRoute = user && hasPasswordProvider &&
       PROTECTED_ROUTES.some(r => pathname.startsWith(r)) &&
-      !pathname.startsWith('/api/') &&
       !pathname.startsWith('/account') &&
+      !pathname.startsWith('/expired-password') &&
       !pathname.startsWith('/auth/')
 
     if (isExpiryCheckRoute) {
@@ -82,7 +83,7 @@ export async function middleware(request: NextRequest) {
       if (pwProfile?.password_last_changed_at) {
         const daysSince = (Date.now() - new Date(pwProfile.password_last_changed_at).getTime()) / 86400000
         if (daysSince >= 90) {
-          return NextResponse.redirect(new URL('/account?security=expired', request.url))
+          return NextResponse.redirect(new URL('/expired-password', request.url))
         }
       }
     }

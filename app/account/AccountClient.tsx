@@ -1,21 +1,11 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { isValidPhone, normalizePhone } from '@/lib/phone'
 import TurnstileWidget from '@/components/auth/TurnstileWidget'
-
-/** Reads ?security=expired from the URL and calls onExpired. Must live inside Suspense. */
-function SecurityParamWatcher({ onExpired }: { onExpired: () => void }) {
-  const searchParams = useSearchParams()
-  useEffect(() => {
-    if (searchParams.get('security') === 'expired') onExpired()
-  }, [searchParams, onExpired])
-  return null
-}
 
 const CREDIT_PRODUCT_LABELS: Record<string, string> = {
   spark_pack: 'Spark Pack purchase',
@@ -183,7 +173,6 @@ export default function AccountClient({
   const [deleteCaptchaToken, setDeleteCaptchaToken] = useState('')
   // Change password (in-app form for email users)
   const [showChangePassword, setShowChangePassword] = useState(false)
-  const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [changePwLoading, setChangePwLoading] = useState(false)
@@ -319,12 +308,11 @@ export default function AccountClient({
       const res = await fetch('/api/auth/change-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ currentPassword, newPassword }),
+        body: JSON.stringify({ newPassword }),
       })
       const data = await res.json()
       if (!res.ok) { setChangePwError(data.error || 'Failed to change password.'); return }
       setChangePwSuccess(true)
-      setCurrentPassword('')
       setNewPassword('')
       setConfirmPassword('')
       setShowChangePassword(false)
@@ -451,11 +439,6 @@ export default function AccountClient({
 
   return (
     <div className="min-h-screen bg-dark py-12 px-6">
-      {/* Auto-open change password form when redirected with ?security=expired */}
-      <Suspense fallback={null}>
-        <SecurityParamWatcher onExpired={() => setShowChangePassword(true)} />
-      </Suspense>
-
       <div className="max-w-2xl mx-auto space-y-6">
 
         {/* Header */}
@@ -858,17 +841,6 @@ export default function AccountClient({
                   <p className="text-xs text-red-400">{changePwError}</p>
                 )}
                 <div>
-                  <label className="block text-xs font-medium text-gray-400 mb-1">Current password</label>
-                  <input
-                    type="password"
-                    value={currentPassword}
-                    onChange={e => setCurrentPassword(e.target.value)}
-                    required
-                    className="w-full bg-dark-600 border border-gray-700 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-primary/60 transition-colors"
-                    placeholder="Enter your current password"
-                  />
-                </div>
-                <div>
                   <label className="block text-xs font-medium text-gray-400 mb-1">New password</label>
                   <input
                     type="password"
@@ -900,7 +872,7 @@ export default function AccountClient({
                   </button>
                   <button
                     type="button"
-                    onClick={() => { setShowChangePassword(false); setChangePwError(''); setCurrentPassword(''); setNewPassword(''); setConfirmPassword('') }}
+                    onClick={() => { setShowChangePassword(false); setChangePwError(''); setNewPassword(''); setConfirmPassword('') }}
                     className="px-4 py-2 text-sm border border-gray-700 text-gray-400 rounded-xl hover:bg-gray-800 transition-colors"
                   >
                     Cancel

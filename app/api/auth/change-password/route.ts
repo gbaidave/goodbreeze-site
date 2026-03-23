@@ -1,8 +1,8 @@
 /**
  * POST /api/auth/change-password
  *
- * In-app password change for email/password users.
- * Re-authenticates with current password before allowing the change.
+ * In-app password change for authenticated email/password users.
+ * User is already authenticated — no current password re-verification needed.
  * Updates password_last_changed_at on success to reset the 90-day rotation clock.
  */
 
@@ -35,28 +35,16 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { currentPassword, newPassword } = body
+    const { newPassword } = body
 
-    if (!currentPassword || !newPassword) {
-      return NextResponse.json({ error: 'Current and new password are required.' }, { status: 400 })
+    if (!newPassword) {
+      return NextResponse.json({ error: 'New password is required.' }, { status: 400 })
     }
     if (newPassword.length < 12) {
       return NextResponse.json({ error: 'New password must be at least 12 characters.' }, { status: 400 })
     }
-    if (currentPassword === newPassword) {
-      return NextResponse.json({ error: 'New password must be different from your current password.' }, { status: 400 })
-    }
 
-    // Verify current password by re-authenticating
-    const { error: reAuthError } = await supabase.auth.signInWithPassword({
-      email: user.email!,
-      password: currentPassword,
-    })
-    if (reAuthError) {
-      return NextResponse.json({ error: 'Current password is incorrect.' }, { status: 400 })
-    }
-
-    // Update password
+    // Update password — user is already authenticated, no re-auth needed
     const { error: updateError } = await supabase.auth.updateUser({ password: newPassword })
     if (updateError) {
       return NextResponse.json({ error: updateError.message }, { status: 500 })
