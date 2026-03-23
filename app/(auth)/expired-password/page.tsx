@@ -5,8 +5,6 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import PasswordStrengthMeter from '@/components/auth/PasswordStrengthMeter'
 
-export const metadata = { title: 'Update Password | Good Breeze AI' }
-
 export default function ExpiredPasswordPage() {
   const router = useRouter()
   const [newPassword, setNewPassword] = useState('')
