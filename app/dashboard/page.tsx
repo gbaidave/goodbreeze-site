@@ -6,6 +6,7 @@ import ReportList from './ReportList'
 import { ReferralSection } from './ReferralSection'
 import { NudgeCard } from './NudgeCard'
 import SupportSection from './SupportSection'
+import { PasswordWarningPopup } from './PasswordWarningPopup'
 
 export default async function DashboardPage({
   searchParams,
@@ -28,7 +29,7 @@ export default async function DashboardPage({
   // Fetch profile, subscription, credits, reports, referral data, testimonials, and support in parallel
   const serviceClient = createServiceClient()
   const [profileRes, subRes, creditsRes, reportsRes, referralRes, testimonialsRes, ticketsRes] = await Promise.all([
-    supabase.from('profiles').select('name, email, role, plan_override_type, plan_override_until').eq('id', user.id).single(),
+    supabase.from('profiles').select('name, email, role, plan_override_type, plan_override_until, password_last_changed_at').eq('id', user.id).single(),
     supabase.from('subscriptions').select('plan, status, current_period_end, credits_remaining')
       .eq('user_id', user.id).in('status', ['active', 'trialing']).order('created_at', { ascending: false }).limit(1).single(),
     supabase.from('credits').select('balance, expires_at').eq('user_id', user.id).gt('balance', 0).order('purchased_at', { ascending: true }),
@@ -85,6 +86,16 @@ export default async function DashboardPage({
   const rawPlan = sub?.plan ?? 'free'
   const plan = overrideActive ? (profile!.plan_override_type as string) : rawPlan
 
+  // Password expiry warning — shown as popup for email/password users within 7 days of expiry
+  const isEmailUser = (user.app_metadata?.providers as string[] | undefined)?.includes('email') ?? false
+  const pwLastChanged = profile?.password_last_changed_at
+  const pwExpiryMs = pwLastChanged ? new Date(pwLastChanged).getTime() + 90 * 86400000 : null
+  const daysUntilExpiry = pwExpiryMs ? Math.ceil((pwExpiryMs - Date.now()) / 86400000) : null
+  const showPwWarning = isEmailUser && daysUntilExpiry !== null && daysUntilExpiry > 0 && daysUntilExpiry <= 7
+  const pwExpiryDateLabel = pwExpiryMs
+    ? new Date(pwExpiryMs).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    : ''
+
   const firstName = profile?.name?.split(' ')[0] || profile?.email?.split('@')[0] || 'there'
   const isAdminPanel = canDo(profile?.role, 'view_admin_panel') // superadmin, admin, support — gets admin link
   const isAdmin = isAdminPanel || profile?.role === 'tester'    // also tester — suppresses billing/nudge UI
@@ -109,6 +120,9 @@ export default async function DashboardPage({
 
   return (
     <div className="min-h-screen bg-dark py-12 px-6">
+      {showPwWarning && (
+        <PasswordWarningPopup daysUntilExpiry={daysUntilExpiry!} expiryDate={pwExpiryDateLabel} />
+      )}
       <div className="max-w-5xl mx-auto space-y-8">
 
         {/* Welcome banner — shown on first login after email confirmation */}

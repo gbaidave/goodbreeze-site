@@ -9,6 +9,7 @@ interface Props {
   amountPaidCents: number
   creditsUsed: number
   userId: string
+  status: string
 }
 
 const DENY_REASONS = [
@@ -19,7 +20,7 @@ const DENY_REASONS = [
   'Other',
 ]
 
-export function RefundActionPanel({ requestId, stripePaymentId, amountPaidCents, creditsUsed }: Props) {
+export function RefundActionPanel({ requestId, stripePaymentId, amountPaidCents, creditsUsed, status }: Props) {
   const router = useRouter()
   const [notes, setNotes] = useState('')
   const [loading, setLoading] = useState(false)
@@ -28,28 +29,72 @@ export function RefundActionPanel({ requestId, stripePaymentId, amountPaidCents,
   const [savingPaymentId, setSavingPaymentId] = useState(false)
   const [paymentIdError, setPaymentIdError] = useState('')
   const [showDenyForm, setShowDenyForm] = useState(false)
-  const [denyReason, setDenyReason] = useState(DENY_REASONS[0])
+  const [denyReason, setDenyReason] = useState(DENY_REASONS[0]!)
+  const [denyReasonDetail, setDenyReasonDetail] = useState('')
+  const [denyDropdownOpen, setDenyDropdownOpen] = useState(false)
 
   const hasPaymentId = !!stripePaymentId && stripePaymentId.trim() !== ''
-  const isEligible = creditsUsed === 0 && hasPaymentId
+  // Refund can be issued if no credits used — PI is resolved at processing time for subscriptions
+  const canRefund = creditsUsed === 0
 
-  async function handleAction(action: 'refund' | 'deny') {
+  async function handleRefund() {
     setLoading(true)
     setError('')
     try {
-      const combinedNotes = action === 'deny' && denyReason
-        ? notes.trim() ? `${denyReason} — ${notes.trim()}` : denyReason
-        : notes
       const res = await fetch(`/api/admin/refunds/${requestId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action, notes: combinedNotes }),
+        body: JSON.stringify({ action: 'refund', notes }),
       })
       const data = await res.json()
-      if (!res.ok) {
-        setError(data.error || 'Action failed. Try again.')
-        return
-      }
+      if (!res.ok) { setError(data.error || 'Action failed. Try again.'); return }
+      router.refresh()
+    } catch {
+      setError('Something went wrong. Try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function handleDeny() {
+    if (denyReason === 'Other' && !denyReasonDetail.trim()) {
+      setError('Please explain the denial reason.')
+      return
+    }
+    setLoading(true)
+    setError('')
+    try {
+      const res = await fetch(`/api/admin/refunds/${requestId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'deny',
+          notes,
+          denyReason,
+          denyReasonDetail: denyReason === 'Other' ? denyReasonDetail.trim() : undefined,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setError(data.error || 'Action failed. Try again.'); return }
+      router.refresh()
+    } catch {
+      setError('Something went wrong. Try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function handleReopen() {
+    setLoading(true)
+    setError('')
+    try {
+      const res = await fetch(`/api/admin/refunds/${requestId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'reopen' }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setError(data.error || 'Action failed. Try again.'); return }
       router.refresh()
     } catch {
       setError('Something went wrong. Try again.')
@@ -80,13 +125,37 @@ export function RefundActionPanel({ requestId, stripePaymentId, amountPaidCents,
     }
   }
 
+  // Denied requests: show reopen button only
+  if (status === 'denied') {
+    return (
+      <div className="border-t border-zinc-800 pt-4 space-y-3">
+        <p className="text-xs text-amber-400">This request was denied. Reopen it to allow processing.</p>
+        {error && <p className="text-red-400 text-xs">{error}</p>}
+        <button
+          onClick={handleReopen}
+          disabled={loading}
+          className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-50"
+        >
+          {loading ? 'Reopening…' : 'Reopen Request'}
+        </button>
+      </div>
+    )
+  }
+
   return (
     <div className="border-t border-zinc-800 pt-4 space-y-3">
-      {/* Stripe payment ID entry — shown when no ID on file */}
+      {/* Stripe payment ID entry — shown when no ID on file (manual fallback) */}
       {!hasPaymentId && (
         <div className="bg-zinc-800/60 border border-zinc-700 rounded-lg px-3 py-3 space-y-2">
           <p className="text-xs text-amber-400 font-medium">No Stripe payment ID on file</p>
-          <p className="text-xs text-gray-500">Look up the payment intent ID in your <a href="https://dashboard.stripe.com/payments" target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-300">Stripe dashboard</a> and enter it below to enable automated refund.</p>
+          <p className="text-xs text-gray-500">
+            For subscriptions this is resolved automatically at refund time. For credit packs,
+            look up the PI in your{' '}
+            <a href="https://dashboard.stripe.com/payments" target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-300">
+              Stripe dashboard
+            </a>{' '}
+            if needed.
+          </p>
           <div className="flex gap-2">
             <input
               type="text"
@@ -116,22 +185,55 @@ export function RefundActionPanel({ requestId, stripePaymentId, amountPaidCents,
       />
       {error && <p className="text-red-400 text-xs">{error}</p>}
 
-      {/* Deny form — shown when deny is clicked */}
+      {/* Deny form */}
       {showDenyForm && (
         <div className="bg-zinc-800/60 border border-zinc-700 rounded-lg px-3 py-3 space-y-2">
           <p className="text-xs text-gray-400 font-medium">Reason for denial</p>
-          <select
-            value={denyReason}
-            onChange={(e) => setDenyReason(e.target.value)}
-            className="w-full px-2 py-1.5 bg-zinc-900 border border-zinc-600 text-white text-sm rounded-lg focus:outline-none focus:border-primary transition-colors"
-          >
-            {DENY_REASONS.map((r) => (
-              <option key={r} value={r}>{r}</option>
-            ))}
-          </select>
+
+          {/* Custom dropdown — never use native select */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setDenyDropdownOpen((v) => !v)}
+              className="w-full flex items-center justify-between px-3 py-2 bg-zinc-900 border border-zinc-600 text-white text-sm rounded-lg focus:outline-none focus:border-primary transition-colors"
+            >
+              <span>{denyReason}</span>
+              <svg className={`w-4 h-4 text-gray-400 transition-transform ${denyDropdownOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            {denyDropdownOpen && (
+              <div className="absolute z-20 mt-1 w-full bg-zinc-900 border border-zinc-600 rounded-lg shadow-xl overflow-hidden">
+                {DENY_REASONS.map((r) => (
+                  <button
+                    key={r}
+                    type="button"
+                    onClick={() => { setDenyReason(r); setDenyDropdownOpen(false); setDenyReasonDetail('') }}
+                    className={`w-full text-left px-3 py-2 text-sm transition-colors ${r === denyReason ? 'bg-primary/20 text-white' : 'text-gray-300 hover:bg-zinc-800 hover:text-white'}`}
+                  >
+                    {r}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Detail field — required when reason is Other */}
+          {denyReason === 'Other' && (
+            <div>
+              <textarea
+                value={denyReasonDetail}
+                onChange={(e) => setDenyReasonDetail(e.target.value)}
+                placeholder="Explain the reason shown to the user…"
+                rows={2}
+                className="w-full px-2 py-1.5 bg-zinc-900 border border-zinc-600 text-white text-sm rounded-lg focus:outline-none focus:border-primary transition-colors resize-none placeholder-zinc-600"
+              />
+            </div>
+          )}
+
           <div className="flex gap-2">
             <button
-              onClick={() => handleAction('deny')}
+              onClick={handleDeny}
               disabled={loading}
               className="px-4 py-2 bg-zinc-600 hover:bg-zinc-500 text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-50"
             >
@@ -139,7 +241,7 @@ export function RefundActionPanel({ requestId, stripePaymentId, amountPaidCents,
             </button>
             <button
               type="button"
-              onClick={() => setShowDenyForm(false)}
+              onClick={() => { setShowDenyForm(false); setDenyDropdownOpen(false) }}
               className="px-3 py-2 text-gray-500 text-sm hover:text-gray-300 transition-colors"
             >
               Cancel
@@ -150,9 +252,9 @@ export function RefundActionPanel({ requestId, stripePaymentId, amountPaidCents,
 
       <div className="flex gap-3 flex-wrap">
         <button
-          onClick={() => handleAction('refund')}
-          disabled={loading || !isEligible}
-          title={!isEligible ? (creditsUsed > 0 ? 'Credits have been used' : 'Enter Stripe payment ID first') : undefined}
+          onClick={handleRefund}
+          disabled={loading || !canRefund}
+          title={!canRefund ? 'Credits have been used — not eligible for refund' : undefined}
           className="px-4 py-2 bg-green-700 hover:bg-green-600 text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? 'Processing…' : 'Issue Stripe Refund'}

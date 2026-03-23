@@ -86,7 +86,7 @@ export default function Contact() {
               Schedule Your Call
             </a>
             <p className="text-sm text-gray-400 mt-4">
-              Or try our <Link href="/reports/competitive-analyzer" className="text-primary hover:underline">free reports</Link> first
+              Or try our <Link href="/reports/competitive-analyzer" className="text-primary hover:underline">free report</Link> first, or <Link href="/support" className="text-primary hover:underline">contact support</Link>
             </p>
           </div>
         </motion.div>

@@ -45,7 +45,10 @@ function getNotificationLink(type: string, isAdmin: boolean): string {
     case 'new_testimonial':
       return isAdmin ? '/admin/testimonials' : '/testimonials/submit'
     case 'refund_request':
+    case 'refund_denied':
       return isAdmin ? '/admin/refunds' : '/support'
+    case 'refund_processed':
+      return '/support'
     case 'dispute_request':
       return isAdmin ? '/admin/disputes' : '/support'
     case 'support_request':

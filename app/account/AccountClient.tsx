@@ -82,8 +82,9 @@ interface Props {
   creditHistory?: CreditHistoryItem[]
   refundedPaymentIds?: Set<string>
   initialEmailPrefs: { nudge_emails: boolean; support_emails: boolean; referral_credit: boolean; report_ready: boolean; support_confirmation: boolean; report_failure: boolean; testimonial_approved: boolean; bug_updates: boolean }
-  initialNotifPrefs: { nudge_emails: boolean; support_emails: boolean; referral_credit: boolean; report_ready: boolean; support_confirmation: boolean; report_failure: boolean; testimonial_approved: boolean; bug_updates: boolean }
+  initialNotifPrefs: { billing_payments?: boolean; refund_decisions?: boolean; account_security?: boolean; nudge_emails: boolean; support_emails: boolean; referral_credit: boolean; report_ready: boolean; support_confirmation: boolean; report_failure: boolean; testimonial_approved: boolean; bug_updates: boolean }
   isEmailUser: boolean
+  passwordLastChangedAt?: string | null
   dataExportLocked: boolean
   hasRecentPackCredits: boolean
   openTicketCount: number
@@ -110,6 +111,7 @@ export default function AccountClient({
   initialEmailPrefs,
   initialNotifPrefs,
   isEmailUser,
+  passwordLastChangedAt,
   dataExportLocked,
   hasRecentPackCredits,
   openTicketCount,
@@ -143,6 +145,10 @@ export default function AccountClient({
   const [reportFailure, setReportFailure] = useState(initialEmailPrefs.report_failure)
   const [testimonialApproved, setTestimonialApproved] = useState(initialEmailPrefs.testimonial_approved)
   const [bugUpdates, setBugUpdates] = useState(initialEmailPrefs.bug_updates)
+  // Push notification preferences — forced rows (email locked, push toggleable)
+  const [pushBillingPayments, setPushBillingPayments] = useState(initialNotifPrefs.billing_payments ?? false)
+  const [pushRefundDecisions, setPushRefundDecisions] = useState(initialNotifPrefs.refund_decisions ?? false)
+  const [pushAccountSecurity, setPushAccountSecurity] = useState(initialNotifPrefs.account_security ?? false)
   // Push notification preferences
   const [pushReportReady, setPushReportReady] = useState(initialNotifPrefs.report_ready)
   const [pushNudgeEmails, setPushNudgeEmails] = useState(initialNotifPrefs.nudge_emails)
@@ -165,6 +171,23 @@ export default function AccountClient({
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState('')
   const [deleteCaptchaToken, setDeleteCaptchaToken] = useState('')
+  // Change password (in-app form for email users)
+  const [showChangePassword, setShowChangePassword] = useState(false)
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [changePwLoading, setChangePwLoading] = useState(false)
+  const [changePwError, setChangePwError] = useState('')
+  const [changePwSuccess, setChangePwSuccess] = useState(false)
+
+  // Password expiry — compute from passwordLastChangedAt
+  const pwExpiryDate = passwordLastChangedAt
+    ? new Date(new Date(passwordLastChangedAt).getTime() + 90 * 86400000)
+    : null
+  const daysUntilExpiry = pwExpiryDate
+    ? Math.ceil((pwExpiryDate.getTime() - Date.now()) / 86400000)
+    : null
+  const pwExpired = daysUntilExpiry !== null && daysUntilExpiry <= 0
+  const pwWarningSoon = daysUntilExpiry !== null && daysUntilExpiry > 0 && daysUntilExpiry <= 7
 
   const hasChanges = name !== initialName || phone !== initialPhone || smsOk !== initialSmsOk
   const phoneChanged = phone !== initialPhone
@@ -275,6 +298,31 @@ export default function AccountClient({
     setResetSent(true)
   }
 
+  async function changePassword(e: React.FormEvent) {
+    e.preventDefault()
+    setChangePwError('')
+    if (newPassword.length < 12) { setChangePwError('New password must be at least 12 characters.'); return }
+    if (newPassword !== confirmPassword) { setChangePwError('Passwords do not match.'); return }
+    setChangePwLoading(true)
+    try {
+      const res = await fetch('/api/auth/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ newPassword }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setChangePwError(data.error || 'Failed to change password.'); return }
+      setChangePwSuccess(true)
+      setNewPassword('')
+      setConfirmPassword('')
+      setShowChangePassword(false)
+    } catch {
+      setChangePwError('Something went wrong. Please try again.')
+    } finally {
+      setChangePwLoading(false)
+    }
+  }
+
   async function saveEmailPrefs() {
     setEmailPrefsSaving(true)
     setEmailPrefsMsg('')
@@ -286,7 +334,7 @@ export default function AccountClient({
         .from('profiles')
         .update({
           email_preferences: { nudge_emails: nudgeEmails, support_emails: supportEmails, referral_credit: referralCredit, report_ready: reportReady, support_confirmation: supportConfirmation, report_failure: reportFailure, testimonial_approved: testimonialApproved, bug_updates: bugUpdates },
-          notification_preferences: { report_ready: pushReportReady, nudge_emails: pushNudgeEmails, support_emails: pushSupportEmails, support_confirmation: pushSupportConfirmation, report_failure: pushReportFailure, referral_credit: pushReferralCredit, testimonial_approved: pushTestimonialApproved, bug_updates: pushBugUpdates },
+          notification_preferences: { billing_payments: pushBillingPayments, refund_decisions: pushRefundDecisions, account_security: pushAccountSecurity, report_ready: pushReportReady, nudge_emails: pushNudgeEmails, support_emails: pushSupportEmails, support_confirmation: pushSupportConfirmation, report_failure: pushReportFailure, referral_credit: pushReferralCredit, testimonial_approved: pushTestimonialApproved, bug_updates: pushBugUpdates },
         })
         .eq('id', user.id)
       if (error) throw error
@@ -729,6 +777,25 @@ export default function AccountClient({
           )}
         </motion.div>
 
+        {/* Password expiry warning banner — shown 7 days before or when expired */}
+        {isEmailUser && (pwExpired || pwWarningSoon) && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`rounded-xl px-4 py-3 text-sm flex items-start gap-3 ${pwExpired ? 'bg-red-950/60 border border-red-700/50 text-red-300' : 'bg-amber-950/60 border border-amber-700/50 text-amber-300'}`}
+          >
+            <svg className="w-4 h-4 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+            </svg>
+            <span>
+              {pwExpired
+                ? <>Your password expired on {pwExpiryDate!.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}. <button onClick={() => setShowChangePassword(true)} className="underline font-medium">Update it now</button> to regain full access.</>
+                : <>Your password expires on {pwExpiryDate!.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}. <button onClick={() => setShowChangePassword(true)} className="underline font-medium">Update it now</button> in Account Settings → Security.</>
+              }
+            </span>
+          </motion.div>
+        )}
+
         {/* Security Card */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
@@ -737,21 +804,99 @@ export default function AccountClient({
           className="bg-dark-700 border border-primary/20 rounded-2xl p-6 space-y-4"
         >
           <h2 className="text-lg font-semibold text-white">Security</h2>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-white font-medium">Password</p>
-              <p className="text-xs text-gray-500 mt-0.5">Send a reset link to {email}</p>
+
+          {/* Password row */}
+          <div className="space-y-3">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-sm text-white font-medium">Password</p>
+                {isEmailUser && pwExpiryDate && (
+                  <p className={`text-xs mt-0.5 ${pwExpired ? 'text-red-400' : daysUntilExpiry !== null && daysUntilExpiry <= 7 ? 'text-amber-400' : 'text-gray-500'}`}>
+                    {pwExpired
+                      ? `Expired on ${pwExpiryDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+                      : `Expires ${pwExpiryDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`}
+                  </p>
+                )}
+                {!isEmailUser && (
+                  <p className="text-xs text-gray-500 mt-0.5">Managed by Google — no password to change</p>
+                )}
+              </div>
+              {isEmailUser && (
+                <div className="flex items-center gap-2 shrink-0">
+                  {changePwSuccess && <p className="text-xs text-green-400">Password updated!</p>}
+                  <button
+                    onClick={() => { setShowChangePassword(!showChangePassword); setChangePwError(''); setChangePwSuccess(false) }}
+                    className="px-3 py-1.5 text-sm border border-primary/30 text-primary rounded-xl hover:bg-primary/10 transition-colors"
+                  >
+                    Change password
+                  </button>
+                </div>
+              )}
             </div>
-            {resetSent ? (
-              <p className="text-sm text-green-400">Reset link sent!</p>
-            ) : (
-              <button
-                onClick={sendPasswordReset}
-                disabled={resetLoading}
-                className="px-4 py-2 text-sm border border-primary/30 text-primary rounded-xl hover:bg-primary/10 transition-colors disabled:opacity-40"
-              >
-                {resetLoading ? 'Sending…' : 'Send reset link'}
-              </button>
+
+            {/* Inline change password form */}
+            {isEmailUser && showChangePassword && (
+              <form onSubmit={changePassword} className="space-y-3 pt-1 border-t border-gray-800">
+                {changePwError && (
+                  <p className="text-xs text-red-400">{changePwError}</p>
+                )}
+                <div>
+                  <label className="block text-xs font-medium text-gray-400 mb-1">New password</label>
+                  <input
+                    type="password"
+                    value={newPassword}
+                    onChange={e => setNewPassword(e.target.value)}
+                    required
+                    className="w-full bg-dark-600 border border-gray-700 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-primary/60 transition-colors"
+                    placeholder="At least 12 characters"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-400 mb-1">Confirm new password</label>
+                  <input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={e => setConfirmPassword(e.target.value)}
+                    required
+                    className="w-full bg-dark-600 border border-gray-700 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-primary/60 transition-colors"
+                    placeholder="Same password again"
+                  />
+                </div>
+                <div className="flex gap-2 pt-1">
+                  <button
+                    type="submit"
+                    disabled={changePwLoading}
+                    className="px-4 py-2 text-sm bg-primary text-dark-950 font-semibold rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-40"
+                  >
+                    {changePwLoading ? 'Updating…' : 'Update password'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setShowChangePassword(false); setChangePwError(''); setNewPassword(''); setConfirmPassword('') }}
+                    className="px-4 py-2 text-sm border border-gray-700 text-gray-400 rounded-xl hover:bg-gray-800 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {/* Forgot password / reset link */}
+            {isEmailUser && (
+              <div className="flex items-center justify-between pt-1 border-t border-gray-800/60">
+                <p className="text-xs text-gray-500">Forgot your current password? Send a reset link to {email}</p>
+                {resetSent ? (
+                  <p className="text-xs text-green-400 shrink-0 ml-4">Sent!</p>
+                ) : (
+                  <button
+                    onClick={sendPasswordReset}
+                    disabled={resetLoading}
+                    className="text-xs text-gray-400 hover:text-primary transition-colors shrink-0 ml-4 disabled:opacity-40"
+                  >
+                    {resetLoading ? 'Sending…' : 'Send reset link'}
+                  </button>
+                )}
+              </div>
             )}
           </div>
         </motion.div>
@@ -798,6 +943,39 @@ export default function AccountClient({
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-800/60">
+                    {/* Forced-on rows — email always sent (locked), push is toggleable */}
+                    {([
+                      { label: 'Billing & payments',  desc: 'Payment confirmations and receipts.',                      push: pushBillingPayments, setPush: setPushBillingPayments },
+                      { label: 'Refund decisions',     desc: 'When your refund request is approved or denied.',          push: pushRefundDecisions, setPush: setPushRefundDecisions },
+                      { label: 'Account security',     desc: 'Security alerts such as phone number changes.',            push: pushAccountSecurity, setPush: setPushAccountSecurity },
+                    ]).map((row) => (
+                      <tr key={row.label}>
+                        <td className="py-3 pr-4">
+                          <div className="flex items-center gap-1.5">
+                            <p className="text-white font-medium text-sm">{row.label}</p>
+                            <span className="text-[10px] font-medium text-gray-500 border border-gray-700 rounded px-1">Required</span>
+                          </div>
+                          <p className="text-xs text-gray-500 mt-0.5">{row.desc}</p>
+                        </td>
+                        <td className="text-center px-4">
+                          <input type="checkbox" checked disabled className="w-4 h-4 opacity-60 cursor-not-allowed" />
+                        </td>
+                        <td className="text-center px-4">
+                          <input
+                            type="checkbox"
+                            checked={row.push}
+                            onChange={(e) => row.setPush(e.target.checked)}
+                            className="w-4 h-4 accent-primary cursor-pointer"
+                          />
+                        </td>
+                        <td className="text-center px-4">
+                          <input type="checkbox" checked={false} disabled className="w-4 h-4 opacity-30 cursor-not-allowed" />
+                        </td>
+                      </tr>
+                    ))}
+                    {/* Divider */}
+                    <tr><td colSpan={4} className="py-1" /></tr>
+                    {/* Toggleable rows */}
                     {([
                       { key: 'report_ready',        label: 'Report delivery',       desc: 'When your report is ready to view.',                           email: reportReady,         setEmail: setReportReady,         push: pushReportReady,         setPush: setPushReportReady },
                       { key: 'nudge_emails',        label: 'Credit reminders',      desc: 'When credits are running low or exhausted.',                   email: nudgeEmails,         setEmail: setNudgeEmails,         push: pushNudgeEmails,         setPush: setPushNudgeEmails },

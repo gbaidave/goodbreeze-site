@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
 
     // Insert into Supabase
     const supabase = getSupabaseClient();
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('leads')
       .insert([
         {
@@ -58,9 +58,7 @@ export async function POST(request: NextRequest) {
           newsletter: true,
           source: 'newsletter_signup',
         },
-      ] as any)
-      .select()
-      .single();
+      ] as any);
 
     if (error) {
       // Handle duplicate email error
@@ -82,7 +80,6 @@ export async function POST(request: NextRequest) {
       {
         success: true,
         message: 'Successfully subscribed to the newsletter!',
-        data,
       },
       { status: 201 }
     );

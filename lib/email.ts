@@ -28,6 +28,7 @@ import { securityAlertEmail } from './emails/security-alert'
 import { creditGrantedEmail } from './emails/credit-granted'
 import { consentConfirmationEmail } from './emails/consent-confirmation'
 import { refundProcessedEmail } from './emails/refund-processed'
+import { refundDeniedEmail } from './emails/refund-denied'
 import { logEmail } from './email-logger'
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -359,6 +360,22 @@ export async function sendRefundProcessedEmail(
   return sendAndLog(
     () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject: stagingPrefix + subject, html }),
     { userId, toEmail: to, type: 'refund_processed', subject }
+  )
+}
+
+export async function sendRefundDeniedEmail(
+  to: string,
+  name: string,
+  productLabel: string,
+  denyReason: string,
+  denyReasonDetail: string | undefined,
+  supportUrl: string,
+  userId?: string
+) {
+  const { subject, html } = refundDeniedEmail({ userName: name, productLabel, denyReason, denyReasonDetail, supportUrl })
+  return sendAndLog(
+    () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject: stagingPrefix + subject, html }),
+    { userId, toEmail: to, type: 'refund_denied', subject }
   )
 }
 

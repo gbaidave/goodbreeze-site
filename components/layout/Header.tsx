@@ -28,6 +28,7 @@ export default function Header() {
     { name: "Case Studies", href: "/case-studies" },
     { name: "Video Guides", href: "/resources/video-guides" },
     { name: "Partners", href: "/partners" },
+    { name: "Support", href: "/support" },
   ];
 
   return (

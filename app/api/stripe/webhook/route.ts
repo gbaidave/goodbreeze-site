@@ -376,15 +376,8 @@ export async function POST(request: NextRequest) {
         // If the refund_request was already marked 'refunded' by the admin panel, we skip it (idempotent).
         const charge = event.data.object as Stripe.Charge
         const paymentIntentId = charge.payment_intent as string | null
-        if (!paymentIntentId) break
-
-        // Find the refund_request matching this PI that isn't already processed
-        const { data: refundReq } = await supabase
-          .from('refund_requests')
-          .select('id, user_id, product_label, product_type, stripe_refund_id')
-          .eq('stripe_payment_id', paymentIntentId)
-          .eq('status', 'pending')
-          .maybeSingle()
+        const invoiceId = (charge as any).invoice as string | null
+        const customerId = charge.customer as string | null
 
         // Fetch charge with refunds expanded — webhook payload does NOT include refund list by default
         let stripeRefundId: string | null = null
@@ -399,43 +392,178 @@ export async function POST(request: NextRequest) {
         }
         const amountStr = amountCents ? `$${(amountCents / 100).toFixed(2)}` : ''
 
-        if (!refundReq) {
-          // Check if a refund_request exists but was already processed (status != 'pending').
-          // This happens when the admin panel processed the refund first — it already sent the
-          // email + notification. The charge.refunded webhook fires after, finds no PENDING row,
-          // and would incorrectly send a second email. Skip it.
-          const { data: alreadyProcessed } = await supabase
+        // ── Primary match: by stored payment intent ID ───────────────────────────
+        let refundReq: { id: string; user_id: string; product_label: string; product_type: string; stripe_refund_id: string | null } | null = null
+        if (paymentIntentId) {
+          const { data } = await supabase
             .from('refund_requests')
-            .select('id')
+            .select('id, user_id, product_label, product_type, stripe_refund_id')
             .eq('stripe_payment_id', paymentIntentId)
-            .neq('status', 'pending')
+            .eq('status', 'pending')
             .maybeSingle()
-          if (alreadyProcessed) break
+          refundReq = data
 
-          // No refund_request at all — this was a Stripe-direct refund (no support ticket).
-          // We can't revoke product access without knowing what was refunded,
-          // but we can still notify the user by looking them up via stripe_customer_id.
-          const customerId = charge.customer as string | null
+          if (!refundReq) {
+            // Check if already processed by admin panel — skip to avoid duplicate notifications.
+            const { data: alreadyProcessed } = await supabase
+              .from('refund_requests')
+              .select('id')
+              .eq('stripe_payment_id', paymentIntentId)
+              .neq('status', 'pending')
+              .maybeSingle()
+            if (alreadyProcessed) break
+          }
+        }
+
+        // ── Secondary + tertiary matches for subscription refunds ────────────────
+        // These handle two cases:
+        //   (a) charge.invoice is set  → resolve subscription via invoice
+        //   (b) charge.invoice is null → find pending sub refund_request by customer
+        // Both cases occur when the PI wasn't stored on the refund_request at creation.
+        let subMatchedReq: { id: string; user_id: string; product_label: string; product_type: string } | null = null
+
+        if (!refundReq) {
+          // Secondary: invoice → subscription ID
+          if (invoiceId) {
+            try {
+              const inv = await stripe.invoices.retrieve(invoiceId)
+              const subscriptionId = (inv as any).subscription as string | null
+              if (subscriptionId) {
+                const { data: subMatch } = await supabase
+                  .from('refund_requests')
+                  .select('id, user_id, product_label, product_type')
+                  .eq('user_selected_product_id', subscriptionId)
+                  .eq('status', 'pending')
+                  .maybeSingle()
+                if (subMatch) {
+                  subMatchedReq = subMatch
+                  if (paymentIntentId) {
+                    await supabase.from('refund_requests').update({
+                      stripe_payment_id: paymentIntentId,
+                    }).eq('id', subMatch.id)
+                  }
+                }
+              }
+            } catch { /* non-fatal */ }
+          }
+
+          // Tertiary: customer → pending subscription refund_request
+          // Handles charges where invoice is null (test data / legacy billing paths).
+          if (!subMatchedReq && customerId) {
+            try {
+              const { data: userByCust } = await supabase
+                .from('profiles')
+                .select('id')
+                .eq('stripe_customer_id', customerId)
+                .maybeSingle()
+              if (userByCust) {
+                const { data: pendingSubReq } = await supabase
+                  .from('refund_requests')
+                  .select('id, user_id, product_label, product_type')
+                  .eq('user_id', userByCust.id)
+                  .eq('product_type', 'subscription')
+                  .eq('status', 'pending')
+                  .maybeSingle()
+                if (pendingSubReq) {
+                  subMatchedReq = pendingSubReq
+                  if (paymentIntentId) {
+                    await supabase.from('refund_requests').update({
+                      stripe_payment_id: paymentIntentId,
+                    }).eq('id', pendingSubReq.id)
+                  }
+                }
+              }
+            } catch { /* non-fatal */ }
+          }
+
+          if (subMatchedReq) {
+            // Found via subscription ID — process it as a matched refund
+            await supabase.from('refund_requests').update({
+              status: 'refunded',
+              stripe_refund_id: stripeRefundId,
+              refund_amount_cents: amountCents ?? null,
+              reviewed_at: new Date().toISOString(),
+            }).eq('id', subMatchedReq.id)
+
+            const { data: subRow } = await supabase
+              .from('subscriptions')
+              .select('stripe_subscription_id')
+              .eq('user_id', subMatchedReq.user_id)
+              .in('status', ['active', 'trialing'])
+              .maybeSingle()
+
+            await supabase.from('subscriptions').update({
+              plan: 'free', status: 'refunded', credits_remaining: 0,
+            }).eq('user_id', subMatchedReq.user_id)
+
+            if (subRow?.stripe_subscription_id) {
+              await stripe.subscriptions.cancel(subRow.stripe_subscription_id).catch(console.error)
+            }
+
+            await supabase.from('notifications').insert({
+              user_id: subMatchedReq.user_id,
+              type: 'refund_processed',
+              message: `Your refund${amountStr ? ` of ${amountStr}` : ''} for ${subMatchedReq.product_label} has been processed.`,
+            }).then(null, console.error)
+
+            const { data: refundUserProfile } = await supabase
+              .from('profiles').select('name, email').eq('id', subMatchedReq.user_id).single()
+            if (refundUserProfile?.email) {
+              sendRefundProcessedEmail(
+                refundUserProfile.email,
+                refundUserProfile.name || refundUserProfile.email,
+                subMatchedReq.product_label,
+                amountStr || undefined,
+                subMatchedReq.user_id
+              ).catch(console.error)
+            }
+            console.log('[webhook] charge.refunded — matched via subscription, processed refund_request', subMatchedReq.id)
+            break
+          }
+
+          // No refund_request at all — Stripe-direct refund with no support ticket.
+          // Look up user via stripe_customer_id, notify them, and revoke access if subscription charge.
           if (customerId) {
             const { data: directProfile } = await supabase
               .from('profiles')
               .select('id, name, email')
               .eq('stripe_customer_id', customerId)
               .maybeSingle()
-            if (directProfile?.email) {
-              await supabase.from('notifications').insert({
-                user_id: directProfile.id,
-                type: 'refund_processed',
-                message: `Your refund${amountStr ? ` of ${amountStr}` : ''} has been processed.`,
-              }).then(null, console.error)
-              sendRefundProcessedEmail(
-                directProfile.email,
-                directProfile.name || directProfile.email,
-                'your purchase',
-                amountStr || undefined,
-                directProfile.id
-              ).catch(console.error)
-              console.log('[webhook] charge.refunded — Stripe-direct refund, notified user', directProfile.id)
+            if (directProfile) {
+              // Revoke subscription if this was a subscription invoice charge
+              if (invoiceId) {
+                const { data: activeSub } = await supabase
+                  .from('subscriptions')
+                  .select('stripe_subscription_id')
+                  .eq('user_id', directProfile.id)
+                  .in('status', ['active', 'trialing'])
+                  .maybeSingle()
+
+                await supabase.from('subscriptions').update({
+                  plan: 'free', status: 'refunded', credits_remaining: 0,
+                }).eq('user_id', directProfile.id)
+
+                if (activeSub?.stripe_subscription_id) {
+                  await stripe.subscriptions.cancel(activeSub.stripe_subscription_id).catch(console.error)
+                }
+                console.log('[webhook] charge.refunded — Stripe-direct subscription refund, revoked access for user', directProfile.id)
+              }
+
+              if (directProfile.email) {
+                await supabase.from('notifications').insert({
+                  user_id: directProfile.id,
+                  type: 'refund_processed',
+                  message: `Your refund${amountStr ? ` of ${amountStr}` : ''} has been processed.`,
+                }).then(null, console.error)
+                sendRefundProcessedEmail(
+                  directProfile.email,
+                  directProfile.name || directProfile.email,
+                  'your purchase',
+                  amountStr || undefined,
+                  directProfile.id
+                ).catch(console.error)
+                console.log('[webhook] charge.refunded — Stripe-direct refund, notified user', directProfile.id)
+              }
             }
           }
           break

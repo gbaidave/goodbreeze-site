@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { CustomSelect } from '@/components/ui/CustomSelect'
 import { BugReportGuide } from '@/components/tester/BugReportGuide'
+import type { RefundablePurchase } from '@/app/api/support/refundable-purchases/route'
 
 interface AttachmentMeta {
   id: string
@@ -45,6 +46,7 @@ const STATUS_STYLES: Record<string, string> = {
   in_progress: 'bg-blue-900/40 text-blue-400',
   resolved:    'bg-green-900/40 text-green-400',
   closed:      'bg-gray-800 text-gray-400',
+  denied:      'bg-red-900/40 text-red-400',
 }
 
 const CATEGORY_OPTIONS = [
@@ -243,7 +245,7 @@ function TicketThread({ ticket, userEmail }: { ticket: Ticket; userEmail: string
   const [replying, setReplying] = useState(false)
   const [replyError, setReplyError] = useState('')
 
-  const isClosed = ticketStatus === 'resolved' || ticketStatus === 'closed'
+  const isClosed = ticketStatus === 'resolved' || ticketStatus === 'closed' || ticketStatus === 'denied'
 
   function validateFiles(files: File[]): string {
     for (const f of files) {
@@ -280,6 +282,7 @@ function TicketThread({ ticket, userEmail }: { ticket: Ticket; userEmail: string
         created_at: new Date().toISOString(),
         attachments: [],
       }])
+      if (ticketStatus === 'denied') setTicketStatus('open')
       setReplyText('')
       setReplyFiles([])
       if (attachErr) setReplyError(`Reply sent, but attachments failed: ${attachErr}`)
@@ -394,9 +397,11 @@ function TicketThread({ ticket, userEmail }: { ticket: Ticket; userEmail: string
 
           {/* Reply form — always visible */}
           <form onSubmit={handleReply} className="space-y-2 pt-1">
-            {isClosed && (
+            {ticketStatus === 'denied' ? (
+              <p className="text-xs text-amber-400">Your refund request was not approved. Reply here to discuss it with our team.</p>
+            ) : isClosed ? (
               <p className="text-xs text-gray-500">Sending a reply will reopen this request.</p>
-            )}
+            ) : null}
             {replyError && <p className="text-xs text-red-400">{replyError}</p>}
             <textarea
               value={replyText}
@@ -477,6 +482,7 @@ const STATUS_FILTER_TABS = [
   { value: 'in_progress', label: 'In Progress' },
   { value: 'resolved',    label: 'Resolved' },
   { value: 'closed',      label: 'Closed' },
+  { value: 'denied',      label: 'Denied' },
 ]
 
 function TicketListSection({ tickets, userEmail }: { tickets: Ticket[]; userEmail: string }) {
@@ -576,9 +582,11 @@ function TicketListSection({ tickets, userEmail }: { tickets: Ticket[]; userEmai
 export default function SupportForm({ isAuthenticated, userName, userEmail, plan, lastReportContext, tickets = [] }: Props) {
   const [category, setCategory] = useState('help')
   const [subject, setSubject] = useState('')
-  const [productType, setProductType] = useState('subscription')
-  const [refundMethod, setRefundMethod] = useState<'credits' | 'payment_method'>('credits')
-  const [stripeAttempted, setStripeAttempted] = useState(false)
+  const [purchases, setPurchases] = useState<RefundablePurchase[]>([])
+  const [purchasesLoading, setPurchasesLoading] = useState(false)
+  const [purchasesError, setPurchasesError] = useState('')
+  const [selectedPurchaseId, setSelectedPurchaseId] = useState('')
+  const fetchedRef = useRef(false)
   const [message, setMessage] = useState('')
   const [guestName, setGuestName] = useState('')
   const [guestEmail, setGuestEmail] = useState('')
@@ -587,6 +595,22 @@ export default function SupportForm({ isAuthenticated, userName, userEmail, plan
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
+
+  // Fetch refundable purchases once when category switches to 'refund' (authenticated only)
+  useEffect(() => {
+    if (category !== 'refund' || !isAuthenticated || fetchedRef.current) return
+    fetchedRef.current = true
+    setPurchasesLoading(true)
+    setPurchasesError('')
+    fetch('/api/support/refundable-purchases')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.purchases) setPurchases(data.purchases)
+        else setPurchasesError(data.error || 'Could not load purchases.')
+      })
+      .catch(() => setPurchasesError('Could not load purchases.'))
+      .finally(() => setPurchasesLoading(false))
+  }, [category, isAuthenticated])
 
   if (submitted) return <SuccessState isAuthenticated={isAuthenticated} onDismiss={() => setSubmitted(false)} />
 
@@ -608,15 +632,22 @@ export default function SupportForm({ isAuthenticated, userName, userEmail, plan
     setSubmitting(true)
     setError('')
     try {
-      const body: Record<string, string> = { message, category }
+      const body: Record<string, unknown> = { message, category }
       if (subject.trim()) body.subject = subject.trim()
       if (!isAuthenticated) {
         body.guest_name = guestName.trim()
         body.guest_email = guestEmail.trim()
       }
-      if (category === 'refund') {
-        body.product_type = productType
-        body.refund_method = refundMethod
+      if (category === 'refund' && isAuthenticated && selectedPurchaseId) {
+        const sel = purchases.find((p) => p.productId === selectedPurchaseId)
+        if (sel) {
+          body.user_selected_product_id = sel.productId
+          body.user_selected_product_label = sel.displayLabel
+          body.product_type = sel.productType
+          body.credits_used = sel.creditsUsed
+          body.is_eligible = sel.isEligible
+          body.ineligibility_reasons = sel.ineligibilityReasons
+        }
       }
 
       const res = await fetch('/api/support', {
@@ -750,80 +781,77 @@ export default function SupportForm({ isAuthenticated, userName, userEmail, plan
             />
           </div>
 
-          {/* Refund type — only shown for refund category */}
-          {category === 'refund' && (
-            <>
-              <div>
-                <label htmlFor="support-product-type" className="block text-sm font-medium text-gray-300 mb-1.5">
-                  What would you like a refund for? *
-                </label>
-                <CustomSelect
-                  id="support-product-type"
-                  value={productType}
-                  onChange={setProductType}
-                  options={[
-                    { value: 'subscription', label: 'My monthly / annual subscription' },
-                    { value: 'credit_pack', label: 'A credit pack purchase' },
-                  ]}
-                  className="w-full px-4 py-3 bg-dark border border-gray-700 text-white rounded-xl text-sm"
-                  dropdownMinWidth="w-full"
-                />
-              </div>
+          {/* Purchase selector — only shown for refund category */}
+          {category === 'refund' && isAuthenticated && (
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Which purchase would you like refunded? *
+              </label>
 
-              <div>
-                <p className="block text-sm font-medium text-gray-300 mb-2">How would you like to be refunded? *</p>
-                <div className="space-y-2">
-                  {[
-                    { value: 'credits', label: 'Add credits to my account' },
-                    { value: 'payment_method', label: 'Refund to my original payment method' },
-                  ].map((opt) => (
-                    <label key={opt.value} className="flex items-center gap-3 cursor-pointer group">
-                      <input
-                        type="radio"
-                        name="refund_method"
-                        value={opt.value}
-                        checked={refundMethod === opt.value}
-                        onChange={() => {
-                          setRefundMethod(opt.value as 'credits' | 'payment_method')
-                          setStripeAttempted(false)
-                        }}
-                        className="accent-primary"
-                      />
-                      <span className="text-sm text-gray-300 group-hover:text-white transition-colors">{opt.label}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
+              {purchasesLoading && (
+                <p className="text-sm text-gray-500">Loading your purchases…</p>
+              )}
 
-              {refundMethod === 'payment_method' && (
-                <div className="bg-amber-950/30 border border-amber-800/50 rounded-xl p-4 space-y-3">
-                  <p className="text-sm text-amber-300 font-medium">Try Stripe first</p>
-                  <p className="text-sm text-gray-300">
-                    Many payment refunds can be handled directly through your billing settings.{' '}
-                    <a
-                      href="/account"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary underline hover:text-primary/80"
-                    >
-                      Go to your account settings
-                    </a>{' '}
-                    and look for billing or subscription options. If Stripe allows a self-service refund, that&apos;s the fastest path.
-                  </p>
-                  <label className="flex items-start gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={stripeAttempted}
-                      onChange={(e) => setStripeAttempted(e.target.checked)}
-                      className="mt-0.5 accent-primary"
-                    />
-                    <span className="text-sm text-gray-300">
-                      I tried but Stripe wouldn&apos;t let me do it — I need admin help.
-                    </span>
-                  </label>
+              {purchasesError && (
+                <p className="text-sm text-red-400">{purchasesError}</p>
+              )}
+
+              {!purchasesLoading && !purchasesError && purchases.length === 0 && (
+                <div className="bg-dark border border-gray-700 rounded-xl p-4">
+                  <p className="text-sm text-gray-400">No refundable purchases found on your account.</p>
                 </div>
               )}
-            </>
+
+              {!purchasesLoading && purchases.length > 0 && (
+                <div className="space-y-2">
+                  {purchases.map((p) => {
+                    const isSelected = selectedPurchaseId === p.productId
+                    return (
+                      <button
+                        key={p.productId}
+                        type="button"
+                        onClick={() => setSelectedPurchaseId(p.productId)}
+                        className={`w-full text-left px-4 py-3 rounded-xl border transition-colors ${
+                          isSelected
+                            ? 'border-primary bg-primary/10'
+                            : 'border-gray-700 bg-dark hover:border-gray-600'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-white">{p.displayLabel}</p>
+                            {!p.isEligible && p.ineligibilityReasons.length > 0 && (
+                              <ul className="mt-1 space-y-0.5">
+                                {p.ineligibilityReasons.map((r, i) => (
+                                  <li key={i} className="text-xs text-amber-400">{r}</li>
+                                ))}
+                              </ul>
+                            )}
+                            {p.cancelNote && !p.isEligible && (
+                              <p className="mt-1 text-xs text-gray-500">{p.cancelNote}</p>
+                            )}
+                          </div>
+                          <span className={`shrink-0 text-xs font-medium px-2 py-0.5 rounded-full ${
+                            p.isEligible ? 'bg-green-900/40 text-green-400' : 'bg-amber-900/40 text-amber-400'
+                          }`}>
+                            {p.isEligible ? 'Eligible' : 'Ineligible'}
+                          </span>
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+
+              {!purchasesLoading && selectedPurchaseId && (() => {
+                const sel = purchases.find((p) => p.productId === selectedPurchaseId)
+                return sel && !sel.isEligible ? (
+                  <p className="text-xs text-amber-400 mt-2">
+                    You can still submit a request — our team will review it manually.
+                  </p>
+                ) : null
+              })()}
+            </div>
           )}
 
           {/* Subject (optional) */}
@@ -883,7 +911,7 @@ export default function SupportForm({ isAuthenticated, userName, userEmail, plan
             disabled={
               submitting ||
               message.trim().length < 10 ||
-              (category === 'refund' && refundMethod === 'payment_method' && !stripeAttempted)
+              (category === 'refund' && isAuthenticated && !selectedPurchaseId && purchases.length > 0)
             }
             className="w-full py-4 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full hover:shadow-lg hover:shadow-primary/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >

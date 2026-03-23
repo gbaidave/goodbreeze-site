@@ -50,9 +50,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const elapsed = Date.now() - parseInt(lastActive, 10)
             if (elapsed > IDLE_TIMEOUT_MS) {
               localStorage.removeItem(LAST_ACTIVE_KEY)
-              supabase.auth.signOut().then(() => {
-                window.location.href = '/login?reason=timeout'
-              })
+              fetch('/api/auth/signout', { method: 'POST' })
+                .catch(() => {})
+                .then(() => { window.location.href = '/login?reason=timeout' })
               return
             }
           }

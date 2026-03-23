@@ -21,7 +21,7 @@ export default async function AccountPage() {
   const [profileRes, subRes, creditsRes, creditHistoryRes, recentPackRes, openTicketsRes, openRefundRes, openDisputeRes, refundedPacksRes] = await Promise.all([
     supabase
       .from('profiles')
-      .select('name, email, phone, sms_ok, stripe_customer_id, role, email_preferences, notification_preferences, data_export_locked')
+      .select('name, email, phone, sms_ok, stripe_customer_id, role, email_preferences, notification_preferences, data_export_locked, password_last_changed_at')
       .eq('id', user.id)
       .single(),
     supabase
@@ -129,6 +129,9 @@ export default async function AccountPage() {
         bug_updates: profile?.email_preferences?.bug_updates !== false,
       }}
       initialNotifPrefs={{
+        billing_payments: profile?.notification_preferences?.billing_payments === true,
+        refund_decisions: profile?.notification_preferences?.refund_decisions === true,
+        account_security: profile?.notification_preferences?.account_security === true,
         nudge_emails: profile?.notification_preferences?.nudge_emails !== false,
         support_emails: profile?.notification_preferences?.support_emails !== false,
         referral_credit: profile?.notification_preferences?.referral_credit !== false,
@@ -139,6 +142,7 @@ export default async function AccountPage() {
         bug_updates: profile?.notification_preferences?.bug_updates !== false,
       }}
       isEmailUser={isEmailUser}
+      passwordLastChangedAt={profile?.password_last_changed_at ?? null}
       dataExportLocked={profile?.data_export_locked ?? false}
       hasRecentPackCredits={!!recentPackRes.data}
       openTicketCount={openTicketsRes.count ?? 0}

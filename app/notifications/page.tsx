@@ -35,6 +35,15 @@ const TYPE_LABELS: Record<string, string> = {
   credits_low:         'Credits Low',
   plan_changed:        'Plan Changed',
   admin_message:       'Message',
+  refund_request:      'Refund Request',
+  refund_denied:       'Refund Decision',
+  refund_processed:    'Refund Processed',
+  support_reply:       'Support Reply',
+  support_resolved:    'Support Resolved',
+  support_closed:      'Support Closed',
+  support_followup:    'Support Follow-up',
+  dispute_request:     'Dispute',
+  new_testimonial:     'New Testimonial',
 }
 
 const TYPE_LINKS: Record<string, string> = {
@@ -46,6 +55,14 @@ const TYPE_LINKS: Record<string, string> = {
   credits_low:         '/pricing',
   plan_changed:        '/account',
   admin_message:       '/support',
+  refund_request:      '/support',
+  refund_denied:       '/support',
+  refund_processed:    '/support',
+  support_reply:       '/support',
+  support_resolved:    '/support',
+  support_closed:      '/support',
+  support_followup:    '/support',
+  dispute_request:     '/support',
 }
 
 const TYPE_COLORS: Record<string, string> = {
