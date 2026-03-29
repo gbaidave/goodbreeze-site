@@ -18,8 +18,9 @@ export type ReportType =
   | 'h2h' | 't3c' | 'cp'
   | 'ai_seo' | 'landing_page' | 'keyword_research'
   | 'seo_audit' | 'seo_comprehensive'
+  | 'business_presence_report'
 
-export type Product = 'analyzer' | 'seo_auditor'
+export type Product = 'analyzer' | 'seo_auditor' | 'business_presence_report'
 
 export type Plan = 'free' | 'impulse' | 'starter' | 'growth' | 'pro' | 'custom'
 
@@ -51,6 +52,8 @@ const REPORT_META: Record<ReportType, {
   keyword_research:  { product: 'seo_auditor', impulseAllowed: true,  usesMoz: false, usesSerp: true  },
   seo_audit:         { product: 'seo_auditor', impulseAllowed: true,  usesMoz: true,  usesSerp: true  },
   seo_comprehensive: { product: 'seo_auditor', impulseAllowed: true,  usesMoz: true,  usesSerp: true  },
+  // Business Presence Report
+  business_presence_report: { product: 'business_presence_report', impulseAllowed: true, usesMoz: false, usesSerp: false },
 }
 
 // Per-plan monthly report caps (all report types combined).
@@ -249,4 +252,105 @@ export async function createReportRow(
   }
 
   return data.id
+}
+
+// ============================================================================
+// Plan allowance checks (for report types with per-plan monthly limits)
+// Used by business_presence_report and future report types with plan allowances.
+// ============================================================================
+
+export async function checkPlanAllowance(
+  userId: string,
+  reportType: ReportType,
+  plan: Plan
+): Promise<{ allowed: boolean; reason?: string; usedMonthly: number; monthlyLimit: number; usedWeekly: number; weeklyLimit: number | null }> {
+  const supabase = getServiceClient()
+  const usageMonth = new Date().toISOString().slice(0, 7) // 'YYYY-MM'
+
+  // 1. Look up plan allowance for this report type
+  const { data: allowance } = await supabase
+    .from('plan_report_allowances')
+    .select('monthly_limit, weekly_limit, is_additive')
+    .eq('plan', plan)
+    .eq('report_type', reportType)
+    .single()
+
+  // No allowance row = no plan-based allowance for this report type
+  if (!allowance) {
+    return { allowed: false, reason: 'No plan allowance for this report type.', usedMonthly: 0, monthlyLimit: 0, usedWeekly: 0, weeklyLimit: null }
+  }
+
+  // 2. Get current monthly usage
+  const { data: usage } = await supabase
+    .from('report_type_usage')
+    .select('count')
+    .eq('user_id', userId)
+    .eq('report_type', reportType)
+    .eq('usage_month', usageMonth)
+    .single()
+
+  const usedMonthly = usage?.count ?? 0
+
+  // 3. Check monthly limit
+  if (usedMonthly >= allowance.monthly_limit) {
+    return {
+      allowed: false,
+      reason: `You've used all ${allowance.monthly_limit} of your monthly business presence reports. Purchase credits or wait until next month.`,
+      usedMonthly,
+      monthlyLimit: allowance.monthly_limit,
+      usedWeekly: 0,
+      weeklyLimit: allowance.weekly_limit,
+    }
+  }
+
+  // 4. Check weekly rate limit (if configured)
+  if (allowance.weekly_limit) {
+    const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+    const { count: weeklyCount } = await supabase
+      .from('reports')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .eq('report_type', reportType)
+      .gte('created_at', oneWeekAgo)
+      .not('status', 'in', '("failed","failed_site_blocked")')
+
+    const usedWeekly = weeklyCount ?? 0
+    if (usedWeekly >= allowance.weekly_limit) {
+      return {
+        allowed: false,
+        reason: `You can run ${allowance.weekly_limit} business presence report${allowance.weekly_limit > 1 ? 's' : ''} per week. Try again in a few days.`,
+        usedMonthly,
+        monthlyLimit: allowance.monthly_limit,
+        usedWeekly,
+        weeklyLimit: allowance.weekly_limit,
+      }
+    }
+  }
+
+  return {
+    allowed: true,
+    usedMonthly,
+    monthlyLimit: allowance.monthly_limit,
+    usedWeekly: 0,
+    weeklyLimit: allowance.weekly_limit,
+  }
+}
+
+// Record plan allowance usage (atomic increment via RPC)
+export async function recordPlanAllowanceUsage(
+  userId: string,
+  reportType: ReportType
+): Promise<void> {
+  const supabase = getServiceClient()
+  const usageMonth = new Date().toISOString().slice(0, 7)
+
+  const { error } = await supabase.rpc('increment_report_type_usage', {
+    p_user_id: userId,
+    p_report_type: reportType,
+    p_usage_month: usageMonth,
+  })
+
+  if (error) {
+    console.error('Failed to record plan allowance usage:', error)
+  }
 }

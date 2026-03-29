@@ -5,6 +5,20 @@ import Link from "next/link";
 
 const tools = [
   {
+    name: "Business Presence Report",
+    description: "See how your business shows up online. Visibility, competitors, reputation, and website health in one report.",
+    href: "/free-business-presence-report",
+    features: [
+      "Online visibility score",
+      "Competitor comparison",
+      "Reputation snapshot",
+      "Website health check",
+      "Priority action list",
+    ],
+    badge: "Free",
+    comingSoon: false,
+  },
+  {
     name: "Competitive Analyzer",
     description: "Head-to-head, top 3 competitors, or full market positioning. Choose your competitive analysis.",
     href: "/reports/competitive-analyzer",

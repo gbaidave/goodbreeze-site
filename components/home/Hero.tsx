@@ -161,7 +161,7 @@ export default function Hero() {
                 whileTap={{ scale: 0.98 }}
               >
                 <Link
-                  href="/reports"
+                  href="/free-business-presence-report"
                   className="group relative flex items-center justify-center px-10 py-5 bg-gradient-to-r from-primary via-accent-blue to-primary text-white text-lg font-bold rounded-full overflow-hidden shadow-2xl shadow-primary/50 border-2 border-white/60"
                   style={{ backgroundSize: "200% 100%" }}
                 >
@@ -179,7 +179,7 @@ export default function Hero() {
 
             {/* Trust indicator */}
             <p className="text-gray-400 text-sm text-center">
-              Start with a free report. No account required. No credit card.
+              Free account. No credit card. Results in your inbox before you know it.
             </p>
           </motion.div>
 

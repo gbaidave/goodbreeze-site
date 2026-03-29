@@ -36,6 +36,7 @@ const REPORT_TYPE_LABELS: Record<string, string> = {
   seo_audit:         'SEO Audit',
   seo_comprehensive: 'SEO Comprehensive',
   multi_page:        'Multi-Page Audit',
+  business_presence_report: 'Business Presence Report',
 }
 
 const REPORT_TYPE_URLS: Record<string, string> = {
@@ -47,6 +48,7 @@ const REPORT_TYPE_URLS: Record<string, string> = {
   h2h:               '/reports/competitive-analyzer',
   t3c:               '/reports/competitive-analyzer',
   cp:                '/reports/competitive-analyzer',
+  business_presence_report: '/reports/business-presence',
 }
 
 const STATUS_STYLES: Record<string, string> = {

@@ -58,16 +58,16 @@ export default function FinalCTA() {
               Your First Report Is Free
             </h2>
             <p className="text-2xl text-white/85 mb-10 max-w-2xl mx-auto text-center leading-relaxed">
-              Enter your URL and we&apos;ll have a full intelligence report in your inbox in minutes. No account needed. No credit card.
+              See how your business shows up online. Free account. No credit card. Results in your inbox before you know it.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
                 <Link
-                  href="/reports"
+                  href="/free-business-presence-report"
                   className="block px-12 py-6 bg-transparent border-2 border-white text-white text-xl font-bold rounded-full shadow-2xl hover:bg-white/10 transition-all duration-300"
                 >
-                  Run Your First Free Report
+                  Get My Free Report
                 </Link>
               </motion.div>
             </div>

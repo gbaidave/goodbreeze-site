@@ -24,6 +24,7 @@ const REPORT_TYPE_LABELS: Record<string, string> = {
   keyword_research:  'Keyword Research',
   seo_audit:         'SEO Audit',
   seo_comprehensive: 'SEO Comprehensive',
+  business_presence_report: 'Business Presence Report',
 }
 
 function extractDomain(url: string | undefined): string {

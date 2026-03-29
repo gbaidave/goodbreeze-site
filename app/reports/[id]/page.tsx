@@ -17,6 +17,7 @@ const REPORT_TYPE_LABELS: Record<string, string> = {
   seo_audit:         'SEO Audit',
   seo_comprehensive: 'SEO Comprehensive',
   multi_page:        'Multi-Page Audit',
+  business_presence_report: 'Business Presence Report',
 }
 
 // ============================================================================

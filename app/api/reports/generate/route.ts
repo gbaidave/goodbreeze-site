@@ -21,6 +21,8 @@ import {
   checkEntitlement,
   recordUsage,
   createReportRow,
+  checkPlanAllowance,
+  recordPlanAllowanceUsage,
   type ReportType,
   type Plan,
 } from '@/lib/entitlement'
@@ -47,6 +49,8 @@ const N8N_WEBHOOKS: Record<ReportType, string> = {
   keyword_research:  `${N8N_BASE}/webhook/keyword-research-pdf`,
   seo_audit:         `${N8N_BASE}/webhook/seo-audit-v4-pdf`,
   seo_comprehensive: `${N8N_BASE}/webhook/seo-comprehensive-pdf`,
+  // Business Presence Report
+  business_presence_report: `${N8N_BASE}/webhook/business-presence-report-generate`,
 }
 
 // ============================================================================
@@ -112,6 +116,11 @@ function validateInput(body: GenerateRequest): string | null {
       return `${field} exceeds maximum length of ${MAX_STR_LEN} characters`
   }
   // Required fields per report type
+  if (body.reportType === 'business_presence_report') {
+    if (!body.url || !isValidHttpUrl(body.url))
+      return 'Valid website URL is required'
+    return null
+  }
   if (['h2h', 't3c', 'cp'].includes(body.reportType)) {
     if (!body.targetWebsite || !isValidHttpUrl(body.targetWebsite))
       return 'Valid target website URL is required'
@@ -234,7 +243,22 @@ export async function POST(request: NextRequest) {
     const plan = activeSub?.plan ?? 'free'
 
     // 4. Check entitlement
-    const entitlement = await checkEntitlement(user.id, reportType)
+    //    For business_presence_report on paid plans, check plan allowance first
+    //    (additive — plan allowance checked before falling through to credits)
+    let usedPlanAllowance = false
+    let entitlement: Awaited<ReturnType<typeof checkEntitlement>>
+
+    if (reportType === 'business_presence_report' && ['starter', 'growth', 'pro'].includes(plan)) {
+      const planCheck = await checkPlanAllowance(user.id, reportType, plan as Plan)
+      if (planCheck.allowed) {
+        usedPlanAllowance = true
+        entitlement = { allowed: true, deductFrom: 'subscription' }
+      } else {
+        entitlement = await checkEntitlement(user.id, reportType)
+      }
+    } else {
+      entitlement = await checkEntitlement(user.id, reportType)
+    }
 
     if (!entitlement.allowed) {
       return NextResponse.json(
@@ -243,7 +267,7 @@ export async function POST(request: NextRequest) {
           code: 'ENTITLEMENT_DENIED',
           upgradePrompt: entitlement.upgradePrompt,
         },
-        { status: 402 } // Payment Required
+        { status: 402 }
       )
     }
 
@@ -280,7 +304,11 @@ export async function POST(request: NextRequest) {
     // 8. Record usage (increment usage counters + decrement credits if applicable)
     //    Note: free_reports_used is NOT passed here — the free slot was already atomically
     //    reserved inside checkEntitlement() via check_and_reserve_free_slot RPC.
-    await recordUsage(user.id, reportType, entitlement.deductFrom!, entitlement.creditRowId)
+    if (usedPlanAllowance) {
+      await recordPlanAllowanceUsage(user.id, reportType)
+    } else {
+      await recordUsage(user.id, reportType, entitlement.deductFrom!, entitlement.creditRowId)
+    }
 
     // 8b. If this was a credit deduction, check if user is now out of credits — fire nudge email
     if (entitlement.deductFrom === 'credits') {
@@ -373,6 +401,16 @@ function buildN8nPayload(
       reportType: 'Competitive Position',
       targetCompany: extractDomain(body.targetWebsite!),
       targetWebsite: body.targetWebsite,
+      userEmail,
+      userName,
+      sessionId,
+    }
+  }
+
+  // Business Presence Report
+  if (reportType === 'business_presence_report') {
+    return {
+      url: body.url,
       userEmail,
       userName,
       sessionId,
