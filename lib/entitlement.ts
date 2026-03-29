@@ -41,6 +41,7 @@ const REPORT_META: Record<ReportType, {
   impulseAllowed: boolean
   usesMoz: boolean
   usesSerp: boolean
+  acceptsAnyCredit?: boolean
 }> = {
   // Analyzer
   h2h:               { product: 'analyzer',    impulseAllowed: true,  usesMoz: false, usesSerp: false },
@@ -53,7 +54,7 @@ const REPORT_META: Record<ReportType, {
   seo_audit:         { product: 'seo_auditor', impulseAllowed: true,  usesMoz: true,  usesSerp: true  },
   seo_comprehensive: { product: 'seo_auditor', impulseAllowed: true,  usesMoz: true,  usesSerp: true  },
   // Business Presence Report
-  business_presence_report: { product: 'business_presence_report', impulseAllowed: true, usesMoz: false, usesSerp: false },
+  business_presence_report: { product: 'business_presence_report', impulseAllowed: true, usesMoz: false, usesSerp: false, acceptsAnyCredit: true },
 }
 
 // Per-plan monthly report caps (all report types combined).
@@ -158,13 +159,19 @@ export async function checkEntitlement(
   }
 
   // Find the oldest non-expired credit row with balance > 0, matching product or universal
-  const { data: creditRows } = await supabase
+  let creditQuery = supabase
     .from('credits')
     .select('id, balance, expires_at, product')
     .eq('user_id', userId)
     .gt('balance', 0)
     .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
-    .or(`product.is.null,product.eq.${meta.product}`)
+
+  // acceptsAnyCredit: skip product filter (e.g. business_presence_report uses any credit type)
+  if (!meta.acceptsAnyCredit) {
+    creditQuery = creditQuery.or(`product.is.null,product.eq.${meta.product}`)
+  }
+
+  const { data: creditRows } = await creditQuery
     .order('purchased_at', { ascending: true })
     .limit(1)
 
