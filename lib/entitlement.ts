@@ -27,8 +27,10 @@ export type Plan = 'free' | 'impulse' | 'starter' | 'growth' | 'pro' | 'custom'
 export interface EntitlementResult {
   allowed: boolean
   reason?: string          // shown to user if not allowed
-  deductFrom?: 'subscription' | 'credits'
+  deductFrom?: 'subscription' | 'credits' | 'free_slot'
   creditRowId?: string     // which credits row to decrement
+  creditAmount?: number    // how many credits to deduct (for variable-cost reports)
+  freeSystem?: string      // which free_reports_used key was reserved
   upgradePrompt?: 'impulse' | 'starter'  // what to show in paywall
 }
 
@@ -42,19 +44,21 @@ const REPORT_META: Record<ReportType, {
   usesMoz: boolean
   usesSerp: boolean
   acceptsAnyCredit?: boolean
+  creditCost: number        // how many credits this report costs
+  freeSlotSystem?: string   // if set, users get 1 free via free_reports_used JSONB
 }> = {
   // Analyzer
-  h2h:               { product: 'analyzer',    impulseAllowed: true,  usesMoz: false, usesSerp: false },
-  t3c:               { product: 'analyzer',    impulseAllowed: true,  usesMoz: false, usesSerp: false },
-  cp:                { product: 'analyzer',    impulseAllowed: true,  usesMoz: false, usesSerp: false },
+  h2h:               { product: 'analyzer',    impulseAllowed: true,  usesMoz: false, usesSerp: false, creditCost: 1 },
+  t3c:               { product: 'analyzer',    impulseAllowed: true,  usesMoz: false, usesSerp: false, creditCost: 1 },
+  cp:                { product: 'analyzer',    impulseAllowed: true,  usesMoz: false, usesSerp: false, creditCost: 1 },
   // SEO Auditor
-  ai_seo:            { product: 'seo_auditor', impulseAllowed: true,  usesMoz: false, usesSerp: false },
-  landing_page:      { product: 'seo_auditor', impulseAllowed: true,  usesMoz: false, usesSerp: false },
-  keyword_research:  { product: 'seo_auditor', impulseAllowed: true,  usesMoz: false, usesSerp: true  },
-  seo_audit:         { product: 'seo_auditor', impulseAllowed: true,  usesMoz: true,  usesSerp: true  },
-  seo_comprehensive: { product: 'seo_auditor', impulseAllowed: true,  usesMoz: true,  usesSerp: true  },
+  ai_seo:            { product: 'seo_auditor', impulseAllowed: true,  usesMoz: false, usesSerp: false, creditCost: 1 },
+  landing_page:      { product: 'seo_auditor', impulseAllowed: true,  usesMoz: false, usesSerp: false, creditCost: 1 },
+  keyword_research:  { product: 'seo_auditor', impulseAllowed: true,  usesMoz: false, usesSerp: true,  creditCost: 1 },
+  seo_audit:         { product: 'seo_auditor', impulseAllowed: true,  usesMoz: true,  usesSerp: true,  creditCost: 1 },
+  seo_comprehensive: { product: 'seo_auditor', impulseAllowed: true,  usesMoz: true,  usesSerp: true,  creditCost: 1 },
   // Business Presence Report
-  business_presence_report: { product: 'business_presence_report', impulseAllowed: true, usesMoz: false, usesSerp: false, acceptsAnyCredit: true },
+  business_presence_report: { product: 'business_presence_report', impulseAllowed: true, usesMoz: false, usesSerp: false, acceptsAnyCredit: true, creditCost: 3, freeSlotSystem: 'business_presence_report' },
 }
 
 // Per-plan monthly report caps (all report types combined).
@@ -144,10 +148,25 @@ export async function checkEntitlement(
     // No subscription credits left — fall through to credit pack check below
   }
 
-  // 6. Credits — universal fallback for all non-subscription users.
+  // 6. Free slot check — one-time free report per account for eligible types.
+  //    Uses profiles.free_reports_used JSONB + check_and_reserve_free_slot RPC.
+  //    The RPC atomically reserves the slot (prevents race conditions).
+  if (meta.freeSlotSystem) {
+    const { data: freeSlotResult } = await supabase.rpc('check_and_reserve_free_slot', {
+      p_user_id: userId,
+      p_free_system: meta.freeSlotSystem,
+      p_report_type: reportType,
+    })
+    // NULL = slot was available and is now reserved (success)
+    // 'already_used' = slot was already taken
+    if (freeSlotResult === null) {
+      return { allowed: true, deductFrom: 'free_slot', freeSystem: meta.freeSlotSystem }
+    }
+  }
+
+  // 7. Credits — fallback for all non-subscription users.
   //    Reached by: free plan, impulse plan, or paid plan over its monthly cap.
-  //    All users receive 1 credit on signup; additional credits come from
-  //    credit packs, referrals, testimonials, or admin grants.
+  //    Credits come from credit packs, referrals, testimonials, or admin grants.
 
   // Gate: some report types require at least a Starter subscription (not credit-eligible)
   if (!meta.impulseAllowed) {
@@ -158,12 +177,14 @@ export async function checkEntitlement(
     }
   }
 
-  // Find the oldest non-expired credit row with balance > 0, matching product or universal
+  const creditCost = meta.creditCost
+
+  // Find the oldest non-expired credit row with balance >= creditCost
   let creditQuery = supabase
     .from('credits')
     .select('id, balance, expires_at, product')
     .eq('user_id', userId)
-    .gt('balance', 0)
+    .gte('balance', creditCost)
     .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
 
   // acceptsAnyCredit: skip product filter (e.g. business_presence_report uses any credit type)
@@ -180,7 +201,7 @@ export async function checkEntitlement(
   if (!creditRow) {
     return {
       allowed: false,
-      reason: `You have no remaining credits. Get a credit pack or upgrade to a monthly plan.`,
+      reason: `This report costs ${creditCost} credit${creditCost > 1 ? 's' : ''}. You don't have enough credits. Get a credit pack or upgrade to a monthly plan.`,
       upgradePrompt: 'impulse',
     }
   }
@@ -189,6 +210,7 @@ export async function checkEntitlement(
     allowed: true,
     deductFrom: 'credits',
     creditRowId: creditRow.id,
+    creditAmount: creditCost,
   }
 }
 
@@ -199,21 +221,28 @@ export async function checkEntitlement(
 export async function recordUsage(
   userId: string,
   reportType: ReportType,
-  deductFrom: 'subscription' | 'credits',
-  creditRowId?: string
+  deductFrom: 'subscription' | 'credits' | 'free_slot',
+  creditRowId?: string,
+  creditAmount?: number
 ): Promise<void> {
   const supabase = getServiceClient()
 
   if (deductFrom === 'subscription') {
     // Decrement credits_remaining on the subscription row.
-    // Managed by decrement_subscription_credits() DB function (GREATEST(0, n-1) floor).
     await supabase.rpc('decrement_subscription_credits', { p_user_id: userId })
   }
 
   if (deductFrom === 'credits' && creditRowId) {
-    // Decrement the specific credit pack row.
-    await supabase.rpc('decrement_credit', { p_credit_id: creditRowId })
+    const amount = creditAmount ?? REPORT_META[reportType].creditCost
+    if (amount === 1) {
+      // Use original RPC for backwards compatibility
+      await supabase.rpc('decrement_credit', { p_credit_id: creditRowId })
+    } else {
+      await supabase.rpc('decrement_credit_amount', { p_credit_id: creditRowId, p_amount: amount })
+    }
   }
+
+  // free_slot: no deduction needed — already reserved by check_and_reserve_free_slot
 }
 
 // ============================================================================
@@ -226,8 +255,10 @@ export async function createReportRow(
   inputData: Record<string, unknown>,
   plan: Plan,
   usageInfo?: {
-    usageType: 'credits' | 'subscription' | 'admin'
+    usageType: 'credits' | 'subscription' | 'admin' | 'free'
     creditRowId?: string
+    creditAmount?: number
+    freeSystem?: string
   }
 ): Promise<string> {
   const meta = REPORT_META[reportType]
@@ -249,6 +280,8 @@ export async function createReportRow(
       ...(usageInfo && {
         usage_type: usageInfo.usageType,
         credit_row_id: usageInfo.creditRowId ?? null,
+        credit_amount: usageInfo.creditAmount ?? null,
+        free_system: usageInfo.freeSystem ?? null,
       }),
     })
     .select('id')
@@ -360,4 +393,20 @@ export async function recordPlanAllowanceUsage(
   if (error) {
     console.error('Failed to record plan allowance usage:', error)
   }
+}
+
+// ============================================================================
+// Public: Get credit costs for all report types (for frontend display)
+// ============================================================================
+
+export function getReportCreditCosts(): Record<ReportType, number> {
+  const costs = {} as Record<ReportType, number>
+  for (const [key, meta] of Object.entries(REPORT_META)) {
+    costs[key as ReportType] = meta.creditCost
+  }
+  return costs
+}
+
+export function getReportCreditCost(reportType: ReportType): number {
+  return REPORT_META[reportType].creditCost
 }

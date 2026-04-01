@@ -288,7 +288,7 @@ export default function SeoIntelligencePage() {
           <Link href="/reports" className="text-gray-500 hover:text-primary text-sm transition-colors">
             ← All Reports
           </Link>
-          <h1 className="text-4xl font-bold text-white mt-4 mb-3">SEO Intelligence Suite</h1>
+          <h1 className="text-4xl font-bold text-white mt-4 mb-3">Brand Visibility</h1>
           <p className="text-gray-400 max-w-xl mx-auto">
             Choose your report type. Your full PDF report arrives in your inbox within 2–4 minutes.
           </p>

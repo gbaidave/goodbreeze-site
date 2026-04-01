@@ -136,9 +136,9 @@ export default async function DashboardPage({
             <div>
               <p className="text-white font-semibold">Account created. You&apos;re in.</p>
               <p className="text-gray-400 text-sm mt-0.5">
-                You have 1 credit ready to use. Head to{' '}
-                <a href="/reports" className="text-primary hover:text-primary/80 transition-colors font-medium">Reports</a>{' '}
-                to run your first report.
+                Your first Business Presence Report is free.{' '}
+                <a href="/reports/business-presence" className="text-primary hover:text-primary/80 transition-colors font-medium">Run it now</a>{' '}
+                to see how your business shows up online.
               </p>
             </div>
           </div>
@@ -249,6 +249,39 @@ export default async function DashboardPage({
             />
           </div>
         )}
+
+        {/* Business Presence Report card */}
+        {(() => {
+          const bpr = reports.find(r => r.report_type === 'business_presence_report' && r.status === 'complete')
+          const bprScore = bpr ? (bpr as any).input_data?.overallScore : null
+          const bprDate = bpr ? new Date(bpr.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : null
+          return (
+            <div className="bg-dark-700 border border-primary/20 rounded-2xl px-6 py-5 flex items-center gap-5">
+              <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5m.75-9l3-3 2.148 2.148A12.061 12.061 0 0116.5 7.605" />
+                </svg>
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-[15px] font-bold text-white mb-0.5">Business Presence Report</h3>
+                {bpr ? (
+                  <div className="flex items-center gap-4 flex-wrap">
+                    {bprScore != null && <span className="text-xl font-extrabold text-primary">{bprScore}<span className="text-xs text-gray-500 font-normal"> / 100</span></span>}
+                    <span className="text-xs text-gray-500">Last checked {bprDate}</span>
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-400">See how visible your business is online. <span className="text-primary font-semibold">First one is free.</span></p>
+                )}
+              </div>
+              <a
+                href="/reports/business-presence"
+                className="flex-shrink-0 px-5 py-2.5 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-primary/30 transition-all text-sm"
+              >
+                {bpr ? 'View Report' : 'Get My Free Report'}
+              </a>
+            </div>
+          )
+        })()}
 
         {/* Report history */}
         <div>

@@ -275,11 +275,15 @@ export async function POST(request: NextRequest) {
     const inputData = { ...body, userEmail, userName }
     delete (inputData as any).reportType
 
-    const usageType = entitlement.deductFrom === 'credits' ? 'credits' : 'subscription'
+    const usageType = entitlement.deductFrom === 'free_slot' ? 'free'
+      : entitlement.deductFrom === 'credits' ? 'credits'
+      : 'subscription'
 
     const reportId = await createReportRow(user.id, reportType, inputData, plan, {
       usageType,
       creditRowId: entitlement.creditRowId,
+      creditAmount: entitlement.creditAmount,
+      freeSystem: entitlement.freeSystem,
     })
 
     // 6. Build n8n payload
@@ -307,7 +311,7 @@ export async function POST(request: NextRequest) {
     if (usedPlanAllowance) {
       await recordPlanAllowanceUsage(user.id, reportType)
     } else {
-      await recordUsage(user.id, reportType, entitlement.deductFrom!, entitlement.creditRowId)
+      await recordUsage(user.id, reportType, entitlement.deductFrom!, entitlement.creditRowId, entitlement.creditAmount)
     }
 
     // 8b. If this was a credit deduction, check if user is now out of credits — fire nudge email

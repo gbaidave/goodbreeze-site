@@ -4,20 +4,20 @@ import { motion } from "framer-motion";
 
 const problems = [
   {
-    title: "You're Flying Blind on SEO",
-    description: "Your competitors are ranking for keywords you don't even know exist. Every content decision is a shot in the dark, and you have no idea what's actually working for them.",
-    iconPath: "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z",
+    title: "Your Competitors Are More Visible Than You",
+    description: "Potential customers are searching for what you offer, but they are finding your competitors first. You are doing great work, but if people cannot find you online, they cannot hire you.",
+    iconPath: "M15 12a3 3 0 11-6 0 3 3 0 016 0zM2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z",
     gradient: "from-primary to-accent-blue",
   },
   {
-    title: "Manual Research Wastes Hours",
-    description: "Pulling keyword data, crawling competitor pages, building spreadsheets. It takes hours and you're never sure if you got it right. There's no time left to actually act on what you find.",
-    iconPath: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z",
+    title: "You're Too Busy Working to Work on the Business",
+    description: "Every day is spent serving customers, managing staff, and handling operations. There is no time left to figure out why leads have slowed down or what your competitors are doing differently.",
+    iconPath: "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z",
     gradient: "from-accent-blue to-accent-purple",
   },
   {
-    title: "You Don't Know What's Actually Broken",
-    description: "Traffic is flat, but is it a technical issue? A content gap? The wrong keywords? Without a clear diagnosis, you keep guessing, and guessing costs you time and rankings.",
+    title: "You Know Something Is Off, But Not What",
+    description: "Revenue is flat, the phone is not ringing like it used to, or you are losing bids to competitors who are not as good. Without clear data, every fix is a guess.",
     iconPath: "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z",
     gradient: "from-accent-purple to-primary",
   },
@@ -38,7 +38,7 @@ export default function Problem() {
             Sound Familiar?
           </h2>
           <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-            Most growing businesses hit the same SEO wall. You know you need to improve. You just don't know exactly where to start.
+            These are the signals that your business could be growing faster with the right systems in place.
           </p>
         </motion.div>
 

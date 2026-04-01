@@ -147,9 +147,16 @@ function BusinessPresenceInner() {
 
   // Compute report state
   const isExpired = report?.expires_at ? new Date(report.expires_at) < new Date() : false
-  const isPending = report && ['pending', 'processing'].includes(report.status)
+  // Stale pending reports (>15 min old) are treated as failed — show form, not spinner
+  const isRecentPending = report
+    && ['pending', 'processing'].includes(report.status)
+    && (Date.now() - new Date(report.created_at).getTime()) < 15 * 60 * 1000
+  const isPending = isRecentPending
   const isComplete = report?.status === 'complete' && !isExpired
-  const isFailed = report && ['failed', 'failed_site_blocked'].includes(report.status)
+  const isFailed = report && (
+    ['failed', 'failed_site_blocked'].includes(report.status)
+    || (report && ['pending', 'processing'].includes(report.status) && !isRecentPending)
+  )
   const reportDomain = report?.input_data?.url ? extractDomain(report.input_data.url) : ''
 
   const inputClass = 'w-full px-4 py-3 bg-dark border border-gray-700 text-white rounded-xl focus:outline-none focus:border-primary transition-colors text-sm placeholder-gray-600'
@@ -196,7 +203,7 @@ function BusinessPresenceInner() {
           </div>
           <div className="max-w-5xl mx-auto px-6 py-12">
             {report.html_content ? (
-              <div className="report-content bg-white text-gray-900 rounded-2xl p-8 shadow-lg" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(report.html_content) }} />
+              <div className="report-content bg-white text-gray-900 rounded-2xl p-8 shadow-lg" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(report.html_content, { ADD_TAGS: ['style'], ADD_ATTR: ['target'] }) }} />
             ) : (
               <div className="text-center py-20"><p className="text-gray-400">Report content is being prepared. Check back shortly.</p></div>
             )}
@@ -247,7 +254,7 @@ function BusinessPresenceInner() {
             <Link href="/reports" className="text-gray-500 hover:text-primary text-sm transition-colors">← All Reports</Link>
             <div className="mt-4 mb-3 flex items-center justify-center gap-3">
               <h1 className="text-4xl font-bold text-white">Business Presence Report</h1>
-              <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/30">1 Free</span>
+              <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/30">3 Credits</span>
             </div>
             <p className="text-gray-400 max-w-lg mx-auto">See how your business shows up online. We analyze your visibility, competitors, reputation, and website to tell you exactly where you stand and what to fix first.</p>
           </motion.div>
@@ -259,7 +266,7 @@ function BusinessPresenceInner() {
               <p className="text-xs text-gray-600 mt-1.5">Enter the main website for the business you want analyzed.</p>
             </div>
             <button type="submit" disabled={submitting} className="w-full py-4 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full hover:shadow-lg hover:shadow-primary/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-              {submitting ? 'Generating report…' : 'Get My Free Business Presence Report'}
+              {submitting ? 'Generating report…' : 'Generate My Business Presence Report'}
             </button>
             <p className="text-center text-xs text-gray-600">Report delivered by email in a few minutes. Also viewable right here.</p>
           </motion.form>

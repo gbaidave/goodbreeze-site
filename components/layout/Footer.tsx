@@ -3,7 +3,7 @@ import Image from "next/image";
 
 export default function Footer() {
   return (
-    <footer className="bg-dark-800 border-t border-gray-800 py-12 px-6 sm:px-8 lg:px-12">
+    <footer data-root-footer className="bg-dark-800 border-t border-gray-800 py-12 px-6 sm:px-8 lg:px-12">
       <div className="max-w-7xl mx-auto">
         <div className="grid md:grid-cols-4 gap-8 mb-8">
           <div>
@@ -75,7 +75,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link href="/reports/seo-intelligence" className="hover:text-primary transition-colors">
-                  SEO Intelligence Suite
+                  Brand Visibility
                 </Link>
               </li>
               <li>

@@ -24,3 +24,15 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* ── Report Content (rendered from n8n html_content) ────────────────────────
+   The report HTML includes its own <style> tag with all CSS.
+   These rules handle the website wrapper context:
+   - Hide cover page (PDF-only element)
+   - Override page sizing for web (no fixed 8.5in width)
+   - Ensure CTA page-break rules don't affect web rendering
+   ──────────────────────────────────────────────────────────────────────────── */
+.report-content .cover-page { display: none; }
+.report-content .page-content { max-width: 100%; padding: 0; }
+.report-content .cta-page { page-break-before: auto; padding: 48px 0 0; }
+.report-content .cta-block { border-radius: 12px; }

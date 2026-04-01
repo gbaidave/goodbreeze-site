@@ -19,7 +19,7 @@ import type { Metadata } from 'next'
 function useHideRootChrome() {
   useEffect(() => {
     const header = document.querySelector('header') as HTMLElement | null
-    const footer = document.querySelector('footer') as HTMLElement | null
+    const footer = document.querySelector('footer[data-root-footer]') as HTMLElement | null
     const main = document.querySelector('main') as HTMLElement | null
     if (header) header.style.display = 'none'
     if (footer) footer.style.display = 'none'
@@ -71,6 +71,12 @@ function SignupForm({ id, onSuccess }: { id: string; onSuccess?: () => void }) {
           : signUpError.message)
         return
       }
+      // Supabase returns a fake success for existing emails (to prevent enumeration).
+      // Detect this: user object exists but identities array is empty.
+      if (signUpData?.user && (!signUpData.user.identities || signUpData.user.identities.length === 0)) {
+        setError('Looks like you already have an account. Sign in instead.')
+        return
+      }
       try { captureEvent('signup_completed', { method: 'email', source: 'landing_page_business_presence' }) } catch {}
       if (signUpData?.session) {
         window.location.href = `/reports/business-presence?url=${encodeURIComponent(url)}`
@@ -98,7 +104,7 @@ function SignupForm({ id, onSuccess }: { id: string; onSuccess?: () => void }) {
         </div>
       )}
       <div><label className={labelClass}>Business URL</label><input type="url" value={url} onChange={e => setUrl(e.target.value)} className={inputClass} placeholder="https://yourbusiness.com" required /></div>
-      <div><label className={labelClass}>First Name</label><input type="text" value={name} onChange={e => setName(e.target.value)} className={inputClass} placeholder="Jane" required /></div>
+      <div><label className={labelClass}>Full Name</label><input type="text" value={name} onChange={e => setName(e.target.value)} className={inputClass} placeholder="Jane Smith" required /></div>
       <div><label className={labelClass}>Email</label><input type="email" value={email} onChange={e => setEmail(e.target.value)} className={inputClass} placeholder="jane@company.com" required /></div>
       <div><label className={labelClass}>Password</label><input type="password" value={password} onChange={e => setPassword(e.target.value)} className={inputClass} placeholder="At least 12 characters" required minLength={12} /></div>
       <TurnstileWidget onVerify={(token) => setCaptchaToken(token)} />
@@ -181,6 +187,13 @@ export default function FreeBusinessPresenceReportPage() {
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
+
+  // If user became authenticated (e.g. confirmed email in another tab), redirect immediately
+  // This must come before the signupComplete check so the "Check Your Email" screen
+  // doesn't block the redirect when auth state changes.
+  if (!authLoading && user) {
+    return <div className="min-h-screen bg-dark flex items-center justify-center"><div className="text-gray-500">Redirecting...</div></div>
+  }
 
   if (signupComplete) {
     return (
@@ -313,8 +326,8 @@ export default function FreeBusinessPresenceReportPage() {
       <section className="py-20 lg:py-28 px-6"><div className="max-w-7xl mx-auto">
         <Reveal><h2 className="text-3xl sm:text-4xl font-semibold text-white mb-10 text-center">What Business Owners Are Saying</h2></Reveal>
         <div className="grid md:grid-cols-3 gap-6">
-          {[{ quote: "The free business presence report showed us we were invisible on Google Maps and had zero review presence compared to our top competitor. We fixed both in two weeks and saw a 35% increase in inbound calls that month.", name: 'Sarah Mitchell', initials: 'SM', role: 'Owner, Greenleaf Interior Design', color: '#00adb5' },{ quote: "I had no idea my competitors were outranking us on every keyword that mattered. The report made it obvious. Good Breeze then built us an automated content system that closed the gap in 90 days. Revenue is up 22% this quarter.", name: 'Marcus Chen', initials: 'MC', role: 'Founder, Ridgeline Home Services', color: '#3b82f6' },{ quote: "We were spending $4,000 a month on ads with no idea what was actually converting. The presence report identified three free channels we weren't using at all. We cut ad spend in half and leads actually went up.", name: 'Jennifer Okafor', initials: 'JO', role: 'CEO, Lantern Bookkeeping', color: '#a855f7' }].map((t, i) => (
-            <Reveal key={i} delay={0.1 * (i + 1)}><div className="bg-dark-800 border border-gray-800 rounded-xl p-7"><div className="text-yellow-400 text-sm tracking-wider mb-4">★★★★★</div><p className="text-sm text-gray-300 leading-relaxed italic mb-5">&ldquo;{t.quote}&rdquo;</p><div className="flex items-center gap-3"><div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0" style={{ background: t.color }}>{t.initials}</div><div><div className="text-sm font-semibold text-white">{t.name}</div><div className="text-xs text-gray-500">{t.role}</div></div></div></div></Reveal>
+          {[{ quote: "The free business presence report showed us we were invisible on Google Maps and had zero review presence compared to our top competitor. We fixed both in two weeks and saw a 35% increase in inbound calls that month.", name: 'Sarah Mitchell', image: '/images/testimonials/sarah-mitchell.webp', role: 'Owner, Greenleaf Interior Design' },{ quote: "I had no idea my competitors were outranking us on every keyword that mattered. The report made it obvious. Good Breeze then built us an automated content system that closed the gap in 90 days. Revenue is up 22% this quarter.", name: 'Marcus Chen', image: '/images/testimonials/marcus-chen.webp', role: 'Founder, Ridgeline Home Services' },{ quote: "We were spending $4,000 a month on ads with no idea what was actually converting. The presence report identified three free channels we weren't using at all. We cut ad spend in half and leads actually went up.", name: 'Jennifer Okafor', image: '/images/testimonials/jennifer-okator.webp', role: 'CEO, Lantern Bookkeeping' }].map((t, i) => (
+            <Reveal key={i} delay={0.1 * (i + 1)}><div className="bg-dark-800 border border-gray-800 rounded-xl p-7"><div className="text-yellow-400 text-sm tracking-wider mb-4">&#9733;&#9733;&#9733;&#9733;&#9733;</div><p className="text-sm text-gray-300 leading-relaxed italic mb-5">&ldquo;{t.quote}&rdquo;</p><div className="flex items-center gap-3"><img src={t.image} alt={t.name} width={40} height={40} className="w-10 h-10 rounded-full object-cover flex-shrink-0" /><div><div className="text-sm font-semibold text-white">{t.name}</div><div className="text-xs text-gray-500">{t.role}</div></div></div></div></Reveal>
           ))}
         </div>
       </div></section>
