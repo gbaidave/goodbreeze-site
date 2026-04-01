@@ -135,10 +135,16 @@ export async function GET(
       return NextResponse.json({ error: 'PDF not available' }, { status: 404 })
     }
 
-    // Fetch the PDF via the stored proxy URL (n8n webhook → GDrive).
-    // Avoids the unreliable drive.google.com/uc unauthenticated download which
-    // can return an HTML virus-scan warning page instead of the PDF binary.
-    const upstream = await fetch(report.pdf_url, { redirect: 'follow' })
+    // Extract GDrive file ID and use the direct download URL format.
+    // report.pdf_url may be a viewer link (drive.google.com/file/d/xxx/view)
+    // which returns HTML, not the PDF binary. The /uc?export=download URL
+    // returns the actual file for files shared with "anyone with the link".
+    const fileId = extractGdriveFileId(report.pdf_url)
+    const downloadUrl = fileId
+      ? `https://drive.google.com/uc?export=download&id=${fileId}`
+      : report.pdf_url
+
+    const upstream = await fetch(downloadUrl, { redirect: 'follow' })
 
     if (!upstream.ok) {
       return NextResponse.json({ error: 'Failed to fetch PDF' }, { status: 502 })
