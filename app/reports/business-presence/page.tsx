@@ -8,7 +8,7 @@ import { useAuth } from '@/components/auth/AuthProvider'
 import { createClient } from '@/lib/supabase/client'
 import { captureEvent } from '@/lib/analytics'
 import { ExhaustedState } from '@/components/ExhaustedState'
-import DOMPurify from 'dompurify'
+import BusinessPresenceReportView from '@/components/reports/BusinessPresenceReportView'
 
 // ============================================================================
 // Types
@@ -202,14 +202,8 @@ function BusinessPresenceInner() {
             </div>
           </div>
           <div className="max-w-5xl mx-auto px-6 py-12">
-            {report.html_content ? (
-              <div className="report-content bg-white text-gray-900 rounded-2xl p-8 shadow-lg" dangerouslySetInnerHTML={{ __html: (() => {
-                const raw = report.html_content ?? ''
-                const styleMatch = raw.match(/<style>([\s\S]*?)<\/style>/)
-                const styleTag = styleMatch ? '<style>' + styleMatch[1] + '</style>' : ''
-                const bodyContent = raw.replace(/<style>[\s\S]*?<\/style>/, '')
-                return styleTag + DOMPurify.sanitize(bodyContent)
-              })() }} />
+            {report.input_data && typeof report.input_data === 'object' && 'overallScore' in (report.input_data as Record<string, unknown>) ? (
+              <BusinessPresenceReportView data={report.input_data as any} domain={reportDomain} />
             ) : (
               <div className="text-center py-20"><p className="text-gray-400">Report content is being prepared. Check back shortly.</p></div>
             )}
