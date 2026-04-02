@@ -203,7 +203,13 @@ function BusinessPresenceInner() {
           </div>
           <div className="max-w-5xl mx-auto px-6 py-12">
             {report.html_content ? (
-              <div className="report-content bg-white text-gray-900 rounded-2xl p-8 shadow-lg" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(report.html_content, { ADD_TAGS: ['style'], ADD_ATTR: ['target'], FORBID_CONTENTS: ['annotation-xml', 'audio', 'colgroup', 'desc', 'foreignobject', 'head', 'iframe', 'math', 'mi', 'mn', 'mo', 'ms', 'mtext', 'noembed', 'noframes', 'noscript', 'plaintext', 'script', 'svg', 'template', 'thead', 'title', 'video', 'xmp'] }) }} />
+              <div className="report-content bg-white text-gray-900 rounded-2xl p-8 shadow-lg" dangerouslySetInnerHTML={{ __html: (() => {
+                const raw = report.html_content ?? ''
+                const styleMatch = raw.match(/<style>([\s\S]*?)<\/style>/)
+                const styleTag = styleMatch ? '<style>' + styleMatch[1] + '</style>' : ''
+                const bodyContent = raw.replace(/<style>[\s\S]*?<\/style>/, '')
+                return styleTag + DOMPurify.sanitize(bodyContent)
+              })() }} />
             ) : (
               <div className="text-center py-20"><p className="text-gray-400">Report content is being prepared. Check back shortly.</p></div>
             )}
