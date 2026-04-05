@@ -135,14 +135,22 @@ export async function GET(
       return NextResponse.json({ error: 'PDF not available' }, { status: 404 })
     }
 
-    // Extract GDrive file ID and use the direct download URL format.
-    // report.pdf_url may be a viewer link (drive.google.com/file/d/xxx/view)
-    // which returns HTML, not the PDF binary. The /uc?export=download URL
-    // returns the actual file for files shared with "anyone with the link".
-    const fileId = extractGdriveFileId(report.pdf_url)
-    const downloadUrl = fileId
-      ? `https://drive.google.com/uc?export=download&id=${fileId}`
-      : report.pdf_url
+    // Determine the download URL.
+    // If pdf_url is an n8n proxy URL, use it directly — the proxy has
+    // authenticated GDrive access and returns the actual PDF binary.
+    // For legacy GDrive viewer links, extract file ID and use direct download.
+    const isN8nProxy = report.pdf_url.includes('/webhook/pdf-download')
+    let downloadUrl: string
+
+    if (isN8nProxy) {
+      // n8n proxy already handles GDrive auth — use as-is
+      downloadUrl = report.pdf_url
+    } else {
+      const fileId = extractGdriveFileId(report.pdf_url)
+      downloadUrl = fileId
+        ? `https://drive.google.com/uc?export=download&id=${fileId}`
+        : report.pdf_url
+    }
 
     const upstream = await fetch(downloadUrl, { redirect: 'follow' })
 

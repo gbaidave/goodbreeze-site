@@ -619,6 +619,11 @@ export default function BusinessPresenceReportView({ data, domain }: { data: BPR
           )}
         </div>
 
+        {/* Speed benchmark context for business owners */}
+        <Callout type="warning" title="Speed matters.">
+          Pages loading over 3 seconds lose 53% of mobile visitors (Google). The two numbers to watch: First Contentful Paint (FCP) is how fast something first appears on screen — under 1.8 seconds is good. Largest Contentful Paint (LCP) is how fast the main content loads — under 2.5 seconds is good, over 4 seconds is slow.
+        </Callout>
+
         {web.siteAge && (
           <div className="bg-dark-800 border border-gray-700 rounded-lg p-4 mb-4">
             <p className="text-[10px] uppercase tracking-wider text-gray-500 mb-1">Estimated Last Redesign</p>
@@ -663,9 +668,9 @@ export default function BusinessPresenceReportView({ data, domain }: { data: BPR
         <div className="flex gap-3 mb-4">
           <StatCard value={search.score ?? 0} label="Visibility Score" highlight colorClass={scoreColor(search.score ?? 0)} />
           <StatCard
-            value={search.aiCrawlerStatus || 'Unknown'}
-            label="AI Access"
-            colorClass={search.aiCrawlerStatus === 'accessible' ? 'text-green-500' : 'text-red-500'}
+            value={search.aiCrawlerStatus === 'accessible' ? 'Open' : search.aiCrawlerStatus === 'blocked' ? 'Blocked' : 'Not Verified'}
+            label="AI Search Access"
+            colorClass={search.aiCrawlerStatus === 'accessible' ? 'text-green-500' : search.aiCrawlerStatus === 'blocked' ? 'text-red-500' : 'text-yellow-500'}
           />
           {search.schemaTypesFound != null && (
             <StatCard value={search.schemaTypesFound} label="Schema Types Found" />
@@ -863,6 +868,8 @@ export default function BusinessPresenceReportView({ data, domain }: { data: BPR
 
             {opps.webDeveloperNote && (
               <div className="mt-6">
+                <h4 className="text-sm font-bold text-gray-400 mb-2">Send This to Your Web Developer</h4>
+                <p className="text-xs text-gray-500 mb-3">Copy the message below and send it to your web developer or IT person. It summarizes the technical fixes from this report.</p>
                 <CopyableTextBlock text={opps.webDeveloperNote} />
               </div>
             )}
