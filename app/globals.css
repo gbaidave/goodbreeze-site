@@ -19,3 +19,27 @@ body {
 }
 
 /* Report content is now rendered via React components, not injected HTML. */
+
+/* Hero animations — CSS instead of Framer Motion to avoid blocking LCP */
+@keyframes hero-fade-in-left {
+  from { opacity: 0; transform: translateX(-50px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes hero-fade-in-right {
+  from { opacity: 0; transform: translateX(50px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes glow-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+.animate-hero-fade-in-left {
+  animation: hero-fade-in-left 0.8s ease-out forwards;
+}
+.animate-hero-fade-in-right {
+  animation: hero-fade-in-right 0.8s ease-out 0.2s forwards;
+  opacity: 0;
+}
+.animate-glow-pulse {
+  animation: glow-pulse 8s ease-in-out infinite;
+}

@@ -51,16 +51,19 @@ export function CreditsPill() {
     setCredits(subscriptionCredits + packCredits)
   }
 
-  // Fetch on mount, poll every 60s, and refresh on window focus
+  // Fetch on mount, poll every 60s, refresh on window focus and credits-changed events
   useEffect(() => {
     if (!user) return
     fetchCredits()
     const interval = setInterval(fetchCredits, 60000)
     const onFocus = () => fetchCredits()
+    const onCreditsChanged = () => fetchCredits()
     window.addEventListener('focus', onFocus)
+    window.addEventListener('credits-changed', onCreditsChanged)
     return () => {
       clearInterval(interval)
       window.removeEventListener('focus', onFocus)
+      window.removeEventListener('credits-changed', onCreditsChanged)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user])

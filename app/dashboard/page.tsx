@@ -29,7 +29,7 @@ export default async function DashboardPage({
   // Fetch profile, subscription, credits, reports, referral data, testimonials, and support in parallel
   const serviceClient = createServiceClient()
   const [profileRes, subRes, creditsRes, reportsRes, referralRes, testimonialsRes, ticketsRes] = await Promise.all([
-    supabase.from('profiles').select('name, email, role, plan_override_type, plan_override_until, password_last_changed_at').eq('id', user.id).single(),
+    supabase.from('profiles').select('name, email, role, plan_override_type, plan_override_until, password_last_changed_at, free_reports_used').eq('id', user.id).single(),
     supabase.from('subscriptions').select('plan, status, current_period_end, credits_remaining')
       .eq('user_id', user.id).in('status', ['active', 'trialing']).order('created_at', { ascending: false }).limit(1).single(),
     supabase.from('credits').select('balance, expires_at').eq('user_id', user.id).gt('balance', 0).order('purchased_at', { ascending: true }),
@@ -255,6 +255,8 @@ export default async function DashboardPage({
           const bpr = reports.find(r => r.report_type === 'business_presence_report' && r.status === 'complete')
           const bprScore = bpr ? (bpr as any).input_data?.overallScore : null
           const bprDate = bpr ? new Date(bpr.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : null
+          const freeUsed = profile?.free_reports_used as Record<string, boolean> | null
+          const hasFreeSlot = !freeUsed?.['business_presence_report']
           return (
             <div className="bg-dark-700 border border-primary/20 rounded-2xl px-6 py-5 flex items-center gap-5">
               <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
@@ -269,15 +271,17 @@ export default async function DashboardPage({
                     {bprScore != null && <span className="text-xl font-extrabold text-primary">{bprScore}<span className="text-xs text-gray-500 font-normal"> / 100</span></span>}
                     <span className="text-xs text-gray-500">Last checked {bprDate}</span>
                   </div>
-                ) : (
+                ) : hasFreeSlot ? (
                   <p className="text-sm text-gray-400">See how visible your business is online. <span className="text-primary font-semibold">First one is free.</span></p>
+                ) : (
+                  <p className="text-sm text-gray-400">See how visible your business is online. <span className="text-gray-500">3 credits per report.</span></p>
                 )}
               </div>
               <a
                 href="/reports/business-presence"
                 className="flex-shrink-0 px-5 py-2.5 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-primary/30 transition-all text-sm"
               >
-                {bpr ? 'View Report' : 'Get My Free Report'}
+                {bpr ? 'View Report' : hasFreeSlot ? 'Get My Free Report' : 'Run Report'}
               </a>
             </div>
           )

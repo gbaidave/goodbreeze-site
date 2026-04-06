@@ -13,7 +13,7 @@ const partners = [
     category: "Automation Partner",
     description: "Capricorn PMS specializes in property management solutions and workflow automation. Their expertise in complex system integrations helps us deliver robust automation solutions to clients with unique operational needs.",
     website: "https://capricornpms.com/",
-    logo: "/images/capricorn-logo.png",
+    logo: "/images/capricorn-logo.webp",
     services: ["Property Management Systems", "Workflow Automation", "System Integration"]
   },
   {
@@ -21,7 +21,7 @@ const partners = [
     category: "Marketing Partner",
     description: "Silvernail Web Design brings decades of experience in web design, SEO, and digital marketing. Their strategic approach to online presence complements our automation services perfectly, helping clients grow and scale their digital footprint.",
     website: "https://silvernailwebdesign.com/",
-    logo: "/images/silvernail-logo.png",
+    logo: "/images/silvernail-logo.webp",
     services: ["Web Design", "SEO Services", "Digital Marketing"]
   },
 ];

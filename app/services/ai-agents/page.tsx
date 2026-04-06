@@ -15,6 +15,57 @@ export const metadata: Metadata = {
 export default function AIAgentServices() {
   return (
     <div className="min-h-screen bg-dark py-24 px-6">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "What does an AI agent actually do for my business?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "An AI agent handles conversations and tasks on behalf of your business around the clock: answering customer questions, qualifying leads, scheduling appointments, or helping employees find information. It responds instantly and handles high volumes without adding headcount."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How much does AI agent implementation cost?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Most AI agent projects range from $5,000 to $20,000 depending on the complexity and number of channels involved. That is a fraction of the $40,000 to $60,000 annual cost of a full-time support hire doing the same job."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Is my business data safe when using an AI agent?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yes. We build agents using enterprise-grade infrastructure and never expose your business data to third parties. Your knowledge base stays within your systems, and we configure strict access controls from the start."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Can I stay in control and override what the AI agent says?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Absolutely. Every agent we build has clear escalation paths so complex or sensitive questions are handed off to a human immediately. You set the rules for what the agent handles and what it passes along."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "What are some real examples of AI agents in small businesses?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Common examples include a website chat agent that qualifies leads 24/7, a support agent that answers the 50 most common customer questions instantly, and an internal assistant that helps your team find company policies or procedures without asking a manager."
+                }
+              }
+            ]
+          })
+        }}
+      />
       <div className="max-w-4xl mx-auto">
         {/* Breadcrumb */}
         <div className="mb-8">

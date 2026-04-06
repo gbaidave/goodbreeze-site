@@ -131,6 +131,7 @@ function ReportCard({ report, onDelete }: { report: Report; onDelete: (id: strin
       const res = await fetch(`/api/reports/${report.id}`, { method: 'DELETE' })
       if (res.ok) {
         onDelete(report.id)
+        window.dispatchEvent(new Event('credits-changed'))
       } else {
         const data = await res.json().catch(() => ({}))
         setDeleteError(data.error ?? 'Delete failed. Try again.')
@@ -412,7 +413,10 @@ export default function ReportList({ initialReports }: ReportListProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ all: true }),
       })
-      if (res.ok) setReports([])
+      if (res.ok) {
+        setReports([])
+        window.dispatchEvent(new Event('credits-changed'))
+      }
     } finally {
       setDeletingAll(false)
       setConfirmDeleteAll(false)

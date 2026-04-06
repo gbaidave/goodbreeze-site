@@ -11,7 +11,7 @@ const caseStudies = [
   {
     name: "Alana Shaw",
     role: "Consultant",
-    avatar: "/images/avatars/alana-shaw.png",
+    avatar: "/images/avatars/alana-shaw.webp",
     problem: "Alana's consulting firm was losing leads due to slow intake processes and inconsistent proposal delivery. Manual follow ups meant opportunities slipped through the cracks, and proposal creation took hours of repetitive work that could have been spent on billable client time.",
     solution: "We built an automated intake workflow that captures lead information, auto fills proposal templates based on service type, and schedules follow up reminders at optimal intervals. The system integrates with her CRM to ensure nothing falls through the cracks.",
     results: {
@@ -25,7 +25,7 @@ const caseStudies = [
   {
     name: "Julia Lawson",
     role: "Attorney",
-    avatar: "/images/avatars/julia-lawson.png",
+    avatar: "/images/avatars/julia-lawson.webp",
     problem: "Julia's law practice was hemorrhaging potential clients due to missed calls and slow response times. Without a system to track intake and follow up, leads would call once and never hear back. After hours inquiries went completely unanswered, meaning business walked straight to competitors.",
     solution: "We implemented an automated client intake system that books consultations instantly, sends immediate confirmation emails, tracks next steps for each prospect, and routes after hours inquiries to an AI assistant that provides basic information and schedules callbacks for the next business day.",
     results: {
@@ -39,7 +39,7 @@ const caseStudies = [
   {
     name: "Rafael Moreno",
     role: "CPA",
-    avatar: "/images/avatars/rafael-moreno.png",
+    avatar: "/images/avatars/rafael-moreno.webp",
     problem: "Rafael's accounting firm dreaded month end close. Collecting documents from clients required endless email chains and phone calls. Manual reminders were inconsistent, exceptions got buried, and close processes routinely stretched 2-3 weeks due to missing information and manual reconciliation steps.",
     solution: "We automated the entire document collection workflow with scheduled reminders sent at optimal times, automated escalation for non responders, exception flagging based on predefined rules, and integration with their accounting software for automatic reconciliation of standard transactions.",
     results: {
@@ -53,7 +53,7 @@ const caseStudies = [
   {
     name: "Marcus Chen",
     role: "Real Estate Broker",
-    avatar: "/images/avatars/marcus-chen.png",
+    avatar: "/images/avatars/marcus-chen.webp",
     problem: "Marcus was losing deals because his team couldn't keep up with lead follow ups and property alerts. Manual CRM updates meant data was always outdated, leads received inconsistent communication, and hot properties weren't matched to interested buyers fast enough. In real estate, speed wins deals.",
     solution: "We built an automated lead management system that sends instant follow ups based on lead source and interest level, triggers property alerts when new listings match buyer criteria, updates the CRM automatically as leads progress through the pipeline, and sequences nurture emails for cold leads to keep them warm.",
     results: {

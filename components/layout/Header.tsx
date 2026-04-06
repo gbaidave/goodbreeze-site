@@ -128,6 +128,10 @@ export default function Header() {
               About
             </Link>
 
+            <Link href="/contact" className="text-gray-300 hover:text-primary transition-colors">
+              Contact
+            </Link>
+
             <a href="https://calendly.com/dave-goodbreeze/30min" target="_blank" rel="noopener noreferrer" className="px-6 py-2 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full hover:shadow-lg hover:shadow-primary/50 transition-all duration-300">
               Book a Call
             </a>
@@ -196,6 +200,10 @@ export default function Header() {
 
             <Link href="/about" className="block text-gray-300 hover:text-primary transition-colors">
               About
+            </Link>
+
+            <Link href="/contact" className="block text-gray-300 hover:text-primary transition-colors">
+              Contact
             </Link>
 
             <a href="https://calendly.com/dave-goodbreeze/30min" target="_blank" rel="noopener noreferrer" className="block text-center px-6 py-2 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full">

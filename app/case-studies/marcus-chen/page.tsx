@@ -22,7 +22,7 @@ export default function MarcusChenCaseStudy() {
         <div className="bg-gradient-to-br from-[#3b82f6]/20 via-[#a855f7]/20 to-[#00adb5]/10 rounded-2xl p-12 mb-12">
           <div className="flex items-center gap-6 mb-8">
             <div className="relative w-24 h-24 rounded-full border-2 border-primary/30 overflow-hidden flex-shrink-0">
-              <Image src="/images/avatars/marcus-chen.png" alt="Marcus Chen" width={96} height={96} className="w-full h-full object-cover" />
+              <Image src="/images/avatars/marcus-chen.webp" alt="Marcus Chen" width={96} height={96} className="w-full h-full object-cover" />
             </div>
             <div>
               <h1 className="text-4xl font-bold text-white">Marcus Chen</h1>

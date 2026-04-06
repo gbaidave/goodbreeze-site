@@ -23,12 +23,17 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
     const host = process.env.NEXT_PUBLIC_POSTHOG_HOST ?? 'https://us.i.posthog.com'
     if (!key) return
 
-    posthog.init(key, {
-      api_host: host,
-      person_profiles: 'identified_only',
-      capture_pageview: false, // manual via PostHogPageView
-      capture_pageleave: true,
-    })
+    // Defer PostHog initialization to avoid blocking LCP
+    const timer = setTimeout(() => {
+      posthog.init(key, {
+        api_host: host,
+        person_profiles: 'identified_only',
+        capture_pageview: false, // manual via PostHogPageView
+        capture_pageleave: true,
+      })
+    }, 3000)
+
+    return () => clearTimeout(timer)
   }, [])
 
   return (

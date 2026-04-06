@@ -20,7 +20,7 @@ const tools = [
   {
     name: "Brand Visibility",
     description: "Five reports: audits, keyword research, landing page analysis, competitor benchmarking, and AI visibility.",
-    href: "/reports/seo-intelligence",
+    href: "/reports/brand-visibility",
     features: [
       "AI SEO Optimizer",
       "SEO Audit: technical + keyword",

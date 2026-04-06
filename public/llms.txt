@@ -1,25 +1,36 @@
 # Good Breeze AI
 
-> AI-powered competitive intelligence and SEO reports for small and mid-size businesses. Freemium SaaS platform — start free, no credit card required.
+> AI automation and business intelligence for small businesses. Freemium SaaS platform — start free, no credit card required.
 
 ## What We Do
 
-Good Breeze AI helps business owners eliminate busywork and scale output without hiring. We generate AI-powered reports that surface competitive gaps, SEO weaknesses, and growth opportunities — in minutes, not weeks.
+Good Breeze AI helps business owners eliminate busywork and scale output without hiring. We generate AI-powered reports that surface competitive gaps, visibility weaknesses, and growth opportunities — in minutes, not weeks. We also build custom AI automation systems for businesses ready to scale.
 
+## Services
+
+- **Workflow Automation** — Eliminate repetitive tasks and save 20+ hours per week
+- **AI Agent Implementation** — Deploy AI agents for customer inquiries, data processing, and routine decisions
+- **Competitive Intelligence** — Track competitors, monitor market changes, and identify opportunities
+- **Process Optimization** — Find bottlenecks, reduce waste, and streamline operations
+- **Content Management & Delivery** — Automate content creation, scheduling, and distribution
+- **Custom Solutions** — Tailored AI and automation systems built for your specific business
+
+## Reports
+
+- **Business Presence Report** — Free analysis of online visibility, competitors, reputation, and website performance
 - **Competitive Analyzer** — Head-to-head comparisons, Top 3 Competitors analysis, and Competitive Position reports
-- **SEO Reports** — Technical SEO audits, keyword research, landing page optimization, AI SEO recommendations, and comprehensive SEO analysis
-- **Done-for-you AI systems** — Custom automation workflows built for client businesses (custom engagements)
+- **Brand Visibility Reports** — SEO audits, keyword research, landing page optimization, AI visibility, and competitor benchmarking
 
 ## Products & Pricing
 
-- Free tier: 1 free report (no credit card required)
-- Impulse pack: 3 reports for $1
-- Starter subscription: $20/month for ongoing access
+- Free tier: 1 free Business Presence Report (no credit card required)
+- Credit packs: Starting at $5 for additional reports
+- Starter subscription: $20/month for ongoing access with monthly report allowance
 - Custom engagements: $5K–$20K for done-for-you AI automation systems
 
 ## Target Audience
 
-Small business owners, marketing consultants, and agency operators who want AI-powered competitive and SEO intelligence without enterprise pricing or complexity.
+Small business owners with 5-20 employees and $500K+ annual revenue who want to cut manual work, understand their competitive position, and grow faster with AI automation.
 
 ## Company
 
@@ -27,14 +38,22 @@ Small business owners, marketing consultants, and agency operators who want AI-p
 - Founded: 2025
 - Location: United States
 - Contact: https://goodbreeze.ai/contact
+- Email: support@goodbreeze.ai
+- Book a Strategy Call: https://calendly.com/dave-goodbreeze/30min
 
 ## Key Pages
 
 - Homepage: https://goodbreeze.ai
+- Free Business Presence Report: https://goodbreeze.ai/free-business-presence-report
 - Reports hub: https://goodbreeze.ai/reports
+- Brand Visibility Reports: https://goodbreeze.ai/reports/brand-visibility
+- Competitive Analyzer: https://goodbreeze.ai/reports/competitive-analyzer
 - Services: https://goodbreeze.ai/services
 - Pricing: https://goodbreeze.ai/pricing
 - About: https://goodbreeze.ai/about
+- Contact: https://goodbreeze.ai/contact
+- Resources: https://goodbreeze.ai/resources
+- Case Studies: https://goodbreeze.ai/case-studies
 - FAQ: https://goodbreeze.ai/faq
 - Free SEO audit tool: https://goodbreeze.ai/seo-audit
 - Privacy Policy: https://goodbreeze.ai/privacy-policy

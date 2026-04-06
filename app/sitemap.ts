@@ -21,9 +21,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${base}/services/process-optimization`,     lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
     { url: `${base}/services/custom-solutions`,         lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
 
-    // Reports (public pages only — individual report forms require auth or free credit)
-    { url: `${base}/reports`,             lastModified: now, changeFrequency: 'weekly',  priority: 0.9 },
-    { url: `${base}/seo-audit`,           lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
+    // Reports (public form pages — individual report results are auth-gated)
+    { url: `${base}/reports`,                      lastModified: now, changeFrequency: 'weekly',  priority: 0.9 },
+    { url: `${base}/free-business-presence-report`, lastModified: now, changeFrequency: 'weekly',  priority: 1.0 },
+    { url: `${base}/reports/brand-visibility`,      lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
+    { url: `${base}/reports/competitive-analyzer`,  lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
+    { url: `${base}/seo-audit`,                     lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
 
     // Case studies (sub-pages excluded until real customer content is live)
     { url: `${base}/case-studies`, lastModified: now, changeFrequency: 'monthly', priority: 0.7 },

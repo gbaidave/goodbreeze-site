@@ -15,6 +15,57 @@ export const metadata: Metadata = {
 export default function WorkflowAutomationServices() {
   return (
     <div className="min-h-screen bg-dark py-24 px-6">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "What kinds of tasks can workflow automation handle?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Workflow automation works best on repetitive, rule-based tasks: lead follow-ups, client onboarding, data entry, report generation, and syncing data between tools like your CRM and accounting software. If your team does the same steps every time a trigger occurs, it can almost certainly be automated."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How much does workflow automation cost and what is the return?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Most small business automation projects range from $5,000 to $20,000 depending on complexity. Businesses typically reclaim 20 or more hours per week within the first month, which at $50 per hour saves over $50,000 annually in labor alone."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How long does it take to set up workflow automation?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Simple workflows are up and running in 1 to 2 weeks. More complex multi-system automations typically take 4 to 8 weeks including discovery, build, testing, and training."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "What tools do you use to build automations?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "We primarily build with n8n, Zapier, and Make, choosing the right tool based on your existing systems, data volume, and budget. We build around the tools you already use rather than forcing you to switch."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "What happens if an automated workflow breaks?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "We set up error monitoring and alerting so issues are caught immediately rather than silently failing. Ongoing support is included so we fix problems quickly without you having to diagnose them yourself."
+                }
+              }
+            ]
+          })
+        }}
+      />
       <div className="max-w-4xl mx-auto">
         {/* Breadcrumb */}
         <div className="mb-8">

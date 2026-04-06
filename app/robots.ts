@@ -26,16 +26,20 @@ export default function robots(): MetadataRoute.Robots {
           '/forgot-password',
           '/forgot-password/by-phone',
           '/reset-password',
+          '/expired-password',
           '/auth/',
           // Admin area
           '/admin',
           // API
           '/api/',
-          // Report tool forms & individual report results (hub /reports stays crawlable)
-          '/reports/',
+          // Individual report results (auth-required) — NOT the public form pages
+          '/reports/business-presence', // auth-gated report viewer (form is on /free-business-presence-report)
           // Not ready to index yet
           '/testimonials',
           '/refund-policy',
+          // WordPress artifacts
+          '/comments/',
+          '/wp-*',
         ],
       },
     ],

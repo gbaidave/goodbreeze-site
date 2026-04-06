@@ -101,10 +101,12 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       // /tools → /reports (URL rename — ACC3-K)
+      // Specific routes BEFORE wildcards (Next.js matches in order)
+      { source: '/tools/sales-analyzer', destination: '/reports/competitive-analyzer', permanent: true },
       { source: '/tools', destination: '/reports', permanent: true },
       { source: '/tools/:path*', destination: '/reports/:path*', permanent: true },
       // Route renames — old URL → new URL
-      { source: '/tools/sales-analyzer', destination: '/reports/competitive-analyzer', permanent: true },
+      { source: '/reports/seo-intelligence', destination: '/reports/brand-visibility', permanent: true },
 
       // Trailing slash → no trailing slash (WordPress used trailing slashes)
       { source: '/about/', destination: '/about', permanent: true },
@@ -125,6 +127,16 @@ const nextConfig: NextConfig = {
       { source: '/category/:slug', destination: '/', permanent: true },
       { source: '/author/:slug', destination: '/', permanent: true },
       { source: '/tag/:slug', destination: '/', permanent: true },
+      { source: '/wp-:path*', destination: '/', permanent: true },
+      { source: '/comments/:path*', destination: '/', permanent: true },
+
+      // Old WordPress pages → best match
+      { source: '/terms-and-conditions', destination: '/terms-of-use', permanent: true },
+      { source: '/terms-and-conditions/', destination: '/terms-of-use', permanent: true },
+      { source: '/process', destination: '/services', permanent: true },
+      { source: '/process/', destination: '/services', permanent: true },
+      { source: '/use-cases', destination: '/case-studies', permanent: true },
+      { source: '/use-cases/', destination: '/case-studies', permanent: true },
     ];
   },
 };

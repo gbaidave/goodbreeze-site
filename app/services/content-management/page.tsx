@@ -15,6 +15,49 @@ export const metadata: Metadata = {
 export default function ContentManagementServices() {
   return (
     <div className="min-h-screen bg-dark py-24 px-6">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "What types of content can this system manage?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "We build systems for social media posts, blog content, email newsletters, and multi-platform distribution. The same piece of content can be automatically formatted and published to LinkedIn, Instagram, Facebook, and your email list from a single source."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Will the content still sound like us or will it feel generic?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Your brand voice, tone, and messaging guidelines are built into the system from the start. You review and approve before anything goes out, so the automation handles scheduling and distribution while you control the creative output."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How much time will this actually save my team each week?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Most businesses spend 10 to 15 hours a week on content logistics. Automated systems typically recover 70 to 80 percent of that time, freeing your team to focus on strategy and creative work instead of posting and formatting."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "What does content management automation cost?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Setup ranges from $5,000 to $15,000 depending on the number of platforms and content types involved. The savings from reduced manual hours typically cover the cost within the first few months."
+                }
+              }
+            ]
+          })
+        }}
+      />
       <div className="max-w-4xl mx-auto">
         {/* Breadcrumb */}
         <div className="mb-8">

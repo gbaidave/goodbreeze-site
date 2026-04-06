@@ -17,7 +17,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   metadataBase: new URL("https://goodbreeze.ai"),
   title: {
-    default: "Good Breeze AI | AI Automation & Intelligence for Small Business",
+    default: "AI Automation for Small Business | Good Breeze AI",
     template: "%s | Good Breeze AI",
   },
   description:
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: "Good Breeze AI",
-    title: "Good Breeze AI | AI Automation & Intelligence for Small Business",
+    title: "AI Automation for Small Business | Good Breeze AI",
     description:
       "Good Breeze AI helps small businesses and startups cut busywork, outmaneuver competitors, and grow faster with AI automation and free intelligence tools.",
     url: "https://goodbreeze.ai",
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     site: "@goodbreezeai",
-    title: "Good Breeze AI | AI Automation & Intelligence for Small Business",
+    title: "AI Automation for Small Business | Good Breeze AI",
     description:
       "Good Breeze AI helps small businesses and startups cut busywork, outmaneuver competitors, and grow faster with AI automation and free intelligence tools.",
   },
@@ -105,7 +105,7 @@ export default function RootLayout({
         />
         <Script
           id="gtm-script"
-          strategy="afterInteractive"
+          strategy="lazyOnload"
           dangerouslySetInnerHTML={{
             __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],

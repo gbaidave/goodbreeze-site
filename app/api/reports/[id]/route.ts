@@ -124,7 +124,7 @@ export async function DELETE(
 
     const { data: existing } = await svc
       .from('reports')
-      .select('id, status, usage_type, credit_row_id, free_system')
+      .select('id, status, usage_type, credit_row_id, credit_amount, free_system, report_type, created_at')
       .eq('id', id)
       .eq('user_id', user.id)
       .single()
@@ -140,6 +140,8 @@ export async function DELETE(
       existing.usage_type &&
       existing.usage_type !== 'admin'
     ) {
+      const refundAmount = existing.credit_amount ?? 1
+
       if (existing.usage_type === 'credits' && existing.credit_row_id) {
         const { data: creditRow } = await svc
           .from('credits')
@@ -147,7 +149,7 @@ export async function DELETE(
           .eq('id', existing.credit_row_id)
           .single()
         if (creditRow) {
-          await svc.from('credits').update({ balance: creditRow.balance + 1 }).eq('id', existing.credit_row_id)
+          await svc.from('credits').update({ balance: creditRow.balance + refundAmount }).eq('id', existing.credit_row_id)
         }
       } else if (existing.usage_type === 'subscription') {
         const { data: sub } = await svc
@@ -159,7 +161,7 @@ export async function DELETE(
           .limit(1)
           .single()
         if (sub) {
-          await svc.from('subscriptions').update({ credits_remaining: sub.credits_remaining + 1 }).eq('id', sub.id)
+          await svc.from('subscriptions').update({ credits_remaining: sub.credits_remaining + refundAmount }).eq('id', sub.id)
         }
       } else if (existing.usage_type === 'free' && existing.free_system) {
         const { data: profile } = await svc
@@ -171,6 +173,21 @@ export async function DELETE(
           const updated = { ...profile.free_reports_used }
           delete updated[existing.free_system as string]
           await svc.from('profiles').update({ free_reports_used: updated }).eq('id', user.id)
+        }
+      }
+
+      // Decrement report_type_usage for plan users so the slot is freed
+      if (existing.report_type) {
+        const usageMonth = new Date(existing.created_at).toISOString().slice(0, 7) // YYYY-MM
+        const { data: usageRow } = await svc
+          .from('report_type_usage')
+          .select('id, count')
+          .eq('user_id', user.id)
+          .eq('report_type', existing.report_type)
+          .eq('usage_month', usageMonth)
+          .single()
+        if (usageRow && usageRow.count > 0) {
+          await svc.from('report_type_usage').update({ count: usageRow.count - 1 }).eq('id', usageRow.id)
         }
       }
     }

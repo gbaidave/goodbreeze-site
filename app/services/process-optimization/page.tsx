@@ -15,6 +15,49 @@ export const metadata: Metadata = {
 export default function ProcessOptimizationServices() {
   return (
     <div className="min-h-screen bg-dark py-24 px-6">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "What kinds of business processes qualify for optimization?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Any process with multiple handoffs, frequent errors, or unpredictable completion times is a strong candidate. Common examples include client onboarding, sales-to-delivery handoffs, financial close, and customer support triage."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How do you measure the savings from process optimization?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "We establish baseline metrics before we start: time per task, error rate, and headcount involved. After changes are in place, we measure the same metrics so the improvement is concrete and tied to real numbers rather than estimates."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How long does a process optimization engagement take?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "A full process audit and redesign typically takes 4 to 6 weeks. Smaller targeted improvements can be turned around in 2 to 3 weeks. We prioritize the changes with the highest ROI so you see results quickly."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Will this disrupt my team while the changes are being made?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "We design changes to roll out in stages so your team is never left without a working process. Training is built into the project timeline, and we stay available during the transition to answer questions and resolve issues."
+                }
+              }
+            ]
+          })
+        }}
+      />
       <div className="max-w-4xl mx-auto">
         {/* Breadcrumb */}
         <div className="mb-8">

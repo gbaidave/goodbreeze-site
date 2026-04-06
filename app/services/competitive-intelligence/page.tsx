@@ -15,6 +15,49 @@ export const metadata: Metadata = {
 export default function CompetitiveIntelligenceServices() {
   return (
     <div className="min-h-screen bg-dark py-24 px-6">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "What data do you track about my competitors?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "We monitor competitor pricing pages, product announcements, website messaging, ad campaigns, and job postings. Any publicly available signal that indicates a strategic shift gets captured and surfaced to you."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How often is the competitive data updated?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Most monitoring runs daily or continuously depending on the data source. You receive alerts when significant changes are detected and scheduled digest reports on the cadence you choose."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "What blind spots does this fix that I probably have right now?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Most businesses only check competitor sites a few times a year. That means you may have already lost deals to a competitor who changed their pricing or launched a new service months ago without you knowing. Automated monitoring catches those changes the day they happen."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How is this priced?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Setup and system build typically ranges from $5,000 to $15,000 depending on the number of competitors and data sources. Ongoing monitoring is available as a monthly retainer. You can also start with our free Business Presence Report to see how you currently stack up."
+                }
+              }
+            ]
+          })
+        }}
+      />
       <div className="max-w-4xl mx-auto">
         {/* Breadcrumb */}
         <div className="mb-8">

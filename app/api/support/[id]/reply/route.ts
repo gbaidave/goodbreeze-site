@@ -115,9 +115,14 @@ export async function POST(
         .eq('id', supportReq.user_id)
         .single()
       const toEmail = userProfile?.email || supportReq.email
-      const toName = userProfile?.name || toEmail.split('@')[0]
+      const toName = userProfile?.name || toEmail?.split('@')[0] || 'there'
       sendSupportReplyEmail(toEmail, toName, message, supportReq.user_id)
         .catch((err) => console.error('Support reply email failed:', err))
+    } else if (supportReq.email) {
+      // Non-account user (contact form submission) — send reply via email
+      const toName = supportReq.email.split('@')[0]
+      sendSupportReplyEmail(supportReq.email, toName, message, null, 'support@goodbreeze.ai')
+        .catch((err) => console.error('Support reply email to non-account user failed:', err))
     }
 
     return NextResponse.json({ success: true })

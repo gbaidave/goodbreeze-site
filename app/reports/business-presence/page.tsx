@@ -28,6 +28,30 @@ interface Report {
 // Inner component (needs useSearchParams → must be inside Suspense)
 // ============================================================================
 
+// Spinner messages — cycle every 4 seconds during report generation
+const SPINNER_MESSAGES = [
+  'Digging into your site...',
+  'Poking around your competitors...',
+  'Asking Google what it thinks of you...',
+  'Checking if the internet likes you...',
+  'Running the numbers...',
+  'Spying on the competition (legally)...',
+  'Checking your SEO homework...',
+  'Counting your backlinks...',
+  'Seeing how fast your site loads...',
+  'Teaching robots about your business...',
+  'Crunching competitive data...',
+  'Mapping your digital footprint...',
+  'Sniffing out keyword opportunities...',
+  'Comparing you to the top dogs...',
+  'Measuring your online street cred...',
+  'Checking your visibility score...',
+  'Reading between the meta tags...',
+  'Asking the algorithm for its opinion...',
+  'Turning raw data into insights...',
+  'Almost there, putting on the finishing touches...',
+]
+
 function BusinessPresenceInner() {
   const { user, loading: authLoading } = useAuth()
   const searchParams = useSearchParams()
@@ -39,6 +63,8 @@ function BusinessPresenceInner() {
   const [upgradePrompt, setUpgradePrompt] = useState('')
   const [report, setReport] = useState<Report | null>(null)
   const [loadingReport, setLoadingReport] = useState(true)
+  const [hasFreeSlot, setHasFreeSlot] = useState(false)
+  const [spinnerMsgIndex, setSpinnerMsgIndex] = useState(0)
   const autoSubmittedRef = useRef(false)
 
   // Redirect non-logged-in users to the landing page
@@ -74,6 +100,35 @@ function BusinessPresenceInner() {
     }
     fetchReport()
   }, [user])
+
+  // Check if user has a free slot available
+  useEffect(() => {
+    if (!user) return
+    async function checkFreeSlot() {
+      try {
+        const supabase = createClient()
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('free_reports_used')
+          .eq('id', user!.id)
+          .single()
+        const used = profile?.free_reports_used ?? {}
+        setHasFreeSlot(!used['business_presence_report'])
+      } catch {
+        // Default to showing credit cost
+      }
+    }
+    checkFreeSlot()
+  }, [user])
+
+  // Cycle spinner messages every 4 seconds while pending
+  useEffect(() => {
+    if (!report || !['pending', 'processing'].includes(report.status)) return
+    const interval = setInterval(() => {
+      setSpinnerMsgIndex(prev => (prev + 1) % SPINNER_MESSAGES.length)
+    }, 4000)
+    return () => clearInterval(interval)
+  }, [report?.id, report?.status])
 
   const handleSubmit = useCallback(async (e?: React.FormEvent) => {
     if (e) e.preventDefault()
@@ -169,11 +224,24 @@ function BusinessPresenceInner() {
         <div className="py-24 px-6">
           <div className="max-w-lg mx-auto text-center">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-              <div className="w-16 h-16 mx-auto mb-6 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+              <div className="relative w-20 h-20 mx-auto mb-8">
+                <div className="absolute inset-0 border-4 border-primary/10 rounded-full" />
+                <div className="absolute inset-0 border-4 border-transparent border-t-primary rounded-full animate-spin" />
+                <div className="absolute inset-2 border-4 border-transparent border-t-accent-blue rounded-full animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }} />
+              </div>
               <h1 className="text-2xl font-bold text-white mb-3">Generating your Business Presence Report</h1>
               {reportDomain && <p className="text-primary font-medium mb-4">{reportDomain}</p>}
-              <p className="text-gray-400 mb-2">We&apos;re analyzing your website, search visibility, competitor landscape, and online reputation.</p>
-              <p className="text-gray-500 text-sm">This usually takes a few minutes. You&apos;ll get an email when it&apos;s ready. This page updates automatically.</p>
+              <motion.p
+                key={spinnerMsgIndex}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.4 }}
+                className="text-gray-400 mb-2 h-6"
+              >
+                {SPINNER_MESSAGES[spinnerMsgIndex]}
+              </motion.p>
+              <p className="text-gray-500 text-sm mt-4">This usually takes a few minutes. You&apos;ll get an email when it&apos;s ready. This page updates automatically.</p>
               <Link href="/dashboard" className="inline-block mt-8 text-sm text-primary hover:text-primary-light transition-colors">Go to Dashboard →</Link>
             </motion.div>
           </div>
@@ -254,7 +322,11 @@ function BusinessPresenceInner() {
             <Link href="/reports" className="text-gray-500 hover:text-primary text-sm transition-colors">← All Reports</Link>
             <div className="mt-4 mb-3 flex items-center justify-center gap-3">
               <h1 className="text-4xl font-bold text-white">Business Presence Report</h1>
-              <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/30">3 Credits</span>
+              {hasFreeSlot ? (
+                <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-green-500/10 text-green-400 border border-green-500/30">Free</span>
+              ) : (
+                <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/30">3 Credits</span>
+              )}
             </div>
             <p className="text-gray-400 max-w-lg mx-auto">See how your business shows up online. We analyze your visibility, competitors, reputation, and website to tell you exactly where you stand and what to fix first.</p>
           </motion.div>

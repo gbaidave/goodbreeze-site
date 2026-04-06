@@ -148,13 +148,16 @@ export async function sendSupportReplyEmail(
   to: string,
   name: string,
   replyMessage: string,
-  userId?: string
+  userId?: string | null,
+  fromAddress?: string
 ) {
-  if (!await checkEmailPref(userId, 'support_emails')) return { data: null, error: null }
+  if (!await checkEmailPref(userId ?? undefined, 'support_emails')) return { data: null, error: null }
   const { subject, html } = supportReplyEmail(name, replyMessage)
+  const from = fromAddress ? `${FROM_NAME} <${fromAddress}>` : `${FROM_NAME} <${FROM}>`
+  const replyTo = fromAddress ?? REPLY_TO
   return sendAndLog(
-    () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject: stagingPrefix + subject, html }),
-    { userId, toEmail: to, type: 'support_reply', subject }
+    () => resend.emails.send({ from, to, replyTo, subject: stagingPrefix + subject, html }),
+    { userId: userId ?? undefined, toEmail: to, type: 'support_reply', subject }
   )
 }
 

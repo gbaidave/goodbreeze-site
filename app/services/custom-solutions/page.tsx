@@ -15,6 +15,57 @@ export const metadata: Metadata = {
 export default function CustomSolutionsServices() {
   return (
     <div className="min-h-screen bg-dark py-24 px-6">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "What makes a solution custom versus a standard automation?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Standard automations follow common patterns that work for most businesses. A custom solution is built from scratch around your specific processes, internal systems, industry requirements, or data flows that no off-the-shelf tool handles well."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "What does a custom automation solution typically cost?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Most custom engagements range from $10,000 to $50,000 depending on complexity, number of integrations, and ongoing support requirements. We scope the work clearly upfront so there are no surprises."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How long does it take to build a custom solution?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Timelines vary based on complexity. A focused custom integration typically takes 6 to 10 weeks. Larger multi-system builds with compliance requirements can take 3 to 6 months, with working components delivered throughout the project."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Do I own what gets built, or am I locked into a contract?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "You own the solution. All workflows, code, and documentation are yours at the end of the engagement. We offer ongoing support as an option, not a requirement."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "What happens if I need changes after the project is done?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "We offer ongoing support and maintenance retainers for businesses that want a long-term partner. Alternatively, we document everything clearly so your internal team or another developer can make changes independently."
+                }
+              }
+            ]
+          })
+        }}
+      />
       <div className="max-w-4xl mx-auto">
         {/* Breadcrumb */}
         <div className="mb-8">
