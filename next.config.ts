@@ -127,7 +127,11 @@ const nextConfig: NextConfig = {
       { source: '/category/:slug', destination: '/', permanent: true },
       { source: '/author/:slug', destination: '/', permanent: true },
       { source: '/tag/:slug', destination: '/', permanent: true },
-      { source: '/wp-:path*', destination: '/', permanent: true },
+      { source: '/wp-login.php', destination: '/', permanent: true },
+      { source: '/wp-admin', destination: '/', permanent: true },
+      { source: '/wp-admin/:path*', destination: '/', permanent: true },
+      { source: '/wp-content/:path*', destination: '/', permanent: true },
+      { source: '/wp-includes/:path*', destination: '/', permanent: true },
       { source: '/comments/:path*', destination: '/', permanent: true },
 
       // Old WordPress pages → best match
