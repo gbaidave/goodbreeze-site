@@ -111,6 +111,7 @@ export async function POST(request: NextRequest) {
         email: email,
         category: 'contact_form',
         subject: `Contact form: ${name}`,
+        message: message,
         status: 'open',
         priority: 'normal',
         handled_by: 'pending',

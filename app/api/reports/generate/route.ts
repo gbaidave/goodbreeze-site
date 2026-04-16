@@ -243,18 +243,30 @@ export async function POST(request: NextRequest) {
     const plan = activeSub?.plan ?? 'free'
 
     // 4. Check entitlement
-    //    For business_presence_report on paid plans, check plan allowance first
-    //    (additive — plan allowance checked before falling through to credits)
+    //    BPR consumption order: free slot → plan monthly allowance → credit packs
+    //    All other reports: subscription credits_remaining → free slot → credit packs
     let usedPlanAllowance = false
     let entitlement: Awaited<ReturnType<typeof checkEntitlement>>
 
-    if (reportType === 'business_presence_report' && ['starter', 'growth', 'pro'].includes(plan)) {
-      const planCheck = await checkPlanAllowance(user.id, reportType, plan as Plan)
-      if (planCheck.allowed) {
-        usedPlanAllowance = true
-        entitlement = { allowed: true, deductFrom: 'subscription' }
-      } else {
-        entitlement = await checkEntitlement(user.id, reportType)
+    if (reportType === 'business_presence_report') {
+      // Step 1: always check free slot first (1 per account, ever)
+      entitlement = await checkEntitlement(user.id, reportType)
+
+      if (!entitlement.allowed || entitlement.deductFrom !== 'free_slot') {
+        // Free slot used or not applicable — check plan allowance next
+        if (['starter', 'growth', 'pro'].includes(plan)) {
+          const planCheck = await checkPlanAllowance(user.id, reportType, plan as Plan)
+          if (planCheck.allowed) {
+            usedPlanAllowance = true
+            entitlement = { allowed: true, deductFrom: 'subscription' }
+          } else {
+            // Plan allowance exhausted — fall to credit packs via checkEntitlement
+            // checkEntitlement already ran and returned credits or denied
+            // Re-run skipping subscription check since we want credit packs only
+            entitlement = await checkEntitlement(user.id, reportType)
+          }
+        }
+        // Free plan BPR: entitlement from checkEntitlement is already correct (free slot → credits)
       }
     } else {
       entitlement = await checkEntitlement(user.id, reportType)

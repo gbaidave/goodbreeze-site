@@ -145,6 +145,7 @@ function BusinessPresenceInner() {
       if (res.status === 402) { setError(data.error); setUpgradePrompt(data.upgradePrompt ?? 'impulse'); return }
       if (!res.ok) { setError(data.error || 'Something went wrong.'); return }
       captureEvent('tool_form_submit', { reportType: 'business_presence_report' })
+      window.dispatchEvent(new Event('credits-changed'))
       setReport({
         id: data.reportId,
         status: 'pending',

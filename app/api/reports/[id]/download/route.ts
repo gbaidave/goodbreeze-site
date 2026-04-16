@@ -40,6 +40,8 @@ function buildIdentifier(reportType: string, inputData: Record<string, unknown>)
   const company = inputData.company as string | undefined
   const focusKeyword = inputData.focusKeyword as string | undefined
 
+  const domain = inputData.domain as string | undefined
+
   switch (reportType) {
     case 'h2h': {
       const target = extractDomain(targetWebsite) || company || 'Target'
@@ -51,6 +53,8 @@ function buildIdentifier(reportType: string, inputData: Record<string, unknown>)
       return extractDomain(targetWebsite) || company || ''
     case 'keyword_research':
       return focusKeyword || extractDomain(url) || ''
+    case 'business_presence_report':
+      return domain || extractDomain(url) || company || ''
     default: // ai_seo, landing_page, seo_audit, seo_comprehensive
       return extractDomain(url) || company || ''
   }

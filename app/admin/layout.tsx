@@ -15,6 +15,7 @@ const SUPERADMIN_NAV = [
   { href: '/admin/refunds',      label: 'Refunds' },
   { href: '/admin/email-logs',   label: 'Email Logs' },
   { href: '/admin/settings',     label: 'Settings' },
+  { href: '/admin/catalog',      label: 'Catalog' },
 ]
 
 // Admin nav — no Refunds or Settings (Stripe + system config = superadmin only)

@@ -123,7 +123,16 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
             {profile.free_reports_used && Object.keys(profile.free_reports_used).length > 0 && (
               <div>
                 <p className="text-gray-500 text-xs mb-1">Free reports used</p>
-                <pre className="text-xs text-gray-300 bg-dark rounded px-2 py-1">{JSON.stringify(profile.free_reports_used, null, 2)}</pre>
+                <ul className="text-xs text-gray-300 space-y-0.5">
+                  {Object.entries(profile.free_reports_used as Record<string, unknown>).map(([key, val]) => {
+                    const label = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+                    const isDate = typeof val === 'string' && !isNaN(Date.parse(val))
+                    const display = isDate
+                      ? `Used on ${new Date(val).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+                      : 'Used'
+                    return <li key={key}>{label}: {display}</li>
+                  })}
+                </ul>
               </div>
             )}
           </div>

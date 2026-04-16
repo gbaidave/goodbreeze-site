@@ -799,10 +799,10 @@ export function BugReportsTable({
               {pagedRows.map((r) => {
                 const hasAttachments = r.messages.some(m => (m.attachments?.length ?? 0) > 0)
                 return (
-                  <div key={r.id} className="border-b border-zinc-800 last:border-0">
+                  <div key={r.id} className="border-b border-zinc-800 last:border-0 overflow-visible relative">
                     <div
                       onClick={() => toggleExpand(r.id)}
-                      className={`grid ${GRID} gap-x-3 px-4 py-3 cursor-pointer transition-colors items-center ${
+                      className={`grid ${GRID} gap-x-3 px-4 py-3 cursor-pointer transition-colors items-center overflow-visible ${
                         expandedId === r.id ? 'bg-zinc-800/60' : 'hover:bg-zinc-800/30'
                       }`}
                     >

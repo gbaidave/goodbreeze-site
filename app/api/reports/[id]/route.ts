@@ -163,33 +163,10 @@ export async function DELETE(
         if (sub) {
           await svc.from('subscriptions').update({ credits_remaining: sub.credits_remaining + refundAmount }).eq('id', sub.id)
         }
-      } else if (existing.usage_type === 'free' && existing.free_system) {
-        const { data: profile } = await svc
-          .from('profiles')
-          .select('free_reports_used')
-          .eq('id', user.id)
-          .single()
-        if (profile?.free_reports_used) {
-          const updated = { ...profile.free_reports_used }
-          delete updated[existing.free_system as string]
-          await svc.from('profiles').update({ free_reports_used: updated }).eq('id', user.id)
-        }
       }
-
-      // Decrement report_type_usage for plan users so the slot is freed
-      if (existing.report_type) {
-        const usageMonth = new Date(existing.created_at).toISOString().slice(0, 7) // YYYY-MM
-        const { data: usageRow } = await svc
-          .from('report_type_usage')
-          .select('id, count')
-          .eq('user_id', user.id)
-          .eq('report_type', existing.report_type)
-          .eq('usage_month', usageMonth)
-          .single()
-        if (usageRow && usageRow.count > 0) {
-          await svc.from('report_type_usage').update({ count: usageRow.count - 1 }).eq('id', usageRow.id)
-        }
-      }
+      // Free slot: intentionally NOT restored on delete.
+      // Plan allowance (report_type_usage): intentionally NOT decremented on delete.
+      // Both are permanent consumption — only failure trigger can decrement plan usage.
     }
 
     const { error } = await svc

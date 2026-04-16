@@ -107,11 +107,17 @@ export default function Hero() {
 
   return (
     <section className="relative pt-32 pb-20 overflow-hidden bg-dark">
-      {/* Animated particle network background */}
+      {/* Animated particle network — desktop only */}
       <canvas
         ref={canvasRef}
-        className="absolute inset-0 w-full h-full"
+        className="absolute inset-0 w-full h-full hidden md:block"
         style={{ background: "linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%)" }}
+        aria-hidden="true"
+      />
+      {/* Static particle image — mobile only */}
+      <div
+        className="absolute inset-0 w-full h-full md:hidden bg-cover bg-center"
+        style={{ backgroundImage: "url('/images/hero-fractal-static.webp')" }}
         aria-hidden="true"
       />
 

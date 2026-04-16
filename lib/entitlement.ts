@@ -9,6 +9,7 @@
  */
 
 import { createClient } from '@supabase/supabase-js'
+import { getReportCreditCost } from '@/lib/catalog'
 
 // ============================================================================
 // Types
@@ -177,7 +178,7 @@ export async function checkEntitlement(
     }
   }
 
-  const creditCost = meta.creditCost
+  const creditCost = await getReportCreditCost(reportType)
 
   // Find the oldest non-expired credit row with balance >= creditCost
   let creditQuery = supabase
@@ -233,7 +234,7 @@ export async function recordUsage(
   }
 
   if (deductFrom === 'credits' && creditRowId) {
-    const amount = creditAmount ?? REPORT_META[reportType].creditCost
+    const amount = creditAmount ?? await getReportCreditCost(reportType)
     if (amount === 1) {
       // Use original RPC for backwards compatibility
       await supabase.rpc('decrement_credit', { p_credit_id: creditRowId })
@@ -303,7 +304,7 @@ export async function checkPlanAllowance(
   userId: string,
   reportType: ReportType,
   plan: Plan
-): Promise<{ allowed: boolean; reason?: string; usedMonthly: number; monthlyLimit: number; usedWeekly: number; weeklyLimit: number | null }> {
+): Promise<{ allowed: boolean; reason?: string; usedMonthly: number; monthlyLimit: number }> {
   const supabase = getServiceClient()
   const usageMonth = new Date().toISOString().slice(0, 7) // 'YYYY-MM'
 
@@ -317,7 +318,7 @@ export async function checkPlanAllowance(
 
   // No allowance row = no plan-based allowance for this report type
   if (!allowance) {
-    return { allowed: false, reason: 'No plan allowance for this report type.', usedMonthly: 0, monthlyLimit: 0, usedWeekly: 0, weeklyLimit: null }
+    return { allowed: false, reason: 'No plan allowance for this report type.', usedMonthly: 0, monthlyLimit: 0 }
   }
 
   // 2. Get current monthly usage
@@ -338,32 +339,6 @@ export async function checkPlanAllowance(
       reason: `You've used all ${allowance.monthly_limit} of your monthly business presence reports. Purchase credits or wait until next month.`,
       usedMonthly,
       monthlyLimit: allowance.monthly_limit,
-      usedWeekly: 0,
-      weeklyLimit: allowance.weekly_limit,
-    }
-  }
-
-  // 4. Check weekly rate limit (if configured)
-  if (allowance.weekly_limit) {
-    const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-    const { count: weeklyCount } = await supabase
-      .from('reports')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', userId)
-      .eq('report_type', reportType)
-      .gte('created_at', oneWeekAgo)
-      .not('status', 'in', '("failed","failed_site_blocked")')
-
-    const usedWeekly = weeklyCount ?? 0
-    if (usedWeekly >= allowance.weekly_limit) {
-      return {
-        allowed: false,
-        reason: `You can run ${allowance.weekly_limit} business presence report${allowance.weekly_limit > 1 ? 's' : ''} per week. Try again in a few days.`,
-        usedMonthly,
-        monthlyLimit: allowance.monthly_limit,
-        usedWeekly,
-        weeklyLimit: allowance.weekly_limit,
-      }
     }
   }
 
@@ -371,8 +346,6 @@ export async function checkPlanAllowance(
     allowed: true,
     usedMonthly,
     monthlyLimit: allowance.monthly_limit,
-    usedWeekly: 0,
-    weeklyLimit: allowance.weekly_limit,
   }
 }
 
@@ -399,14 +372,5 @@ export async function recordPlanAllowanceUsage(
 // Public: Get credit costs for all report types (for frontend display)
 // ============================================================================
 
-export function getReportCreditCosts(): Record<ReportType, number> {
-  const costs = {} as Record<ReportType, number>
-  for (const [key, meta] of Object.entries(REPORT_META)) {
-    costs[key as ReportType] = meta.creditCost
-  }
-  return costs
-}
-
-export function getReportCreditCost(reportType: ReportType): number {
-  return REPORT_META[reportType].creditCost
-}
+export { getReportCreditCost } from '@/lib/catalog'
+export { getAllCatalogItems } from '@/lib/catalog'

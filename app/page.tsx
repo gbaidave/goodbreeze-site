@@ -9,11 +9,11 @@ import FounderSection from "@/components/home/FounderSection";
 import FinalCTA from "@/components/home/FinalCTA";
 
 export const metadata: Metadata = {
-  title: "Good Breeze AI | Business Automation Systems for Small Business",
+  title: "Good Breeze AI | Business Automation for Small Business",
   description:
     "Custom AI automation systems for small businesses. We find what's holding your operation back and build the systems to fix it. Start with a free report.",
   openGraph: {
-    title: "Good Breeze AI | Business Automation Systems for Small Business",
+    title: "Good Breeze AI | Business Automation for Small Business",
     description:
       "Custom AI automation systems for small businesses. We find what's holding your operation back and build the systems to fix it. Start with a free report.",
     url: "https://goodbreeze.ai",
