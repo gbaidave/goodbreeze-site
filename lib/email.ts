@@ -105,13 +105,18 @@ export async function sendWelcomeEmail(to: string, name: string, userId?: string
 export async function sendPaymentConfirmationEmail(
   to: string,
   name: string,
-  plan: string,
-  amount: string,
+  params: {
+    productName: string
+    productType: 'subscription_plan' | 'credit_pack'
+    amountStr: string
+    creditsGranted: number
+    receiptRef?: string
+  },
   userId?: string,
-  receiptRef?: string,
-  purchaseType: 'pack_purchase' | 'subscription_purchase' = 'subscription_purchase'
 ) {
-  const { subject, html } = paymentConfirmationEmail(name, plan, amount, receiptRef)
+  const purchaseType: 'pack_purchase' | 'subscription_purchase' =
+    params.productType === 'subscription_plan' ? 'subscription_purchase' : 'pack_purchase'
+  const { subject, html } = paymentConfirmationEmail({ name, ...params })
   return sendAndLog(
     () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject: stagingPrefix + subject, html }),
     { userId, toEmail: to, type: purchaseType, subject }
@@ -139,9 +144,17 @@ export async function sendMagicLinkSetupEmail(
   )
 }
 
-export async function sendReportsExhaustedEmail(to: string, name: string, userId?: string) {
+export async function sendReportsExhaustedEmail(
+  to: string,
+  name: string,
+  params: {
+    plans: Array<{ name: string; creditsGranted: number; priceUsdCents: number }>
+    packs: Array<{ name: string; creditsGranted: number; priceUsdCents: number }>
+  },
+  userId?: string,
+) {
   if (!await checkEmailPref(userId, 'nudge_emails')) return { data: null, error: null }
-  const { subject, html } = reportsExhaustedEmail(name)
+  const { subject, html } = reportsExhaustedEmail({ name, ...params })
   return sendAndLog(
     () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject: stagingPrefix + subject, html }),
     { userId, toEmail: to, type: 'nudge_exhausted', subject }

@@ -28,6 +28,7 @@ import {
 } from '@/lib/entitlement'
 import { createServiceClient } from '@/lib/supabase/service-client'
 import { sendReportsExhaustedEmail } from '@/lib/email'
+import { getActivePackProducts, getActiveSubscriptionPlans } from '@/lib/catalog'
 import { logSystemError } from '@/lib/log-system-error'
 
 // ============================================================================
@@ -322,7 +323,20 @@ export async function POST(request: NextRequest) {
             .gt('balance', 0)
           const remaining = (creditRows ?? []).reduce((sum: number, c: { balance: number }) => sum + (c.balance ?? 0), 0)
           if (remaining === 0) {
-            await sendReportsExhaustedEmail(userEmail, userName, user.id)
+            // Pre-fetch catalog snapshot — email template is pure, no DB inside render.
+            const [activePlans, activePacks] = await Promise.all([
+              getActiveSubscriptionPlans(),
+              getActivePackProducts(),
+            ])
+            await sendReportsExhaustedEmail(
+              userEmail,
+              userName,
+              {
+                plans: activePlans.map(p => ({ name: p.name, creditsGranted: p.creditsGranted ?? 0, priceUsdCents: p.priceUsdCents ?? 0 })),
+                packs: activePacks.map(p => ({ name: p.name, creditsGranted: p.creditsGranted ?? 0, priceUsdCents: p.priceUsdCents ?? 0 })),
+              },
+              user.id,
+            )
           }
         } catch (e) {
           console.error('Reports-exhausted nudge email failed:', e)

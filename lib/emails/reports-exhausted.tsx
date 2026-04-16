@@ -1,5 +1,61 @@
-export function reportsExhaustedEmail(name: string): { subject: string; html: string } {
+export interface ExhaustedEmailPlan {
+  name: string          // e.g. "Starter Plan"
+  creditsGranted: number // monthly allowance
+  priceUsdCents: number  // monthly price in cents
+}
+
+export interface ExhaustedEmailPack {
+  name: string          // e.g. "Boost Pack"
+  creditsGranted: number
+  priceUsdCents: number
+}
+
+export interface ReportsExhaustedEmailProps {
+  name: string
+  plans: ExhaustedEmailPlan[]  // active subscription plans, display order already applied
+  packs: ExhaustedEmailPack[]  // active credit packs, display order already applied
+}
+
+function formatUsd(cents: number): string {
+  return `$${Math.round(cents / 100)}`
+}
+
+export function reportsExhaustedEmail(props: ReportsExhaustedEmailProps): { subject: string; html: string } {
+  const { name, plans, packs } = props
   const firstName = name.split(' ')[0]
+
+  // Plans card summary
+  const minPlanPriceCents = plans.length ? Math.min(...plans.map(p => p.priceUsdCents)) : 0
+  const minPlanPrice = minPlanPriceCents ? formatUsd(minPlanPriceCents) : ''
+  const minCredits = plans.length ? Math.min(...plans.map(p => p.creditsGranted)) : 0
+  const maxCredits = plans.length ? Math.max(...plans.map(p => p.creditsGranted)) : 0
+  const planNames = plans.map(p => p.name.replace(/\s+Plan$/i, '')).join(' / ')
+  const creditsRange = minCredits === maxCredits ? `${minCredits}` : `${minCredits} to ${maxCredits}`
+
+  // Pack card: feature the highest-credit active pack (best value message)
+  const featuredPack = packs.length
+    ? [...packs].sort((a, b) => b.creditsGranted - a.creditsGranted)[0]
+    : null
+
+  const plansBlock = plans.length ? `
+            <tr>
+              <td style="background:#1d1d1f;border:1px solid #27272a;border-radius:12px;padding:20px 24px;margin-bottom:12px;">
+                <p style="margin:0 0 4px;font-size:13px;color:#22d3ee;font-weight:600;">MONTHLY PLANS${minPlanPrice ? ` from ${minPlanPrice}/month` : ''}</p>
+                <p style="margin:0 0 8px;font-size:16px;font-weight:700;color:#ffffff;">${planNames}</p>
+                <p style="margin:0;font-size:14px;color:#a1a1aa;line-height:1.5;">${creditsRange} reports per month across all tools. Pick the plan that fits your volume.</p>
+              </td>
+            </tr>
+            <tr><td style="height:8px;"></td></tr>` : ''
+
+  const packBlock = featuredPack ? `
+            <tr>
+              <td style="background:#1d1d1f;border:1px solid #27272a;border-radius:12px;padding:20px 24px;">
+                <p style="margin:0 0 4px;font-size:13px;color:#71717a;font-weight:600;">FLEXIBLE, ${formatUsd(featuredPack.priceUsdCents)} one-time</p>
+                <p style="margin:0 0 8px;font-size:16px;font-weight:700;color:#ffffff;">${featuredPack.creditsGranted}-Credit Pack</p>
+                <p style="margin:0;font-size:14px;color:#a1a1aa;line-height:1.5;">Pay once, use when you need them. No subscription required.</p>
+              </td>
+            </tr>` : ''
+
   return {
     subject: `Your Good Breeze AI credits are done. Here's what's next.`,
     html: `<!DOCTYPE html>
@@ -23,22 +79,7 @@ export function reportsExhaustedEmail(name: string): { subject: string; html: st
           </p>
 
           <!-- Options -->
-          <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
-            <tr>
-              <td style="background:#1d1d1f;border:1px solid #27272a;border-radius:12px;padding:20px 24px;margin-bottom:12px;">
-                <p style="margin:0 0 4px;font-size:13px;color:#22d3ee;font-weight:600;">MONTHLY PLANS from $20/month</p>
-                <p style="margin:0 0 8px;font-size:16px;font-weight:700;color:#ffffff;">Starter / Growth / Pro</p>
-                <p style="margin:0;font-size:14px;color:#a1a1aa;line-height:1.5;">25 to 50 reports per month across all tools. Pick the plan that fits your volume.</p>
-              </td>
-            </tr>
-            <tr><td style="height:8px;"></td></tr>
-            <tr>
-              <td style="background:#1d1d1f;border:1px solid #27272a;border-radius:12px;padding:20px 24px;">
-                <p style="margin:0 0 4px;font-size:13px;color:#71717a;font-weight:600;">FLEXIBLE, $10 one-time</p>
-                <p style="margin:0 0 8px;font-size:16px;font-weight:700;color:#ffffff;">10-Credit Pack</p>
-                <p style="margin:0;font-size:14px;color:#a1a1aa;line-height:1.5;">Pay once, use when you need them. No subscription required.</p>
-              </td>
-            </tr>
+          <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">${plansBlock}${packBlock}
           </table>
 
           <a href="https://goodbreeze.ai/pricing" style="display:inline-block;background:linear-gradient(135deg,#22d3ee,#3b82f6);color:#09090b;font-weight:700;font-size:15px;padding:14px 28px;border-radius:10px;text-decoration:none;">

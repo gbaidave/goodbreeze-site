@@ -1,35 +1,25 @@
-export function paymentConfirmationEmail(
-  name: string,
-  plan: string,
-  amount: string,
+export interface PaymentConfirmationEmailProps {
+  name: string
+  productName: string
+  productType: 'subscription_plan' | 'credit_pack'
+  amountStr: string          // e.g. "$20.00"
+  creditsGranted: number     // credits delivered by this purchase (plan monthly allowance OR pack size)
   receiptRef?: string
-): { subject: string; html: string } {
+}
+
+export function paymentConfirmationEmail(props: PaymentConfirmationEmailProps): { subject: string; html: string } {
+  const { name, productName, productType, amountStr, creditsGranted, receiptRef } = props
   const firstName = name.split(' ')[0]
-
-  const SUBSCRIPTION_PLANS: Record<string, { label: string; reports: string; price: string }> = {
-    starter: { label: 'Starter Plan', reports: '25 credits/month', price: '$20/month' },
-    growth:  { label: 'Growth Plan',  reports: '40 credits/month', price: '$30/month' },
-    pro:     { label: 'Pro Plan',     reports: '50 credits/month', price: '$40/month' },
-  }
-
-  const PACK_PLANS: Record<string, { label: string; credits: string }> = {
-    'Spark Pack': { label: 'Spark Pack', credits: '3 credits' },
-    'Boost Pack': { label: 'Boost Pack', credits: '10 credits' },
-  }
-
-  const sub = SUBSCRIPTION_PLANS[plan]
-  const pack = PACK_PLANS[plan]
-
-  const isSubscription = !!sub
-  const planLabel = sub?.label ?? pack?.label ?? plan
-  const reportsLine = sub?.reports ?? pack?.credits ?? 'Credits added'
-  const priceLine = sub?.price ?? amount
+  const isSubscription = productType === 'subscription_plan'
+  const creditsLine = isSubscription
+    ? `${creditsGranted} credits/month`
+    : `${creditsGranted} credit${creditsGranted === 1 ? '' : 's'}`
 
   const receiptNum = receiptRef ? receiptRef.slice(-8).toUpperCase() : null
   const subject = receiptNum
     ? `Your receipt from Good Breeze AI #${receiptNum}`
     : isSubscription
-      ? `You're on ${planLabel}. Your credits are ready.`
+      ? `You're on ${productName}. Your credits are ready.`
       : `Payment confirmed. Your credits are ready.`
 
   return {
@@ -56,17 +46,17 @@ export function paymentConfirmationEmail(
           <table width="100%" cellpadding="0" cellspacing="0" style="background:#27272a;border-radius:10px;padding:20px;margin-bottom:28px;">
             <tr>
               <td style="font-size:14px;color:#a1a1aa;">${isSubscription ? 'Plan' : 'Purchase'}</td>
-              <td align="right" style="font-size:14px;font-weight:600;color:#ffffff;">${planLabel}</td>
+              <td align="right" style="font-size:14px;font-weight:600;color:#ffffff;">${productName}</td>
             </tr>
             <tr><td colspan="2" style="padding:8px 0;"><hr style="border:none;border-top:1px solid #3f3f46;"></td></tr>
             <tr>
               <td style="font-size:14px;color:#a1a1aa;">${isSubscription ? 'Credits' : 'Credits added'}</td>
-              <td align="right" style="font-size:14px;font-weight:600;color:#22d3ee;">${reportsLine}</td>
+              <td align="right" style="font-size:14px;font-weight:600;color:#22d3ee;">${creditsLine}</td>
             </tr>
             <tr><td colspan="2" style="padding:8px 0;"><hr style="border:none;border-top:1px solid #3f3f46;"></td></tr>
             <tr>
               <td style="font-size:14px;color:#a1a1aa;">Amount charged</td>
-              <td align="right" style="font-size:14px;font-weight:600;color:#ffffff;">${amount}</td>
+              <td align="right" style="font-size:14px;font-weight:600;color:#ffffff;">${amountStr}</td>
             </tr>
           </table>
 

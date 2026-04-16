@@ -128,11 +128,14 @@ export async function POST(request: NextRequest) {
             await sendPaymentConfirmationEmail(
               profile.email,
               profile.name || profile.email,
-              catalogItem.name,
-              formatUsd(catalogItem.priceUsdCents),
+              {
+                productName: catalogItem.name,
+                productType: 'credit_pack',
+                amountStr: formatUsd(catalogItem.priceUsdCents),
+                creditsGranted: creditsGranted,
+                receiptRef,
+              },
               userId,
-              receiptRef,
-              'pack_purchase'
             ).catch(console.error)
           }
         }
@@ -190,15 +193,18 @@ export async function POST(request: NextRequest) {
         const periodEnd   = item?.current_period_end   ?? (sub as any).current_period_end
 
         // Send confirmation email on new subscription
-        if (event.type === 'customer.subscription.created' && sub.status === 'active' && profile.email) {
+        if (event.type === 'customer.subscription.created' && sub.status === 'active' && profile.email && planCatalogItem) {
           await sendPaymentConfirmationEmail(
             profile.email,
             profile.name || profile.email,
-            plan,
-            planAmountStr,
+            {
+              productName: planCatalogItem.name,
+              productType: 'subscription_plan',
+              amountStr: planAmountStr,
+              creditsGranted: newCap,
+              receiptRef: sub.id,
+            },
             profile.id,
-            sub.id,
-            'subscription_purchase'
           ).catch(console.error)
         }
 
