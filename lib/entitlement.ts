@@ -272,11 +272,36 @@ export async function checkBprEntitlement(
     if (planCheck.allowed) {
       return { allowed: true, deductFrom: 'subscription', usedPlanAllowance: true }
     }
-    // Plan allowance exhausted — fall through to pack credits
+    // Plan allowance exhausted — fall through to credits
   }
 
-  // 3. Pack credits at catalog cost
   const creditCost = await getReportCreditCost(reportType)
+
+  // 3. Subscription credits_remaining at catalog cost.
+  //    Narrow additive branch (2026-04-16). When credits_remaining is enough to
+  //    cover the BPR cost, consume from there before falling to pack credits.
+  //    Other report types still use the checkEntitlement path and decrement by 1.
+  //    TODO: remove when credits unified — see .workspace/PLAN-credits-unification.md
+  if (['starter', 'growth', 'pro'].includes(plan)) {
+    const { data: sub } = await supabase
+      .from('subscriptions')
+      .select('credits_remaining')
+      .eq('user_id', userId)
+      .in('status', ['active', 'trialing'])
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single()
+
+    if (sub && (sub.credits_remaining ?? 0) >= creditCost) {
+      return {
+        allowed: true,
+        deductFrom: 'subscription',
+        creditAmount: creditCost,
+      }
+    }
+  }
+
+  // 4. Pack credits at catalog cost
 
   let creditQuery = supabase
     .from('credits')
@@ -325,8 +350,14 @@ export async function recordUsage(
   const supabase = getServiceClient()
 
   if (deductFrom === 'subscription') {
-    // Decrement credits_remaining on the subscription row.
-    await supabase.rpc('decrement_subscription_credits', { p_user_id: userId })
+    // BPR with creditAmount > 1 uses the variable-amount RPC (migration 063).
+    // Every other report type falls through to the existing by-1 RPC unchanged.
+    // TODO: collapse when credits unified — see .workspace/PLAN-credits-unification.md
+    if (reportType === 'business_presence_report' && creditAmount && creditAmount > 1) {
+      await supabase.rpc('decrement_subscription_credits_by', { p_user_id: userId, p_amount: creditAmount })
+    } else {
+      await supabase.rpc('decrement_subscription_credits', { p_user_id: userId })
+    }
   }
 
   if (deductFrom === 'credits' && creditRowId) {
