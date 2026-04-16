@@ -10,7 +10,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/service-client'
-import { resend, FROM, FROM_NAME, stagingPrefix } from '@/lib/resend'
+import { sendContactSubmitterEmail, sendContactAdminNotificationEmail } from '@/lib/email'
 import { insertBellIfAllowed } from '@/lib/bell-notifications'
 
 // In-memory rate limiter (resets on deploy — acceptable for contact form)
@@ -86,12 +86,6 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Escape user input for safe HTML email rendering
-    const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
-    const safeName = esc(name)
-    const safeEmail = esc(email)
-    const safeMessage = esc(message)
-
     const svc = createServiceClient()
 
     // Check if email belongs to an existing user
@@ -138,26 +132,9 @@ export async function POST(request: NextRequest) {
       console.error('[contact] Failed to create message:', msgError)
     }
 
-    // Send confirmation email to the submitter
+    // Send branded confirmation email to the submitter
     try {
-      await resend.emails.send({
-        from: `${FROM_NAME} <${FROM}>`,
-        to: email,
-        replyTo: 'support@goodbreeze.ai',
-        subject: stagingPrefix + 'We received your message',
-        html: `
-          <div style="font-family: -apple-system, BlinkMacSystemFont, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #00adb5;">Thanks for reaching out, ${safeName}!</h2>
-            <p>We received your message and will get back to you within 1 business day.</p>
-            <div style="background: #f4f4f5; padding: 16px; border-radius: 8px; margin: 16px 0;">
-              <p style="margin: 0; color: #71717a; font-size: 14px;"><strong>Your message:</strong></p>
-              <p style="margin: 8px 0 0; color: #3f3f46;">${safeMessage.replace(/\n/g, '<br>')}</p>
-            </div>
-            <p style="color: #71717a; font-size: 14px;">If you need immediate help, you can also <a href="https://calendly.com/dave-goodbreeze/30min" style="color: #00adb5;">book a strategy call</a>.</p>
-            <p style="color: #a1a1aa; font-size: 12px; margin-top: 24px;">Good Breeze AI | goodbreeze.ai</p>
-          </div>
-        `,
-      })
+      await sendContactSubmitterEmail(email, name, message, userId ?? undefined)
     } catch (emailErr) {
       console.error('[contact] Failed to send confirmation email:', emailErr)
       // Non-blocking — the request was still created
@@ -186,25 +163,14 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Email to support inbox
+    // Branded admin notification email to support inbox
     try {
-      await resend.emails.send({
-        from: `${FROM_NAME} <${FROM}>`,
-        to: 'support@goodbreeze.ai',
-        replyTo: email,
-        subject: stagingPrefix + `New contact form: ${safeName}`,
-        html: `
-          <div style="font-family: -apple-system, BlinkMacSystemFont, sans-serif;">
-            <h3>New contact form submission</h3>
-            <p><strong>Name:</strong> ${safeName}</p>
-            <p><strong>Email:</strong> ${safeEmail}</p>
-            <p><strong>Has account:</strong> ${userId ? 'Yes' : 'No'}</p>
-            <div style="background: #f4f4f5; padding: 16px; border-radius: 8px; margin: 16px 0;">
-              <p style="margin: 0;">${safeMessage.replace(/\n/g, '<br>')}</p>
-            </div>
-            <p><a href="https://goodbreeze.ai/admin/support" style="color: #00adb5;">View in admin panel</a></p>
-          </div>
-        `,
+      await sendContactAdminNotificationEmail({
+        name,
+        email,
+        message,
+        hasAccount: !!userId,
+        requestId: ticket.id,
       })
     } catch (emailErr) {
       console.error('[contact] Failed to send support notification email:', emailErr)

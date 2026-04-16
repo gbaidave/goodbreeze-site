@@ -29,6 +29,8 @@ import { creditGrantedEmail } from './emails/credit-granted'
 import { consentConfirmationEmail } from './emails/consent-confirmation'
 import { refundProcessedEmail } from './emails/refund-processed'
 import { refundDeniedEmail } from './emails/refund-denied'
+import { contactSubmitterEmail } from './emails/contact-submitter'
+import { contactAdminNotificationEmail } from './emails/contact-admin-notification'
 import { logEmail } from './email-logger'
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -252,6 +254,43 @@ export async function sendSupportAdminNotificationEmail(
       from: `${FROM_NAME} <${FROM}>`,
       to: supportEmail,
       replyTo: data.userEmail,
+      subject: stagingPrefix + subject,
+      html,
+    }),
+    { userId, toEmail: supportEmail, type: 'support_followup', subject, notifyOnFail: false }
+  )
+}
+
+export async function sendContactSubmitterEmail(
+  to: string,
+  name: string,
+  message: string,
+  userId?: string
+) {
+  const { subject, html } = contactSubmitterEmail({ name, message })
+  return sendAndLog(
+    () => resend.emails.send({
+      from: `${FROM_NAME} <${FROM}>`,
+      to,
+      replyTo: REPLY_TO,
+      subject: stagingPrefix + subject,
+      html,
+    }),
+    { userId, toEmail: to, type: 'support_confirmation', subject }
+  )
+}
+
+export async function sendContactAdminNotificationEmail(
+  data: { name: string; email: string; message: string; hasAccount: boolean; requestId?: string },
+  userId?: string
+) {
+  const { subject, html } = contactAdminNotificationEmail(data)
+  const supportEmail = process.env.SUPPORT_EMAIL || 'support@goodbreeze.ai'
+  return sendAndLog(
+    () => resend.emails.send({
+      from: `${FROM_NAME} <${FROM}>`,
+      to: supportEmail,
+      replyTo: data.email,
       subject: stagingPrefix + subject,
       html,
     }),
