@@ -216,6 +216,102 @@ export async function checkEntitlement(
 }
 
 // ============================================================================
+// BPR entitlement — dedicated flow for business_presence_report
+//
+// Consumption order (per locked rules, no deviations):
+//   1. Free slot (1 per account, ever — profiles.free_reports_used)
+//   2. Plan monthly allowance (plan_report_allowances.monthly_limit, tracked in report_type_usage)
+//   3. Pack credits at catalog cost (typically 3)
+//
+// Never touches subscriptions.credits_remaining. That pool is for other report types.
+// ============================================================================
+
+export interface BprEntitlementResult extends EntitlementResult {
+  usedPlanAllowance?: boolean
+}
+
+export async function checkBprEntitlement(
+  userId: string,
+  plan: Plan
+): Promise<BprEntitlementResult> {
+  const reportType: ReportType = 'business_presence_report'
+  const meta = REPORT_META[reportType]
+  const supabase = getServiceClient()
+
+  // Privileged roles bypass everything (same behavior as other reports)
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', userId)
+    .single()
+
+  if (profile && ['tester', 'admin', 'superadmin', 'support'].includes(profile.role)) {
+    return { allowed: true, deductFrom: 'subscription' }
+  }
+
+  // Custom plan — no limits
+  if (plan === 'custom') {
+    return { allowed: true, deductFrom: 'subscription' }
+  }
+
+  // 1. Free slot (always check first, regardless of plan)
+  if (meta.freeSlotSystem) {
+    const { data: freeSlotResult } = await supabase.rpc('check_and_reserve_free_slot', {
+      p_user_id: userId,
+      p_free_system: meta.freeSlotSystem,
+      p_report_type: reportType,
+    })
+    if (freeSlotResult === null) {
+      return { allowed: true, deductFrom: 'free_slot', freeSystem: meta.freeSlotSystem }
+    }
+  }
+
+  // 2. Plan allowance (only for paid plans)
+  if (['starter', 'growth', 'pro'].includes(plan)) {
+    const planCheck = await checkPlanAllowance(userId, reportType, plan)
+    if (planCheck.allowed) {
+      return { allowed: true, deductFrom: 'subscription', usedPlanAllowance: true }
+    }
+    // Plan allowance exhausted — fall through to pack credits
+  }
+
+  // 3. Pack credits at catalog cost
+  const creditCost = await getReportCreditCost(reportType)
+
+  let creditQuery = supabase
+    .from('credits')
+    .select('id, balance, expires_at, product')
+    .eq('user_id', userId)
+    .gte('balance', creditCost)
+    .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
+
+  if (!meta.acceptsAnyCredit) {
+    creditQuery = creditQuery.or(`product.is.null,product.eq.${meta.product}`)
+  }
+
+  const { data: creditRows } = await creditQuery
+    .order('purchased_at', { ascending: true })
+    .limit(1)
+
+  const creditRow = creditRows?.[0]
+
+  if (!creditRow) {
+    return {
+      allowed: false,
+      reason: `This report costs ${creditCost} credit${creditCost > 1 ? 's' : ''}. You don't have enough credits. Get a credit pack or upgrade to a monthly plan.`,
+      upgradePrompt: 'impulse',
+    }
+  }
+
+  return {
+    allowed: true,
+    deductFrom: 'credits',
+    creditRowId: creditRow.id,
+    creditAmount: creditCost,
+  }
+}
+
+// ============================================================================
 // Deduct usage after successful report generation
 // ============================================================================
 

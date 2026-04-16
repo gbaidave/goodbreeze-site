@@ -72,7 +72,15 @@ export async function getCatalogItem(sku: string): Promise<CatalogItem | null> {
 
 export async function getReportCreditCost(reportType: string): Promise<number> {
   const item = await getCatalogItem(reportType)
-  if (!item || item.priceCredits == null) return 1
+  if (!item) {
+    throw new Error(`Report type "${reportType}" not found in product catalog. Seed a row in the products table or add it via /admin/catalog.`)
+  }
+  if (item.priceCredits == null) {
+    throw new Error(`Product "${reportType}" is in catalog but has no price_credits set. Fix it in /admin/catalog.`)
+  }
+  if (!item.active) {
+    throw new Error(`Product "${reportType}" is marked inactive in catalog. Activate it in /admin/catalog.`)
+  }
   return item.priceCredits
 }
 

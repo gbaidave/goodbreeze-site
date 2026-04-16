@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
         subject: `Contact form: ${name}`,
         message: message,
         status: 'open',
-        priority: 'normal',
+        priority: null,
         handled_by: 'pending',
       })
       .select('id')

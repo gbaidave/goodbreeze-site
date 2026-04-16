@@ -3,904 +3,920 @@
 import { useState } from 'react'
 
 /**
- * BusinessPresenceReportView — renders BPR report data from input_data JSONB.
- * No dangerouslySetInnerHTML, no DOMPurify, no stored HTML.
- * Reads structured JSON from Supabase and renders via React + Tailwind.
- *
- * Supports BOTH V5 (old) and V6 (new) schema formats for backward compatibility.
+ * BusinessPresenceReportView — renders the BPR inline from reports.input_data JSONB.
+ * Mirrors the PDF formatter structure (business-scorecard-formatter-v1.js) section by section.
+ * Supports V5 + V6 synthesis field fallbacks.
+ * Dark theme: zinc bg, teal primary, white text.
  */
 
-// ============================================================================
-// Types — V5 (legacy)
-// ============================================================================
-
-interface NicheItem {
-  name: string
-  rating: 'STRONG' | 'GENERIC' | 'WEAK'
-  detail: string
-}
-
-interface ReputationSignal {
-  platform: string
-  status: 'Linked' | 'Not Found'
-  detail?: string
-}
-
-interface HomepageFinding {
-  severity: 'critical' | 'high' | 'medium'
-  text: string
-}
-
-interface CompetitorV5 {
-  domain: string
-  da: number
-  links?: number
-  whatTheyDoWell: string
-  visibility?: 'Well Ahead' | 'Ahead' | 'Close'
-}
-
-interface OpportunityV5 {
-  title: string
-  severity: 'critical' | 'high' | 'medium'
-  timeEstimate?: string
-  what: string
-  why: string
-  fix: string
-}
-
-interface BottomLine {
-  bullets: string[]
-  result: string
-}
-
-// ============================================================================
-// Types — V6 (new)
-// ============================================================================
-
-interface BusinessFinding {
-  finding: string
-  impact: string
-  impactEstimate?: string
-  severity: 'high' | 'medium' | 'low'
-}
-
-interface TechnicalChecklistItem {
-  task: string
-  difficulty: 'easy' | 'medium' | 'hard'
-  timeEstimate: string
-}
-
-interface TopService {
-  name: string
-  rating: 'STRONG' | 'GENERIC' | 'WEAK'
-  detail: string
-}
-
-interface BusinessOwnerAction {
-  title: string
-  impact: string
-  impactEstimate?: string
-  howToFix: string
-  timeEstimate?: string
-  cost?: string
-}
-
-interface WebDeveloperChecklistItem {
-  task: string
-  impact: string
-  difficulty: 'easy' | 'medium' | 'hard'
-  timeEstimate: string
-}
-
-// ============================================================================
-// Combined BPR Data type (V5 + V6)
-// ============================================================================
-
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
+// ============================================================================
+// Input data shape — permissive due to V5/V6 fallbacks + deterministicContent
+// ============================================================================
+
 interface BPRData {
   overallScore: number
   searchTerm?: string
-  sectionScores: Record<string, number>
-  summaryBlock: {
-    // V5
-    advisorParagraph?: string
-    bulletScorecard?: string[]
-    opportunityTeaser?: string
-    // V6
-    summaryParagraph?: string
-    keyMetrics?: string[]
-    fastestWin?: string
-    // shared
-    quickWinCount?: number
-    issueCount?: number
-    visibilityGapPercent?: number
+  sectionScores?: Record<string, number>
+  summaryBlock?: any
+  sections?: any
+  deterministicContent?: any
+  bottomLines?: any
+  [key: string]: any
+}
+
+interface Props {
+  data: BPRData
+  domain: string
+}
+
+// ============================================================================
+// Utility functions (ported from PDF formatter)
+// ============================================================================
+
+function safeObj(v: any): Record<string, any> {
+  return (v && typeof v === 'object' && !Array.isArray(v)) ? v : {}
+}
+function safeArr<T = any>(v: any): T[] {
+  return Array.isArray(v) ? v : []
+}
+function safeStr(v: any): string {
+  return typeof v === 'string' ? v : (v == null ? '' : String(v))
+}
+function safeNum(v: any, fallback = 0): number {
+  const n = typeof v === 'number' ? v : Number(v)
+  return isFinite(n) ? n : fallback
+}
+
+function scoreColor(score: number): string {
+  if (score <= 40) return 'text-red-400'
+  if (score <= 70) return 'text-yellow-400'
+  return 'text-green-400'
+}
+
+function scoreBarColor(score: number): string {
+  if (score <= 40) return 'bg-red-500'
+  if (score <= 70) return 'bg-yellow-500'
+  return 'bg-green-500'
+}
+
+function severityColor(severity: string): string {
+  const s = (severity || '').toLowerCase()
+  if (s === 'critical') return 'bg-red-900/40 text-red-300 border-red-500/40'
+  if (s === 'high') return 'bg-orange-900/40 text-orange-300 border-orange-500/40'
+  if (s === 'medium' || s === 'warning') return 'bg-yellow-900/40 text-yellow-300 border-yellow-500/40'
+  return 'bg-green-900/40 text-green-300 border-green-500/40'
+}
+
+function severityBarColor(severity: string): string {
+  const s = (severity || '').toLowerCase()
+  if (s === 'critical' || s === 'high') return 'bg-red-500'
+  if (s === 'medium' || s === 'warning') return 'bg-yellow-500'
+  return 'bg-green-500'
+}
+
+function nicheRatingColor(rating: string): string {
+  const r = (rating || '').toUpperCase()
+  if (r === 'STRONG' || r === 'GOOD') return 'bg-green-900/40 text-green-300 border-green-500/40'
+  if (r === 'WEAK' || r === 'POOR') return 'bg-red-900/40 text-red-300 border-red-500/40'
+  return 'bg-yellow-900/40 text-yellow-300 border-yellow-500/40'
+}
+
+function daColor(da: number): string {
+  if (da >= 60) return 'text-green-400'
+  if (da >= 30) return 'text-yellow-400'
+  return 'text-red-400'
+}
+
+function visibilityBadgeColor(v: string): string {
+  const s = (v || '').toLowerCase()
+  if (s.indexOf('well ahead') >= 0) return 'bg-red-900/40 text-red-300 border-red-500/40'
+  if (s.indexOf('ahead') >= 0) return 'bg-orange-900/40 text-orange-300 border-orange-500/40'
+  if (s.indexOf('behind') >= 0 || s.indexOf('matched') >= 0 || s.indexOf('close') >= 0)
+    return 'bg-green-900/40 text-green-300 border-green-500/40'
+  return 'bg-zinc-800 text-zinc-300 border-zinc-600'
+}
+
+function ctaGradeColor(grade: string): string {
+  const g = (grade || '').toUpperCase()
+  if (g === 'A') return 'text-green-400'
+  if (g === 'B') return 'text-lime-400'
+  if (g === 'C') return 'text-yellow-400'
+  if (g === 'D') return 'text-orange-400'
+  if (g === 'F') return 'text-red-400'
+  return 'text-zinc-400'
+}
+
+function trustLevelColor(level: string): string {
+  const s = (level || '').toLowerCase()
+  if (s === 'strong') return 'text-green-400'
+  if (s === 'present') return 'text-lime-400'
+  if (s === 'weak') return 'text-yellow-400'
+  if (s === 'absent') return 'text-red-400'
+  return 'text-zinc-400'
+}
+
+function repCardStatusClass(status: string): string {
+  const s = (status || '').toLowerCase()
+  if (s === 'found' || s === 'linked' || s === 'active' || s === 'claimed')
+    return 'border-green-500/40 bg-green-900/20'
+  if (s === 'partial' || s === 'limited' || s === 'unclaimed')
+    return 'border-yellow-500/40 bg-yellow-900/20'
+  return 'border-zinc-700 bg-zinc-800/40'
+}
+
+function checklistIcon(status: string): { icon: string; color: string } {
+  const s = (status || '').toLowerCase()
+  if (s === 'good' || s === 'pass' || s === 'ok') return { icon: '✓', color: 'text-green-400' }
+  if (s === 'bad' || s === 'fail' || s === 'missing') return { icon: '✗', color: 'text-red-400' }
+  if (s === 'warning' || s === 'partial' || s === 'warn') return { icon: '⚠', color: 'text-yellow-400' }
+  return { icon: '•', color: 'text-zinc-400' }
+}
+
+function isLocalBiz(bizType: string): boolean {
+  return (bizType || '').toLowerCase().indexOf('local') >= 0
+}
+
+function splitOnFirstPeriod(text: string): { bold: string; detail: string } {
+  const idx = text.indexOf('.')
+  if (idx <= 0) return { bold: text, detail: '' }
+  return {
+    bold: text.substring(0, idx + 1),
+    detail: text.substring(idx + 1).trim(),
   }
-  sections: {
-    // V5 names
-    businessSnapshot?: any
-    websiteHealth?: any
-    marketingEffectiveness?: any
-    // V6 names
-    businessIdentity?: any
-    websiteExperience?: any
-    websiteConversion?: any
-    // shared names
-    searchVisibility?: any
-    topCompetitors?: any[]
-    priorityOpportunities?: any
+}
+
+function howToCompeteText(bizType: string): string {
+  const b = (bizType || '').toLowerCase()
+  if (b.indexOf('local') >= 0) {
+    return 'Local customers trust businesses visible in their community. Focus on Google Business Profile, verified reviews, local content, and partnerships with nearby businesses. Visibility in "near me" searches and AI-powered local assistants is where the wins are right now.'
   }
-  bottomLines?: {
-    // V5
-    websiteHealth?: BottomLine
-    searchVisibility?: BottomLine
-    marketingEffectiveness?: BottomLine
-    // V6
-    websiteExperience?: BottomLine
-    websiteConversion?: BottomLine
+  if (b.indexOf('agency') >= 0) {
+    return 'Agency buyers research extensively before hiring. They compare case studies, testimonials, and thought leadership. Strong content that shows your thinking — blog posts, video explainers, case studies — compounds over time and tilts decisions in your favor.'
   }
-}
-/* eslint-enable @typescript-eslint/no-explicit-any */
-
-// ============================================================================
-// Helpers
-// ============================================================================
-
-function scoreColor(n: number): string {
-  if (n >= 71) return 'text-green-500'
-  if (n >= 41) return 'text-yellow-400'
-  return 'text-red-500'
+  if (b.indexOf('saas') >= 0 || b.indexOf('ecommerce') >= 0 || b.indexOf('commerce') >= 0) {
+    return 'Online buyers compare features, reviews, and pricing before converting. Clear product pages, frictionless signup, trust signals, and fast load times are the basics. Content that answers buyer questions before they ask wins the sale.'
+  }
+  return 'Build your online presence around what makes your business unique. Consistent content, real reviews, and a clear answer to "why you?" are the difference-makers. AI search assistants reward businesses with structured information and authentic authority.'
 }
 
-function scoreBg(n: number): string {
-  if (n >= 71) return 'bg-green-500'
-  if (n >= 41) return 'bg-yellow-400'
-  return 'bg-red-500'
-}
-
-function severityColor(s: string): string {
-  if (s === 'critical') return 'bg-red-500'
-  if (s === 'high') return 'bg-orange-500'
-  if (s === 'low') return 'bg-blue-400'
-  return 'bg-yellow-400'
-}
-
-function severityBarColor(s: string): string {
-  if (s === 'critical') return 'bg-red-500'
-  if (s === 'high') return 'bg-orange-500'
-  if (s === 'low') return 'bg-blue-400'
-  return 'bg-yellow-400'
-}
-
-function nicheColor(rating: string): string {
-  if (rating === 'STRONG') return 'bg-green-500'
-  if (rating === 'GENERIC') return 'bg-yellow-400'
-  return 'bg-red-500'
-}
-
-function difficultyColor(d: string): string {
-  if (d === 'easy') return 'text-green-400'
-  if (d === 'hard') return 'text-red-400'
-  return 'text-yellow-400'
-}
-
-function repCardClass(status: string): string {
-  if (status === 'Linked') return 'border-green-600 bg-green-900/20'
-  return 'border-gray-700 bg-dark-800'
-}
-
-function repStatusClass(status: string): string {
-  if (status === 'Linked') return 'text-green-400'
-  return 'text-gray-500'
+function computeAiVisibilityScore(
+  schemaTypesFound: number,
+  hasLlmsTxt: boolean,
+  aiCrawler: string
+): number {
+  let score = 0
+  if (schemaTypesFound > 0) score += 30
+  if (schemaTypesFound >= 3) score += 20
+  if (hasLlmsTxt) score += 30
+  if ((aiCrawler || '').toLowerCase() === 'accessible') score += 20
+  return score
 }
 
 // ============================================================================
-// Sub-components
+// Reusable presentation components
 // ============================================================================
 
-function SectionHeader({ number, title, question, intro }: { number: string; title: string; question?: string; intro?: string }) {
+function SectionHeader({ number, title, intro }: { number: string; title: string; intro: string }) {
   return (
     <div className="mb-6">
-      <p className="text-xs font-bold tracking-widest text-primary mb-1">{number}</p>
-      <h2 className="text-xl font-bold text-white mb-1">{title}</h2>
-      {question && <p className="text-sm italic text-gray-400 mb-2">{question}</p>}
-      <div className="w-12 h-0.5 bg-primary mb-4" />
-      {intro && <p className="text-sm text-gray-400 leading-relaxed">{intro}</p>}
+      <div className="text-xs font-mono text-primary tracking-widest mb-1">SECTION {number}</div>
+      <h2 className="text-2xl font-bold text-white mb-2">{title}</h2>
+      <p className="text-sm text-zinc-400">{intro}</p>
     </div>
   )
 }
 
-function StatCard({ value, label, highlight, colorClass }: { value: string | number; label: string; highlight?: boolean; colorClass?: string }) {
+function StatCard({ label, value, colorClass }: { label: string; value: string | number; colorClass?: string }) {
   return (
-    <div className={`flex-1 rounded-xl border p-4 text-center ${highlight ? 'border-primary border-2' : 'border-gray-700'} bg-dark-800`}>
-      <div className={`text-2xl font-extrabold leading-none mb-1 ${colorClass || 'text-primary'}`}>{value}</div>
-      <div className="text-[10px] text-gray-500 uppercase tracking-wider">{label}</div>
+    <div className="bg-zinc-900/60 border border-zinc-700 rounded-lg p-4">
+      <div className="text-xs uppercase tracking-wide text-zinc-500 mb-1">{label}</div>
+      <div className={`text-3xl font-bold ${colorClass ?? 'text-white'}`}>{value}</div>
+    </div>
+  )
+}
+
+function Callout({
+  variant = 'insight',
+  title,
+  children,
+}: {
+  variant?: 'insight' | 'weakness' | 'strength' | 'warning' | 'bottom-line'
+  title: string
+  children: React.ReactNode
+}) {
+  const border = {
+    insight: 'border-primary/50 bg-primary/10',
+    weakness: 'border-red-500/50 bg-red-900/20',
+    strength: 'border-green-500/50 bg-green-900/20',
+    warning: 'border-yellow-500/50 bg-yellow-900/20',
+    'bottom-line': 'border-zinc-600 bg-zinc-800/40',
+  }[variant]
+
+  const titleColor = {
+    insight: 'text-primary',
+    weakness: 'text-red-300',
+    strength: 'text-green-300',
+    warning: 'text-yellow-300',
+    'bottom-line': 'text-zinc-300',
+  }[variant]
+
+  return (
+    <div className={`border rounded-lg p-4 ${border}`}>
+      <div className={`text-xs font-bold uppercase tracking-wide mb-2 ${titleColor}`}>{title}</div>
+      <div className="text-sm text-zinc-200 space-y-2">{children}</div>
     </div>
   )
 }
 
 function ScoreBar({ label, score }: { label: string; score: number }) {
+  const pct = Math.max(0, Math.min(100, score))
   return (
-    <div className="flex items-center gap-3 mb-2">
-      <div className="w-44 shrink-0 text-sm text-gray-300">{label}</div>
-      <div className="flex-1 h-2.5 bg-gray-700 rounded-full overflow-hidden">
-        <div className={`h-full rounded-full ${scoreBg(score)}`} style={{ width: `${score}%` }} />
+    <div>
+      <div className="flex justify-between text-sm mb-1">
+        <span className="text-zinc-300">{label}</span>
+        <span className="text-zinc-400">{score} / 100</span>
       </div>
-      <div className="w-16 text-right text-sm font-bold text-gray-300">{score} / 100</div>
-    </div>
-  )
-}
-
-function Callout({ type, title, children }: { type: 'insight' | 'strength' | 'weakness' | 'warning' | 'bottom-line' | 'info'; title?: string; children: React.ReactNode }) {
-  const styles: Record<string, string> = {
-    insight: 'border-l-primary bg-primary/5',
-    strength: 'border-l-green-500 bg-green-500/5',
-    weakness: 'border-l-red-500 bg-red-500/5',
-    warning: 'border-l-yellow-400 bg-yellow-400/5',
-    'bottom-line': 'border-l-gray-400 bg-gray-800/50',
-    info: 'border-l-blue-400 bg-blue-400/5',
-  }
-  return (
-    <div className={`rounded-lg border-l-4 p-5 mb-5 ${styles[type]}`}>
-      {title && <p className="text-sm font-bold text-white mb-2">{title}</p>}
-      <div className="text-sm text-gray-300 leading-relaxed">{children}</div>
-    </div>
-  )
-}
-
-function BottomLineBlock({ data }: { data?: BottomLine }) {
-  if (!data) return null
-  return (
-    <Callout type="bottom-line" title="Bottom Line">
-      <ul className="space-y-1 mt-2">
-        {data.bullets.map((b, i) => (
-          <li key={i} className="flex gap-2 text-sm text-gray-300">
-            <span className="text-gray-500 shrink-0">&rarr;</span>
-            <span>{b}</span>
-          </li>
-        ))}
-        <li className="flex gap-2 text-sm font-semibold text-white mt-1">
-          <span className="text-gray-500 shrink-0">&rarr;</span>
-          <span>Result: {data.result}</span>
-        </li>
-      </ul>
-    </Callout>
-  )
-}
-
-/** V6 business finding card */
-function BusinessFindingCard({ finding }: { finding: BusinessFinding }) {
-  return (
-    <div className="flex gap-4 p-5 rounded-xl border border-gray-700 mb-3">
-      <div className={`w-1 shrink-0 rounded-full ${severityBarColor(finding.severity)}`} />
-      <div className="flex-1">
-        <div className="flex items-center gap-2 flex-wrap mb-2">
-          <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full text-white ${severityColor(finding.severity)}`}>
-            {finding.severity}
-          </span>
-          <span className="text-sm font-bold text-white">{finding.finding}</span>
-        </div>
-        <p className="text-sm text-gray-400 leading-relaxed mb-1">{finding.impact}</p>
-        {finding.impactEstimate && (
-          <p className="text-xs text-gray-500 leading-relaxed italic">{finding.impactEstimate}</p>
-        )}
+      <div className="w-full h-2 bg-zinc-800 rounded-full overflow-hidden">
+        <div className={`h-full ${scoreBarColor(pct)}`} style={{ width: `${pct}%` }} />
       </div>
     </div>
   )
 }
 
-/** V6 technical checklist box */
-function TechnicalChecklistBox({ items }: { items: TechnicalChecklistItem[] }) {
-  if (!items || items.length === 0) return null
-  return (
-    <div className="bg-dark-800 border border-gray-700 rounded-xl p-5 mb-5">
-      <h4 className="text-sm font-bold text-gray-400 mb-4">What to tell your web developer</h4>
-      <div className="space-y-3">
-        {items.map((item, i) => (
-          <div key={i} className="flex items-start gap-3">
-            <span className="text-gray-500 shrink-0 mt-0.5 text-sm">{i + 1}.</span>
-            <div className="flex-1">
-              <p className="text-sm text-gray-300">{item.task}</p>
-              <div className="flex gap-3 mt-1">
-                <span className={`text-[10px] font-bold uppercase tracking-wider ${difficultyColor(item.difficulty)}`}>
-                  {item.difficulty}
-                </span>
-                <span className="text-[10px] text-gray-500">{item.timeEstimate}</span>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-/** Copyable text block for webDeveloperNote */
-function CopyableTextBlock({ text }: { text: string }) {
-  const [copied, setCopied] = useState(false)
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(text)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    } catch {
-      // fallback: do nothing
-    }
-  }
-
-  return (
-    <div className="relative bg-dark-800 border border-gray-700 rounded-xl p-5 mb-5">
-      <div className="flex items-center justify-between mb-3">
-        <h4 className="text-sm font-bold text-gray-400">Copy and send this to your web developer</h4>
-        <button
-          onClick={handleCopy}
-          className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors px-3 py-1 rounded border border-primary/30 hover:border-primary/50"
-        >
-          {copied ? 'Copied!' : 'Copy'}
-        </button>
-      </div>
-      <p className="text-sm text-gray-300 leading-relaxed font-mono whitespace-pre-wrap">{text}</p>
-    </div>
-  )
-}
-
-/** V5 recommendation card (kept for backward compat) */
-function RecommendationCard({ severity, title, detail, timeEstimate, what, why, fix }: {
-  severity: string; title: string; detail?: string; timeEstimate?: string; what?: string; why?: string; fix?: string
+function ChecklistRow({
+  status,
+  name,
+  text,
+  benchmark,
+}: {
+  status: string
+  name: string
+  text?: string
+  benchmark?: string
 }) {
+  const { icon, color } = checklistIcon(status)
   return (
-    <div className="flex gap-4 p-5 rounded-xl border border-gray-700 mb-3">
-      <div className={`w-1 shrink-0 rounded-full ${severityBarColor(severity)}`} />
+    <div className="flex gap-3 py-2 border-b border-zinc-800 last:border-0">
+      <div className={`text-lg font-bold w-5 flex-shrink-0 ${color}`}>{icon}</div>
       <div className="flex-1">
-        <div className="flex items-center gap-2 flex-wrap mb-2">
-          <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full text-white ${severityColor(severity)}`}>
-            {severity}
-          </span>
-          {timeEstimate && (
-            <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full text-white bg-green-600">
-              {timeEstimate}
-            </span>
-          )}
-          <span className="text-sm font-bold text-white">{title}</span>
-        </div>
-        {detail && <p className="text-sm text-gray-400 leading-relaxed">{detail}</p>}
-        {what && <p className="text-sm text-gray-400 leading-relaxed mb-1"><strong className="text-gray-300">What:</strong> {what}</p>}
-        {why && <p className="text-sm text-gray-400 leading-relaxed mb-1"><strong className="text-gray-300">Why:</strong> {why}</p>}
-        {fix && <p className="text-sm text-gray-400 leading-relaxed"><span className="text-primary font-semibold">How to fix:</span> {fix}</p>}
+        <div className="text-sm text-white font-medium">{name}</div>
+        {text && <div className="text-sm text-zinc-400">{text}</div>}
+        {benchmark && <div className="text-xs italic text-zinc-500 mt-0.5">{benchmark}</div>}
       </div>
     </div>
   )
 }
 
-/** V6 business owner action card */
-function BusinessOwnerActionCard({ action }: { action: BusinessOwnerAction }) {
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false)
   return (
-    <div className="flex gap-4 p-5 rounded-xl border border-gray-700 mb-3">
-      <div className="w-1 shrink-0 rounded-full bg-primary" />
-      <div className="flex-1">
-        <div className="flex items-center gap-2 flex-wrap mb-2">
-          {action.timeEstimate && (
-            <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full text-white bg-green-600">
-              {action.timeEstimate}
-            </span>
-          )}
-          {action.cost && (
-            <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full text-white bg-blue-600">
-              {action.cost}
-            </span>
-          )}
-          <span className="text-sm font-bold text-white">{action.title}</span>
-        </div>
-        <p className="text-sm text-gray-400 leading-relaxed mb-1">{action.impact}</p>
-        {action.impactEstimate && (
-          <p className="text-xs text-gray-500 leading-relaxed italic mb-2">{action.impactEstimate}</p>
-        )}
-        <p className="text-sm text-gray-400 leading-relaxed">
-          <span className="text-primary font-semibold">How to do it:</span> {action.howToFix}
-        </p>
-      </div>
-    </div>
-  )
-}
-
-/** V6 web developer checklist card */
-function WebDevChecklistCard({ item }: { item: WebDeveloperChecklistItem }) {
-  return (
-    <div className="flex gap-4 p-4 rounded-xl border border-gray-700 mb-2">
-      <div className={`w-1 shrink-0 rounded-full ${severityBarColor(item.difficulty === 'easy' ? 'medium' : item.difficulty === 'hard' ? 'critical' : 'high')}`} />
-      <div className="flex-1">
-        <div className="flex items-center gap-2 flex-wrap mb-1">
-          <span className={`text-[10px] font-bold uppercase tracking-wider ${difficultyColor(item.difficulty)}`}>
-            {item.difficulty}
-          </span>
-          <span className="text-[10px] text-gray-500">{item.timeEstimate}</span>
-        </div>
-        <p className="text-sm font-semibold text-white mb-1">{item.task}</p>
-        <p className="text-sm text-gray-400 leading-relaxed">{item.impact}</p>
-      </div>
-    </div>
+    <button
+      onClick={async () => {
+        try {
+          await navigator.clipboard.writeText(text)
+          setCopied(true)
+          setTimeout(() => setCopied(false), 2000)
+        } catch {
+          // clipboard unavailable
+        }
+      }}
+      className="px-3 py-1.5 bg-primary text-white rounded text-xs font-medium hover:bg-primary/80"
+    >
+      {copied ? 'Copied ✓' : 'Copy to clipboard'}
+    </button>
   )
 }
 
 // ============================================================================
-// Main Component
+// Main component
 // ============================================================================
 
-export default function BusinessPresenceReportView({ data, domain }: { data: BPRData; domain?: string }) {
-  const s = data.sections
-  const scores = data.sectionScores
-  const summary = data.summaryBlock
-  const bl = data.bottomLines
+export default function BusinessPresenceReportView({ data, domain }: Props) {
+  // ---------------------------------------------------------------
+  // Resolve synthesis fields with V5 / V6 fallbacks
+  // ---------------------------------------------------------------
+  const synthesis = data
+  const overallScore = safeNum(synthesis.overallScore)
+  const sectionScores = safeObj(synthesis.sectionScores)
+  const sections = safeObj(synthesis.sections)
+  const detContent = safeObj(synthesis.deterministicContent)
+  const bottomLines = safeObj(synthesis.bottomLines)
+  const summaryBlock = safeObj(synthesis.summaryBlock)
 
-  // Backward-compat: resolve V5 vs V6 section names
-  const biz = s.businessIdentity || s.businessSnapshot || {}
-  const web = s.websiteExperience || s.websiteHealth || {}
-  const conv = s.websiteConversion || s.marketingEffectiveness || {}
-  const search = s.searchVisibility || {}
-  const competitors = s.topCompetitors || []
-  const opps = s.priorityOpportunities
+  const summaryParagraph = safeStr(summaryBlock.summaryParagraph || summaryBlock.advisorParagraph)
+  const keyMetrics = safeArr<string>(summaryBlock.keyMetrics?.length ? summaryBlock.keyMetrics : summaryBlock.bulletScorecard)
+  const issueCount = safeNum(summaryBlock.issueCount || detContent.issueCount)
+  const quickWinCount = safeNum(summaryBlock.quickWinCount)
+  const visibilityGapPercent = safeNum(summaryBlock.visibilityGapPercent)
 
-  // Detect V6 (object with businessOwnerActions) vs V5 (array)
-  const isV6Opps = opps && !Array.isArray(opps) && opps.businessOwnerActions
+  const biz = safeObj(sections.businessIdentity || sections.businessSnapshot)
+  const bizType = safeStr(biz.businessTypeBadge || biz.businessType)
+  const industry = safeStr(biz.industry)
+  const valueProp = safeStr(biz.valueProp)
+  const nicheAnalysis = safeArr<any>(biz.nicheAnalysis || biz.topServices)
+  const reachAssessment = safeStr(biz.reachAssessment)
+  const mozSummary = safeStr(biz.mozSummary)
+  const searchMetrics = safeObj(detContent.searchMetrics)
+  const emailSecurity = safeObj(detContent.emailSecurity)
 
-  // Resolve summary fields (V6 names || V5 names)
-  const summaryText = summary.summaryParagraph || summary.advisorParagraph
-  const keyMetrics = summary.keyMetrics || summary.bulletScorecard || []
-  const fastestWin = summary.fastestWin || summary.opportunityTeaser
+  const website = safeObj(sections.websiteExperience || sections.websiteHealth)
+  const healthScore = safeNum(website.score || sectionScores.websiteExperience || sectionScores.websiteHealth)
+  const speedCards = safeObj(detContent.speedCards)
+  const healthFindings = safeArr<any>(website.findings)
+  const topIssue = safeStr(website.topIssue)
+  const siteAge = safeStr(website.siteAge)
+  const conversionChecklist = safeArr<any>(detContent.conversionChecklist)
 
-  // Resolve section scores (V6 keys || V5 keys)
-  const scoreIdentity = scores.businessIdentity ?? scores.businessSnapshot ?? 0
-  const scoreWebsite = scores.websiteExperience ?? scores.websiteHealth ?? 0
-  const scoreSearch = scores.searchVisibility ?? 0
-  const scoreConversion = scores.websiteConversion ?? scores.marketingEffectiveness ?? 0
-  const scoreCompetitor = scores.competitorPosition ?? 0
+  const search = safeObj(sections.searchVisibility)
+  const searchScore = safeNum(search.score || sectionScores.searchVisibility)
+  const schemaTypesFound = safeNum(search.schemaTypesFound)
+  const hasLlmsTxt = Boolean(search.hasLlmsTxt)
+  const aiCrawler = safeStr(search.aiCrawlerStatus)
+  const aiVisScore = computeAiVisibilityScore(schemaTypesFound, hasLlmsTxt, aiCrawler)
+  const findabilityChecklist = safeArr<any>(detContent.findabilityChecklist)
+  const searchFindings = safeArr<any>(search.findings)
 
-  // Resolve bottom lines (V6 keys || V5 keys)
-  const blWebsite = bl?.websiteExperience || bl?.websiteHealth || web.bottomLine
-  const blSearch = bl?.searchVisibility || search.bottomLine
-  const blConversion = bl?.websiteConversion || bl?.marketingEffectiveness || conv.bottomLine
+  const conv = safeObj(sections.websiteConversion || sections.marketingEffectiveness)
+  const mktgScore = safeNum(conv.score || sectionScores.websiteConversion || sectionScores.marketingEffectiveness)
+  const ctaGrade = safeStr(conv.ctaGrade || '-')
+  const ctaAnalysis = safeStr(conv.ctaAnalysis)
+  const trustLevel = safeStr(conv.trustLevel || '—')
+  const repSignalsRaw = safeArr<any>(conv.reputationSignals)
+  const repSignals = isLocalBiz(bizType)
+    ? repSignalsRaw
+    : repSignalsRaw.filter((r) => {
+        const p = safeStr(safeObj(r).platform).toLowerCase()
+        return p.indexOf('google') < 0 && p.indexOf('gbp') < 0
+      })
+  const homepageFindings = safeArr<any>(conv.homepageFindings)
+  const adTracking = safeArr<string>(conv.adTrackingDetected)
 
-  // Resolve services (V6 topServices || V5 nicheAnalysis)
-  const services: (TopService | NicheItem)[] = biz.topServices || biz.nicheAnalysis || []
+  const competitors = safeArr<any>(sections.topCompetitors)
+  const searchTerm = safeStr(synthesis.searchTerm || summaryBlock.searchTerm)
 
-  // Resolve business findings for each section
-  const bizFindings: BusinessFinding[] = biz.businessFindings || []
-  const webFindings: BusinessFinding[] = web.businessFindings || []
-  const searchFindings: BusinessFinding[] = search.businessFindings || []
-  const convFindings: BusinessFinding[] = conv.businessFindings || []
+  // Section 7 — growth opportunities (V6 business owner actions) + web dev
+  const priorityOpps = safeObj(sections.priorityOpportunities)
+  const businessOwnerActions = safeArr<any>(priorityOpps.businessOwnerActions)
+  const webDeveloperChecklistV6 = safeArr<any>(priorityOpps.webDeveloperChecklist)
+  const webDevNote = safeStr(priorityOpps.webDeveloperNote || priorityOpps.webDevNote)
+  const growthOpps = safeArr<any>(synthesis.growthOpportunities || priorityOpps.growthOpportunities || businessOwnerActions)
 
-  // Resolve technical checklists
-  const webChecklist: TechnicalChecklistItem[] = web.technicalChecklist || []
-  const searchChecklist: TechnicalChecklistItem[] = search.technicalChecklist || []
-  const convChecklist: TechnicalChecklistItem[] = conv.technicalChecklist || []
+  // Section 8 — consolidated technical checklist (dedupe by first 50 chars)
+  const allTechItems: any[] = [
+    ...safeArr<any>(website.technicalChecklist),
+    ...safeArr<any>(search.technicalChecklist),
+    ...safeArr<any>(conv.technicalChecklist),
+    ...webDeveloperChecklistV6,
+  ]
+  const seenTechKeys = new Set<string>()
+  const techChecklist: any[] = []
+  for (const item of allTechItems) {
+    const task = safeStr(safeObj(item).task || item)
+    const key = task.slice(0, 50).toLowerCase()
+    if (!key || seenTechKeys.has(key)) continue
+    seenTechKeys.add(key)
+    techChecklist.push(item)
+  }
 
-  // V5 fallback findings (string arrays)
-  const webFindingsV5: string[] = web.findings || []
-  const searchFindingsV5: string[] = search.findings || []
-  const convHomepageFindingsV5: HomepageFinding[] = conv.homepageFindings || []
+  const biggestWin = growthOpps[0]
+  const biggestWinTitle = safeStr(safeObj(biggestWin).title)
+  const showBiggestWin = biggestWin && biggestWinTitle && biggestWinTitle.indexOf('Share the technical details') < 0
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-12 pb-12">
+      {/* Cover / title */}
+      <div className="text-center py-8 border-b border-zinc-800">
+        <div className="text-xs font-mono text-primary tracking-widest mb-3">BUSINESS PRESENCE REPORT</div>
+        <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 break-words">{domain}</h1>
+        <p className="text-zinc-400">Your business presence assessment</p>
+      </div>
 
-      {/* ── SECTION 01: Your Business Online ── */}
+      {/* ===================================================================
+          SECTION 01 — YOUR BUSINESS ONLINE
+          =================================================================== */}
       <section>
-        <SectionHeader
-          number="SECTION 01"
-          title="Your Business Online"
-          question="How is my business doing online?"
-          intro="A high-level snapshot of how your business appears online to potential customers, search engines, and AI-powered search tools."
-        />
+        <SectionHeader number="01" title="Your Business Online" intro="A high-level overview of your business presence across search, website, and reputation." />
 
-        <div className="flex gap-3 mb-6">
-          <StatCard value={data.overallScore} label="Overall Score" highlight colorClass={scoreColor(data.overallScore)} />
-          <StatCard value={summary.issueCount ?? 0} label="Issues Found" />
-          <StatCard value={summary.quickWinCount ?? 0} label="Quick Wins" />
-          <div className="flex-1 rounded-xl border border-gray-700 bg-dark-800 p-4 text-center">
-            <div className="text-2xl font-extrabold text-red-500 leading-none mb-1">{summary.visibilityGapPercent ?? 0}%</div>
-            <div className="text-[10px] text-gray-500 uppercase tracking-wider">less visible than competitors</div>
-          </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+          <StatCard label="Overall Score" value={overallScore} colorClass={scoreColor(overallScore)} />
+          <StatCard label="Issues Found" value={issueCount} colorClass="text-red-400" />
+          <StatCard label="Quick Wins" value={quickWinCount} colorClass="text-green-400" />
+          <StatCard label="Visibility Gap" value={`${visibilityGapPercent}%`} colorClass="text-red-400" />
         </div>
 
-        <div className="mb-6">
-          <ScoreBar label="Business Identity" score={scoreIdentity} />
-          <ScoreBar label="Website Experience" score={scoreWebsite} />
-          <ScoreBar label="Search Visibility" score={scoreSearch} />
-          <ScoreBar label="Website Conversion" score={scoreConversion} />
-          <ScoreBar label="Competitor Position" score={scoreCompetitor} />
+        <div className="space-y-3 mb-6">
+          {[
+            { label: 'Business Identity', key: sectionScores.businessIdentity ?? sectionScores.businessSnapshot },
+            { label: 'Website Experience', key: sectionScores.websiteExperience ?? sectionScores.websiteHealth },
+            { label: 'Search Visibility', key: sectionScores.searchVisibility },
+            { label: 'Website Conversion', key: sectionScores.websiteConversion ?? sectionScores.marketingEffectiveness },
+            { label: 'Competitor Position', key: sectionScores.competitorPosition },
+          ].map((s) => (
+            <ScoreBar key={s.label} label={s.label} score={safeNum(s.key)} />
+          ))}
         </div>
 
-        {summaryText && (
-          <Callout type="insight" title="Summary">{summaryText}</Callout>
-        )}
-
-        {keyMetrics.length > 0 && (
-          <div className="mb-5">
-            <h4 className="text-sm font-bold text-gray-400 mb-3">Key Metrics</h4>
-            <ul className="space-y-1">
-              {keyMetrics.map((m, i) => (
-                <li key={i} className="flex gap-2 text-sm text-gray-300">
-                  <span className="text-primary shrink-0">&bull;</span>
-                  <span>{m}</span>
-                </li>
-              ))}
-            </ul>
+        {summaryParagraph && (
+          <div className="mb-6">
+            <Callout variant="insight" title="Summary">
+              <p>{summaryParagraph}</p>
+              {keyMetrics.length > 0 && (
+                <ul className="list-disc list-inside space-y-1 mt-2">
+                  {keyMetrics.map((m, i) => <li key={i}>{m}</li>)}
+                </ul>
+              )}
+            </Callout>
           </div>
         )}
 
-        {fastestWin && (
-          <Callout type="strength" title="Fastest Win">{fastestWin}</Callout>
-        )}
-      </section>
-
-      {/* ── SECTION 02: Your Business Identity ── */}
-      <section>
-        <SectionHeader
-          number="SECTION 02"
-          title="Your Business Identity"
-          question="Do people know what I do and who I serve?"
-          intro="What type of business you are, what services you highlight, and how effectively your website communicates them."
-        />
-
-        <div className="grid grid-cols-2 gap-3 mb-4">
-          <div className="bg-dark-800 border border-gray-700 rounded-lg p-4">
-            <p className="text-[10px] uppercase tracking-wider text-gray-500 mb-1">Business Type</p>
-            <p className="text-sm font-semibold text-white">{biz.businessTypeBadge || 'Unknown'}</p>
-          </div>
-          <div className="bg-dark-800 border border-gray-700 rounded-lg p-4">
-            <p className="text-[10px] uppercase tracking-wider text-gray-500 mb-1">Industry</p>
-            <p className="text-sm font-semibold text-white">{biz.industry || 'Unknown'}</p>
-          </div>
-        </div>
-
-        {biz.valueProp && (
-          <div className="bg-dark-800 border border-gray-700 rounded-lg p-4 mb-4">
-            <p className="text-[10px] uppercase tracking-wider text-gray-500 mb-1">What Your Site Communicates</p>
-            <p className="text-sm text-gray-300">{biz.valueProp}</p>
-          </div>
-        )}
-
-        {services.length > 0 && (
-          <>
-            <h4 className="text-sm font-bold text-gray-400 mb-3">Services You Highlight</h4>
-            {services.map((svc, i) => (
-              <div key={i} className="border border-gray-700 rounded-lg p-4 mb-3">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full text-white ${nicheColor(svc.rating)}`}>{svc.rating}</span>
-                  <span className="text-sm font-bold text-white">{svc.name}</span>
-                </div>
-                <p className="text-sm text-gray-400 leading-relaxed">{svc.detail}</p>
-              </div>
-            ))}
-          </>
-        )}
-
-        {biz.reachAssessment && (
-          <Callout type="insight" title="Are You Reaching the Right Customers?">{biz.reachAssessment}</Callout>
-        )}
-
-        {/* V5 fallback: mozSummary */}
-        {biz.mozSummary && !biz.reachAssessment && (
-          <Callout type="insight" title="Search Trust Score">{biz.mozSummary}</Callout>
-        )}
-
-        {bizFindings.length > 0 && (
-          <>
-            <h4 className="text-sm font-bold text-gray-400 mb-3">Key Findings</h4>
-            {bizFindings.map((f, i) => (
-              <BusinessFindingCard key={i} finding={f} />
-            ))}
-          </>
-        )}
-      </section>
-
-      {/* ── SECTION 03: Your Website Experience ── */}
-      <section>
-        <SectionHeader
-          number="SECTION 03"
-          title="Your Website Experience"
-          question="Is my website helping or hurting me?"
-          intro="Whether your site works correctly and loads fast enough that visitors stay instead of leaving."
-        />
-
-        <div className="flex gap-3 mb-4">
-          <StatCard value={web.score ?? 0} label="Experience Score" highlight colorClass={scoreColor(web.score ?? 0)} />
-          {/* V6: mobileSpeedSeconds / mobilePerformanceScore; V5: desktopSpeed / mobileSpeed / issueCount */}
-          {web.mobileSpeedSeconds != null ? (
-            <>
-              <StatCard value={`${web.mobileSpeedSeconds}s`} label="Mobile Load Time" />
-              <StatCard value={web.mobilePerformanceScore ?? 'N/A'} label="Mobile Performance" colorClass={scoreColor(web.mobilePerformanceScore ?? 0)} />
-            </>
-          ) : (
-            <>
-              <StatCard value={web.issueCount ?? web.findings?.length ?? 0} label="Issues Found" />
-              <StatCard value={web.desktopSpeed || 'N/A'} label="Desktop Speed" />
-              <StatCard value={web.mobileSpeed || 'N/A'} label="Mobile Speed" />
-            </>
-          )}
-        </div>
-
-        {/* Speed benchmark context for business owners */}
-        <Callout type="warning" title="Speed matters.">
-          Pages loading over 3 seconds lose 53% of mobile visitors (Google). The two numbers to watch: First Contentful Paint (FCP) is how fast something first appears on screen — under 1.8 seconds is good. Largest Contentful Paint (LCP) is how fast the main content loads — under 2.5 seconds is good, over 4 seconds is slow.
-        </Callout>
-
-        {web.siteAge && (
-          <div className="bg-dark-800 border border-gray-700 rounded-lg p-4 mb-4">
-            <p className="text-[10px] uppercase tracking-wider text-gray-500 mb-1">Estimated Last Redesign</p>
-            <p className="text-sm font-semibold text-white">{web.siteAge}</p>
-          </div>
-        )}
-
-        {/* V5 topIssue */}
-        {web.topIssue && (
-          <Callout type="weakness" title="Top Issue">{web.topIssue}</Callout>
-        )}
-
-        {/* V6 business findings */}
-        {webFindings.length > 0 && (
-          <>
-            <h4 className="text-sm font-bold text-gray-400 mb-3">What Your Visitors Experience</h4>
-            {webFindings.map((f, i) => (
-              <BusinessFindingCard key={i} finding={f} />
-            ))}
-          </>
-        )}
-
-        {/* V5 string findings fallback */}
-        {webFindings.length === 0 && webFindingsV5.length > 0 && webFindingsV5.map((f, i) => (
-          <RecommendationCard key={i} severity="medium" title={f} />
-        ))}
-
-        <TechnicalChecklistBox items={webChecklist} />
-
-        <BottomLineBlock data={blWebsite} />
-      </section>
-
-      {/* ── SECTION 04: Can People Find You? ── */}
-      <section>
-        <SectionHeader
-          number="SECTION 04"
-          title="Can People Find You?"
-          question="When someone searches for what I offer, do they find me?"
-          intro="Whether your business can be found across Google, AI tools like ChatGPT, and other search platforms."
-        />
-
-        <div className="flex gap-3 mb-4">
-          <StatCard value={search.score ?? 0} label="Visibility Score" highlight colorClass={scoreColor(search.score ?? 0)} />
-          <StatCard
-            value={search.aiCrawlerStatus === 'accessible' ? 'Open' : search.aiCrawlerStatus === 'blocked' ? 'Blocked' : 'Not Verified'}
-            label="AI Search Access"
-            colorClass={search.aiCrawlerStatus === 'accessible' ? 'text-green-500' : search.aiCrawlerStatus === 'blocked' ? 'text-red-500' : 'text-yellow-500'}
-          />
-          {search.schemaTypesFound != null && (
-            <StatCard value={search.schemaTypesFound} label="Schema Types Found" />
-          )}
-        </div>
-
-        {/* Hardcoded "Where People Search Today" callout */}
-        <Callout type="info" title="Where People Search Today">
-          People no longer search in just one place. Google is still where most people start, but Google itself now shows AI-generated summaries before website links (BrightEdge research shows this happens in nearly half of all searches). YouTube is where people learn how to solve problems. ChatGPT and similar tools handle questions that used to go to Google. Social media — especially TikTok and Instagram — is where younger customers discover local businesses.
-        </Callout>
-
-        {/* V5 schemaAssessment */}
-        {search.schemaAssessment && (
-          <Callout type="insight">{search.schemaAssessment}</Callout>
-        )}
-
-        {/* V6 business findings */}
-        {searchFindings.length > 0 && (
-          <>
-            <h4 className="text-sm font-bold text-gray-400 mb-3">How Visible Are You?</h4>
-            {searchFindings.map((f, i) => (
-              <BusinessFindingCard key={i} finding={f} />
-            ))}
-          </>
-        )}
-
-        {/* V5 string findings fallback */}
-        {searchFindings.length === 0 && searchFindingsV5.length > 0 && searchFindingsV5.map((f, i) => (
-          <RecommendationCard key={i} severity="high" title={f} />
-        ))}
-
-        <TechnicalChecklistBox items={searchChecklist} />
-
-        <BottomLineBlock data={blSearch} />
-      </section>
-
-      {/* ── SECTION 05: Is Your Website Converting? ── */}
-      <section>
-        <SectionHeader
-          number="SECTION 05"
-          title="Is Your Website Converting?"
-          question="When people visit my website, do they contact me?"
-          intro="How well your website convinces visitors to take action and how strong your online reputation is."
-        />
-
-        <div className="flex gap-3 mb-4">
-          <StatCard value={conv.score ?? 0} label="Conversion Score" highlight colorClass={scoreColor(conv.score ?? 0)} />
-          <StatCard value={conv.ctaGrade || '?'} label="Call-to-Action Grade" />
-          <StatCard value={conv.trustLevel || 'Unknown'} label="Trust Signals" />
-        </div>
-
-        {/* Ad tracking (V6) */}
-        {conv.adTrackingDetected && conv.adTrackingDetected.length > 0 && (
-          <div className="bg-dark-800 border border-gray-700 rounded-lg p-4 mb-4">
-            <p className="text-[10px] uppercase tracking-wider text-gray-500 mb-2">Ad Tracking Detected</p>
-            <div className="flex flex-wrap gap-2">
-              {conv.adTrackingDetected.map((tracker: string, i: number) => (
-                <span key={i} className="text-xs font-semibold text-gray-300 bg-gray-700 px-2.5 py-1 rounded-full">
-                  {tracker}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Reputation grid */}
-        {conv.reputationSignals && conv.reputationSignals.length > 0 && (
-          <>
-            <h4 className="text-sm font-bold text-gray-400 mb-3">Online Reputation</h4>
-            <div className="grid grid-cols-3 gap-2 mb-5">
-              {conv.reputationSignals.map((sig: ReputationSignal, i: number) => (
-                <div key={i} className={`rounded-lg border p-3 text-center ${repCardClass(sig.status)}`}>
-                  <p className="text-xs font-semibold text-white mb-0.5">{sig.platform}</p>
-                  <p className={`text-[10px] font-bold uppercase tracking-wider ${repStatusClass(sig.status)}`}>{sig.status}</p>
-                  {sig.detail && <p className="text-[10px] text-gray-500 mt-0.5">{sig.detail}</p>}
-                </div>
-              ))}
-            </div>
-          </>
-        )}
-
-        {/* V6 business findings */}
-        {convFindings.length > 0 && (
-          <>
-            <h4 className="text-sm font-bold text-gray-400 mb-3">Conversion Assessment</h4>
-            {convFindings.map((f, i) => (
-              <BusinessFindingCard key={i} finding={f} />
-            ))}
-          </>
-        )}
-
-        {/* V5 homepage findings fallback */}
-        {convFindings.length === 0 && convHomepageFindingsV5.length > 0 && (
-          <>
-            <h4 className="text-sm font-bold text-gray-400 mb-3">Homepage Assessment</h4>
-            {convHomepageFindingsV5.map((f, i) => (
-              <div key={i} className="flex gap-3 p-3 rounded-lg border border-gray-700 mb-2">
-                <div className={`w-0.5 shrink-0 rounded-full ${severityBarColor(f.severity)}`} />
-                <p className="text-sm text-gray-400 leading-relaxed">{f.text}</p>
-              </div>
-            ))}
-          </>
-        )}
-
-        {/* V5 string findings fallback */}
-        {convFindings.length === 0 && convHomepageFindingsV5.length === 0 && conv.findings && conv.findings.length > 0 && (
-          conv.findings.map((f: string, i: number) => (
-            <RecommendationCard key={i} severity="medium" title={f} />
-          ))
-        )}
-
-        <TechnicalChecklistBox items={convChecklist} />
-
-        <BottomLineBlock data={blConversion} />
-      </section>
-
-      {/* ── SECTION 06: Your Competition ── */}
-      <section>
-        <SectionHeader
-          number="SECTION 06"
-          title="Your Competition"
-          question="Who am I losing customers to?"
-          intro="The businesses that appear instead of you when potential customers search for your services."
-        />
-
-        {data.searchTerm && (
-          <Callout type="insight">
-            <p className="mb-2">When someone searches for:</p>
-            <span className="inline-block bg-primary/10 border border-primary/30 rounded px-2.5 py-1 text-sm font-semibold text-primary">{data.searchTerm}</span>
-            <p className="mt-2">These are the businesses they find instead of yours.</p>
+        {showBiggestWin && (
+          <Callout variant="strength" title="Biggest Win">
+            <p className="font-semibold">{biggestWinTitle}</p>
+            <p className="text-xs text-zinc-400 mt-2">See Section 7 for details and more opportunities.</p>
           </Callout>
         )}
+      </section>
 
-        {competitors.length > 0 && (
-          <div className="overflow-x-auto mb-5">
+      {/* ===================================================================
+          SECTION 02 — YOUR BUSINESS IDENTITY
+          =================================================================== */}
+      <section>
+        <SectionHeader number="02" title="Your Business Identity" intro="Do people know what I do and who I serve?" />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+          <div className="bg-zinc-900/60 border border-zinc-700 rounded-lg p-4">
+            <div className="text-xs uppercase tracking-wide text-zinc-500 mb-1">Business Type</div>
+            <div className="text-white">{bizType || '—'}</div>
+          </div>
+          <div className="bg-zinc-900/60 border border-zinc-700 rounded-lg p-4">
+            <div className="text-xs uppercase tracking-wide text-zinc-500 mb-1">Industry</div>
+            <div className="text-white">{industry || '—'}</div>
+          </div>
+        </div>
+
+        {valueProp && (
+          <div className="mb-4 bg-zinc-900/60 border border-zinc-700 rounded-lg p-4">
+            <div className="text-xs uppercase tracking-wide text-zinc-500 mb-1">What Your Site Communicates</div>
+            <div className="text-white">{valueProp}</div>
+          </div>
+        )}
+
+        {nicheAnalysis.length > 0 && (
+          <div className="mb-4">
+            <div className="text-sm font-semibold text-zinc-300 mb-2">Services You Highlight on Your Site</div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+              {nicheAnalysis.map((n: any, i: number) => {
+                const o = safeObj(n)
+                return (
+                  <div key={i} className="bg-zinc-900/60 border border-zinc-700 rounded-lg p-3">
+                    <span className={`inline-block px-2 py-0.5 rounded text-xs font-bold border ${nicheRatingColor(safeStr(o.rating))}`}>
+                      {safeStr(o.rating).toUpperCase() || 'MODERATE'}
+                    </span>
+                    <div className="text-white text-sm font-medium mt-2">{safeStr(o.name)}</div>
+                    {o.detail && <div className="text-xs text-zinc-400 mt-1">{safeStr(o.detail)}</div>}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {reachAssessment && (
+          <div className="mb-4">
+            <Callout variant="insight" title="Are you reaching the right customers?">
+              <p>{reachAssessment}</p>
+            </Callout>
+          </div>
+        )}
+
+        {(searchMetrics.trustScore || searchMetrics.sitesLinking || emailSecurity.status) && (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+              {searchMetrics.trustScore && (
+                <div className="bg-zinc-900/60 border border-zinc-700 rounded-lg p-4">
+                  <div className="text-xs uppercase tracking-wide text-zinc-500 mb-1">Search Trust Score</div>
+                  <div className="text-2xl font-bold text-white">{safeStr(searchMetrics.trustScore.value) || '—'}</div>
+                </div>
+              )}
+              {searchMetrics.sitesLinking && (
+                <div className="bg-zinc-900/60 border border-zinc-700 rounded-lg p-4">
+                  <div className="text-xs uppercase tracking-wide text-zinc-500 mb-1">Sites Linking</div>
+                  <div className="text-2xl font-bold text-white">{safeStr(searchMetrics.sitesLinking.value) || '—'}</div>
+                </div>
+              )}
+              {emailSecurity.status && (
+                <div className="bg-zinc-900/60 border border-zinc-700 rounded-lg p-4">
+                  <div className="text-xs uppercase tracking-wide text-zinc-500 mb-1">Email Protection</div>
+                  <div className="text-2xl font-bold">
+                    {(() => {
+                      const s = safeStr(emailSecurity.status).toLowerCase()
+                      if (s === 'protected' || s === 'good') return <span className="text-green-400">✓</span>
+                      if (s === 'partial') return <span className="text-yellow-400">⚠</span>
+                      return <span className="text-red-400">✗</span>
+                    })()}
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="text-xs text-zinc-500 space-y-1 mb-3">
+              {searchMetrics.trustScore?.text && <p><span className="text-zinc-400 font-medium">Search Trust Score:</span> {safeStr(searchMetrics.trustScore.text)}</p>}
+              {searchMetrics.sitesLinking?.text && <p><span className="text-zinc-400 font-medium">Sites Linking:</span> {safeStr(searchMetrics.sitesLinking.text)}</p>}
+              {(emailSecurity.spf?.text || emailSecurity.dmarc?.text) && (
+                <p><span className="text-zinc-400 font-medium">Email Protection:</span> {safeStr(emailSecurity.spf?.text)} {safeStr(emailSecurity.dmarc?.text)}</p>
+              )}
+            </div>
+          </>
+        )}
+
+        {mozSummary && <p className="text-xs text-zinc-500 italic">{mozSummary}</p>}
+      </section>
+
+      {/* ===================================================================
+          SECTION 03 — YOUR WEBSITE EXPERIENCE
+          =================================================================== */}
+      <section>
+        <SectionHeader number="03" title="Your Website Experience" intro="Is my website helping or hurting me?" />
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+          <StatCard label="Experience Score" value={healthScore} colorClass={scoreColor(healthScore)} />
+          <StatCard label="Mobile Performance" value={speedCards.mobilePerf ?? 'N/A'} colorClass={scoreColor(safeNum(speedCards.mobilePerf))} />
+          <StatCard label="Desktop Performance" value={speedCards.desktopPerf ?? 'N/A'} colorClass={scoreColor(safeNum(speedCards.desktopPerf))} />
+          <StatCard label="Issues Found" value={safeNum(detContent.issueCount || website.issueCount || 0)} colorClass="text-red-400" />
+        </div>
+
+        <div className="mb-4">
+          <Callout variant="warning" title="Speed matters">
+            <p>Pages loading over 3 seconds lose 53% of mobile visitors. First Contentful Paint under 1.8 seconds is considered good. Largest Contentful Paint under 2.5 seconds is good; over 4 seconds is slow.</p>
+          </Callout>
+        </div>
+
+        {conversionChecklist.length > 0 && (
+          <div className="mb-4">
+            <div className="text-sm font-semibold text-zinc-300 mb-2">What We Checked</div>
+            <div className="bg-zinc-900/60 border border-zinc-700 rounded-lg px-4">
+              {conversionChecklist.map((item: any, i: number) => {
+                const o = safeObj(item)
+                return <ChecklistRow key={i} status={safeStr(o.status)} name={safeStr(o.element || o.name)} text={safeStr(o.text)} benchmark={safeStr(o.benchmark)} />
+              })}
+            </div>
+          </div>
+        )}
+
+        {topIssue && (
+          <div className="mb-4">
+            <Callout variant="weakness" title="Top Issue">
+              <p>{topIssue}</p>
+            </Callout>
+          </div>
+        )}
+
+        {healthFindings.length > 0 && (
+          <div className="mb-4">
+            <div className="text-sm font-semibold text-zinc-300 mb-2">Additional Findings</div>
+            <div className="space-y-2">
+              {healthFindings.map((f: any, i: number) => {
+                const o = safeObj(f)
+                const sev = safeStr(o.severity)
+                return (
+                  <div key={i} className={`border rounded p-3 ${severityColor(sev)}`}>
+                    <div className="flex items-start gap-2 mb-1">
+                      <span className="text-xs font-bold uppercase">{sev || 'medium'}</span>
+                    </div>
+                    <p className="text-sm text-zinc-100">{safeStr(o.finding || o.title || o.text)}</p>
+                    {o.impact && <p className="text-xs text-zinc-300 mt-1">{safeStr(o.impact)}</p>}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {siteAge && <p className="text-xs text-zinc-500 mb-4">Site age: {siteAge}</p>}
+
+        {bottomLines.websiteExperience && (
+          <Callout variant="bottom-line" title="Bottom Line">
+            <ul className="list-disc list-inside space-y-1">
+              {safeArr<string>(safeObj(bottomLines.websiteExperience || bottomLines.websiteHealth).bullets).map((b: string, i: number) => (
+                <li key={i}>{b}</li>
+              ))}
+            </ul>
+            {safeObj(bottomLines.websiteExperience || bottomLines.websiteHealth).result && (
+              <p className="font-semibold mt-2">Result: {safeStr(safeObj(bottomLines.websiteExperience || bottomLines.websiteHealth).result)}</p>
+            )}
+          </Callout>
+        )}
+      </section>
+
+      {/* ===================================================================
+          SECTION 04 — CAN PEOPLE FIND YOU?
+          =================================================================== */}
+      <section>
+        <SectionHeader number="04" title="Can People Find You?" intro="When someone searches for what I offer, do they find me?" />
+
+        <div className="mb-6">
+          <Callout variant="insight" title="Where people search today">
+            <p>People no longer search in just one place. Google shows AI-generated summaries that may or may not include your business. YouTube, ChatGPT, Perplexity, and social media now surface answers directly. Visibility across all of these has become the new baseline.</p>
+          </Callout>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
+          <StatCard label="Visibility Score" value={searchScore} colorClass={scoreColor(searchScore)} />
+          <StatCard label="AI Visibility Score" value={aiVisScore} colorClass={scoreColor(aiVisScore)} />
+          <div className="md:col-span-1 bg-zinc-900/40 border border-zinc-800 rounded-lg p-4 text-xs text-zinc-400">
+            <p><span className="text-zinc-300 font-medium">Visibility Score</span> measures how findable your business is in traditional search.</p>
+            <p className="mt-1"><span className="text-zinc-300 font-medium">AI Visibility Score</span> measures how well AI assistants can access and cite your content.</p>
+          </div>
+        </div>
+
+        {findabilityChecklist.length > 0 && (
+          <div className="mb-4">
+            <div className="text-sm font-semibold text-zinc-300 mb-2">Can Customers Find You?</div>
+            <div className="bg-zinc-900/60 border border-zinc-700 rounded-lg px-4">
+              {findabilityChecklist.map((item: any, i: number) => {
+                const o = safeObj(item)
+                return <ChecklistRow key={i} status={safeStr(o.status)} name={safeStr(o.element || o.name)} text={safeStr(o.text)} benchmark={safeStr(o.benchmark)} />
+              })}
+            </div>
+          </div>
+        )}
+
+        {searchFindings.length > 0 && (
+          <div className="mb-4">
+            <div className="text-sm font-semibold text-zinc-300 mb-2">Findings</div>
+            <div className="space-y-2">
+              {searchFindings.map((f: any, i: number) => {
+                const o = safeObj(f)
+                const sev = safeStr(o.severity)
+                return (
+                  <div key={i} className={`border rounded p-3 ${severityColor(sev)}`}>
+                    <span className="text-xs font-bold uppercase">{sev || 'medium'}</span>
+                    <p className="text-sm text-zinc-100 mt-1">{safeStr(o.finding || o.title || o.text)}</p>
+                    {o.impact && <p className="text-xs text-zinc-300 mt-1">{safeStr(o.impact)}</p>}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {bottomLines.searchVisibility && (
+          <Callout variant="bottom-line" title="Bottom Line">
+            <ul className="list-disc list-inside space-y-1">
+              {safeArr<string>(safeObj(bottomLines.searchVisibility).bullets).map((b: string, i: number) => <li key={i}>{b}</li>)}
+            </ul>
+            {safeObj(bottomLines.searchVisibility).result && (
+              <p className="font-semibold mt-2">Result: {safeStr(safeObj(bottomLines.searchVisibility).result)}</p>
+            )}
+          </Callout>
+        )}
+      </section>
+
+      {/* ===================================================================
+          SECTION 05 — IS YOUR WEBSITE CONVERTING?
+          =================================================================== */}
+      <section>
+        <SectionHeader number="05" title="Is Your Website Converting?" intro="When people visit my website, do they contact me?" />
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
+          <StatCard label="Marketing Score" value={mktgScore} colorClass={scoreColor(mktgScore)} />
+          <StatCard label="Call-to-Action Grade" value={ctaGrade} colorClass={ctaGradeColor(ctaGrade)} />
+          <StatCard label="Trust Signals" value={trustLevel} colorClass={trustLevelColor(trustLevel)} />
+        </div>
+
+        {repSignals.length > 0 && (
+          <div className="mb-4">
+            <div className="text-sm font-semibold text-zinc-300 mb-2">Reputation Signals</div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+              {repSignals.map((r: any, i: number) => {
+                const o = safeObj(r)
+                return (
+                  <div key={i} className={`border rounded p-3 ${repCardStatusClass(safeStr(o.status))}`}>
+                    <div className="text-sm font-semibold text-white">{safeStr(o.platform)}</div>
+                    <div className="text-xs font-medium text-zinc-300 mt-1">{safeStr(o.status)}</div>
+                    {o.detail && <div className="text-xs text-zinc-400 mt-1">{safeStr(o.detail)}</div>}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {ctaAnalysis && (
+          <div className="mb-4">
+            <Callout variant="insight" title="CTA Analysis">
+              <p>{ctaAnalysis}</p>
+            </Callout>
+          </div>
+        )}
+
+        <div className="mb-4 bg-zinc-900/60 border border-zinc-700 rounded-lg p-3">
+          <div className="text-xs uppercase tracking-wide text-zinc-500 mb-1">Analytics & Tracking</div>
+          <div className="text-sm text-zinc-200">
+            {adTracking.length > 0 ? adTracking.join(', ') : 'No analytics or tracking tools detected.'}
+          </div>
+        </div>
+
+        {homepageFindings.length > 0 && (
+          <div className="mb-4">
+            <div className="text-sm font-semibold text-zinc-300 mb-2">Homepage Findings</div>
+            <div className="space-y-2">
+              {homepageFindings.map((f: any, i: number) => {
+                const o = safeObj(f)
+                const { bold, detail } = splitOnFirstPeriod(safeStr(o.text || o.finding))
+                return (
+                  <div key={i} className="flex items-stretch bg-zinc-900/40 rounded border border-zinc-800 overflow-hidden">
+                    <div className={`w-1 flex-shrink-0 ${severityBarColor(safeStr(o.severity))}`} />
+                    <div className="p-3 flex-1 text-sm">
+                      <span className="text-white font-semibold">{bold}</span>
+                      {detail && <span className="text-zinc-400"> {detail}</span>}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {bottomLines.websiteConversion && (
+          <Callout variant="bottom-line" title="Bottom Line">
+            <ul className="list-disc list-inside space-y-1">
+              {safeArr<string>(safeObj(bottomLines.websiteConversion || bottomLines.marketingEffectiveness).bullets).map((b: string, i: number) => <li key={i}>{b}</li>)}
+            </ul>
+            {safeObj(bottomLines.websiteConversion || bottomLines.marketingEffectiveness).result && (
+              <p className="font-semibold mt-2">Result: {safeStr(safeObj(bottomLines.websiteConversion || bottomLines.marketingEffectiveness).result)}</p>
+            )}
+          </Callout>
+        )}
+      </section>
+
+      {/* ===================================================================
+          SECTION 06 — YOUR COMPETITION
+          =================================================================== */}
+      <section>
+        <SectionHeader number="06" title="Your Competition" intro="Who am I losing customers to?" />
+
+        {searchTerm && (
+          <div className="mb-4">
+            <span className="inline-block bg-primary/20 text-primary border border-primary/40 rounded-full px-3 py-1 text-xs font-medium">
+              Search term: {searchTerm}
+            </span>
+          </div>
+        )}
+
+        {competitors.length > 0 ? (
+          <div className="mb-4 overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-gray-800">
-                  <th className="text-left p-3 font-semibold text-gray-300">Competitor</th>
-                  <th className="text-left p-3 font-semibold text-gray-300">Trust</th>
-                  <th className="text-left p-3 font-semibold text-gray-300">Links</th>
-                  <th className="text-left p-3 font-semibold text-gray-300">What They Do Well</th>
-                  <th className="text-left p-3 font-semibold text-gray-300">Visibility</th>
+                <tr className="text-zinc-500 border-b border-zinc-700">
+                  <th className="text-left py-2 px-3">Domain</th>
+                  <th className="text-left py-2 px-3">Trust (DA)</th>
+                  <th className="text-left py-2 px-3">What They Do Well</th>
+                  <th className="text-left py-2 px-3">Visibility</th>
                 </tr>
               </thead>
               <tbody>
-                {competitors.map((comp: CompetitorV5, i: number) => (
-                  <tr key={i} className={i % 2 === 1 ? 'bg-dark-800' : ''}>
-                    <td className="p-3 font-semibold text-white">{comp.domain || 'Not identified'}</td>
-                    <td className="p-3"><span className="bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{comp.da}</span></td>
-                    <td className="p-3 text-gray-400">{comp.links ?? 0}</td>
-                    <td className="p-3 text-gray-400 leading-relaxed">{comp.whatTheyDoWell}</td>
-                    <td className="p-3">
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full text-white ${comp.visibility === 'Well Ahead' ? 'bg-red-500' : 'bg-orange-500'}`}>
-                        {comp.visibility || 'Ahead'}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
+                {competitors.map((c: any, i: number) => {
+                  const o = safeObj(c)
+                  const da = safeNum(o.da)
+                  return (
+                    <tr key={i} className="border-b border-zinc-800 last:border-0">
+                      <td className="py-2 px-3 text-white font-medium">{safeStr(o.domain)}</td>
+                      <td className={`py-2 px-3 font-semibold ${daColor(da)}`}>{da || '—'}</td>
+                      <td className="py-2 px-3 text-zinc-300">{safeStr(o.whatTheyDoWell)}</td>
+                      <td className="py-2 px-3">
+                        {o.visibility && (
+                          <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium border ${visibilityBadgeColor(safeStr(o.visibility))}`}>
+                            {safeStr(o.visibility)}
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
+          </div>
+        ) : (
+          <p className="text-sm text-zinc-500 mb-4">No competitive comparisons available.</p>
+        )}
+
+        <div className="mb-4">
+          <Callout variant="insight" title="How to Compete">
+            <p>Focus on what makes you different and where your buyers actually spend time.</p>
+            <p>{howToCompeteText(bizType)}</p>
+          </Callout>
+        </div>
+
+        {competitors.length > 0 && (
+          <Callout variant="warning" title="What this means">
+            <p>The businesses listed above have stronger online visibility for this search term right now. The gap is not permanent — it reflects where time and effort have been invested. The actions in the next section are designed to close that gap.</p>
+          </Callout>
+        )}
+      </section>
+
+      {/* ===================================================================
+          SECTION 07 — WHAT TO DO NEXT
+          =================================================================== */}
+      <section>
+        <SectionHeader number="07" title="What To Do Next" intro="What should I focus on first?" />
+
+        {growthOpps.length > 0 && (
+          <div className="mb-6">
+            <div className="text-sm font-semibold text-zinc-300 mb-2">Business Growth Opportunities</div>
+            <div className="space-y-2">
+              {growthOpps.map((o: any, i: number) => {
+                const g = safeObj(o)
+                return (
+                  <div key={i} className="bg-zinc-900/60 border border-zinc-700 rounded-lg p-4">
+                    <div className="text-sm font-semibold text-white mb-1">{safeStr(g.title)}</div>
+                    <p className="text-sm text-zinc-300">{safeStr(g.text || g.howToFix || g.impact)}</p>
+                    {(g.timeEstimate || g.cost) && (
+                      <div className="flex gap-2 mt-2 text-xs">
+                        {g.timeEstimate && <span className="px-2 py-0.5 bg-zinc-800 text-zinc-300 rounded">Time: {safeStr(g.timeEstimate)}</span>}
+                        {g.cost && <span className="px-2 py-0.5 bg-zinc-800 text-zinc-300 rounded">Cost: {safeStr(g.cost)}</span>}
+                      </div>
+                    )}
+                    {g.reference && <div className="text-xs text-zinc-500 mt-1">{safeStr(g.reference)}</div>}
+                  </div>
+                )
+              })}
+            </div>
           </div>
         )}
       </section>
 
-      {/* ── SECTION 07: What To Do Next ── */}
-      <section>
-        <SectionHeader
-          number="SECTION 07"
-          title="What To Do Next"
-          question="What should I focus on first?"
-          intro="Your highest-impact improvements, split into things you can do yourself and things for your web developer."
-        />
+      {/* ===================================================================
+          SECTION 08 — FOR YOUR WEB DEVELOPER
+          =================================================================== */}
+      {(techChecklist.length > 0 || webDevNote) && (
+        <section>
+          <SectionHeader number="08" title="For Your Web Developer" intro="A consolidated checklist of technical items from this report you can share with your web developer." />
 
-        {isV6Opps ? (
-          <>
-            {/* V6: Split view */}
-            {opps.businessOwnerActions && opps.businessOwnerActions.length > 0 && (
-              <>
-                <h3 className="text-lg font-bold text-white mb-4">Things You Can Do</h3>
-                {opps.businessOwnerActions.map((action: BusinessOwnerAction, i: number) => (
-                  <BusinessOwnerActionCard key={i} action={action} />
-                ))}
-              </>
-            )}
-
-            {opps.webDeveloperChecklist && opps.webDeveloperChecklist.length > 0 && (
-              <>
-                <h3 className="text-lg font-bold text-white mb-4 mt-8">For Your Web Developer</h3>
-                {opps.webDeveloperChecklist.map((item: WebDeveloperChecklistItem, i: number) => (
-                  <WebDevChecklistCard key={i} item={item} />
-                ))}
-              </>
-            )}
-
-            {opps.webDeveloperNote && (
-              <div className="mt-6">
-                <h4 className="text-sm font-bold text-gray-400 mb-2">Send This to Your Web Developer</h4>
-                <p className="text-xs text-gray-500 mb-3">Copy the message below and send it to your web developer or IT person. It summarizes the technical fixes from this report.</p>
-                <CopyableTextBlock text={opps.webDeveloperNote} />
+          {techChecklist.length > 0 && (
+            <div className="mb-4">
+              <div className="text-sm font-semibold text-zinc-300 mb-2">What to tell your web developer</div>
+              <div className="bg-zinc-900/60 border border-zinc-700 rounded-lg p-4">
+                <ul className="space-y-2">
+                  {techChecklist.map((item: any, i: number) => {
+                    const o = safeObj(item)
+                    const task = safeStr(o.task || item)
+                    const diff = safeStr(o.difficulty)
+                    return (
+                      <li key={i} className="flex items-start gap-2 text-sm text-zinc-200">
+                        <span className="text-zinc-500 mt-0.5">☐</span>
+                        <span className="flex-1">
+                          {task}
+                          {diff && <span className="ml-2 text-xs text-zinc-500">({diff})</span>}
+                        </span>
+                      </li>
+                    )
+                  })}
+                </ul>
               </div>
-            )}
-          </>
-        ) : (
-          <>
-            {/* V5: Flat array */}
-            {Array.isArray(opps) && opps.map((opp: OpportunityV5, i: number) => (
-              <RecommendationCard
-                key={i}
-                severity={opp.severity}
-                title={opp.title}
-                timeEstimate={opp.timeEstimate}
-                what={opp.what}
-                why={opp.why}
-                fix={opp.fix}
-              />
-            ))}
-          </>
-        )}
-      </section>
+            </div>
+          )}
 
-      {/* ── CTA ── */}
-      <section className="rounded-xl bg-primary p-10 text-center">
-        <h2 className="text-2xl font-bold text-white mb-3">Ready to fix these issues and grow your business?</h2>
-        <p className="text-sm text-white/80 mb-6">Book a free 30-minute strategy session to implement these recommendations.</p>
-        <a href="https://goodbreeze.ai/strategy-call" className="inline-block px-8 py-3 bg-white text-primary font-bold rounded-lg text-sm hover:shadow-lg transition-shadow">
-          Book Your Strategy Call
-        </a>
-      </section>
+          {webDevNote && (
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-2">
+                <div className="text-sm font-semibold text-zinc-300">Send This to Your Web Developer</div>
+                <CopyButton text={webDevNote} />
+              </div>
+              <pre className="bg-zinc-950 border border-zinc-700 rounded-lg p-4 text-xs text-zinc-300 whitespace-pre-wrap font-mono leading-relaxed">
+                {webDevNote}
+              </pre>
+            </div>
+          )}
+        </section>
+      )}
 
+      {/* ===================================================================
+          CTA + LEGAL + DATA SOURCES
+          =================================================================== */}
+      <section className="border-t border-zinc-700 pt-8 space-y-4">
+        <div className="bg-primary/10 border border-primary/40 rounded-lg p-6 text-center">
+          <h3 className="text-xl font-bold text-white mb-2">Ready to fix these issues and grow your business?</h3>
+          <p className="text-zinc-300 text-sm mb-4">Book a free 30-minute strategy session to talk through priorities and next steps.</p>
+          <a
+            href="https://goodbreeze.ai/strategy-call"
+            className="inline-block px-6 py-3 bg-primary text-white rounded-lg font-semibold hover:bg-primary/80"
+          >
+            Book Your Free Strategy Call
+          </a>
+        </div>
+
+        <div className="bg-zinc-900/40 border border-zinc-800 rounded-lg p-4 text-xs text-zinc-500">
+          <div className="font-semibold text-zinc-400 mb-1">Important Legal Disclaimer</div>
+          <p>This report was generated using artificial intelligence and automated analysis of publicly available information. Findings, scores, and recommendations are directional guidance, not professional advice. Good Breeze AI makes no guarantees of specific outcomes. See <a href="https://goodbreeze.ai/terms-of-use" className="text-primary">goodbreeze.ai/terms-of-use</a>.</p>
+        </div>
+
+        <div className="bg-zinc-900/40 border border-zinc-800 rounded-lg p-4 text-xs text-zinc-500">
+          <div className="font-semibold text-zinc-400 mb-1">Data Sources</div>
+          <p>Moz Search Presence and Link Metrics · Google PageSpeed Insights · AI Crawler Access Analysis · Schema.org Structured Data · Competitive SERP Analysis</p>
+        </div>
+      </section>
     </div>
   )
 }

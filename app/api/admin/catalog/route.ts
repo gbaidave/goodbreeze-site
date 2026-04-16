@@ -37,7 +37,7 @@ export async function GET() {
   const svc = createServiceClient()
   const { data, error } = await svc
     .from('products')
-    .select('id, sku, name, product_type, price_credits, price_usd_cents, stripe_price_id, active, display_order, metadata, status')
+    .select('id, sku, name, product_type, price_credits, price_usd_cents, credits_granted, stripe_price_id, active, display_order, metadata, status, lifecycle_status')
     .not('sku', 'is', null)
     .order('display_order', { ascending: true })
 
@@ -52,13 +52,14 @@ export async function PATCH(request: NextRequest) {
   }
 
   const body = await request.json()
-  const { id, price_credits, price_usd_cents, active, display_order, metadata } = body
+  const { id, price_credits, price_usd_cents, credits_granted, active, display_order, metadata } = body
 
   if (!id) return NextResponse.json({ error: 'Product id required' }, { status: 400 })
 
   const updates: Record<string, unknown> = { updated_at: new Date().toISOString() }
   if (price_credits !== undefined) updates.price_credits = price_credits
   if (price_usd_cents !== undefined) updates.price_usd_cents = price_usd_cents
+  if (credits_granted !== undefined) updates.credits_granted = credits_granted
   if (active !== undefined) updates.active = active
   if (display_order !== undefined) updates.display_order = display_order
   if (metadata !== undefined) updates.metadata = metadata
