@@ -138,6 +138,7 @@ export async function getActivePackProducts(): Promise<CatalogItem[]> {
 /**
  * Look up the plan monthly credit cap for a given plan SKU.
  * Replaces the deleted PLAN_MONTHLY_CAPS / PLAN_CAPS / PLAN_CREDITS_PER_PERIOD constants.
+ * For subscription plans, monthly credits are stored in credits_granted (not price_credits).
  * Throws if the plan is missing or not a subscription plan.
  */
 export async function getPlanCreditsPerPeriod(planSku: string): Promise<number> {
@@ -145,10 +146,10 @@ export async function getPlanCreditsPerPeriod(planSku: string): Promise<number> 
   if (!item || item.productType !== 'subscription_plan') {
     throw new Error(`Plan "${planSku}" not found in catalog or not a subscription_plan. Check products table.`)
   }
-  if (item.priceCredits == null) {
-    throw new Error(`Plan "${planSku}" has no price_credits set in catalog. Fix via /admin/catalog.`)
+  if (item.creditsGranted == null) {
+    throw new Error(`Plan "${planSku}" has no credits_granted set in catalog. Fix via /admin/catalog.`)
   }
-  return item.priceCredits
+  return item.creditsGranted
 }
 
 export function invalidateCatalogCache(): void {

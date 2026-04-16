@@ -113,7 +113,8 @@ export async function POST(request: NextRequest) {
     // 4. Save subscription acknowledgment (consent audit trail)
     if (isSubscriptionPlan) {
       const svc = createServiceClient()
-      const creditsPerPeriod = catalogItem.priceCredits ?? 0
+      // Plan monthly credits stored in credits_granted (price_credits is per-use for reports only)
+      const creditsPerPeriod = catalogItem.creditsGranted ?? 0
       const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? null
       await svc.from('subscription_acknowledgments').insert({
         user_id: user.id,

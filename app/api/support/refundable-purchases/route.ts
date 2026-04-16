@@ -46,10 +46,11 @@ export async function GET(request: NextRequest) {
     const now = new Date()
     const purchases: RefundablePurchase[] = []
 
-    // Load plan caps from catalog (replaces the hardcoded PLAN_MONTHLY_CAPS constant)
+    // Load plan caps from catalog (replaces the hardcoded PLAN_MONTHLY_CAPS constant).
+    // Plan monthly credits stored in credits_granted (not price_credits — that's per-use for reports).
     const activePlans = await getActiveSubscriptionPlans()
     const planCapBySku = new Map<string, number>()
-    for (const p of activePlans) planCapBySku.set(p.sku, p.priceCredits ?? 0)
+    for (const p of activePlans) planCapBySku.set(p.sku, p.creditsGranted ?? 0)
 
     // ── 1. Active subscription ─────────────────────────────────────────────
     const { data: sub } = await svc

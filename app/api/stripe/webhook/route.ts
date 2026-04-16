@@ -168,13 +168,15 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ error: 'Unknown subscription price_id — catalog mismatch' }, { status: 500 })
         }
         const plan = planCatalogItem?.sku ?? 'free'
-        const newCap = planCatalogItem?.priceCredits ?? 0
+        // Plan monthly credits are stored in credits_granted (not price_credits).
+        // price_credits is per-use cost for reports; plans store monthly allowance in credits_granted.
+        const newCap = planCatalogItem?.creditsGranted ?? 0
         const planAmountStr = formatUsd(planCatalogItem?.priceUsdCents)
 
         // For cap lookup on old plans (existing subscription), fetch active plans once
         const allPlans = await getActiveSubscriptionPlans()
         const capByPlan = new Map<string, number>()
-        for (const p of allPlans) capByPlan.set(p.sku, p.priceCredits ?? 0)
+        for (const p of allPlans) capByPlan.set(p.sku, p.creditsGranted ?? 0)
 
         console.log('[webhook] priceId:', priceId, 'resolved plan:', plan, 'cap:', newCap)
 
