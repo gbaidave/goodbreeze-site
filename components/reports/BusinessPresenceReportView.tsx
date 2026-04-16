@@ -3,17 +3,13 @@
 import { useState } from 'react'
 
 /**
- * BusinessPresenceReportView — renders the BPR inline from reports.input_data JSONB.
- * Mirrors the PDF formatter structure (business-scorecard-formatter-v1.js) section by section.
- * Supports V5 + V6 synthesis field fallbacks.
- * Dark theme: zinc bg, teal primary, white text.
+ * BusinessPresenceReportView — renders BPR from reports.input_data JSONB.
+ * Field mapping derived from actual persisted input_data, NOT from formatter code.
+ * Any key drift from the workflow side must be updated here to match.
+ * See .workspace/REPORT-INPUT-DATA-CONTRACT.md for the full contract.
  */
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
-// ============================================================================
-// Input data shape — permissive due to V5/V6 fallbacks + deterministicContent
-// ============================================================================
 
 interface BPRData {
   overallScore: number
@@ -32,7 +28,7 @@ interface Props {
 }
 
 // ============================================================================
-// Utility functions (ported from PDF formatter)
+// Utility
 // ============================================================================
 
 function safeObj(v: any): Record<string, any> {
@@ -54,50 +50,18 @@ function scoreColor(score: number): string {
   if (score <= 70) return 'text-yellow-400'
   return 'text-green-400'
 }
-
+function speedCategoryColor(category: string): string {
+  const c = (category || '').toLowerCase()
+  if (c === 'good' || c === 'fast') return 'text-green-400'
+  if (c === 'needs-improvement' || c === 'moderate' || c === 'ok') return 'text-yellow-400'
+  if (c === 'poor' || c === 'slow' || c === 'bad') return 'text-red-400'
+  return 'text-white'
+}
 function scoreBarColor(score: number): string {
   if (score <= 40) return 'bg-red-500'
   if (score <= 70) return 'bg-yellow-500'
   return 'bg-green-500'
 }
-
-function severityColor(severity: string): string {
-  const s = (severity || '').toLowerCase()
-  if (s === 'critical') return 'bg-red-900/40 text-red-300 border-red-500/40'
-  if (s === 'high') return 'bg-orange-900/40 text-orange-300 border-orange-500/40'
-  if (s === 'medium' || s === 'warning') return 'bg-yellow-900/40 text-yellow-300 border-yellow-500/40'
-  return 'bg-green-900/40 text-green-300 border-green-500/40'
-}
-
-function severityBarColor(severity: string): string {
-  const s = (severity || '').toLowerCase()
-  if (s === 'critical' || s === 'high') return 'bg-red-500'
-  if (s === 'medium' || s === 'warning') return 'bg-yellow-500'
-  return 'bg-green-500'
-}
-
-function nicheRatingColor(rating: string): string {
-  const r = (rating || '').toUpperCase()
-  if (r === 'STRONG' || r === 'GOOD') return 'bg-green-900/40 text-green-300 border-green-500/40'
-  if (r === 'WEAK' || r === 'POOR') return 'bg-red-900/40 text-red-300 border-red-500/40'
-  return 'bg-yellow-900/40 text-yellow-300 border-yellow-500/40'
-}
-
-function daColor(da: number): string {
-  if (da >= 60) return 'text-green-400'
-  if (da >= 30) return 'text-yellow-400'
-  return 'text-red-400'
-}
-
-function visibilityBadgeColor(v: string): string {
-  const s = (v || '').toLowerCase()
-  if (s.indexOf('well ahead') >= 0) return 'bg-red-900/40 text-red-300 border-red-500/40'
-  if (s.indexOf('ahead') >= 0) return 'bg-orange-900/40 text-orange-300 border-orange-500/40'
-  if (s.indexOf('behind') >= 0 || s.indexOf('matched') >= 0 || s.indexOf('close') >= 0)
-    return 'bg-green-900/40 text-green-300 border-green-500/40'
-  return 'bg-zinc-800 text-zinc-300 border-zinc-600'
-}
-
 function ctaGradeColor(grade: string): string {
   const g = (grade || '').toUpperCase()
   if (g === 'A') return 'text-green-400'
@@ -107,44 +71,49 @@ function ctaGradeColor(grade: string): string {
   if (g === 'F') return 'text-red-400'
   return 'text-zinc-400'
 }
-
 function trustLevelColor(level: string): string {
   const s = (level || '').toLowerCase()
   if (s === 'strong') return 'text-green-400'
   if (s === 'present') return 'text-lime-400'
   if (s === 'weak') return 'text-yellow-400'
-  if (s === 'absent') return 'text-red-400'
+  if (s === 'absent' || s === 'missing') return 'text-red-400'
   return 'text-zinc-400'
 }
-
-function repCardStatusClass(status: string): string {
+function emailStatusIcon(status: string): { icon: string; color: string } {
   const s = (status || '').toLowerCase()
-  if (s === 'found' || s === 'linked' || s === 'active' || s === 'claimed')
-    return 'border-green-500/40 bg-green-900/20'
-  if (s === 'partial' || s === 'limited' || s === 'unclaimed')
-    return 'border-yellow-500/40 bg-yellow-900/20'
-  return 'border-zinc-700 bg-zinc-800/40'
+  if (s === 'protected' || s === 'good') return { icon: '✓', color: 'text-green-400' }
+  if (s === 'partial') return { icon: '⚠', color: 'text-yellow-400' }
+  return { icon: '✗', color: 'text-red-400' }
 }
-
 function checklistIcon(status: string): { icon: string; color: string } {
   const s = (status || '').toLowerCase()
   if (s === 'good' || s === 'pass' || s === 'ok') return { icon: '✓', color: 'text-green-400' }
   if (s === 'bad' || s === 'fail' || s === 'missing') return { icon: '✗', color: 'text-red-400' }
   if (s === 'warning' || s === 'partial' || s === 'warn') return { icon: '⚠', color: 'text-yellow-400' }
+  if (s === 'info') return { icon: 'ⓘ', color: 'text-blue-400' }
   return { icon: '•', color: 'text-zinc-400' }
+}
+function daColor(da: number): string {
+  if (da >= 60) return 'text-green-400'
+  if (da >= 30) return 'text-yellow-400'
+  return 'text-red-400'
+}
+function positionBadgeColor(position: string): string {
+  const s = (position || '').toLowerCase()
+  if (s.includes('well ahead')) return 'bg-red-900/40 text-red-300 border-red-500/40'
+  if (s.includes('ahead')) return 'bg-orange-900/40 text-orange-300 border-orange-500/40'
+  if (s.includes('close') || s.includes('matched') || s.includes('behind')) return 'bg-green-900/40 text-green-300 border-green-500/40'
+  return 'bg-zinc-800 text-zinc-300 border-zinc-600'
+}
+function nicheRatingColor(rating: string): string {
+  const r = (rating || '').toUpperCase()
+  if (r === 'STRONG' || r === 'GOOD') return 'bg-green-900/40 text-green-300 border-green-500/40'
+  if (r === 'WEAK' || r === 'POOR') return 'bg-red-900/40 text-red-300 border-red-500/40'
+  return 'bg-yellow-900/40 text-yellow-300 border-yellow-500/40'
 }
 
 function isLocalBiz(bizType: string): boolean {
   return (bizType || '').toLowerCase().indexOf('local') >= 0
-}
-
-function splitOnFirstPeriod(text: string): { bold: string; detail: string } {
-  const idx = text.indexOf('.')
-  if (idx <= 0) return { bold: text, detail: '' }
-  return {
-    bold: text.substring(0, idx + 1),
-    detail: text.substring(idx + 1).trim(),
-  }
 }
 
 function howToCompeteText(bizType: string): string {
@@ -161,21 +130,8 @@ function howToCompeteText(bizType: string): string {
   return 'Build your online presence around what makes your business unique. Consistent content, real reviews, and a clear answer to "why you?" are the difference-makers. AI search assistants reward businesses with structured information and authentic authority.'
 }
 
-function computeAiVisibilityScore(
-  schemaTypesFound: number,
-  hasLlmsTxt: boolean,
-  aiCrawler: string
-): number {
-  let score = 0
-  if (schemaTypesFound > 0) score += 30
-  if (schemaTypesFound >= 3) score += 20
-  if (hasLlmsTxt) score += 30
-  if ((aiCrawler || '').toLowerCase() === 'accessible') score += 20
-  return score
-}
-
 // ============================================================================
-// Reusable presentation components
+// Presentation components
 // ============================================================================
 
 function SectionHeader({ number, title, intro }: { number: string; title: string; intro: string }) {
@@ -213,7 +169,6 @@ function Callout({
     warning: 'border-yellow-500/50 bg-yellow-900/20',
     'bottom-line': 'border-zinc-600 bg-zinc-800/40',
   }[variant]
-
   const titleColor = {
     insight: 'text-primary',
     weakness: 'text-red-300',
@@ -221,7 +176,6 @@ function Callout({
     warning: 'text-yellow-300',
     'bottom-line': 'text-zinc-300',
   }[variant]
-
   return (
     <div className={`border rounded-lg p-4 ${border}`}>
       <div className={`text-xs font-bold uppercase tracking-wide mb-2 ${titleColor}`}>{title}</div>
@@ -247,12 +201,12 @@ function ScoreBar({ label, score }: { label: string; score: number }) {
 
 function ChecklistRow({
   status,
-  name,
+  element,
   text,
   benchmark,
 }: {
   status: string
-  name: string
+  element: string
   text?: string
   benchmark?: string
 }) {
@@ -261,11 +215,28 @@ function ChecklistRow({
     <div className="flex gap-3 py-2 border-b border-zinc-800 last:border-0">
       <div className={`text-lg font-bold w-5 flex-shrink-0 ${color}`}>{icon}</div>
       <div className="flex-1">
-        <div className="text-sm text-white font-medium">{name}</div>
+        <div className="text-sm text-white font-medium">{element}</div>
         {text && <div className="text-sm text-zinc-400">{text}</div>}
         {benchmark && <div className="text-xs italic text-zinc-500 mt-0.5">{benchmark}</div>}
       </div>
     </div>
+  )
+}
+
+function BottomLineCallout({ bottomLine }: { bottomLine: any }) {
+  const bl = safeObj(bottomLine)
+  const bullets = safeArr<string>(bl.bullets)
+  const result = safeStr(bl.result)
+  if (!bullets.length && !result) return null
+  return (
+    <Callout variant="bottom-line" title="Bottom Line">
+      {bullets.length > 0 && (
+        <ul className="list-disc list-inside space-y-1">
+          {bullets.map((b, i) => <li key={i}>{b}</li>)}
+        </ul>
+      )}
+      {result && <p className="font-semibold mt-2">Result: {result}</p>}
+    </Callout>
   )
 }
 
@@ -274,13 +245,8 @@ function CopyButton({ text }: { text: string }) {
   return (
     <button
       onClick={async () => {
-        try {
-          await navigator.clipboard.writeText(text)
-          setCopied(true)
-          setTimeout(() => setCopied(false), 2000)
-        } catch {
-          // clipboard unavailable
-        }
+        try { await navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000) }
+        catch { /* clipboard unavailable */ }
       }}
       className="px-3 py-1.5 bg-primary text-white rounded text-xs font-medium hover:bg-primary/80"
     >
@@ -290,27 +256,24 @@ function CopyButton({ text }: { text: string }) {
 }
 
 // ============================================================================
-// Main component
+// Main
 // ============================================================================
 
 export default function BusinessPresenceReportView({ data, domain }: Props) {
-  // ---------------------------------------------------------------
-  // Resolve synthesis fields with V5 / V6 fallbacks
-  // ---------------------------------------------------------------
   const synthesis = data
   const overallScore = safeNum(synthesis.overallScore)
   const sectionScores = safeObj(synthesis.sectionScores)
   const sections = safeObj(synthesis.sections)
-  const detContent = safeObj(synthesis.deterministicContent)
-  const bottomLines = safeObj(synthesis.bottomLines)
+  const dc = safeObj(synthesis.deterministicContent)
   const summaryBlock = safeObj(synthesis.summaryBlock)
 
   const summaryParagraph = safeStr(summaryBlock.summaryParagraph || summaryBlock.advisorParagraph)
   const keyMetrics = safeArr<string>(summaryBlock.keyMetrics?.length ? summaryBlock.keyMetrics : summaryBlock.bulletScorecard)
-  const issueCount = safeNum(summaryBlock.issueCount || detContent.issueCount)
-  const quickWinCount = safeNum(summaryBlock.quickWinCount)
+  const issueCount = safeNum(dc.issueCount ?? summaryBlock.issueCount)
+  const quickWinCount = safeNum(dc.quickWinCount ?? summaryBlock.quickWinCount)
   const visibilityGapPercent = safeNum(summaryBlock.visibilityGapPercent)
 
+  // Section 02
   const biz = safeObj(sections.businessIdentity || sections.businessSnapshot)
   const bizType = safeStr(biz.businessTypeBadge || biz.businessType)
   const industry = safeStr(biz.industry)
@@ -318,55 +281,52 @@ export default function BusinessPresenceReportView({ data, domain }: Props) {
   const nicheAnalysis = safeArr<any>(biz.nicheAnalysis || biz.topServices)
   const reachAssessment = safeStr(biz.reachAssessment)
   const mozSummary = safeStr(biz.mozSummary)
-  const searchMetrics = safeObj(detContent.searchMetrics)
-  const emailSecurity = safeObj(detContent.emailSecurity)
+  const searchMetrics = safeObj(dc.searchMetrics)
+  const emailSecurity = safeObj(dc.emailSecurity)
 
+  // Section 03
   const website = safeObj(sections.websiteExperience || sections.websiteHealth)
   const healthScore = safeNum(website.score || sectionScores.websiteExperience || sectionScores.websiteHealth)
-  const speedCards = safeObj(detContent.speedCards)
-  const healthFindings = safeArr<any>(website.findings)
+  const speedCards = safeObj(dc.speedCards)
+  const mobileSpeed = speedCards.mobileSeconds ? `${speedCards.mobileSeconds}s` : 'N/A'
+  const desktopSpeed = speedCards.desktopSeconds ? `${speedCards.desktopSeconds}s` : 'N/A'
+  const mobileCategory = safeStr(speedCards.mobileCategory)
+  const desktopCategory = safeStr(speedCards.desktopCategory)
+  const conversionChecklist = safeArr<any>(dc.conversionChecklist)
   const topIssue = safeStr(website.topIssue)
   const siteAge = safeStr(website.siteAge)
-  const conversionChecklist = safeArr<any>(detContent.conversionChecklist)
 
-  const search = safeObj(sections.searchVisibility)
-  const searchScore = safeNum(search.score || sectionScores.searchVisibility)
-  const schemaTypesFound = safeNum(search.schemaTypesFound)
-  const hasLlmsTxt = Boolean(search.hasLlmsTxt)
-  const aiCrawler = safeStr(search.aiCrawlerStatus)
-  const aiVisScore = computeAiVisibilityScore(schemaTypesFound, hasLlmsTxt, aiCrawler)
-  const findabilityChecklist = safeArr<any>(detContent.findabilityChecklist)
-  const searchFindings = safeArr<any>(search.findings)
+  // Section 04
+  const aiVisScore = safeNum(dc.aiVisScore)
+  const searchScore = safeNum(dc.searchVisScore ?? sectionScores.searchVisibility)
+  const findabilityChecklist = safeArr<any>(dc.findabilityChecklist)
+  const aiCrawlerCheck = safeObj(dc.aiCrawlerCheck)
 
+  // Section 05
+  const mktgScore = safeNum(dc.marketingScore ?? sectionScores.websiteConversion ?? sectionScores.marketingEffectiveness)
+  const ctaGrade = safeStr(dc.ctaGrade || '-')
+  const trustLevel = safeStr(dc.trustLevel || '—')
   const conv = safeObj(sections.websiteConversion || sections.marketingEffectiveness)
-  const mktgScore = safeNum(conv.score || sectionScores.websiteConversion || sectionScores.marketingEffectiveness)
-  const ctaGrade = safeStr(conv.ctaGrade || '-')
-  const ctaAnalysis = safeStr(conv.ctaAnalysis)
-  const trustLevel = safeStr(conv.trustLevel || '—')
-  const repSignalsRaw = safeArr<any>(conv.reputationSignals)
-  const repSignals = isLocalBiz(bizType)
-    ? repSignalsRaw
-    : repSignalsRaw.filter((r) => {
-        const p = safeStr(safeObj(r).platform).toLowerCase()
-        return p.indexOf('google') < 0 && p.indexOf('gbp') < 0
-      })
-  const homepageFindings = safeArr<any>(conv.homepageFindings)
   const adTracking = safeArr<string>(conv.adTrackingDetected)
+  const section5Cards = safeArr<any>(dc.section5Cards)
+  const reviewSummary = safeObj(dc.reviewSummary)
+  const yelpRecommendation = safeStr(dc.yelpRecommendation)
 
-  const competitors = safeArr<any>(sections.topCompetitors)
+  // Section 06
+  const competitors = safeArr<any>(dc.competitorTable?.length ? dc.competitorTable : sections.topCompetitors)
   const searchTerm = safeStr(synthesis.searchTerm || summaryBlock.searchTerm)
 
-  // Section 7 — growth opportunities (V6 business owner actions) + web dev
+  // Section 07
   const priorityOpps = safeObj(sections.priorityOpportunities)
   const businessOwnerActions = safeArr<any>(priorityOpps.businessOwnerActions)
   const webDeveloperChecklistV6 = safeArr<any>(priorityOpps.webDeveloperChecklist)
   const webDevNote = safeStr(priorityOpps.webDeveloperNote || priorityOpps.webDevNote)
   const growthOpps = safeArr<any>(synthesis.growthOpportunities || priorityOpps.growthOpportunities || businessOwnerActions)
 
-  // Section 8 — consolidated technical checklist (dedupe by first 50 chars)
+  // Section 08 — consolidated technical checklist
   const allTechItems: any[] = [
     ...safeArr<any>(website.technicalChecklist),
-    ...safeArr<any>(search.technicalChecklist),
+    ...safeArr<any>(safeObj(sections.searchVisibility).technicalChecklist),
     ...safeArr<any>(conv.technicalChecklist),
     ...webDeveloperChecklistV6,
   ]
@@ -386,19 +346,16 @@ export default function BusinessPresenceReportView({ data, domain }: Props) {
 
   return (
     <div className="space-y-12 pb-12">
-      {/* Cover / title */}
+      {/* Cover */}
       <div className="text-center py-8 border-b border-zinc-800">
         <div className="text-xs font-mono text-primary tracking-widest mb-3">BUSINESS PRESENCE REPORT</div>
         <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 break-words">{domain}</h1>
         <p className="text-zinc-400">Your business presence assessment</p>
       </div>
 
-      {/* ===================================================================
-          SECTION 01 — YOUR BUSINESS ONLINE
-          =================================================================== */}
+      {/* SECTION 01 */}
       <section>
         <SectionHeader number="01" title="Your Business Online" intro="A high-level overview of your business presence across search, website, and reputation." />
-
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
           <StatCard label="Overall Score" value={overallScore} colorClass={scoreColor(overallScore)} />
           <StatCard label="Issues Found" value={issueCount} colorClass="text-red-400" />
@@ -439,9 +396,7 @@ export default function BusinessPresenceReportView({ data, domain }: Props) {
         )}
       </section>
 
-      {/* ===================================================================
-          SECTION 02 — YOUR BUSINESS IDENTITY
-          =================================================================== */}
+      {/* SECTION 02 */}
       <section>
         <SectionHeader number="02" title="Your Business Identity" intro="Do people know what I do and who I serve?" />
 
@@ -506,19 +461,15 @@ export default function BusinessPresenceReportView({ data, domain }: Props) {
                   <div className="text-2xl font-bold text-white">{safeStr(searchMetrics.sitesLinking.value) || '—'}</div>
                 </div>
               )}
-              {emailSecurity.status && (
-                <div className="bg-zinc-900/60 border border-zinc-700 rounded-lg p-4">
-                  <div className="text-xs uppercase tracking-wide text-zinc-500 mb-1">Email Protection</div>
-                  <div className="text-2xl font-bold">
-                    {(() => {
-                      const s = safeStr(emailSecurity.status).toLowerCase()
-                      if (s === 'protected' || s === 'good') return <span className="text-green-400">✓</span>
-                      if (s === 'partial') return <span className="text-yellow-400">⚠</span>
-                      return <span className="text-red-400">✗</span>
-                    })()}
+              {emailSecurity.status && (() => {
+                const { icon, color } = emailStatusIcon(safeStr(emailSecurity.status))
+                return (
+                  <div className="bg-zinc-900/60 border border-zinc-700 rounded-lg p-4">
+                    <div className="text-xs uppercase tracking-wide text-zinc-500 mb-1">Email Protection</div>
+                    <div className={`text-2xl font-bold ${color}`}>{icon}</div>
                   </div>
-                </div>
-              )}
+                )
+              })()}
             </div>
             <div className="text-xs text-zinc-500 space-y-1 mb-3">
               {searchMetrics.trustScore?.text && <p><span className="text-zinc-400 font-medium">Search Trust Score:</span> {safeStr(searchMetrics.trustScore.text)}</p>}
@@ -533,22 +484,20 @@ export default function BusinessPresenceReportView({ data, domain }: Props) {
         {mozSummary && <p className="text-xs text-zinc-500 italic">{mozSummary}</p>}
       </section>
 
-      {/* ===================================================================
-          SECTION 03 — YOUR WEBSITE EXPERIENCE
-          =================================================================== */}
+      {/* SECTION 03 */}
       <section>
         <SectionHeader number="03" title="Your Website Experience" intro="Is my website helping or hurting me?" />
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
           <StatCard label="Experience Score" value={healthScore} colorClass={scoreColor(healthScore)} />
-          <StatCard label="Mobile Performance" value={speedCards.mobilePerf ?? 'N/A'} colorClass={scoreColor(safeNum(speedCards.mobilePerf))} />
-          <StatCard label="Desktop Performance" value={speedCards.desktopPerf ?? 'N/A'} colorClass={scoreColor(safeNum(speedCards.desktopPerf))} />
-          <StatCard label="Issues Found" value={safeNum(detContent.issueCount || website.issueCount || 0)} colorClass="text-red-400" />
+          <StatCard label="Mobile Speed" value={mobileSpeed} colorClass={speedCategoryColor(mobileCategory)} />
+          <StatCard label="Desktop Speed" value={desktopSpeed} colorClass={speedCategoryColor(desktopCategory)} />
+          <StatCard label="Issues Found" value={issueCount} colorClass="text-red-400" />
         </div>
 
         <div className="mb-4">
           <Callout variant="warning" title="Speed matters">
-            <p>Pages loading over 3 seconds lose 53% of mobile visitors. First Contentful Paint under 1.8 seconds is considered good. Largest Contentful Paint under 2.5 seconds is good; over 4 seconds is slow.</p>
+            <p>Pages that take more than 3 seconds to respond lose over half of mobile visitors. The speed values above reflect how quickly your site responds to a visitor request.</p>
           </Callout>
         </div>
 
@@ -558,7 +507,13 @@ export default function BusinessPresenceReportView({ data, domain }: Props) {
             <div className="bg-zinc-900/60 border border-zinc-700 rounded-lg px-4">
               {conversionChecklist.map((item: any, i: number) => {
                 const o = safeObj(item)
-                return <ChecklistRow key={i} status={safeStr(o.status)} name={safeStr(o.element || o.name)} text={safeStr(o.text)} benchmark={safeStr(o.benchmark)} />
+                return <ChecklistRow
+                  key={i}
+                  status={safeStr(o.status)}
+                  element={safeStr(o.element)}
+                  text={safeStr(o.text)}
+                  benchmark={safeStr(o.benchmark)}
+                />
               })}
             </div>
           </div>
@@ -572,46 +527,12 @@ export default function BusinessPresenceReportView({ data, domain }: Props) {
           </div>
         )}
 
-        {healthFindings.length > 0 && (
-          <div className="mb-4">
-            <div className="text-sm font-semibold text-zinc-300 mb-2">Additional Findings</div>
-            <div className="space-y-2">
-              {healthFindings.map((f: any, i: number) => {
-                const o = safeObj(f)
-                const sev = safeStr(o.severity)
-                return (
-                  <div key={i} className={`border rounded p-3 ${severityColor(sev)}`}>
-                    <div className="flex items-start gap-2 mb-1">
-                      <span className="text-xs font-bold uppercase">{sev || 'medium'}</span>
-                    </div>
-                    <p className="text-sm text-zinc-100">{safeStr(o.finding || o.title || o.text)}</p>
-                    {o.impact && <p className="text-xs text-zinc-300 mt-1">{safeStr(o.impact)}</p>}
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        )}
-
         {siteAge && <p className="text-xs text-zinc-500 mb-4">Site age: {siteAge}</p>}
 
-        {bottomLines.websiteExperience && (
-          <Callout variant="bottom-line" title="Bottom Line">
-            <ul className="list-disc list-inside space-y-1">
-              {safeArr<string>(safeObj(bottomLines.websiteExperience || bottomLines.websiteHealth).bullets).map((b: string, i: number) => (
-                <li key={i}>{b}</li>
-              ))}
-            </ul>
-            {safeObj(bottomLines.websiteExperience || bottomLines.websiteHealth).result && (
-              <p className="font-semibold mt-2">Result: {safeStr(safeObj(bottomLines.websiteExperience || bottomLines.websiteHealth).result)}</p>
-            )}
-          </Callout>
-        )}
+        <BottomLineCallout bottomLine={dc.bottomLine3} />
       </section>
 
-      {/* ===================================================================
-          SECTION 04 — CAN PEOPLE FIND YOU?
-          =================================================================== */}
+      {/* SECTION 04 */}
       <section>
         <SectionHeader number="04" title="Can People Find You?" intro="When someone searches for what I offer, do they find me?" />
 
@@ -636,46 +557,29 @@ export default function BusinessPresenceReportView({ data, domain }: Props) {
             <div className="bg-zinc-900/60 border border-zinc-700 rounded-lg px-4">
               {findabilityChecklist.map((item: any, i: number) => {
                 const o = safeObj(item)
-                return <ChecklistRow key={i} status={safeStr(o.status)} name={safeStr(o.element || o.name)} text={safeStr(o.text)} benchmark={safeStr(o.benchmark)} />
+                return <ChecklistRow
+                  key={i}
+                  status={safeStr(o.status)}
+                  element={safeStr(o.element)}
+                  text={safeStr(o.text)}
+                  benchmark={safeStr(o.benchmark)}
+                />
               })}
             </div>
           </div>
         )}
 
-        {searchFindings.length > 0 && (
-          <div className="mb-4">
-            <div className="text-sm font-semibold text-zinc-300 mb-2">Findings</div>
-            <div className="space-y-2">
-              {searchFindings.map((f: any, i: number) => {
-                const o = safeObj(f)
-                const sev = safeStr(o.severity)
-                return (
-                  <div key={i} className={`border rounded p-3 ${severityColor(sev)}`}>
-                    <span className="text-xs font-bold uppercase">{sev || 'medium'}</span>
-                    <p className="text-sm text-zinc-100 mt-1">{safeStr(o.finding || o.title || o.text)}</p>
-                    {o.impact && <p className="text-xs text-zinc-300 mt-1">{safeStr(o.impact)}</p>}
-                  </div>
-                )
-              })}
-            </div>
+        {aiCrawlerCheck.status && (
+          <div className="mb-4 bg-zinc-900/60 border border-zinc-700 rounded-lg p-3">
+            <div className="text-xs uppercase tracking-wide text-zinc-500 mb-1">AI Crawler Access</div>
+            <div className="text-sm text-zinc-200">{safeStr(aiCrawlerCheck.detail) || safeStr(aiCrawlerCheck.status)}</div>
           </div>
         )}
 
-        {bottomLines.searchVisibility && (
-          <Callout variant="bottom-line" title="Bottom Line">
-            <ul className="list-disc list-inside space-y-1">
-              {safeArr<string>(safeObj(bottomLines.searchVisibility).bullets).map((b: string, i: number) => <li key={i}>{b}</li>)}
-            </ul>
-            {safeObj(bottomLines.searchVisibility).result && (
-              <p className="font-semibold mt-2">Result: {safeStr(safeObj(bottomLines.searchVisibility).result)}</p>
-            )}
-          </Callout>
-        )}
+        <BottomLineCallout bottomLine={dc.bottomLine4} />
       </section>
 
-      {/* ===================================================================
-          SECTION 05 — IS YOUR WEBSITE CONVERTING?
-          =================================================================== */}
+      {/* SECTION 05 */}
       <section>
         <SectionHeader number="05" title="Is Your Website Converting?" intro="When people visit my website, do they contact me?" />
 
@@ -685,28 +589,41 @@ export default function BusinessPresenceReportView({ data, domain }: Props) {
           <StatCard label="Trust Signals" value={trustLevel} colorClass={trustLevelColor(trustLevel)} />
         </div>
 
-        {repSignals.length > 0 && (
+        {section5Cards.length > 0 && (
           <div className="mb-4">
-            <div className="text-sm font-semibold text-zinc-300 mb-2">Reputation Signals</div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-              {repSignals.map((r: any, i: number) => {
-                const o = safeObj(r)
-                return (
-                  <div key={i} className={`border rounded p-3 ${repCardStatusClass(safeStr(o.status))}`}>
-                    <div className="text-sm font-semibold text-white">{safeStr(o.platform)}</div>
-                    <div className="text-xs font-medium text-zinc-300 mt-1">{safeStr(o.status)}</div>
-                    {o.detail && <div className="text-xs text-zinc-400 mt-1">{safeStr(o.detail)}</div>}
-                  </div>
-                )
-              })}
+            <div className="text-sm font-semibold text-zinc-300 mb-2">Homepage Conversion Signals</div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              {section5Cards
+                .filter((c: any) => {
+                  const o = safeObj(c)
+                  if (!isLocalBiz(bizType)) {
+                    const el = safeStr(o.element).toLowerCase()
+                    if (el.includes('google') || el.includes('gbp')) return false
+                  }
+                  return true
+                })
+                .map((c: any, i: number) => {
+                  const o = safeObj(c)
+                  const { icon, color } = checklistIcon(safeStr(o.status))
+                  return (
+                    <div key={i} className="bg-zinc-900/60 border border-zinc-700 rounded-lg p-3">
+                      <div className="flex items-start gap-2 mb-1">
+                        <span className={`text-lg font-bold ${color}`}>{icon}</span>
+                        <div className="text-sm font-semibold text-white">{safeStr(o.element)}</div>
+                      </div>
+                      <div className="text-xs text-zinc-300">{safeStr(o.text)}</div>
+                    </div>
+                  )
+                })}
             </div>
           </div>
         )}
 
-        {ctaAnalysis && (
+        {reviewSummary.text && (
           <div className="mb-4">
-            <Callout variant="insight" title="CTA Analysis">
-              <p>{ctaAnalysis}</p>
+            <Callout variant="insight" title="Reviews">
+              <p>{safeStr(reviewSummary.text)}</p>
+              {yelpRecommendation && <p className="text-xs text-zinc-400 mt-2">{yelpRecommendation}</p>}
             </Callout>
           </div>
         )}
@@ -718,42 +635,10 @@ export default function BusinessPresenceReportView({ data, domain }: Props) {
           </div>
         </div>
 
-        {homepageFindings.length > 0 && (
-          <div className="mb-4">
-            <div className="text-sm font-semibold text-zinc-300 mb-2">Homepage Findings</div>
-            <div className="space-y-2">
-              {homepageFindings.map((f: any, i: number) => {
-                const o = safeObj(f)
-                const { bold, detail } = splitOnFirstPeriod(safeStr(o.text || o.finding))
-                return (
-                  <div key={i} className="flex items-stretch bg-zinc-900/40 rounded border border-zinc-800 overflow-hidden">
-                    <div className={`w-1 flex-shrink-0 ${severityBarColor(safeStr(o.severity))}`} />
-                    <div className="p-3 flex-1 text-sm">
-                      <span className="text-white font-semibold">{bold}</span>
-                      {detail && <span className="text-zinc-400"> {detail}</span>}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        )}
-
-        {bottomLines.websiteConversion && (
-          <Callout variant="bottom-line" title="Bottom Line">
-            <ul className="list-disc list-inside space-y-1">
-              {safeArr<string>(safeObj(bottomLines.websiteConversion || bottomLines.marketingEffectiveness).bullets).map((b: string, i: number) => <li key={i}>{b}</li>)}
-            </ul>
-            {safeObj(bottomLines.websiteConversion || bottomLines.marketingEffectiveness).result && (
-              <p className="font-semibold mt-2">Result: {safeStr(safeObj(bottomLines.websiteConversion || bottomLines.marketingEffectiveness).result)}</p>
-            )}
-          </Callout>
-        )}
+        <BottomLineCallout bottomLine={dc.bottomLine5} />
       </section>
 
-      {/* ===================================================================
-          SECTION 06 — YOUR COMPETITION
-          =================================================================== */}
+      {/* SECTION 06 */}
       <section>
         <SectionHeader number="06" title="Your Competition" intro="Who am I losing customers to?" />
 
@@ -772,7 +657,7 @@ export default function BusinessPresenceReportView({ data, domain }: Props) {
                 <tr className="text-zinc-500 border-b border-zinc-700">
                   <th className="text-left py-2 px-3">Domain</th>
                   <th className="text-left py-2 px-3">Trust (DA)</th>
-                  <th className="text-left py-2 px-3">What They Do Well</th>
+                  <th className="text-left py-2 px-3">What We Found</th>
                   <th className="text-left py-2 px-3">Visibility</th>
                 </tr>
               </thead>
@@ -780,15 +665,17 @@ export default function BusinessPresenceReportView({ data, domain }: Props) {
                 {competitors.map((c: any, i: number) => {
                   const o = safeObj(c)
                   const da = safeNum(o.da)
+                  const pos = safeStr(o.position || o.visibility)
+                  const found = safeStr(o.whatWeFound || o.whatTheyDoWell)
                   return (
                     <tr key={i} className="border-b border-zinc-800 last:border-0">
                       <td className="py-2 px-3 text-white font-medium">{safeStr(o.domain)}</td>
                       <td className={`py-2 px-3 font-semibold ${daColor(da)}`}>{da || '—'}</td>
-                      <td className="py-2 px-3 text-zinc-300">{safeStr(o.whatTheyDoWell)}</td>
+                      <td className="py-2 px-3 text-zinc-300">{found}</td>
                       <td className="py-2 px-3">
-                        {o.visibility && (
-                          <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium border ${visibilityBadgeColor(safeStr(o.visibility))}`}>
-                            {safeStr(o.visibility)}
+                        {pos && (
+                          <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium border ${positionBadgeColor(pos)}`}>
+                            {pos}
                           </span>
                         )}
                       </td>
@@ -816,9 +703,7 @@ export default function BusinessPresenceReportView({ data, domain }: Props) {
         )}
       </section>
 
-      {/* ===================================================================
-          SECTION 07 — WHAT TO DO NEXT
-          =================================================================== */}
+      {/* SECTION 07 */}
       <section>
         <SectionHeader number="07" title="What To Do Next" intro="What should I focus on first?" />
 
@@ -847,9 +732,7 @@ export default function BusinessPresenceReportView({ data, domain }: Props) {
         )}
       </section>
 
-      {/* ===================================================================
-          SECTION 08 — FOR YOUR WEB DEVELOPER
-          =================================================================== */}
+      {/* SECTION 08 */}
       {(techChecklist.length > 0 || webDevNote) && (
         <section>
           <SectionHeader number="08" title="For Your Web Developer" intro="A consolidated checklist of technical items from this report you can share with your web developer." />
@@ -892,19 +775,12 @@ export default function BusinessPresenceReportView({ data, domain }: Props) {
         </section>
       )}
 
-      {/* ===================================================================
-          CTA + LEGAL + DATA SOURCES
-          =================================================================== */}
+      {/* CTA + LEGAL */}
       <section className="border-t border-zinc-700 pt-8 space-y-4">
         <div className="bg-primary/10 border border-primary/40 rounded-lg p-6 text-center">
           <h3 className="text-xl font-bold text-white mb-2">Ready to fix these issues and grow your business?</h3>
           <p className="text-zinc-300 text-sm mb-4">Book a free 30-minute strategy session to talk through priorities and next steps.</p>
-          <a
-            href="https://goodbreeze.ai/strategy-call"
-            className="inline-block px-6 py-3 bg-primary text-white rounded-lg font-semibold hover:bg-primary/80"
-          >
-            Book Your Free Strategy Call
-          </a>
+          <a href="https://goodbreeze.ai/strategy-call" className="inline-block px-6 py-3 bg-primary text-white rounded-lg font-semibold hover:bg-primary/80">Book Your Free Strategy Call</a>
         </div>
 
         <div className="bg-zinc-900/40 border border-zinc-800 rounded-lg p-4 text-xs text-zinc-500">
