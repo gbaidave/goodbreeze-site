@@ -205,6 +205,13 @@ export async function POST(request: NextRequest) {
         const periodStartIso = periodStart != null ? new Date(periodStart * 1000).toISOString() : new Date().toISOString()
         const periodEndIso   = periodEnd   != null ? new Date(periodEnd   * 1000).toISOString() : null
 
+        // Stripe Customer Portal sets `cancel_at` (timestamp) instead of flipping
+        // `cancel_at_period_end` (boolean). We mirror both so the UI can treat
+        // either as "scheduled to cancel".
+        const cancelAtIso = sub.cancel_at != null
+          ? new Date(sub.cancel_at * 1000).toISOString()
+          : null
+
         console.log('[webhook] Looking up subscription for user:', profile.id)
 
         // Every user has exactly one subscription row (created on signup as 'free' plan).
@@ -213,7 +220,7 @@ export async function POST(request: NextRequest) {
         // Fetch current plan + credits_remaining + period to compute credit changes.
         const { data: existing, error: lookupError } = await supabase
           .from('subscriptions')
-          .select('id, plan, credits_remaining, current_period_start, cancel_at_period_end')
+          .select('id, plan, credits_remaining, current_period_start, cancel_at_period_end, cancel_at')
           .eq('user_id', profile.id)
           .maybeSingle()
 
@@ -300,6 +307,7 @@ export async function POST(request: NextRequest) {
               current_period_start: periodStartIso,
               current_period_end:   periodEndIso,
               cancel_at_period_end: sub.cancel_at_period_end,
+              cancel_at: cancelAtIso,
               updated_at: new Date().toISOString(),
             })
             .eq('user_id', profile.id)
@@ -324,6 +332,7 @@ export async function POST(request: NextRequest) {
               current_period_start: periodStartIso,
               current_period_end:   periodEndIso,
               cancel_at_period_end: sub.cancel_at_period_end,
+              cancel_at: cancelAtIso,
               updated_at: new Date().toISOString(),
             })
 
@@ -336,18 +345,26 @@ export async function POST(request: NextRequest) {
         console.log('[webhook] Subscription saved successfully for user:', profile.id)
 
         // ── Cancel / reactivate transition notifications ──────────────────────
-        // Only fires on customer.subscription.updated. Uses existing row (pre-update)
-        // cancel_at_period_end against the incoming Stripe value.
+        // Only fires on customer.subscription.updated. Detects "scheduled cancel"
+        // in either field: Stripe Customer Portal sets `cancel_at` (timestamp),
+        // the classic cancel API flips `cancel_at_period_end` (boolean). Either
+        // one means the sub is scheduled to end. Comparing (prev → next) catches
+        // both direction changes (schedule ↔ reactivate).
         if (event.type === 'customer.subscription.updated' && existing) {
-          const prevCancelFlag = !!existing.cancel_at_period_end
-          const nextCancelFlag = !!sub.cancel_at_period_end
-          if (prevCancelFlag !== nextCancelFlag) {
+          const prevCancelScheduled = !!existing.cancel_at_period_end || !!existing.cancel_at
+          const nextCancelScheduled = !!sub.cancel_at_period_end || !!sub.cancel_at
+          if (prevCancelScheduled !== nextCancelScheduled) {
             const planLabel = `${plan.charAt(0).toUpperCase() + plan.slice(1)} plan`
-            const periodEndDate = periodEndIso
-              ? new Date(periodEndIso).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+            const fmt = (iso: string | null) => iso
+              ? new Date(iso).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
               : 'the end of your billing period'
+            // On cancel: use cancel_at (when it will actually cancel).
+            // On reactivate: use current_period_end (next renewal).
+            const cancelDate = fmt(cancelAtIso ?? periodEndIso)
+            const renewDate  = fmt(periodEndIso)
+            const periodEndDate = nextCancelScheduled ? cancelDate : renewDate
 
-            if (nextCancelFlag) {
+            if (nextCancelScheduled) {
               // Scheduled cancellation
               await insertBellIfAllowed(
                 supabase,

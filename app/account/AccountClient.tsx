@@ -75,6 +75,7 @@ interface Props {
   status?: string
   currentPeriodEnd?: string
   cancelAtPeriodEnd: boolean
+  cancelAt?: string | null
   hasStripeCustomer: boolean
   totalCredits: number    // pack credits (credits table)
   creditsRemaining: number  // subscription credits (subscriptions.credits_remaining)
@@ -102,6 +103,7 @@ export default function AccountClient({
   status,
   currentPeriodEnd,
   cancelAtPeriodEnd,
+  cancelAt = null,
   hasStripeCustomer,
   totalCredits,
   creditsRemaining,
@@ -593,14 +595,18 @@ export default function AccountClient({
               {!isPrivileged && status && status !== 'active' && status !== 'trialing' && (
                 <p className="text-xs text-yellow-400 mt-0.5 capitalize">{status.replace('_', ' ')}</p>
               )}
-              {!isPrivileged && currentPeriodEnd && isSubscription && (
-                <p className="text-xs text-gray-500 mt-0.5">
-                  {cancelAtPeriodEnd ? 'Cancels on' : 'Renews'}{' '}
-                  {new Date(currentPeriodEnd).toLocaleDateString('en-US', {
-                    month: 'long', day: 'numeric', year: 'numeric',
-                  })}
-                </p>
-              )}
+              {!isPrivileged && currentPeriodEnd && isSubscription && (() => {
+                const isCancelling = cancelAtPeriodEnd || !!cancelAt
+                const displayIso = cancelAt ?? currentPeriodEnd
+                return (
+                  <p className={`text-xs mt-0.5 ${isCancelling ? 'text-amber-400' : 'text-gray-500'}`}>
+                    {isCancelling ? 'Cancels on' : 'Renews'}{' '}
+                    {new Date(displayIso).toLocaleDateString('en-US', {
+                      month: 'long', day: 'numeric', year: 'numeric',
+                    })}
+                  </p>
+                )
+              })()}
             </div>
             <span className={`text-xs font-semibold px-3 py-1 rounded-full border ${
               isPrivileged
@@ -713,7 +719,7 @@ export default function AccountClient({
                 {' · '}
                 <a href="/support" className="hover:text-gray-400 underline transition-colors">Request a refund</a>
               </p>
-              {isSubscription && !cancelAtPeriodEnd && (
+              {isSubscription && !cancelAtPeriodEnd && !cancelAt && (
                 <button
                   onClick={() => setShowCancelConfirm(true)}
                   className="w-full py-2.5 text-sm text-gray-500 hover:text-red-400 transition-colors"
@@ -721,9 +727,9 @@ export default function AccountClient({
                   Cancel subscription
                 </button>
               )}
-              {cancelAtPeriodEnd && currentPeriodEnd && (
+              {(cancelAtPeriodEnd || cancelAt) && (currentPeriodEnd || cancelAt) && (
                 <p className="text-xs text-yellow-400 text-center">
-                  Cancellation scheduled. Access until {new Date(currentPeriodEnd).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.
+                  Cancellation scheduled. Access until {new Date((cancelAt ?? currentPeriodEnd) as string).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.
                 </p>
               )}
             </div>

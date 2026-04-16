@@ -101,12 +101,16 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
             <Row label="Joined" value={new Date(profile.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} />
             <Row label="Plan" value={plan} />
             <Row label="Sub status" value={sub?.status ?? '—'} />
-            {sub?.current_period_end && (
-              <Row
-                label={sub.cancel_at_period_end ? 'Cancels on' : 'Renews'}
-                value={new Date(sub.current_period_end).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-              />
-            )}
+            {sub?.current_period_end && (() => {
+              const isCancelling = !!sub.cancel_at_period_end || !!sub.cancel_at
+              const displayIso = sub.cancel_at ?? sub.current_period_end
+              return (
+                <Row
+                  label={isCancelling ? 'Cancels on' : 'Renews'}
+                  value={new Date(displayIso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                />
+              )
+            })()}
             {sub ? (
               <>
                 <Row label="Plan credits" value={String(sub.credits_remaining ?? 0)} />
