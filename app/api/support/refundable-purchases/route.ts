@@ -46,11 +46,15 @@ export async function GET(request: NextRequest) {
     const now = new Date()
     const purchases: RefundablePurchase[] = []
 
-    // Load plan caps from catalog (replaces the hardcoded PLAN_MONTHLY_CAPS constant).
+    // Load plan caps + display names from catalog (replaces hardcoded PLAN_MONTHLY_CAPS + PLAN_LABELS).
     // Plan monthly credits stored in credits_granted (not price_credits — that's per-use for reports).
     const activePlans = await getActiveSubscriptionPlans()
     const planCapBySku = new Map<string, number>()
-    for (const p of activePlans) planCapBySku.set(p.sku, p.creditsGranted ?? 0)
+    const planNameBySku = new Map<string, string>()
+    for (const p of activePlans) {
+      planCapBySku.set(p.sku, p.creditsGranted ?? 0)
+      planNameBySku.set(p.sku, p.name)
+    }
 
     // ── 1. Active subscription ─────────────────────────────────────────────
     const { data: sub } = await svc
@@ -79,7 +83,8 @@ export async function GET(request: NextRequest) {
           : 'Billing period information unavailable'
       )
 
-      const planLabel = sub.plan.charAt(0).toUpperCase() + sub.plan.slice(1) + ' Plan'
+      // Safe: inside planCapBySku.has(sub.plan) gate above, so name must also be present
+      const planLabel = planNameBySku.get(sub.plan)!
       const periodStartFormatted = periodStart
         ? periodStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
         : 'Unknown'
