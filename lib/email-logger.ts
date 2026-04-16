@@ -38,6 +38,8 @@ export type EmailType =
   | 'plan_changed'
   | 'security_alert'
   | 'refund_denied'
+  | 'subscription_cancel_scheduled'
+  | 'subscription_reactivated'
 
 interface LogEmailParams {
   userId?: string         // undefined = no user association (e.g. internal admin emails)

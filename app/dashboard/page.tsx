@@ -30,7 +30,7 @@ export default async function DashboardPage({
   const serviceClient = createServiceClient()
   const [profileRes, subRes, creditsRes, reportsRes, referralRes, testimonialsRes, ticketsRes] = await Promise.all([
     supabase.from('profiles').select('name, email, role, plan_override_type, plan_override_until, password_last_changed_at, free_reports_used').eq('id', user.id).single(),
-    supabase.from('subscriptions').select('plan, status, current_period_end, credits_remaining')
+    supabase.from('subscriptions').select('plan, status, current_period_end, credits_remaining, cancel_at_period_end')
       .eq('user_id', user.id).in('status', ['active', 'trialing']).order('created_at', { ascending: false }).limit(1).single(),
     supabase.from('credits').select('balance, expires_at').eq('user_id', user.id).gt('balance', 0).order('purchased_at', { ascending: true }),
     supabase.from('reports').select('id, report_type, status, created_at, pdf_url, expires_at, input_data').eq('user_id', user.id)
@@ -194,8 +194,8 @@ export default async function DashboardPage({
                 {profile?.role === 'support' ? 'Support Account' : isTester ? 'Tester Account' : (profile?.role === 'superadmin' || profile?.role === 'admin') ? 'Admin Account' : plan}
               </p>
               {!isAdmin && sub?.current_period_end && (
-                <p className="text-gray-500 text-xs mt-1">
-                  Renews {new Date(sub.current_period_end).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                <p className={`text-xs mt-1 ${sub.cancel_at_period_end ? 'text-amber-400' : 'text-gray-500'}`}>
+                  {sub.cancel_at_period_end ? 'Cancels on' : 'Renews'} {new Date(sub.current_period_end).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                 </p>
               )}
               {isAdmin && (

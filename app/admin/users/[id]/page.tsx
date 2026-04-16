@@ -102,7 +102,10 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
             <Row label="Plan" value={plan} />
             <Row label="Sub status" value={sub?.status ?? '—'} />
             {sub?.current_period_end && (
-              <Row label="Renews" value={new Date(sub.current_period_end).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} />
+              <Row
+                label={sub.cancel_at_period_end ? 'Cancels on' : 'Renews'}
+                value={new Date(sub.current_period_end).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+              />
             )}
             {sub ? (
               <>

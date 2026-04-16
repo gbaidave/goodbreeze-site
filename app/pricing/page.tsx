@@ -140,6 +140,11 @@ export default function PricingPage() {
   const [pendingPlan, setPendingPlan] = useState<PaidPlan | null>(null);
   const [pendingAcknowledged, setPendingAcknowledged] = useState(false);
   const [currentPlan, setCurrentPlan] = useState<string | null>(null);
+  // Active flag per plan/pack SKU — true by default to avoid a "disabled until fetched" flicker.
+  // Set to false when the catalog row has active=false (stopgap until Sprint 3 full catalog-driven pricing page).
+  const [activeBySku, setActiveBySku] = useState<Record<string, boolean>>({
+    starter: true, growth: true, pro: true, spark_pack: true, boost_pack: true,
+  });
   const { user } = useAuth();
 
   // Fetch user's active subscription plan for upgrade/downgrade/current-plan labeling
@@ -156,6 +161,22 @@ export default function PricingPage() {
       .single()
       .then(({ data }) => setCurrentPlan(data?.plan ?? null))
   }, [user]);
+
+  // Fetch catalog active flags for the 5 SKUs the pricing page shows.
+  // Stopgap: we only need the active flag. Sprint 3 will read names/prices/features from catalog too.
+  useEffect(() => {
+    const supabase = createClient()
+    supabase
+      .from('products')
+      .select('sku, active')
+      .in('sku', ['starter', 'growth', 'pro', 'spark_pack', 'boost_pack'])
+      .then(({ data }) => {
+        if (!data) return
+        const map: Record<string, boolean> = {}
+        for (const row of data) map[row.sku] = !!row.active
+        setActiveBySku((prev) => ({ ...prev, ...map }))
+      })
+  }, []);
 
   // Active subscribers changing plans go to the Stripe Billing Portal,
   // which handles proration natively. New subscribers go through checkout.
@@ -314,15 +335,26 @@ export default function PricingPage() {
           </motion.div>
 
           {/* Credit pack cards */}
-          {ENTRY_OPTIONS.filter((o) => o.key !== "free").map((option, idx) => (
+          {ENTRY_OPTIONS.filter((o) => o.key !== "free").map((option, idx) => {
+            const isUnavailable = activeBySku[option.key] === false
+            return (
             <motion.div
               key={option.key}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.15 + idx * 0.05 }}
-              className="flex flex-col p-6 rounded-2xl bg-dark-700 border border-primary/10 hover:border-primary/30 transition-all duration-300"
+              className={`relative flex flex-col p-6 rounded-2xl bg-dark-700 border transition-all duration-300 ${
+                isUnavailable
+                  ? 'border-zinc-800 opacity-55 pointer-events-none'
+                  : 'border-primary/10 hover:border-primary/30'
+              }`}
             >
-              <div className="mb-4">
+              {isUnavailable && (
+                <span className="absolute top-3 right-3 inline-block px-2 py-0.5 rounded-full bg-amber-900/40 text-amber-300 text-[10px] font-bold uppercase tracking-wider border border-amber-500/30">
+                  Unavailable
+                </span>
+              )}
+              <div className={`mb-4 ${isUnavailable ? 'grayscale' : ''}`}>
                 <p className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-1">
                   {option.name}
                 </p>
@@ -333,7 +365,7 @@ export default function PricingPage() {
                 <p className="text-gray-400 text-sm mt-1">{option.description}</p>
               </div>
 
-              <ul className="space-y-2 mb-6 flex-grow">
+              <ul className={`space-y-2 mb-6 flex-grow ${isUnavailable ? 'grayscale' : ''}`}>
                 {option.features.map((f, i) => (
                   <li key={i} className="flex items-start gap-2">
                     <Check />
@@ -344,17 +376,28 @@ export default function PricingPage() {
 
               <button
                 onClick={() => handleCheckout(option.key as PaidPlan)}
-                disabled={loading === option.key}
-                className="w-full px-5 py-2.5 border border-primary/50 text-primary font-semibold rounded-full hover:bg-primary/10 transition-all duration-300 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                disabled={loading === option.key || isUnavailable}
+                className={`w-full px-5 py-2.5 font-semibold rounded-full transition-all duration-300 text-sm disabled:opacity-60 disabled:cursor-not-allowed ${
+                  isUnavailable
+                    ? 'bg-zinc-800 text-zinc-500 border border-zinc-700 cursor-not-allowed'
+                    : 'border border-primary/50 text-primary hover:bg-primary/10'
+                }`}
               >
-                {loading === option.key
-                  ? "Redirecting…"
+                {isUnavailable
+                  ? 'Unavailable'
+                  : loading === option.key
+                  ? 'Redirecting…'
                   : user
                   ? `Buy ${option.name}`
-                  : "Get Started"}
+                  : 'Get Started'}
               </button>
+              {isUnavailable && (
+                <p className="mt-2 text-center text-xs text-gray-500 italic">
+                  Temporarily unavailable — please check back later.
+                </p>
+              )}
             </motion.div>
-          ))}
+          )})}
         </div>
 
         {/* ── Monthly Plans ─────────────────────────────────────────────── */}
@@ -370,19 +413,28 @@ export default function PricingPage() {
         </motion.div>
 
         <div className="grid md:grid-cols-3 gap-6 items-stretch mb-16">
-          {SUBSCRIPTION_PLANS.map((plan, idx) => (
+          {SUBSCRIPTION_PLANS.map((plan, idx) => {
+            const isUnavailable = activeBySku[plan.key] === false
+            return (
             <motion.div
               key={plan.key}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 + idx * 0.05 }}
               className={`relative flex flex-col p-8 rounded-2xl transition-all duration-300 ${
-                plan.highlighted
-                  ? "bg-dark-700 border-2 border-primary shadow-xl shadow-primary/20"
-                  : "bg-dark-700 border border-primary/20 hover:border-primary/40"
+                isUnavailable
+                  ? 'bg-dark-700 border border-zinc-800 opacity-55 pointer-events-none'
+                  : plan.highlighted
+                  ? 'bg-dark-700 border-2 border-primary shadow-xl shadow-primary/20'
+                  : 'bg-dark-700 border border-primary/20 hover:border-primary/40'
               }`}
             >
-              {plan.badge && (
+              {isUnavailable && (
+                <span className="absolute top-4 right-4 inline-block px-2 py-0.5 rounded-full bg-amber-900/40 text-amber-300 text-[10px] font-bold uppercase tracking-wider border border-amber-500/30 z-10">
+                  Unavailable
+                </span>
+              )}
+              {plan.badge && !isUnavailable && (
                 <div className="absolute top-8 right-6">
                   <span className="inline-block px-3 py-1 rounded-full bg-gradient-to-r from-primary to-accent-blue text-white text-xs font-bold uppercase tracking-wide shadow-lg shadow-primary/30 whitespace-nowrap ring-1 ring-white/20">
                     {plan.badge}
@@ -390,7 +442,7 @@ export default function PricingPage() {
                 </div>
               )}
 
-              <div className="mb-6">
+              <div className={`mb-6 ${isUnavailable ? 'grayscale' : ''}`}>
                 <p className={`text-sm font-semibold uppercase tracking-wider mb-2 ${plan.highlighted ? "text-primary" : "text-gray-400"}`}>
                   {plan.name}
                 </p>
@@ -401,7 +453,7 @@ export default function PricingPage() {
                 <p className="text-primary text-sm font-medium">{plan.reports}</p>
               </div>
 
-              <ul className="space-y-3 mb-8 flex-grow">
+              <ul className={`space-y-3 mb-8 flex-grow ${isUnavailable ? 'grayscale' : ''}`}>
                 {plan.features.map((f, i) => (
                   <li key={i} className="flex items-start gap-3">
                     <Check />
@@ -417,7 +469,8 @@ export default function PricingPage() {
                 // Active subscribers changing plans go to the portal (handles proration natively)
                 const isChangingPlan = !isCurrentPlan && currentPrice !== undefined && thisPrice !== undefined
                 const btnLabel =
-                  (loading === plan.key || (isChangingPlan && portalLoading)) ? "Redirecting…"
+                  isUnavailable ? 'Unavailable'
+                  : (loading === plan.key || (isChangingPlan && portalLoading)) ? "Redirecting…"
                   : isCurrentPlan ? "Current Plan"
                   : !user ? "Start Subscription"
                   : isChangingPlan
@@ -426,9 +479,11 @@ export default function PricingPage() {
                 return (
                   <button
                     onClick={() => isChangingPlan ? openPortal() : requestCheckout(plan.key)}
-                    disabled={loading === plan.key || portalLoading || isCurrentPlan}
+                    disabled={loading === plan.key || portalLoading || isCurrentPlan || isUnavailable}
                     className={`w-full px-6 py-3 font-semibold rounded-full transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed ${
-                      isCurrentPlan
+                      isUnavailable
+                        ? 'bg-zinc-800 text-zinc-500 border border-zinc-700 cursor-not-allowed'
+                        : isCurrentPlan
                         ? "border-2 border-gray-600 text-gray-500 cursor-default"
                         : plan.highlighted
                         ? "bg-gradient-to-r from-primary to-accent-blue text-white border-2 border-white/60 hover:shadow-lg hover:shadow-primary/50 disabled:transform-none"
@@ -440,11 +495,17 @@ export default function PricingPage() {
                 )
               })()}
 
-              <p className="text-center text-xs text-gray-500 mt-3">
-                Access until billing period ends if cancelled. Credits reset each billing period.
-              </p>
+              {isUnavailable ? (
+                <p className="text-center text-xs text-gray-500 mt-3 italic">
+                  Temporarily unavailable — please check back later.
+                </p>
+              ) : (
+                <p className="text-center text-xs text-gray-500 mt-3">
+                  Access until billing period ends if cancelled. Credits reset each billing period.
+                </p>
+              )}
             </motion.div>
-          ))}
+          )})}
         </div>
 
         {/* FAQ */}

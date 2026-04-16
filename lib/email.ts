@@ -31,6 +31,8 @@ import { refundProcessedEmail } from './emails/refund-processed'
 import { refundDeniedEmail } from './emails/refund-denied'
 import { contactSubmitterEmail } from './emails/contact-submitter'
 import { contactAdminNotificationEmail } from './emails/contact-admin-notification'
+import { subscriptionCancelScheduledEmail } from './emails/subscription-cancel-scheduled'
+import { subscriptionReactivatedEmail } from './emails/subscription-reactivated'
 import { logEmail } from './email-logger'
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -402,6 +404,34 @@ export async function sendRefundProcessedEmail(
   return sendAndLog(
     () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject: stagingPrefix + subject, html }),
     { userId, toEmail: to, type: 'refund_processed', subject }
+  )
+}
+
+export async function sendSubscriptionCancelScheduledEmail(
+  to: string,
+  name: string,
+  planLabel: string,
+  periodEndDate: string,
+  userId?: string,
+) {
+  const { subject, html } = subscriptionCancelScheduledEmail({ userName: name, planLabel, periodEndDate })
+  return sendAndLog(
+    () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject: stagingPrefix + subject, html }),
+    { userId, toEmail: to, type: 'subscription_cancel_scheduled', subject }
+  )
+}
+
+export async function sendSubscriptionReactivatedEmail(
+  to: string,
+  name: string,
+  planLabel: string,
+  periodEndDate: string,
+  userId?: string,
+) {
+  const { subject, html } = subscriptionReactivatedEmail({ userName: name, planLabel, periodEndDate })
+  return sendAndLog(
+    () => resend.emails.send({ from: `${FROM_NAME} <${FROM}>`, to, replyTo: REPLY_TO, subject: stagingPrefix + subject, html }),
+    { userId, toEmail: to, type: 'subscription_reactivated', subject }
   )
 }
 

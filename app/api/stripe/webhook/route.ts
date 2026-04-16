@@ -19,7 +19,10 @@ import {
   sendPaymentConfirmationEmail,
   sendPaymentFailedEmail,
   sendRefundProcessedEmail,
+  sendSubscriptionCancelScheduledEmail,
+  sendSubscriptionReactivatedEmail,
 } from '@/lib/email'
+import { insertBellIfAllowed } from '@/lib/bell-notifications'
 import { logSystemError } from '@/lib/log-system-error'
 import {
   getCatalogItemByStripePriceId,
@@ -210,7 +213,7 @@ export async function POST(request: NextRequest) {
         // Fetch current plan + credits_remaining + period to compute credit changes.
         const { data: existing, error: lookupError } = await supabase
           .from('subscriptions')
-          .select('id, plan, credits_remaining, current_period_start')
+          .select('id, plan, credits_remaining, current_period_start, cancel_at_period_end')
           .eq('user_id', profile.id)
           .maybeSingle()
 
@@ -331,6 +334,62 @@ export async function POST(request: NextRequest) {
         }
 
         console.log('[webhook] Subscription saved successfully for user:', profile.id)
+
+        // ── Cancel / reactivate transition notifications ──────────────────────
+        // Only fires on customer.subscription.updated. Uses existing row (pre-update)
+        // cancel_at_period_end against the incoming Stripe value.
+        if (event.type === 'customer.subscription.updated' && existing) {
+          const prevCancelFlag = !!existing.cancel_at_period_end
+          const nextCancelFlag = !!sub.cancel_at_period_end
+          if (prevCancelFlag !== nextCancelFlag) {
+            const planLabel = `${plan.charAt(0).toUpperCase() + plan.slice(1)} plan`
+            const periodEndDate = periodEndIso
+              ? new Date(periodEndIso).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+              : 'the end of your billing period'
+
+            if (nextCancelFlag) {
+              // Scheduled cancellation
+              await insertBellIfAllowed(
+                supabase,
+                profile.id,
+                {
+                  type: 'subscription_cancel_scheduled',
+                  message: `Your ${planLabel} is scheduled to cancel on ${periodEndDate}. Access continues until then.`,
+                },
+                'billing_payments',
+              )
+              if (profile.email) {
+                sendSubscriptionCancelScheduledEmail(
+                  profile.email,
+                  profile.name || profile.email,
+                  planLabel,
+                  periodEndDate,
+                  profile.id,
+                ).catch(console.error)
+              }
+            } else {
+              // Reactivation (cancel removed)
+              await insertBellIfAllowed(
+                supabase,
+                profile.id,
+                {
+                  type: 'subscription_reactivated',
+                  message: `Your ${planLabel} is active again — the scheduled cancellation has been removed.`,
+                },
+                'billing_payments',
+              )
+              if (profile.email) {
+                sendSubscriptionReactivatedEmail(
+                  profile.email,
+                  profile.name || profile.email,
+                  planLabel,
+                  periodEndDate,
+                  profile.id,
+                ).catch(console.error)
+              }
+            }
+          }
+        }
         break
       }
 
@@ -548,7 +607,8 @@ export async function POST(request: NextRequest) {
           }
 
           // No refund_request at all — Stripe-direct refund with no support ticket.
-          // Look up user via stripe_customer_id, notify them, and revoke access if subscription charge.
+          // Look up user via stripe_customer_id, notify them, and revoke access
+          // (subscription) or zero pack credits (pack) depending on charge type.
           if (customerId) {
             const { data: directProfile } = await supabase
               .from('profiles')
@@ -556,14 +616,20 @@ export async function POST(request: NextRequest) {
               .eq('stripe_customer_id', customerId)
               .maybeSingle()
             if (directProfile) {
-              // Revoke subscription if this was a subscription invoice charge
+              let productLabel = 'your purchase'
+
               if (invoiceId) {
+                // Subscription refund — revoke plan access
                 const { data: activeSub } = await supabase
                   .from('subscriptions')
-                  .select('stripe_subscription_id')
+                  .select('stripe_subscription_id, plan')
                   .eq('user_id', directProfile.id)
                   .in('status', ['active', 'trialing'])
                   .maybeSingle()
+
+                if (activeSub?.plan) {
+                  productLabel = `${activeSub.plan.charAt(0).toUpperCase() + activeSub.plan.slice(1)} plan`
+                }
 
                 await supabase.from('subscriptions').update({
                   plan: 'free', status: 'refunded', credits_remaining: 0,
@@ -573,18 +639,48 @@ export async function POST(request: NextRequest) {
                   await stripe.subscriptions.cancel(activeSub.stripe_subscription_id).catch(console.error)
                 }
                 console.log('[webhook] charge.refunded — Stripe-direct subscription refund, revoked access for user', directProfile.id)
+              } else if (paymentIntentId) {
+                // Pack refund — zero the matching pack credits row
+                const { data: packRow } = await supabase
+                  .from('credits')
+                  .select('id, product, balance')
+                  .eq('user_id', directProfile.id)
+                  .eq('stripe_payment_intent_id', paymentIntentId)
+                  .eq('source', 'pack')
+                  .maybeSingle()
+
+                if (packRow) {
+                  await supabase
+                    .from('credits')
+                    .update({ balance: 0, expires_at: new Date().toISOString() })
+                    .eq('id', packRow.id)
+                  if (packRow.product) {
+                    productLabel = packRow.product
+                      .replace(/_/g, ' ')
+                      .replace(/\b\w/g, (c: string) => c.toUpperCase())
+                  }
+                  console.log('[webhook] charge.refunded — Stripe-direct pack refund, zeroed credits row', packRow.id, 'for user', directProfile.id)
+                } else {
+                  // No pack match — could be a misc one-off charge (e.g. manual invoice).
+                  // Log and still notify the user of the refund.
+                  console.log('[webhook] charge.refunded — Stripe-direct refund with no matching pack row for PI', paymentIntentId, 'user', directProfile.id)
+                }
               }
 
               if (directProfile.email) {
-                await supabase.from('notifications').insert({
-                  user_id: directProfile.id,
-                  type: 'refund_processed',
-                  message: `Your refund${amountStr ? ` of ${amountStr}` : ''} has been processed.`,
-                }).then(null, console.error)
+                await insertBellIfAllowed(
+                  supabase,
+                  directProfile.id,
+                  {
+                    type: 'refund_processed',
+                    message: `Your refund${amountStr ? ` of ${amountStr}` : ''} for ${productLabel} has been processed.`,
+                  },
+                  'billing_payments',
+                )
                 sendRefundProcessedEmail(
                   directProfile.email,
                   directProfile.name || directProfile.email,
-                  'your purchase',
+                  productLabel,
                   amountStr || undefined,
                   directProfile.id
                 ).catch(console.error)
