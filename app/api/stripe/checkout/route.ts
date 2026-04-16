@@ -12,9 +12,7 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { stripe } from '@/lib/stripe'
 import { createServiceClient } from '@/lib/supabase/service-client'
-
-// Credits granted per billing period — must match PLAN_MONTHLY_CAPS in entitlement.ts
-const PLAN_CREDITS_PER_PERIOD: Record<string, number> = { starter: 25, growth: 40, pro: 50 }
+import { getCatalogItem } from '@/lib/catalog'
 
 export async function POST(request: NextRequest) {
   try {
@@ -47,28 +45,29 @@ export async function POST(request: NextRequest) {
     // 2. Parse request
     const body = await request.json()
 
-    // Only accept plan names — never raw priceIds from client (keeps price IDs server-side)
-    const VALID_PLANS = ['starter', 'growth', 'pro', 'spark_pack', 'boost_pack'] as const
-    type Plan = typeof VALID_PLANS[number]
-    const SUBSCRIPTION_PLANS = new Set(['starter', 'growth', 'pro'])
-    const planPriceMap: Record<Plan, string | undefined> = {
-      starter:    process.env.STRIPE_STARTER_PLAN_PRICE_ID,
-      growth:     process.env.STRIPE_GROWTH_PLAN_PRICE_ID,
-      pro:        process.env.STRIPE_PRO_PLAN_PRICE_ID,
-      spark_pack: process.env.STRIPE_SPARK_PACK_PRICE_ID,
-      boost_pack: process.env.STRIPE_BOOST_PACK_PRICE_ID,
-    }
+    // Only accept plan SKUs — never raw priceIds from client (keeps price IDs server-side)
+    // Resolve plan → Stripe Price ID + type via catalog (source of truth).
     const plan = body.plan
-    if (!plan || !VALID_PLANS.includes(plan)) {
-      return NextResponse.json({ error: 'Valid plan name is required (starter, growth, pro, spark_pack, or boost_pack)' }, { status: 400 })
-    }
-    const priceId: string | undefined = planPriceMap[plan as Plan]
-    if (!priceId) {
-      return NextResponse.json({ error: 'Plan not configured' }, { status: 500 })
+    if (!plan || typeof plan !== 'string') {
+      return NextResponse.json({ error: 'Valid plan name is required' }, { status: 400 })
     }
 
+    const catalogItem = await getCatalogItem(plan)
+    if (!catalogItem || !catalogItem.active) {
+      return NextResponse.json({ error: 'Plan not found or inactive in catalog' }, { status: 400 })
+    }
+    if (!catalogItem.stripePriceId) {
+      return NextResponse.json({ error: 'Plan not configured (missing Stripe Price ID in catalog)' }, { status: 500 })
+    }
+    if (catalogItem.productType !== 'subscription_plan' && catalogItem.productType !== 'credit_pack') {
+      return NextResponse.json({ error: 'Product is not sellable via checkout' }, { status: 400 })
+    }
+
+    const priceId = catalogItem.stripePriceId
+    const isSubscriptionPlan = catalogItem.productType === 'subscription_plan'
+
     // Subscription plans require explicit acknowledgment of the credit reset policy
-    if (SUBSCRIPTION_PLANS.has(plan) && body.acknowledged !== true) {
+    if (isSubscriptionPlan && body.acknowledged !== true) {
       return NextResponse.json(
         { error: 'You must acknowledge the credit reset policy before subscribing.', code: 'ACK_REQUIRED' },
         { status: 400 }
@@ -112,9 +111,9 @@ export async function POST(request: NextRequest) {
     }
 
     // 4. Save subscription acknowledgment (consent audit trail)
-    if (SUBSCRIPTION_PLANS.has(plan)) {
+    if (isSubscriptionPlan) {
       const svc = createServiceClient()
-      const creditsPerPeriod = PLAN_CREDITS_PER_PERIOD[plan] ?? 0
+      const creditsPerPeriod = catalogItem.priceCredits ?? 0
       const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? null
       await svc.from('subscription_acknowledgments').insert({
         user_id: user.id,
@@ -125,11 +124,7 @@ export async function POST(request: NextRequest) {
       // Non-fatal: if this fails we still proceed — Stripe is the payment authority
     }
 
-    // 5. Determine if subscription or one-time
-    const price = await stripe.prices.retrieve(priceId)
-    const isSubscription = price.type === 'recurring'
-
-    // 6. Create checkout session
+    // 5. Create checkout session (mode determined by catalog product_type)
     const ALLOWED_ORIGINS = ['https://goodbreeze.ai', 'https://staging.goodbreeze.ai', 'https://goodbreeze-site.vercel.app', 'http://localhost:3000']
     const rawOrigin = request.headers.get('origin') || ''
     const origin = ALLOWED_ORIGINS.includes(rawOrigin) ? rawOrigin : 'https://goodbreeze.ai'
@@ -138,7 +133,7 @@ export async function POST(request: NextRequest) {
       customer: customerId,
       payment_method_types: ['card'],
       line_items: [{ price: priceId, quantity: 1 }],
-      mode: isSubscription ? 'subscription' : 'payment',
+      mode: isSubscriptionPlan ? 'subscription' : 'payment',
       success_url: `${origin}/dashboard?checkout=success`,
       cancel_url: `${origin}/dashboard?checkout=cancelled`,
       metadata: {

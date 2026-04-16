@@ -62,12 +62,9 @@ const REPORT_META: Record<ReportType, {
   business_presence_report: { product: 'business_presence_report', impulseAllowed: true, usesMoz: false, usesSerp: false, acceptsAnyCredit: true, creditCost: 3, freeSlotSystem: 'business_presence_report' },
 }
 
-// Per-plan monthly report caps (all report types combined).
-const PLAN_MONTHLY_CAPS: Record<string, number> = {
-  starter: 25,
-  growth:  40,
-  pro:     50,
-}
+// Plan monthly credit caps are now read from the `products` catalog via
+// getPlanCreditsPerPeriod(sku). The old PLAN_MONTHLY_CAPS constant is deleted
+// (2026-04-16 catalog migration). Do NOT reintroduce hardcoded plan caps.
 
 // ============================================================================
 // Service role Supabase client (bypasses RLS)

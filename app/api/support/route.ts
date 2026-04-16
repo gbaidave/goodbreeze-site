@@ -190,9 +190,15 @@ export async function POST(request: NextRequest) {
         try {
           let creditsUsedAtRequest = 0
           let autoPaymentId: string | null = null
-          // Monthly credit caps — must match PLAN_MONTHLY_CAPS in entitlement.ts
-          const PLAN_CAPS: Record<string, number> = { starter: 25, growth: 40, pro: 50 }
-          const PLAN_LABELS: Record<string, string> = { starter: 'Starter Plan', growth: 'Growth Plan', pro: 'Pro Plan' }
+          // Monthly credit caps and plan display names — read from catalog (source of truth)
+          const { getActiveSubscriptionPlans } = await import('@/lib/catalog')
+          const activePlans = await getActiveSubscriptionPlans()
+          const PLAN_CAPS: Record<string, number> = {}
+          const PLAN_LABELS: Record<string, string> = {}
+          for (const p of activePlans) {
+            PLAN_CAPS[p.sku] = p.priceCredits ?? 0
+            PLAN_LABELS[p.sku] = p.name
+          }
 
           let amountPaidCents: number | null = null
           let purchaseDate: string | null = null

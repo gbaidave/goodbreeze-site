@@ -15,12 +15,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { createServiceClient } from '@/lib/supabase/service-client'
-
-const PLAN_MONTHLY_CAPS: Record<string, number> = {
-  starter: 25,
-  growth:  40,
-  pro:     50,
-}
+import { getActiveSubscriptionPlans } from '@/lib/catalog'
 
 const REFUND_WINDOW_DAYS = 14
 
@@ -51,6 +46,11 @@ export async function GET(request: NextRequest) {
     const now = new Date()
     const purchases: RefundablePurchase[] = []
 
+    // Load plan caps from catalog (replaces the hardcoded PLAN_MONTHLY_CAPS constant)
+    const activePlans = await getActiveSubscriptionPlans()
+    const planCapBySku = new Map<string, number>()
+    for (const p of activePlans) planCapBySku.set(p.sku, p.priceCredits ?? 0)
+
     // ── 1. Active subscription ─────────────────────────────────────────────
     const { data: sub } = await svc
       .from('subscriptions')
@@ -61,8 +61,8 @@ export async function GET(request: NextRequest) {
       .limit(1)
       .single()
 
-    if (sub && sub.plan && PLAN_MONTHLY_CAPS[sub.plan]) {
-      const planCap = PLAN_MONTHLY_CAPS[sub.plan]
+    if (sub && sub.plan && planCapBySku.has(sub.plan)) {
+      const planCap = planCapBySku.get(sub.plan)!
       const creditsUsed = planCap - (sub.credits_remaining ?? 0)
       const periodStart = sub.current_period_start ? new Date(sub.current_period_start) : null
       const daysSincePeriodStart = periodStart

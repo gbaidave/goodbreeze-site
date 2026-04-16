@@ -21,6 +21,15 @@ import {
   sendRefundProcessedEmail,
 } from '@/lib/email'
 import { logSystemError } from '@/lib/log-system-error'
+import {
+  getCatalogItemByStripePriceId,
+  getActiveSubscriptionPlans,
+} from '@/lib/catalog'
+
+function formatUsd(cents: number | null | undefined): string {
+  if (cents == null) return '$0.00'
+  return `$${(cents / 100).toFixed(2)}`
+}
 
 export async function POST(request: NextRequest) {
   const body = await request.text()
@@ -74,26 +83,31 @@ export async function POST(request: NextRequest) {
           break
         }
 
-        // Subscription price IDs — handled by customer.subscription.created/updated
-        const subscriptionPriceIds = [
-          process.env.STRIPE_STARTER_PLAN_PRICE_ID,
-          process.env.STRIPE_GROWTH_PLAN_PRICE_ID,
-          process.env.STRIPE_PRO_PLAN_PRICE_ID,
-        ]
-        if (subscriptionPriceIds.includes(priceId)) break
-
-        // One-time credit packs
-        const packMap: Record<string, { credits: number; amount: string; label: string; product: string }> = {
-          [process.env.STRIPE_SPARK_PACK_PRICE_ID!]: { credits: 3,  amount: '$5.00',  label: 'Spark Pack', product: 'spark_pack' },
-          [process.env.STRIPE_BOOST_PACK_PRICE_ID!]: { credits: 10, amount: '$10.00', label: 'Boost Pack', product: 'boost_pack' },
+        // Look up the catalog entry by Stripe Price ID
+        const catalogItem = await getCatalogItemByStripePriceId(priceId)
+        if (!catalogItem) {
+          console.error('[webhook] No catalog match for priceId:', priceId)
+          logSystemError('webhook', `Stripe Price ID has no catalog match: ${priceId}`, { priceId, sessionId: session.id })
+          return NextResponse.json({ error: 'Unknown price_id — catalog mismatch' }, { status: 500 })
         }
-        const pack = priceId ? packMap[priceId] : undefined
-        if (pack) {
+
+        // Subscription price IDs are handled by customer.subscription.created/updated
+        if (catalogItem.productType === 'subscription_plan') break
+
+        // Credit pack purchase
+        if (catalogItem.productType === 'credit_pack') {
+          const creditsGranted = catalogItem.creditsGranted
+          if (creditsGranted == null || creditsGranted <= 0) {
+            console.error('[webhook] Pack', catalogItem.sku, 'has no credits_granted — fix in /admin/catalog')
+            logSystemError('webhook', `Pack ${catalogItem.sku} missing credits_granted`, { sku: catalogItem.sku, priceId })
+            return NextResponse.json({ error: 'Catalog misconfigured for pack' }, { status: 500 })
+          }
+
           const { error: creditsError } = await supabase.from('credits').insert({
             user_id: userId,
-            balance: pack.credits,
+            balance: creditsGranted,
             source: 'pack',
-            product: pack.product,
+            product: catalogItem.sku,
             stripe_payment_intent_id: session.payment_intent as string,
             purchased_at: new Date().toISOString(),
             expires_at: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
@@ -109,7 +123,13 @@ export async function POST(request: NextRequest) {
           if (profile?.email) {
             const receiptRef = (session.payment_intent as string | null) ?? session.id
             await sendPaymentConfirmationEmail(
-              profile.email, profile.name || profile.email, pack.label, pack.amount, userId, receiptRef, 'pack_purchase'
+              profile.email,
+              profile.name || profile.email,
+              catalogItem.name,
+              formatUsd(catalogItem.priceUsdCents),
+              userId,
+              receiptRef,
+              'pack_purchase'
             ).catch(console.error)
           }
         }
@@ -140,21 +160,21 @@ export async function POST(request: NextRequest) {
         const item = sub.items.data[0]
         const priceId = item?.price.id
 
-        const planMap: Record<string, string> = {
-          [process.env.STRIPE_STARTER_PLAN_PRICE_ID!]: 'starter',
-          [process.env.STRIPE_GROWTH_PLAN_PRICE_ID!]:  'growth',
-          [process.env.STRIPE_PRO_PLAN_PRICE_ID!]:     'pro',
+        // Resolve plan from catalog by Stripe Price ID
+        const planCatalogItem = priceId ? await getCatalogItemByStripePriceId(priceId) : null
+        if (priceId && !planCatalogItem) {
+          console.error('[webhook] No catalog match for subscription priceId:', priceId)
+          logSystemError('webhook', `Subscription Price ID has no catalog match: ${priceId}`, { priceId, subscriptionId: sub.id })
+          return NextResponse.json({ error: 'Unknown subscription price_id — catalog mismatch' }, { status: 500 })
         }
-        const planAmountMap: Record<string, string> = {
-          [process.env.STRIPE_STARTER_PLAN_PRICE_ID!]: '$20.00',
-          [process.env.STRIPE_GROWTH_PLAN_PRICE_ID!]:  '$30.00',
-          [process.env.STRIPE_PRO_PLAN_PRICE_ID!]:     '$40.00',
-        }
-        const plan = (priceId ? planMap[priceId] : undefined) ?? 'free'
+        const plan = planCatalogItem?.sku ?? 'free'
+        const newCap = planCatalogItem?.priceCredits ?? 0
+        const planAmountStr = formatUsd(planCatalogItem?.priceUsdCents)
 
-        // Per-plan monthly credit caps — must match PLAN_MONTHLY_CAPS in entitlement.ts
-        const PLAN_CAPS: Record<string, number> = { starter: 25, growth: 40, pro: 50 }
-        const newCap = PLAN_CAPS[plan] ?? 0
+        // For cap lookup on old plans (existing subscription), fetch active plans once
+        const allPlans = await getActiveSubscriptionPlans()
+        const capByPlan = new Map<string, number>()
+        for (const p of allPlans) capByPlan.set(p.sku, p.priceCredits ?? 0)
 
         console.log('[webhook] priceId:', priceId, 'resolved plan:', plan, 'cap:', newCap)
 
@@ -166,10 +186,14 @@ export async function POST(request: NextRequest) {
 
         // Send confirmation email on new subscription
         if (event.type === 'customer.subscription.created' && sub.status === 'active' && profile.email) {
-          const planLabel = priceId ? planMap[priceId] ?? 'starter' : 'starter'
-          const planAmount = priceId ? planAmountMap[priceId] ?? '$20.00' : '$20.00'
           await sendPaymentConfirmationEmail(
-            profile.email, profile.name || profile.email, planLabel, planAmount, profile.id, sub.id, 'subscription_purchase'
+            profile.email,
+            profile.name || profile.email,
+            plan,
+            planAmountStr,
+            profile.id,
+            sub.id,
+            'subscription_purchase'
           ).catch(console.error)
         }
 
@@ -216,7 +240,7 @@ export async function POST(request: NextRequest) {
         } else {
           // customer.subscription.updated
           const oldPlan = existing?.plan ?? 'free'
-          const oldCap = PLAN_CAPS[oldPlan] ?? 0
+          const oldCap = capByPlan.get(oldPlan) ?? 0
           const currentCredits = existing?.credits_remaining ?? 0
           const oldPeriodStart = existing?.current_period_start
 
