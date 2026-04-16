@@ -3,6 +3,9 @@
 # Temporary working files
 .workspace/
 
+# Local test SQL scripts (not for production)
+/test-sql/
+
 # dependencies
 /node_modules
 /.pnp
