@@ -27,6 +27,11 @@ export interface CatalogItem {
   tagline: string | null
   features: unknown[]
   lifecycleStatus: string | null
+  // Added in migration 068:
+  badge: string | null
+  syncErrorDetail: string | null
+  lastSyncAttemptAt: string | null
+  lastSyncSuccessAt: string | null
 }
 
 let cache: { items: CatalogItem[]; fetchedAt: number } | null = null
@@ -47,7 +52,7 @@ async function loadCatalog(): Promise<CatalogItem[]> {
   const supabase = getServiceClient()
   const { data, error } = await supabase
     .from('products')
-    .select('id, sku, name, product_type, price_credits, price_usd_cents, credits_granted, stripe_price_id, active, display_order, metadata, description, tagline, features, lifecycle_status')
+    .select('id, sku, name, product_type, price_credits, price_usd_cents, credits_granted, stripe_price_id, active, display_order, metadata, description, tagline, features, lifecycle_status, badge, sync_error_detail, last_sync_attempt_at, last_sync_success_at')
     .not('sku', 'is', null)
     .order('display_order', { ascending: true })
 
@@ -72,6 +77,10 @@ async function loadCatalog(): Promise<CatalogItem[]> {
     tagline: row.tagline,
     features: Array.isArray(row.features) ? row.features : [],
     lifecycleStatus: row.lifecycle_status,
+    badge: row.badge ?? (row.metadata?.badge as string | undefined) ?? null,
+    syncErrorDetail: row.sync_error_detail,
+    lastSyncAttemptAt: row.last_sync_attempt_at,
+    lastSyncSuccessAt: row.last_sync_success_at,
   }))
 
   cache = { items, fetchedAt: Date.now() }

@@ -50,6 +50,7 @@ export type Action =
   | 'system_settings'
   | 'process_refunds'  // actual Stripe API calls
   | 'delete_account'
+  | 'manage_catalog'   // create/edit catalog products + Stripe price sync
 
 const ADMIN_ROLES: string[] = ['superadmin', 'admin']
 const SUPPORT_ROLES: string[] = ['superadmin', 'admin', 'support']
@@ -80,6 +81,7 @@ const PERMISSIONS: Record<Action, string[]> = {
   system_settings: ['superadmin'],
   process_refunds: ['superadmin'],
   delete_account:  ['superadmin'],
+  manage_catalog:  ['superadmin'],
 }
 
 export function canDo(role: string | undefined | null, action: Action): boolean {
