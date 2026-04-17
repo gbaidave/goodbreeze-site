@@ -229,15 +229,15 @@ export default function AdminCatalogPage() {
   })).filter((g) => g.items.length > 0)
 
   return (
-    <div>
-      <div className="flex items-start justify-between mb-6 gap-4">
-        <div>
+    <div className="p-4 md:p-8">
+      <div className="flex items-start justify-between mb-6 gap-4 flex-wrap">
+        <div className="min-w-0">
           <h1 className="text-2xl font-bold text-white">Product Catalog</h1>
           <p className="text-gray-500 text-sm mt-1 max-w-2xl">
             Source of truth for pricing, credits, plan caps, and Stripe Price IDs. Changes sync to Stripe automatically and apply site-wide within 5 seconds.
           </p>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap shrink-0">
           {saved && <span className="text-sm text-green-400">Saved</span>}
           {error && <span className="text-sm text-red-400">{error}</span>}
           <button
