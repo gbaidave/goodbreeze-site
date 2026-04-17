@@ -16,9 +16,10 @@
  *   - Legacy SKUs (lowercase_underscore) keep their format, never renamed
  *   - Immutable after first save
  *
- * Legacy SKUs that are untouchable:
- *   starter, growth, pro, spark_pack, boost_pack, mega_pack,
- *   business_presence_report, h2h, t3c, cp
+ * Legacy SKUs that are untouchable (pending Sprint 5 rename):
+ *   starter, growth, pro, spark_pack, boost_pack, business_presence_report,
+ *   h2h, t3c, cp, landing_page, ai_seo, keyword_research, seo_audit,
+ *   seo_comprehensive
  */
 
 const PREFIX_MAP: Record<string, string> = {

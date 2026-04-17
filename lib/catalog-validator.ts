@@ -43,8 +43,8 @@ export interface ValidationResult {
 const LEGACY_SKUS = [
   // Subscription plans
   'starter', 'growth', 'pro',
-  // Credit packs (mega_pack is retired but still in DB)
-  'spark_pack', 'boost_pack', 'mega_pack',
+  // Credit packs
+  'spark_pack', 'boost_pack',
   // Analyzer reports
   'business_presence_report', 'h2h', 't3c', 'cp',
   // Brand Visibility reports
