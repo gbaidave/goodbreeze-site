@@ -1,5 +1,9 @@
 import { createServiceClient } from '@/lib/supabase/service-client'
 
+// Force per-request render so MRR + stats pick up fresh catalog and
+// "today" boundaries instead of freezing at build time.
+export const dynamic = 'force-dynamic'
+
 function StatCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
   return (
     <div className="bg-dark-700 border border-primary/20 rounded-2xl p-6">

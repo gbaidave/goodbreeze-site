@@ -1,6 +1,10 @@
 import { getActiveSubscriptionPlans, getCatalogItem } from '@/lib/catalog'
 import ReportsDirectoryClient from './ReportsDirectoryClient'
 
+// Force per-request render so BPR credit cost + min plan price flow
+// from admin/catalog edits instead of freezing at build time.
+export const dynamic = 'force-dynamic'
+
 // Server component — fetches BPR credit cost + cheapest active plan from catalog,
 // hands dynamic copy to the client component. Tool suites themselves (Competitive
 // Analyzer / Brand Visibility / Content Generator) are grouping concepts, not

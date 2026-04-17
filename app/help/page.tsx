@@ -8,6 +8,10 @@ export const metadata: Metadata = {
   description: 'Find answers to common questions about Good Breeze AI reports, plans, referrals, and your account.',
 }
 
+// Force per-request render so admin/catalog price + credit edits flow into
+// help article copy within the catalog cache TTL instead of freezing at build time.
+export const dynamic = 'force-dynamic'
+
 // Server component: fetches catalog, interpolates into help articles, hands off to client.
 // Help articles used to have hardcoded pack/plan prices + credit counts. Now catalog-driven.
 export default async function HelpPage() {

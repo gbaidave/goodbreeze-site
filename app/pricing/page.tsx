@@ -7,6 +7,10 @@ export const metadata: Metadata = {
   description: 'Simple, transparent pricing. Start free. Upgrade when you need more. Cancel anytime.',
 }
 
+// Force per-request render so admin/catalog edits show up within the 5s
+// catalog cache TTL instead of being frozen at build time.
+export const dynamic = 'force-dynamic'
+
 // Server component — fetches catalog, derives display shape, hands off to client.
 // Per catalog-integration decision #5: /pricing is a server component reading
 // catalog at request time. No client-side fetch, no loading state for prices.
