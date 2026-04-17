@@ -13,13 +13,15 @@
  * Format rules:
  *   - UPPERCASE + dashes only (matches industry norm: Shopify, Amazon docs)
  *   - Total length capped at 24 chars (well under Amazon's 40-char limit)
- *   - Legacy SKUs (lowercase_underscore) keep their format, never renamed
  *   - Immutable after first save
  *
- * Legacy SKUs that are untouchable (pending Sprint 5 rename):
- *   starter, growth, pro, spark_pack, boost_pack, business_presence_report,
- *   h2h, t3c, cp, landing_page, ai_seo, keyword_research, seo_audit,
- *   seo_comprehensive
+ * All catalog SKUs follow this scheme as of Sprint 5 rename (2026-04-16).
+ * Pre-Sprint-5 legacy SKUs (lowercase_underscore) were renamed in migration 069:
+ *   starter→PLN-STARTER, growth→PLN-GROWTH, pro→PLN-PRO,
+ *   spark_pack→PCK-SPARK, boost_pack→PCK-BOOST,
+ *   business_presence_report→RPT-BPR, h2h→RPT-H2H, t3c→RPT-T3C, cp→RPT-CP,
+ *   landing_page→RPT-LP, ai_seo→RPT-AISEO, keyword_research→RPT-KR,
+ *   seo_audit→RPT-AUDIT, seo_comprehensive→RPT-COMP
  */
 
 const PREFIX_MAP: Record<string, string> = {

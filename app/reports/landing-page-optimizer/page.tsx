@@ -33,12 +33,12 @@ export default function LandingPageOptimizerPage() {
       const res = await fetch('/api/reports/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reportType: 'landing_page', url, focusKeyword, company }),
+        body: JSON.stringify({ reportType: 'RPT-LP', url, focusKeyword, company }),
       })
       const data = await res.json()
       if (res.status === 402) { setError(data.error); setUpgradePrompt(data.upgradePrompt ?? 'impulse'); return }
       if (!res.ok) { setError(data.error || 'Something went wrong.'); return }
-      captureEvent('tool_form_submit', { reportType: 'landing_page' })
+      captureEvent('tool_form_submit', { reportType: 'RPT-LP' })
       setReportId(data.reportId)
       setSubmitted(true)
     } catch {

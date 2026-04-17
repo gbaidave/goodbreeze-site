@@ -33,12 +33,12 @@ export default function SeoAuditPage() {
       const res = await fetch('/api/reports/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reportType: 'seo_audit', url, company, focusKeyword }),
+        body: JSON.stringify({ reportType: 'RPT-AUDIT', url, company, focusKeyword }),
       })
       const data = await res.json()
       if (res.status === 402) { setError(data.error); setUpgradePrompt(data.upgradePrompt ?? 'impulse'); return }
       if (!res.ok) { setError(data.error || 'Something went wrong.'); return }
-      captureEvent('tool_form_submit', { reportType: 'seo_audit' })
+      captureEvent('tool_form_submit', { reportType: 'RPT-AUDIT' })
       setReportId(data.reportId)
       setSubmitted(true)
     } catch {

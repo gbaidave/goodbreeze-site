@@ -48,7 +48,7 @@ export default async function DashboardPage({
 
   // Catalog snapshot for dashboard copy (BPR cost + cheapest plan/pack for upgrade banner)
   const [bprCatalog, catalogPlans, catalogPacks] = await Promise.all([
-    getCatalogItem('business_presence_report'),
+    getCatalogItem('RPT-BPR'),
     getActiveSubscriptionPlans(),
     getActivePackProducts(),
   ])
@@ -122,8 +122,8 @@ export default async function DashboardPage({
   const isAdmin = isAdminPanel || profile?.role === 'tester'    // also tester — suppresses billing/nudge UI
   const isTester = profile?.role === 'tester'
 
-  const PAID_PLANS = ['starter', 'growth', 'pro', 'custom']
-  const SUBSCRIPTION_PLANS = ['starter', 'growth', 'pro']
+  const PAID_PLANS = ['PLN-STARTER', 'PLN-GROWTH', 'PLN-PRO', 'custom']
+  const SUBSCRIPTION_PLANS = ['PLN-STARTER', 'PLN-GROWTH', 'PLN-PRO']
   const isSubscription = SUBSCRIPTION_PLANS.includes(plan)
 
   // Credits available for reports:
@@ -277,11 +277,11 @@ export default async function DashboardPage({
 
         {/* Business Presence Report card */}
         {(() => {
-          const bpr = reports.find(r => r.report_type === 'business_presence_report' && r.status === 'complete')
+          const bpr = reports.find(r => r.report_type === 'RPT-BPR' && r.status === 'complete')
           const bprScore = bpr ? (bpr as any).input_data?.overallScore : null
           const bprDate = bpr ? new Date(bpr.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : null
           const freeUsed = profile?.free_reports_used as Record<string, boolean> | null
-          const hasFreeSlot = !freeUsed?.['business_presence_report']
+          const hasFreeSlot = !freeUsed?.['RPT-BPR']
           return (
             <div className="bg-dark-700 border border-primary/20 rounded-2xl px-6 py-5 flex items-center gap-5">
               <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">

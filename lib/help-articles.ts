@@ -51,11 +51,11 @@ export function toHelpArticlesCatalog(items: CatalogItem[]): HelpArticlesCatalog
     }
   }
   return {
-    spark:   shape('spark_pack'),
-    boost:   shape('boost_pack'),
-    starter: shape('starter'),
-    growth:  shape('growth'),
-    pro:     shape('pro'),
+    spark:   shape('PCK-SPARK'),
+    boost:   shape('PCK-BOOST'),
+    starter: shape('PLN-STARTER'),
+    growth:  shape('PLN-GROWTH'),
+    pro:     shape('PLN-PRO'),
   }
 }
 

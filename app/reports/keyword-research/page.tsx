@@ -33,12 +33,12 @@ export default function KeywordResearchPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         // focusKeyword = seed keyword; url = website for context
-        body: JSON.stringify({ reportType: 'keyword_research', focusKeyword: keyword, url }),
+        body: JSON.stringify({ reportType: 'RPT-KR', focusKeyword: keyword, url }),
       })
       const data = await res.json()
       if (res.status === 402) { setError(data.error); setUpgradePrompt(data.upgradePrompt ?? 'impulse'); return }
       if (!res.ok) { setError(data.error || 'Something went wrong.'); return }
-      captureEvent('tool_form_submit', { reportType: 'keyword_research' })
+      captureEvent('tool_form_submit', { reportType: 'RPT-KR' })
       setReportId(data.reportId)
       setSubmitted(true)
     } catch {

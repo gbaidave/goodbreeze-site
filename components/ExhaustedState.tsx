@@ -30,7 +30,7 @@ export function ExhaustedState({ error, upgradePrompt }: Props) {
             href="/pricing"
             className="px-6 py-3 bg-gradient-to-r from-primary to-accent-blue text-white font-semibold rounded-full hover:shadow-lg hover:shadow-primary/30 transition-all"
           >
-            {upgradePrompt === 'starter' ? 'Upgrade to Starter' : 'Get Credits'}
+            {upgradePrompt === 'PLN-STARTER' ? 'Upgrade to Starter' : 'Get Credits'}
           </Link>
           <Link
             href="/dashboard"

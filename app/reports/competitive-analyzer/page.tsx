@@ -12,12 +12,12 @@ import { CreditsDisplay } from '@/components/tools/CreditsDisplay'
 import { ReportSubmittedModal } from '@/components/tools/ReportSubmittedModal'
 import { createClient } from '@/lib/supabase/client'
 
-type ReportType = 'h2h' | 't3c' | 'cp'
+type ReportType = 'RPT-H2H' | 'RPT-T3C' | 'RPT-CP'
 
 const REPORT_LABELS: Record<ReportType, string> = {
-  h2h: 'Head to Head',
-  t3c: 'Top 3 Competitors',
-  cp: 'Competitive Position',
+  'RPT-H2H': 'Head to Head',
+  'RPT-T3C': 'Top 3 Competitors',
+  'RPT-CP':  'Competitive Position',
 }
 
 export default function SalesAnalyzer() {
@@ -25,7 +25,7 @@ export default function SalesAnalyzer() {
   const isGuest = !authLoading && !user
   const pathname = usePathname()
 
-  const [reportType, setReportType] = useState<ReportType>('h2h')
+  const [reportType, setReportType] = useState<ReportType>('RPT-H2H')
   const [targetWebsite, setTargetWebsite] = useState('')
   const [competitor1, setCompetitor1] = useState('')
   const [competitor1Website, setCompetitor1Website] = useState('')
@@ -48,7 +48,7 @@ export default function SalesAnalyzer() {
     supabase
       .from('products')
       .select('sku, price_credits')
-      .in('sku', ['h2h', 't3c', 'cp'])
+      .in('sku', ['RPT-H2H', 'RPT-T3C', 'RPT-CP'])
       .then(({ data }) => {
         if (!data) return
         const m: Record<string, number> = {}
@@ -203,10 +203,10 @@ export default function SalesAnalyzer() {
           </div>
 
           {/* Competitor Fields */}
-          {(reportType === 'h2h' || reportType === 't3c') && (
+          {(reportType === 'RPT-H2H' || reportType === 'RPT-T3C') && (
             <div className="space-y-5 pt-2 border-t border-gray-800">
               <h3 className="text-sm font-semibold text-gray-300 pt-2">
-                Competitor{reportType === 't3c' ? 's' : ''} {reportType === 'h2h' ? '(required)' : '(up to 3)'}
+                Competitor{reportType === 'RPT-T3C' ? 's' : ''} {reportType === 'RPT-H2H' ? '(required)' : '(up to 3)'}
               </h3>
 
               <div className="grid sm:grid-cols-2 gap-4">
@@ -222,7 +222,7 @@ export default function SalesAnalyzer() {
                 </div>
               </div>
 
-              {reportType === 't3c' && (
+              {reportType === 'RPT-T3C' && (
                 <>
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div>

@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic'
 // catalog commerce items, so they stay as static copy inside the client.
 export default async function ReportsPage() {
   const [bprItem, plans] = await Promise.all([
-    getCatalogItem('business_presence_report'),
+    getCatalogItem('RPT-BPR'),
     getActiveSubscriptionPlans(),
   ])
 

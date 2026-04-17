@@ -72,15 +72,15 @@ function getReportSubtitle(reportType: string, inputData: Record<string, unknown
   const company = inputData.company as string | undefined
   const focusKeyword = inputData.focusKeyword as string | undefined
   switch (reportType) {
-    case 'h2h': {
+    case 'RPT-H2H': {
       const target = domain(targetWebsite) || company
       const comp = competitor1 || domain(competitor1Website)
       return target && comp ? `${target} vs ${comp}` : target || null
     }
-    case 't3c':
-    case 'cp':
+    case 'RPT-T3C':
+    case 'RPT-CP':
       return domain(targetWebsite) || company || null
-    case 'keyword_research':
+    case 'RPT-KR':
       return focusKeyword || domain(url) || null
     default:
       return domain(url) || company || null

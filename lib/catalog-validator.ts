@@ -6,15 +6,16 @@
  *   1. /api/admin/catalog/validate (POST) — admin clicks "Run validator"
  *   2. scripts/validate-pricing-sync.ts — pre-deploy CI check
  *
- * Seven checks (agreed 2026-04-16):
+ * Six checks (agreed 2026-04-16, updated Sprint 5 2026-04-16):
  *   1. Every stripe_price_id actually exists in Stripe
  *   2. Catalog price_usd_cents matches the Stripe price
  *   3. Every active subscription_plan has a stripe_price_id
  *   4. Every active credit_pack has both price_usd_cents AND credits_granted
  *   5. No duplicate SKUs
- *   6. SKU format valid (soft warnings only; legacy SKUs excluded)
- *   7. Legacy SKUs still present (starter, growth, pro, spark_pack, boost_pack,
- *      business_presence_report, h2h, t3c, cp)
+ *   6. SKU format valid (soft warnings only; runs on every row post-Sprint-5)
+ *
+ * Sprint 5 removed the "legacy SKUs still present" check (formerly check 7) —
+ * all SKUs now follow the new scheme, nothing legacy to enforce.
  */
 
 import { stripe } from '@/lib/stripe'
@@ -37,19 +38,9 @@ export interface ValidationResult {
   checkedAt: string
 }
 
-// Full list of pre-Sprint-5 legacy SKUs. These are excluded from SKU format
-// warnings (check 6) and verified present in the catalog (check 7). After Sprint
-// 5 renames everything to the new {TYPE}-{SLUG} scheme this list empties out.
-const LEGACY_SKUS = [
-  // Subscription plans
-  'starter', 'growth', 'pro',
-  // Credit packs
-  'spark_pack', 'boost_pack',
-  // Analyzer reports
-  'business_presence_report', 'h2h', 't3c', 'cp',
-  // Brand Visibility reports
-  'landing_page', 'ai_seo', 'keyword_research', 'seo_audit', 'seo_comprehensive',
-]
+// All SKUs use the UPPERCASE-{TYPE}-{SLUG} scheme as of Sprint 5 (2026-04-16).
+// The old LEGACY_SKUS list + legacy_missing check (check 7) were removed —
+// no more legacy entries. SKU format validation (check 6) now runs on every row.
 
 export async function runCatalogValidator(): Promise<ValidationResult> {
   const errors: ValidationIssue[] = []
@@ -83,22 +74,12 @@ export async function runCatalogValidator(): Promise<ValidationResult> {
     }
   }
 
-  // Check 7: legacy SKUs still present
-  const presentSkus = new Set(rows.map((r) => r.sku))
-  for (const legacy of LEGACY_SKUS) {
-    if (!presentSkus.has(legacy)) {
-      errors.push({ severity: 'error', sku: legacy, productId: null, check: 'legacy_missing', message: `Legacy SKU "${legacy}" is missing from catalog — code may reference it` })
-    }
-  }
-
   // Per-row checks
   for (const row of rows) {
-    // Check 6: SKU format (soft, skip legacy)
-    if (!LEGACY_SKUS.includes(row.sku)) {
-      const formatCheck = validateSkuFormat(row.sku)
-      for (const w of formatCheck.warnings) {
-        warnings.push({ severity: 'warning', sku: row.sku, productId: row.id, check: 'sku_format', message: w })
-      }
+    // Check 6: SKU format — now runs on every row since Sprint 5 rename
+    const formatCheck = validateSkuFormat(row.sku)
+    for (const w of formatCheck.warnings) {
+      warnings.push({ severity: 'warning', sku: row.sku, productId: row.id, check: 'sku_format', message: w })
     }
 
     // Checks 3+4: required fields per product type

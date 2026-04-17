@@ -42,7 +42,7 @@ export function CreditsDisplay() {
         (sum, c) => sum + ((c.balance as number) ?? 0), 0
       )
       const subPlan = subRes.data?.plan ?? 'free'
-      const isSubscription = ['starter', 'growth', 'pro'].includes(subPlan)
+      const isSubscription = ['PLN-STARTER', 'PLN-GROWTH', 'PLN-PRO'].includes(subPlan)
       const subCredits = isSubscription ? (subRes.data?.credits_remaining ?? 0) : 0
       setCredits(packTotal + subCredits)
     })

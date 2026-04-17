@@ -181,7 +181,7 @@ export function UserActionsPanel({
               </button>
               {overrideTypeOpen && (
                 <div className="absolute top-full left-0 mt-1 w-40 bg-[#2a2a2a] border border-primary/40 rounded-lg shadow-xl z-50 overflow-hidden">
-                  {['', 'starter', 'impulse', 'custom'].map((opt) => (
+                  {['', 'PLN-STARTER', 'impulse', 'custom'].map((opt) => (
                     <button
                       key={opt}
                       type="button"

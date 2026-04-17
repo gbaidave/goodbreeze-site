@@ -12,7 +12,7 @@ import { isValidPhone, normalizePhone } from '@/lib/phone'
 import { CreditsDisplay } from '@/components/tools/CreditsDisplay'
 import { createClient } from '@/lib/supabase/client'
 
-type BVReportType = 'ai_seo' | 'seo_audit' | 'keyword_research' | 'landing_page' | 'seo_comprehensive'
+type BVReportType = 'RPT-AISEO' | 'RPT-AUDIT' | 'RPT-KR' | 'RPT-LP' | 'RPT-COMP'
 
 interface ReportConfig {
   label: string
@@ -31,7 +31,7 @@ interface ReportConfig {
 }
 
 const REPORT_CONFIG: Record<BVReportType, ReportConfig> = {
-  ai_seo: {
+  'RPT-AISEO': {
     label: 'AI SEO Optimizer',
     tier: '1 credit',
     tierStyle: 'text-primary',
@@ -42,7 +42,7 @@ const REPORT_CONFIG: Record<BVReportType, ReportConfig> = {
     urlLabel: 'Page URL to Analyze',
     urlPlaceholder: 'https://yoursite.com/your-page',
   },
-  seo_audit: {
+  'RPT-AUDIT': {
     label: 'SEO Audit',
     tier: '1 credit',
     tierStyle: 'text-primary',
@@ -55,7 +55,7 @@ const REPORT_CONFIG: Record<BVReportType, ReportConfig> = {
     urlLabel: 'Website URL',
     urlPlaceholder: 'https://yoursite.com',
   },
-  keyword_research: {
+  'RPT-KR': {
     label: 'Keyword Research',
     tier: '1 credit',
     tierStyle: 'text-accent-blue',
@@ -69,7 +69,7 @@ const REPORT_CONFIG: Record<BVReportType, ReportConfig> = {
     urlLabel: 'Website URL (for context)',
     urlPlaceholder: 'https://yoursite.com',
   },
-  landing_page: {
+  'RPT-LP': {
     label: 'Landing Page Optimizer',
     tier: '1 credit',
     tierStyle: 'text-accent-blue',
@@ -82,7 +82,7 @@ const REPORT_CONFIG: Record<BVReportType, ReportConfig> = {
     urlLabel: 'Landing Page URL',
     urlPlaceholder: 'https://yoursite.com/landing-page',
   },
-  seo_comprehensive: {
+  'RPT-COMP': {
     label: 'SEO Comprehensive',
     tier: '1 credit',
     tierStyle: 'text-primary',
@@ -169,7 +169,7 @@ export default function SeoIntelligencePage() {
   const { user, loading: authLoading } = useAuth()
   const isGuest = !authLoading && !user
 
-  const [reportType, setReportType] = useState<BVReportType>('ai_seo')
+  const [reportType, setReportType] = useState<BVReportType>('RPT-AISEO')
   const [url, setUrl] = useState('')
   const [company, setCompany] = useState('')
   const [focusKeyword, setFocusKeyword] = useState('')
@@ -190,7 +190,7 @@ export default function SeoIntelligencePage() {
     supabase
       .from('products')
       .select('sku, price_credits')
-      .in('sku', ['ai_seo', 'seo_audit', 'keyword_research', 'landing_page', 'seo_comprehensive'])
+      .in('sku', ['RPT-AISEO', 'RPT-AUDIT', 'RPT-KR', 'RPT-LP', 'RPT-COMP'])
       .then(({ data }) => {
         if (!data) return
         const m: Record<string, number> = {}
@@ -278,7 +278,7 @@ export default function SeoIntelligencePage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          reportType: 'ai_seo',
+          reportType: 'RPT-AISEO',
           url,
           company,
           name: guestName,

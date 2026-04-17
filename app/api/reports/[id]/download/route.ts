@@ -16,15 +16,15 @@ import { createServiceClient } from '@/lib/supabase/service-client'
 
 // Report type → human-readable label for the filename
 const REPORT_TYPE_LABELS: Record<string, string> = {
-  h2h:               'Head to Head Analysis',
-  t3c:               'Top 3 Competitors',
-  cp:                'Competitive Position',
-  ai_seo:            'AI SEO Optimizer',
-  landing_page:      'Landing Page Optimizer',
-  keyword_research:  'Keyword Research',
-  seo_audit:         'SEO Audit',
-  seo_comprehensive: 'SEO Comprehensive',
-  business_presence_report: 'Business Presence Report',
+  'RPT-H2H':   'Head to Head Analysis',
+  'RPT-T3C':   'Top 3 Competitors',
+  'RPT-CP':    'Competitive Position',
+  'RPT-AISEO': 'AI SEO Optimizer',
+  'RPT-LP':    'Landing Page Optimizer',
+  'RPT-KR':    'Keyword Research',
+  'RPT-AUDIT': 'SEO Audit',
+  'RPT-COMP':  'SEO Comprehensive',
+  'RPT-BPR':   'Business Presence Report',
 }
 
 function extractDomain(url: string | undefined): string {
@@ -43,19 +43,19 @@ function buildIdentifier(reportType: string, inputData: Record<string, unknown>)
   const domain = inputData.domain as string | undefined
 
   switch (reportType) {
-    case 'h2h': {
+    case 'RPT-H2H': {
       const target = extractDomain(targetWebsite) || company || 'Target'
       const comp = competitor1 || extractDomain(competitor1Website) || 'Competitor'
       return `${target} vs ${comp}`
     }
-    case 't3c':
-    case 'cp':
+    case 'RPT-T3C':
+    case 'RPT-CP':
       return extractDomain(targetWebsite) || company || ''
-    case 'keyword_research':
+    case 'RPT-KR':
       return focusKeyword || extractDomain(url) || ''
-    case 'business_presence_report':
+    case 'RPT-BPR':
       return domain || extractDomain(url) || company || ''
-    default: // ai_seo, landing_page, seo_audit, seo_comprehensive
+    default: // RPT-AISEO, RPT-LP, RPT-AUDIT, RPT-COMP
       return extractDomain(url) || company || ''
   }
 }

@@ -6,7 +6,6 @@ import type { ValidationResult, ValidationIssue } from '@/lib/catalog-validator'
 const CHECK_LABELS: Record<string, string> = {
   load: 'Catalog load error',
   duplicate_sku: 'Duplicate SKU',
-  legacy_missing: 'Legacy SKU missing',
   sku_format: 'SKU format warning',
   missing_stripe_price_id: 'Missing Stripe Price ID',
   missing_credits_granted: 'Missing credits_granted',

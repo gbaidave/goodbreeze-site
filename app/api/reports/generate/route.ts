@@ -41,17 +41,17 @@ const N8N_BASE = process.env.N8N_WEBHOOK_BASE_URL ?? 'http://localhost:5678'
 
 const N8N_WEBHOOKS: Record<ReportType, string> = {
   // Analyzer
-  h2h:               `${N8N_BASE}/webhook/bfa6c879-77ea-475c-b279-09f6fdbfdfde`,
-  t3c:               `${N8N_BASE}/webhook/bfa6c879-77ea-475c-b279-09f6fdbfdfde`,
-  cp:                `${N8N_BASE}/webhook/bfa6c879-77ea-475c-b279-09f6fdbfdfde`,
+  'RPT-H2H':   `${N8N_BASE}/webhook/bfa6c879-77ea-475c-b279-09f6fdbfdfde`,
+  'RPT-T3C':   `${N8N_BASE}/webhook/bfa6c879-77ea-475c-b279-09f6fdbfdfde`,
+  'RPT-CP':    `${N8N_BASE}/webhook/bfa6c879-77ea-475c-b279-09f6fdbfdfde`,
   // SEO Auditor PDFs
-  ai_seo:            `${N8N_BASE}/webhook/ai-seo-optimizer-pdf`,
-  landing_page:      `${N8N_BASE}/webhook/landing-page-optimizer-pdf`,
-  keyword_research:  `${N8N_BASE}/webhook/keyword-research-pdf`,
-  seo_audit:         `${N8N_BASE}/webhook/seo-audit-v4-pdf`,
-  seo_comprehensive: `${N8N_BASE}/webhook/seo-comprehensive-pdf`,
+  'RPT-AISEO': `${N8N_BASE}/webhook/ai-seo-optimizer-pdf`,
+  'RPT-LP':    `${N8N_BASE}/webhook/landing-page-optimizer-pdf`,
+  'RPT-KR':    `${N8N_BASE}/webhook/keyword-research-pdf`,
+  'RPT-AUDIT': `${N8N_BASE}/webhook/seo-audit-v4-pdf`,
+  'RPT-COMP':  `${N8N_BASE}/webhook/seo-comprehensive-pdf`,
   // Business Presence Report
-  business_presence_report: `${N8N_BASE}/webhook/business-presence-report-generate`,
+  'RPT-BPR':   `${N8N_BASE}/webhook/business-presence-report-generate`,
 }
 
 // ============================================================================
@@ -117,17 +117,17 @@ function validateInput(body: GenerateRequest): string | null {
       return `${field} exceeds maximum length of ${MAX_STR_LEN} characters`
   }
   // Required fields per report type
-  if (body.reportType === 'business_presence_report') {
+  if (body.reportType === 'RPT-BPR') {
     if (!body.url || !isValidHttpUrl(body.url))
       return 'Valid website URL is required'
     return null
   }
-  if (['h2h', 't3c', 'cp'].includes(body.reportType)) {
+  if (['RPT-H2H', 'RPT-T3C', 'RPT-CP'].includes(body.reportType)) {
     if (!body.targetWebsite || !isValidHttpUrl(body.targetWebsite))
       return 'Valid target website URL is required'
-    if (body.reportType === 'h2h' && (!body.competitor1Website || !isValidHttpUrl(body.competitor1Website)))
+    if (body.reportType === 'RPT-H2H' && (!body.competitor1Website || !isValidHttpUrl(body.competitor1Website)))
       return 'Valid competitor website URL is required'
-    if (body.reportType === 't3c') {
+    if (body.reportType === 'RPT-T3C') {
       if (!body.competitor1Website || !body.competitor2Website || !body.competitor3Website)
         return 'All 3 competitor website URLs are required for Top 3 Competitors report'
     }
@@ -196,7 +196,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 2c. Landing page optimizer: reject homepage URLs immediately (no path or just /)
-    if (reportType === 'landing_page' && body.url) {
+    if (reportType === 'RPT-LP' && body.url) {
       try {
         const parsed = new URL(body.url)
         if (parsed.pathname === '/' || parsed.pathname === '') {
@@ -249,7 +249,7 @@ export async function POST(request: NextRequest) {
     let usedPlanAllowance = false
     let entitlement: Awaited<ReturnType<typeof checkEntitlement>>
 
-    if (reportType === 'business_presence_report') {
+    if (reportType === 'RPT-BPR') {
       const bprResult = await checkBprEntitlement(user.id, plan as Plan)
       usedPlanAllowance = bprResult.usedPlanAllowance ?? false
       entitlement = bprResult
@@ -382,7 +382,7 @@ function buildN8nPayload(
   const { userEmail, userName, sessionId } = meta
 
   // Analyzer reports — field names must match n8n Orchestrator Agent prompts
-  if (reportType === 'h2h') {
+  if (reportType === 'RPT-H2H') {
     return {
       reportType: 'Head to Head',
       targetCompany: extractDomain(body.targetWebsite!),
@@ -394,7 +394,7 @@ function buildN8nPayload(
       sessionId,
     }
   }
-  if (reportType === 't3c') {
+  if (reportType === 'RPT-T3C') {
     return {
       reportType: 'Top 3 Competitors',
       targetCompany: extractDomain(body.targetWebsite!),
@@ -410,7 +410,7 @@ function buildN8nPayload(
       sessionId,
     }
   }
-  if (reportType === 'cp') {
+  if (reportType === 'RPT-CP') {
     return {
       reportType: 'Competitive Position',
       targetCompany: extractDomain(body.targetWebsite!),
@@ -422,7 +422,7 @@ function buildN8nPayload(
   }
 
   // Business Presence Report
-  if (reportType === 'business_presence_report') {
+  if (reportType === 'RPT-BPR') {
     return {
       url: body.url,
       userEmail,

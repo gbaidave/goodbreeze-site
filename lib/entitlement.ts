@@ -16,14 +16,14 @@ import { getReportCreditCost } from '@/lib/catalog'
 // ============================================================================
 
 export type ReportType =
-  | 'h2h' | 't3c' | 'cp'
-  | 'ai_seo' | 'landing_page' | 'keyword_research'
-  | 'seo_audit' | 'seo_comprehensive'
-  | 'business_presence_report'
+  | 'RPT-H2H' | 'RPT-T3C' | 'RPT-CP'
+  | 'RPT-AISEO' | 'RPT-LP' | 'RPT-KR'
+  | 'RPT-AUDIT' | 'RPT-COMP'
+  | 'RPT-BPR'
 
-export type Product = 'analyzer' | 'seo_auditor' | 'business_presence_report'
+export type Product = 'analyzer' | 'seo_auditor' | 'RPT-BPR'
 
-export type Plan = 'free' | 'impulse' | 'starter' | 'growth' | 'pro' | 'custom'
+export type Plan = 'free' | 'impulse' | 'PLN-STARTER' | 'PLN-GROWTH' | 'PLN-PRO' | 'custom'
 
 export interface EntitlementResult {
   allowed: boolean
@@ -32,7 +32,7 @@ export interface EntitlementResult {
   creditRowId?: string     // which credits row to decrement
   creditAmount?: number    // how many credits to deduct (for variable-cost reports)
   freeSystem?: string      // which free_reports_used key was reserved
-  upgradePrompt?: 'impulse' | 'starter'  // what to show in paywall
+  upgradePrompt?: 'impulse' | 'PLN-STARTER'  // what to show in paywall
 }
 
 // ============================================================================
@@ -49,17 +49,17 @@ const REPORT_META: Record<ReportType, {
   freeSlotSystem?: string   // if set, users get 1 free via free_reports_used JSONB
 }> = {
   // Analyzer
-  h2h:               { product: 'analyzer',    impulseAllowed: true,  usesMoz: false, usesSerp: false, creditCost: 1 },
-  t3c:               { product: 'analyzer',    impulseAllowed: true,  usesMoz: false, usesSerp: false, creditCost: 1 },
-  cp:                { product: 'analyzer',    impulseAllowed: true,  usesMoz: false, usesSerp: false, creditCost: 1 },
+  'RPT-H2H':    { product: 'analyzer',    impulseAllowed: true,  usesMoz: false, usesSerp: false, creditCost: 1 },
+  'RPT-T3C':    { product: 'analyzer',    impulseAllowed: true,  usesMoz: false, usesSerp: false, creditCost: 1 },
+  'RPT-CP':     { product: 'analyzer',    impulseAllowed: true,  usesMoz: false, usesSerp: false, creditCost: 1 },
   // SEO Auditor
-  ai_seo:            { product: 'seo_auditor', impulseAllowed: true,  usesMoz: false, usesSerp: false, creditCost: 1 },
-  landing_page:      { product: 'seo_auditor', impulseAllowed: true,  usesMoz: false, usesSerp: false, creditCost: 1 },
-  keyword_research:  { product: 'seo_auditor', impulseAllowed: true,  usesMoz: false, usesSerp: true,  creditCost: 1 },
-  seo_audit:         { product: 'seo_auditor', impulseAllowed: true,  usesMoz: true,  usesSerp: true,  creditCost: 1 },
-  seo_comprehensive: { product: 'seo_auditor', impulseAllowed: true,  usesMoz: true,  usesSerp: true,  creditCost: 1 },
+  'RPT-AISEO':  { product: 'seo_auditor', impulseAllowed: true,  usesMoz: false, usesSerp: false, creditCost: 1 },
+  'RPT-LP':     { product: 'seo_auditor', impulseAllowed: true,  usesMoz: false, usesSerp: false, creditCost: 1 },
+  'RPT-KR':     { product: 'seo_auditor', impulseAllowed: true,  usesMoz: false, usesSerp: true,  creditCost: 1 },
+  'RPT-AUDIT':  { product: 'seo_auditor', impulseAllowed: true,  usesMoz: true,  usesSerp: true,  creditCost: 1 },
+  'RPT-COMP':   { product: 'seo_auditor', impulseAllowed: true,  usesMoz: true,  usesSerp: true,  creditCost: 1 },
   // Business Presence Report
-  business_presence_report: { product: 'business_presence_report', impulseAllowed: true, usesMoz: false, usesSerp: false, acceptsAnyCredit: true, creditCost: 3, freeSlotSystem: 'business_presence_report' },
+  'RPT-BPR':    { product: 'RPT-BPR', impulseAllowed: true, usesMoz: false, usesSerp: false, acceptsAnyCredit: true, creditCost: 3, freeSlotSystem: 'RPT-BPR' },
 }
 
 // Plan monthly credit caps are now read from the `products` catalog via
@@ -139,7 +139,7 @@ export async function checkEntitlement(
   //    adjusted on upgrade/downgrade).
   //    If credits_remaining > 0, allow via subscription.
   //    If at zero, fall through to credit pack check below.
-  if (plan === 'starter' || plan === 'growth' || plan === 'pro') {
+  if (plan === 'PLN-STARTER' || plan === 'PLN-GROWTH' || plan === 'PLN-PRO') {
     if ((sub?.credits_remaining ?? 0) > 0) {
       return { allowed: true, deductFrom: 'subscription' }
     }
@@ -171,7 +171,7 @@ export async function checkEntitlement(
     return {
       allowed: false,
       reason: `This report type requires a Starter subscription.`,
-      upgradePrompt: 'starter',
+      upgradePrompt: 'PLN-STARTER',
     }
   }
 
@@ -231,7 +231,7 @@ export async function checkBprEntitlement(
   userId: string,
   plan: Plan
 ): Promise<BprEntitlementResult> {
-  const reportType: ReportType = 'business_presence_report'
+  const reportType: ReportType = 'RPT-BPR'
   const meta = REPORT_META[reportType]
   const supabase = getServiceClient()
 
@@ -264,7 +264,7 @@ export async function checkBprEntitlement(
   }
 
   // 2. Plan allowance (only for paid plans)
-  if (['starter', 'growth', 'pro'].includes(plan)) {
+  if (['PLN-STARTER', 'PLN-GROWTH', 'PLN-PRO'].includes(plan)) {
     const planCheck = await checkPlanAllowance(userId, reportType, plan)
     if (planCheck.allowed) {
       return { allowed: true, deductFrom: 'subscription', usedPlanAllowance: true }
@@ -279,7 +279,7 @@ export async function checkBprEntitlement(
   //    cover the BPR cost, consume from there before falling to pack credits.
   //    Other report types still use the checkEntitlement path and decrement by 1.
   //    TODO: remove when credits unified — see .workspace/PLAN-credits-unification.md
-  if (['starter', 'growth', 'pro'].includes(plan)) {
+  if (['PLN-STARTER', 'PLN-GROWTH', 'PLN-PRO'].includes(plan)) {
     const { data: sub } = await supabase
       .from('subscriptions')
       .select('credits_remaining')
@@ -350,7 +350,7 @@ export async function recordUsage(
     // BPR with creditAmount > 1 uses the variable-amount RPC (migration 063).
     // Every other report type falls through to the existing by-1 RPC unchanged.
     // TODO: collapse when credits unified — see .workspace/PLAN-credits-unification.md
-    if (reportType === 'business_presence_report' && creditAmount && creditAmount > 1) {
+    if (reportType === 'RPT-BPR' && creditAmount && creditAmount > 1) {
       await supabase.rpc('decrement_subscription_credits_by', { p_user_id: userId, p_amount: creditAmount })
     } else {
       await supabase.rpc('decrement_subscription_credits', { p_user_id: userId })

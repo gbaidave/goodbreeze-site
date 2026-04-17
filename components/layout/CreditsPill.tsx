@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/components/auth/AuthProvider'
 
-const SUBSCRIPTION_PLANS = ['starter', 'growth', 'pro']
+const SUBSCRIPTION_PLANS = ['PLN-STARTER', 'PLN-GROWTH', 'PLN-PRO']
 const UNLIMITED_ROLES = ['tester', 'admin', 'superadmin', 'support']
 
 export function CreditsPill() {

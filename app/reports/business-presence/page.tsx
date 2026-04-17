@@ -87,7 +87,7 @@ function BusinessPresenceInner() {
           .from('reports')
           .select('id, status, html_content, pdf_url, created_at, expires_at, input_data')
           .eq('user_id', user!.id)
-          .eq('report_type', 'business_presence_report')
+          .eq('report_type', 'RPT-BPR')
           .order('created_at', { ascending: false })
           .limit(1)
           .single()
@@ -113,7 +113,7 @@ function BusinessPresenceInner() {
           .eq('id', user!.id)
           .single()
         const used = profile?.free_reports_used ?? {}
-        setHasFreeSlot(!used['business_presence_report'])
+        setHasFreeSlot(!used['RPT-BPR'])
       } catch {
         // Default to showing credit cost
       }
@@ -139,12 +139,12 @@ function BusinessPresenceInner() {
       const res = await fetch('/api/reports/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reportType: 'business_presence_report', url: url.trim() }),
+        body: JSON.stringify({ reportType: 'RPT-BPR', url: url.trim() }),
       })
       const data = await res.json()
       if (res.status === 402) { setError(data.error); setUpgradePrompt(data.upgradePrompt ?? 'impulse'); return }
       if (!res.ok) { setError(data.error || 'Something went wrong.'); return }
-      captureEvent('tool_form_submit', { reportType: 'business_presence_report' })
+      captureEvent('tool_form_submit', { reportType: 'RPT-BPR' })
       window.dispatchEvent(new Event('credits-changed'))
       setReport({
         id: data.reportId,

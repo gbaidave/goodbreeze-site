@@ -33,12 +33,12 @@ export default function SeoComprehensivePage() {
       const res = await fetch('/api/reports/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reportType: 'seo_comprehensive', url, company, focusKeyword }),
+        body: JSON.stringify({ reportType: 'RPT-COMP', url, company, focusKeyword }),
       })
       const data = await res.json()
-      if (res.status === 402) { setError(data.error); setUpgradePrompt(data.upgradePrompt ?? 'starter'); return }
+      if (res.status === 402) { setError(data.error); setUpgradePrompt(data.upgradePrompt ?? 'PLN-STARTER'); return }
       if (!res.ok) { setError(data.error || 'Something went wrong.'); return }
-      captureEvent('tool_form_submit', { reportType: 'seo_comprehensive' })
+      captureEvent('tool_form_submit', { reportType: 'RPT-COMP' })
       setReportId(data.reportId)
       setSubmitted(true)
     } catch {

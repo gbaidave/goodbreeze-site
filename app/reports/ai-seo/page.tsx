@@ -32,12 +32,12 @@ export default function AiSeoPage() {
       const res = await fetch('/api/reports/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reportType: 'ai_seo', url, company }),
+        body: JSON.stringify({ reportType: 'RPT-AISEO', url, company }),
       })
       const data = await res.json()
       if (res.status === 402) { setError(data.error); setUpgradePrompt(data.upgradePrompt ?? 'impulse'); return }
       if (!res.ok) { setError(data.error || 'Something went wrong.'); return }
-      captureEvent('tool_form_submit', { reportType: 'ai_seo' })
+      captureEvent('tool_form_submit', { reportType: 'RPT-AISEO' })
       setReportId(data.reportId)
       setSubmitted(true)
     } catch {

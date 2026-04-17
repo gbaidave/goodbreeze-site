@@ -36,7 +36,7 @@ export default async function AdminOverviewPage() {
     supabase.from('reports').select('*', { count: 'exact', head: true }).gte('created_at', weekStart),
     supabase.from('reports').select('*', { count: 'exact', head: true }).gte('created_at', monthStart),
     supabase.from('subscriptions').select('*', { count: 'exact', head: true })
-      .in('plan', ['starter', 'impulse']).eq('status', 'active'),
+      .in('plan', ['PLN-STARTER', 'impulse']).eq('status', 'active'),
     supabase.from('reports').select('*', { count: 'exact', head: true })
       .eq('status', 'failed').gte('created_at', monthStart),
     supabase.from('support_requests').select('*', { count: 'exact', head: true }).eq('status', 'open'),

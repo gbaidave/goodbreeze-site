@@ -53,11 +53,11 @@ const ADMIN_STATUS_STYLES: Record<AdminStatus, string> = {
 }
 
 const REPORT_TYPES: { value: string; label: string }[] = [
-  { value: 'keyword_research',  label: 'Keyword Research' },
-  { value: 'seo_audit',         label: 'SEO Audit' },
-  { value: 'landing_page',      label: 'LP Optimizer' },
-  { value: 'ai_seo',            label: 'AI SEO' },
-  { value: 'seo_comprehensive', label: 'SEO Comprehensive' },
+  { value: 'RPT-KR',    label: 'Keyword Research' },
+  { value: 'RPT-AUDIT', label: 'SEO Audit' },
+  { value: 'RPT-LP',    label: 'LP Optimizer' },
+  { value: 'RPT-AISEO', label: 'AI SEO' },
+  { value: 'RPT-COMP',  label: 'SEO Comprehensive' },
   { value: 'Head to Head',      label: 'Head to Head' },
   { value: 'Top 3 Competitors', label: 'Top 3 Competitors' },
   { value: 'Competitive Position', label: 'Competitive Position' },

@@ -669,7 +669,7 @@ export default function SupportForm({ isAuthenticated, userName, userEmail, plan
     }
   }
 
-  const planLabel = plan === 'starter' ? 'Starter' : plan === 'growth' ? 'Growth' : plan === 'pro' ? 'Pro' : 'Free'
+  const planLabel = plan === 'PLN-STARTER' ? 'Starter' : plan === 'PLN-GROWTH' ? 'Growth' : plan === 'PLN-PRO' ? 'Pro' : 'Free'
 
   return (
     <div className="min-h-screen bg-dark py-24 px-6">

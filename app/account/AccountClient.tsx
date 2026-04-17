@@ -429,15 +429,15 @@ export default function AccountClient({
     role === 'admin' ? 'Admin' :
     role === 'support' ? 'Support' :
     role === 'tester' ? 'Tester' :
-    plan === 'starter' ? 'Starter' :
-    plan === 'growth' ? 'Growth' :
-    plan === 'pro' ? 'Pro' :
-    plan === 'spark_pack' ? 'Spark Pack' :
-    plan === 'boost_pack' ? 'Boost Pack' :
+    plan === 'PLN-STARTER' ? 'Starter' :
+    plan === 'PLN-GROWTH' ? 'Growth' :
+    plan === 'PLN-PRO' ? 'Pro' :
+    plan === 'PCK-SPARK' ? 'Spark Pack' :
+    plan === 'PCK-BOOST' ? 'Boost Pack' :
     plan === 'impulse' ? 'Impulse' : 'Free'
 
-  const isSubscription = plan === 'starter' || plan === 'growth' || plan === 'pro'
-  const isPaid = isSubscription || plan === 'impulse' || plan === 'spark_pack' || plan === 'boost_pack'
+  const isSubscription = plan === 'PLN-STARTER' || plan === 'PLN-GROWTH' || plan === 'PLN-PRO'
+  const isPaid = isSubscription || plan === 'impulse' || plan === 'PCK-SPARK' || plan === 'PCK-BOOST'
 
   return (
     <div className="min-h-screen bg-dark py-12 px-6">
@@ -611,7 +611,7 @@ export default function AccountClient({
             <span className={`text-xs font-semibold px-3 py-1 rounded-full border ${
               isPrivileged
                 ? 'bg-primary/10 text-primary border-primary/30'
-                : plan === 'starter'
+                : plan === 'PLN-STARTER'
                 ? 'bg-primary/10 text-primary border-primary/30'
                 : plan === 'impulse'
                 ? 'bg-accent-blue/10 text-accent-blue border-accent-blue/30'
