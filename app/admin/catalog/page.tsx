@@ -251,7 +251,7 @@ export default function AdminCatalogPage() {
           <button
             type="button"
             onClick={openCreate}
-            className="px-3 py-1.5 bg-primary text-black font-medium rounded text-sm hover:bg-cyan-600"
+            className="px-3 py-1.5 bg-cyan-500 text-black font-medium rounded text-sm hover:bg-cyan-400"
           >
             + Add product
           </button>
@@ -274,7 +274,7 @@ export default function AdminCatalogPage() {
             type="checkbox"
             checked={showArchived}
             onChange={(e) => setShowArchived(e.target.checked)}
-            className="accent-primary"
+            className="accent-cyan-500"
           />
           Show archived / retired
         </label>
@@ -385,7 +385,7 @@ export default function AdminCatalogPage() {
                               <button
                                 onClick={() => handleSave(item.id)}
                                 disabled={saving}
-                                className="px-3 py-1 bg-primary text-black rounded text-xs hover:bg-cyan-600 disabled:opacity-50"
+                                className="px-3 py-1 bg-cyan-500 text-black rounded text-xs hover:bg-cyan-400 disabled:opacity-50"
                               >
                                 {saving ? 'Saving...' : 'Save'}
                               </button>

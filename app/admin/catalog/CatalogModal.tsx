@@ -267,7 +267,7 @@ export default function CatalogModal({ mode, item, onClose, onSaved }: Props) {
                 onClick={() => setActiveTab(t.id)}
                 className={`w-full text-left px-4 py-2 text-sm flex items-center justify-between gap-2 border-l-2 ${
                   activeTab === t.id
-                    ? 'text-primary border-primary bg-primary/5'
+                    ? 'text-cyan-400 border-cyan-500 bg-cyan-500/5'
                     : 'text-zinc-400 border-transparent hover:text-white hover:bg-white/5'
                 }`}
               >
@@ -343,7 +343,7 @@ export default function CatalogModal({ mode, item, onClose, onSaved }: Props) {
                       )}
                     </div>
                     <p className="text-xs text-zinc-500 mt-1">
-                      Format: <code className="text-primary">{'{PREFIX}-{SLUG}'}</code> UPPERCASE + dashes.{' '}
+                      Format: <code className="text-cyan-400 font-mono">{'{PREFIX}-{SLUG}'}</code> UPPERCASE + dashes.{' '}
                       <strong>Immutable after save.</strong>
                     </p>
                     {skuWarnings.length > 0 && (
@@ -461,7 +461,7 @@ export default function CatalogModal({ mode, item, onClose, onSaved }: Props) {
                     <button
                       type="button"
                       onClick={addFeature}
-                      className="px-3 py-1.5 border border-dashed border-primary/40 text-primary text-xs rounded hover:bg-primary/5"
+                      className="px-3 py-1.5 border border-dashed border-cyan-400/40 text-cyan-400 text-xs rounded hover:bg-cyan-500/5"
                     >+ Add feature</button>
                   </div>
                 </div>
@@ -570,7 +570,7 @@ export default function CatalogModal({ mode, item, onClose, onSaved }: Props) {
                 <p className="text-sm text-zinc-400">
                   This tab is reserved for future features. Schema columns are already in place from migration 068,
                   so the feature can be turned on without data migration. See{' '}
-                  <code className="text-primary text-xs">PLAN-sprint4-catalog-design.md</code> for the design.
+                  <code className="text-cyan-400 text-xs">PLAN-sprint4-catalog-design.md</code> for the design.
                 </p>
                 <div className="bg-zinc-950 border border-dashed border-zinc-700 rounded p-8 text-center text-sm text-zinc-500">
                   {TABS.find((t) => t.id === activeTab)?.label} — placeholder
@@ -607,7 +607,7 @@ export default function CatalogModal({ mode, item, onClose, onSaved }: Props) {
               type="button"
               onClick={handleSave}
               disabled={saving}
-              className="px-4 py-1.5 bg-primary text-black font-medium rounded text-sm hover:bg-cyan-600 disabled:opacity-50"
+              className="px-4 py-1.5 bg-cyan-500 text-black font-medium rounded text-sm hover:bg-cyan-400 disabled:opacity-50"
             >
               {saving ? 'Saving…' : mode === 'create' ? 'Create + Sync Stripe' : 'Save + Sync Stripe'}
             </button>
