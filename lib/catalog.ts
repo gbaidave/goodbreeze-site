@@ -50,9 +50,13 @@ async function loadCatalog(): Promise<CatalogItem[]> {
   }
 
   const supabase = getServiceClient()
+  // Keep this SELECT limited to columns that exist pre-migration-068 so lib/catalog
+  // works on BOTH environments (staging has 068; production does not yet). Admin
+  // catalog UI has its own SELECT that includes Sprint-4 columns and is gated behind
+  // the admin page which is only ever loaded in an env where 068 has been applied.
   const { data, error } = await supabase
     .from('products')
-    .select('id, sku, name, product_type, price_credits, price_usd_cents, credits_granted, stripe_price_id, active, display_order, metadata, description, tagline, features, lifecycle_status, badge, sync_error_detail, last_sync_attempt_at, last_sync_success_at')
+    .select('id, sku, name, product_type, price_credits, price_usd_cents, credits_granted, stripe_price_id, active, display_order, metadata, description, tagline, features, lifecycle_status')
     .not('sku', 'is', null)
     .order('display_order', { ascending: true })
 
@@ -77,10 +81,10 @@ async function loadCatalog(): Promise<CatalogItem[]> {
     tagline: row.tagline,
     features: Array.isArray(row.features) ? row.features : [],
     lifecycleStatus: row.lifecycle_status,
-    badge: row.badge ?? (row.metadata?.badge as string | undefined) ?? null,
-    syncErrorDetail: row.sync_error_detail,
-    lastSyncAttemptAt: row.last_sync_attempt_at,
-    lastSyncSuccessAt: row.last_sync_success_at,
+    badge: (row.metadata?.badge as string | undefined) ?? null,
+    syncErrorDetail: null,
+    lastSyncAttemptAt: null,
+    lastSyncSuccessAt: null,
   }))
 
   cache = { items, fetchedAt: Date.now() }
