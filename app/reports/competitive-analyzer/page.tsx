@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -10,6 +10,7 @@ import { ExhaustedState } from '@/components/ExhaustedState'
 import { PhoneGatePrompt } from '@/components/tools/PhoneGatePrompt'
 import { CreditsDisplay } from '@/components/tools/CreditsDisplay'
 import { ReportSubmittedModal } from '@/components/tools/ReportSubmittedModal'
+import { createClient } from '@/lib/supabase/client'
 
 type ReportType = 'h2h' | 't3c' | 'cp'
 
@@ -39,6 +40,28 @@ export default function SalesAnalyzer() {
   const [error, setError] = useState('')
   const [upgradePrompt, setUpgradePrompt] = useState('')
   const [phoneRequired, setPhoneRequired] = useState(false)
+  // Catalog-driven credit cost per report type; falls back to "1 credit" string.
+  const [costBySku, setCostBySku] = useState<Record<string, number>>({})
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase
+      .from('products')
+      .select('sku, price_credits')
+      .in('sku', ['h2h', 't3c', 'cp'])
+      .then(({ data }) => {
+        if (!data) return
+        const m: Record<string, number> = {}
+        for (const row of data) if (row.price_credits != null) m[row.sku] = row.price_credits
+        setCostBySku(m)
+      })
+  }, [])
+
+  const creditLabel = (sku: string, fallback: string): string => {
+    const n = costBySku[sku]
+    if (n == null) return fallback
+    return `${n} credit${n === 1 ? '' : 's'}`
+  }
 
   if (upgradePrompt) return <ExhaustedState error={error} upgradePrompt={upgradePrompt} />
 
@@ -159,7 +182,7 @@ export default function SalesAnalyzer() {
                   }`}
                 >
                   {label}
-                  <span className="block text-xs font-normal mt-0.5 opacity-70">1 credit</span>
+                  <span className="block text-xs font-normal mt-0.5 opacity-70">{creditLabel(type, '1 credit')}</span>
                 </button>
               ))}
             </div>

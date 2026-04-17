@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { useAuth } from '@/components/auth/AuthProvider'
@@ -10,6 +10,7 @@ import { ExhaustedState } from '@/components/ExhaustedState'
 import { PhoneGatePrompt } from '@/components/tools/PhoneGatePrompt'
 import { isValidPhone, normalizePhone } from '@/lib/phone'
 import { CreditsDisplay } from '@/components/tools/CreditsDisplay'
+import { createClient } from '@/lib/supabase/client'
 
 type BVReportType = 'ai_seo' | 'seo_audit' | 'keyword_research' | 'landing_page' | 'seo_comprehensive'
 
@@ -181,6 +182,28 @@ export default function SeoIntelligencePage() {
   const [error, setError] = useState('')
   const [upgradePrompt, setUpgradePrompt] = useState('')
   const [phoneRequired, setPhoneRequired] = useState(false)
+  // Catalog-driven credit cost per report type; falls back to REPORT_CONFIG.tier string.
+  const [costBySku, setCostBySku] = useState<Record<string, number>>({})
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase
+      .from('products')
+      .select('sku, price_credits')
+      .in('sku', ['ai_seo', 'seo_audit', 'keyword_research', 'landing_page', 'seo_comprehensive'])
+      .then(({ data }) => {
+        if (!data) return
+        const m: Record<string, number> = {}
+        for (const row of data) if (row.price_credits != null) m[row.sku] = row.price_credits
+        setCostBySku(m)
+      })
+  }, [])
+
+  const creditLabel = (sku: string, fallback: string): string => {
+    const n = costBySku[sku]
+    if (n == null) return fallback
+    return `${n} credit${n === 1 ? '' : 's'}`
+  }
 
   const config = REPORT_CONFIG[reportType]
 
@@ -344,7 +367,7 @@ export default function SeoIntelligencePage() {
                   )}
                   <span className="block font-semibold mb-1 leading-tight">{cfg.label}</span>
                   <span className={`block text-[10px] font-normal ${reportType === type ? 'opacity-70' : cfg.tierStyle + ' opacity-80'}`}>
-                    {cfg.tier}
+                    {creditLabel(type, cfg.tier)}
                   </span>
                 </button>
               ))}

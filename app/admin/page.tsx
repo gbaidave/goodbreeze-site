@@ -38,14 +38,27 @@ export default async function AdminOverviewPage() {
     supabase.from('support_requests').select('*', { count: 'exact', head: true }).eq('status', 'open'),
   ])
 
-  // MRR estimate: count active starter subs × $20
-  const { count: starterCount } = await supabase
-    .from('subscriptions')
-    .select('*', { count: 'exact', head: true })
-    .eq('plan', 'starter')
-    .eq('status', 'active')
-
-  const mrrEstimate = (starterCount ?? 0) * 20
+  // MRR estimate: count active subs per plan × catalog USD price for that plan.
+  // Catalog-driven — pick up new plans automatically. No hardcoded plan list or prices.
+  const { getActiveSubscriptionPlans } = await import('@/lib/catalog')
+  const activePlans = await getActiveSubscriptionPlans()
+  const mrrRows = await Promise.all(
+    activePlans.map(async (plan) => {
+      const { count } = await supabase
+        .from('subscriptions')
+        .select('*', { count: 'exact', head: true })
+        .eq('plan', plan.sku)
+        .eq('status', 'active')
+      const usd = (plan.priceUsdCents ?? 0) / 100
+      return { sku: plan.sku, name: plan.name, count: count ?? 0, usd }
+    })
+  )
+  const mrrEstimate = mrrRows.reduce((sum, r) => sum + r.count * r.usd, 0)
+  // Breakdown for the sub-label: "Starter 3 × $20 + Growth 1 × $30"
+  const mrrBreakdown = mrrRows
+    .filter((r) => r.count > 0)
+    .map((r) => `${r.name.replace(/\s+Plan$/i, '')} ${r.count} × $${r.usd}`)
+    .join(' + ') || 'No active paid subs'
 
   // Recent signups (last 7 days)
   const { data: recentUsers } = await supabase
@@ -66,7 +79,7 @@ export default async function AdminOverviewPage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="Total users" value={totalUsers ?? 0} />
         <StatCard label="Active paid users" value={paidUsers ?? 0} />
-        <StatCard label="MRR estimate" value={`$${mrrEstimate}`} sub="Starter × $20/mo" />
+        <StatCard label="MRR estimate" value={`$${mrrEstimate}`} sub={mrrBreakdown} />
         <StatCard label="Open support" value={openSupport ?? 0} sub="requests" />
       </div>
 

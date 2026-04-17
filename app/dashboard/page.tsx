@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service-client'
+import { getCatalogItem, getActiveSubscriptionPlans, getActivePackProducts } from '@/lib/catalog'
 import { canDo } from '@/lib/permissions'
 import ReportList from './ReportList'
 import { ReferralSection } from './ReferralSection'
@@ -44,6 +45,26 @@ export default async function DashboardPage({
   const sub = subRes.data
   const credits = creditsRes.data ?? []
   const reports = reportsRes.data ?? []
+
+  // Catalog snapshot for dashboard copy (BPR cost + cheapest plan/pack for upgrade banner)
+  const [bprCatalog, catalogPlans, catalogPacks] = await Promise.all([
+    getCatalogItem('business_presence_report'),
+    getActiveSubscriptionPlans(),
+    getActivePackProducts(),
+  ])
+  const bprCreditCost = bprCatalog?.priceCredits ?? 0
+  const cheapestPlanCents = catalogPlans.length
+    ? Math.min(...catalogPlans.map(p => p.priceUsdCents ?? Number.POSITIVE_INFINITY))
+    : null
+  const cheapestPackCents = catalogPacks.length
+    ? Math.min(...catalogPacks.map(p => p.priceUsdCents ?? Number.POSITIVE_INFINITY))
+    : null
+  const planFrom = cheapestPlanCents && cheapestPlanCents !== Number.POSITIVE_INFINITY
+    ? `$${Math.round(cheapestPlanCents / 100)}`
+    : ''
+  const packFrom = cheapestPackCents && cheapestPackCents !== Number.POSITIVE_INFINITY
+    ? `$${Math.round(cheapestPackCents / 100)}`
+    : ''
   let referralCode = referralRes.data?.code ?? null
   if (!referralCode) {
     // Auto-generate a referral code for users who don't have one yet
@@ -278,7 +299,7 @@ export default async function DashboardPage({
                 ) : hasFreeSlot ? (
                   <p className="text-sm text-gray-400">See how visible your business is online. <span className="text-primary font-semibold">First one is free.</span></p>
                 ) : (
-                  <p className="text-sm text-gray-400">See how visible your business is online. <span className="text-gray-500">3 credits per report.</span></p>
+                  <p className="text-sm text-gray-400">See how visible your business is online. <span className="text-gray-500">{bprCreditCost} credit{bprCreditCost === 1 ? '' : 's'} per report.</span></p>
                 )}
               </div>
               <a
@@ -302,7 +323,16 @@ export default async function DashboardPage({
           <div className="bg-gradient-to-r from-primary/10 to-accent-blue/10 border border-primary/30 rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <p className="text-white font-semibold text-lg">Get more reports</p>
-              <p className="text-gray-400 text-sm mt-1">Credit packs from $5 or monthly plans from $20/mo. All report types, cancel anytime.</p>
+              <p className="text-gray-400 text-sm mt-1">
+                {packFrom && planFrom
+                  ? `Credit packs from ${packFrom} or monthly plans from ${planFrom}/mo.`
+                  : packFrom
+                    ? `Credit packs from ${packFrom}.`
+                    : planFrom
+                      ? `Monthly plans from ${planFrom}/mo.`
+                      : 'Get more credits.'}
+                {' '}All report types, cancel anytime.
+              </p>
             </div>
             <div className="flex items-center gap-3 flex-shrink-0 flex-wrap">
               <a

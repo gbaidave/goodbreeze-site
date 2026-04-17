@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { helpArticles, HELP_TOPICS, type HelpTopic } from '@/lib/help-articles'
+import { HELP_TOPICS, type HelpTopic, type HelpArticle } from '@/lib/help-articles'
 
 const TOPIC_COLORS: Record<HelpTopic, string> = {
   'Getting Started':            'bg-primary/10 text-primary border-primary/30',
@@ -12,7 +12,7 @@ const TOPIC_COLORS: Record<HelpTopic, string> = {
   'Account & Profile':          'bg-gray-500/10 text-gray-400 border-gray-500/30',
 }
 
-function ArticleItem({ article }: { article: typeof helpArticles[0] }) {
+function ArticleItem({ article }: { article: HelpArticle }) {
   const [open, setOpen] = useState(false)
   const paragraphs = article.content.split('\n\n')
 
@@ -59,22 +59,22 @@ function ArticleItem({ article }: { article: typeof helpArticles[0] }) {
   )
 }
 
-export default function HelpCenter() {
+export default function HelpCenter({ articles }: { articles: HelpArticle[] }) {
   const [search, setSearch] = useState('')
   const [activeTopic, setActiveTopic] = useState<HelpTopic | 'All'>('All')
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim()
-    return helpArticles.filter((a) => {
+    return articles.filter((a) => {
       const matchesTopic = activeTopic === 'All' || a.topic === activeTopic
       const matchesSearch = !q || a.title.toLowerCase().includes(q) || a.content.toLowerCase().includes(q)
       return matchesTopic && matchesSearch
     })
-  }, [search, activeTopic])
+  }, [articles, search, activeTopic])
 
   // Group filtered articles by topic for display
   const grouped = useMemo(() => {
-    const result: Record<string, typeof helpArticles> = {}
+    const result: Record<string, HelpArticle[]> = {}
     for (const article of filtered) {
       if (!result[article.topic]) result[article.topic] = []
       result[article.topic].push(article)
