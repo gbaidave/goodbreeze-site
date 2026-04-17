@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import CatalogModal, { ModalCatalogItem } from './CatalogModal'
+import ValidatorModal from './ValidatorModal'
+import type { ValidationResult } from '@/lib/catalog-validator'
 
 interface CatalogItem {
   id: string
@@ -123,7 +125,10 @@ export default function AdminCatalogPage() {
   const [modalMode, setModalMode] = useState<'create' | 'edit' | null>(null)
   const [modalItem, setModalItem] = useState<ModalCatalogItem | null>(null)
   const [showArchived, setShowArchived] = useState(false)
-  const [validatorStatus, setValidatorStatus] = useState<{ running: boolean; result: string | null }>({ running: false, result: null })
+  const [validatorRunning, setValidatorRunning] = useState(false)
+  const [validatorResult, setValidatorResult] = useState<ValidationResult | null>(null)
+  const [validatorError, setValidatorError] = useState<string | null>(null)
+  const [showValidatorModal, setShowValidatorModal] = useState(false)
 
   function loadItems() {
     setLoading(true)
@@ -156,6 +161,17 @@ export default function AdminCatalogPage() {
   }
 
   async function handleSave(id: string) {
+    const item = items.find((i) => i.id === id)
+    const isStripeType = item?.product_type === 'subscription_plan' || item?.product_type === 'credit_pack'
+    if (
+      isStripeType
+      && 'price_usd_cents' in editValues
+      && (editValues.price_usd_cents == null || editValues.price_usd_cents <= 0)
+    ) {
+      setError('Price is required for plans and credit packs. Use Details → Deactivate if you want to stop selling.')
+      return
+    }
+
     setSaving(true)
     setError(null)
     const res = await fetch('/api/admin/catalog', {
@@ -179,6 +195,26 @@ export default function AdminCatalogPage() {
     setSaving(false)
   }
 
+  async function handleReactivate(item: CatalogItem) {
+    if (!confirm(`Reactivate "${item.name}"? It becomes purchaseable again.`)) return
+    setSaving(true)
+    setError(null)
+    const res = await fetch('/api/admin/catalog', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: item.id, active: true, lifecycle_status: 'active' }),
+    })
+    const data = await res.json()
+    setSaving(false)
+    if (!res.ok) {
+      setError(data.error ?? 'Reactivate failed')
+      return
+    }
+    loadItems()
+    setSaved(true)
+    setTimeout(() => setSaved(false), 2500)
+  }
+
   function handleCancel() {
     setEditingId(null)
     setEditValues({})
@@ -200,17 +236,22 @@ export default function AdminCatalogPage() {
     setModalItem(null)
   }
 
-  async function runValidator() {
-    setValidatorStatus({ running: true, result: null })
+  async function runValidator({ openModal = false }: { openModal?: boolean } = {}) {
+    setValidatorRunning(true)
+    setValidatorError(null)
     try {
       const res = await fetch('/api/admin/catalog/validate', { method: 'POST' })
       const data = await res.json()
-      setValidatorStatus({
-        running: false,
-        result: res.ok ? data.summary ?? 'OK' : data.error ?? 'Validation failed',
-      })
+      setValidatorRunning(false)
+      if (!res.ok) {
+        setValidatorError(data.error ?? 'Validation failed')
+        return
+      }
+      setValidatorResult(data as ValidationResult)
+      if (openModal) setShowValidatorModal(true)
     } catch {
-      setValidatorStatus({ running: false, result: 'Validator endpoint unreachable' })
+      setValidatorRunning(false)
+      setValidatorError('Validator endpoint unreachable')
     }
   }
 
@@ -242,11 +283,11 @@ export default function AdminCatalogPage() {
           {error && <span className="text-sm text-red-400">{error}</span>}
           <button
             type="button"
-            onClick={runValidator}
-            disabled={validatorStatus.running}
+            onClick={() => runValidator({ openModal: true })}
+            disabled={validatorRunning}
             className="px-3 py-1.5 bg-zinc-800 border border-zinc-700 text-zinc-300 rounded text-sm hover:bg-zinc-700 disabled:opacity-50"
           >
-            {validatorStatus.running ? 'Running…' : '↻ Run validator'}
+            {validatorRunning ? 'Running…' : '↻ Run validator'}
           </button>
           <button
             type="button"
@@ -258,14 +299,26 @@ export default function AdminCatalogPage() {
         </div>
       </div>
 
-      {validatorStatus.result && (
-        <div className={`mb-4 px-4 py-2 rounded text-sm ${
-          validatorStatus.result === 'OK' || validatorStatus.result.startsWith('All')
-            ? 'bg-green-900/20 border border-green-800/40 text-green-300'
-            : 'bg-amber-900/20 border border-amber-800/40 text-amber-300'
-        }`}>
-          {validatorStatus.result}
+      {validatorError && (
+        <div className="mb-4 px-4 py-2 rounded text-sm bg-red-900/20 border border-red-800/40 text-red-300">
+          {validatorError}
         </div>
+      )}
+      {validatorResult && (
+        <button
+          type="button"
+          onClick={() => setShowValidatorModal(true)}
+          className={`mb-4 w-full text-left px-4 py-2 rounded text-sm transition-colors ${
+            validatorResult.ok && validatorResult.warnings.length === 0
+              ? 'bg-green-900/20 border border-green-800/40 text-green-300 hover:bg-green-900/30'
+              : validatorResult.ok
+                ? 'bg-amber-900/20 border border-amber-800/40 text-amber-300 hover:bg-amber-900/30'
+                : 'bg-red-900/20 border border-red-800/40 text-red-300 hover:bg-red-900/30'
+          }`}
+        >
+          <span>{validatorResult.summary}</span>
+          <span className="text-zinc-500 text-xs ml-2">— click for details →</span>
+        </button>
       )}
 
       <div className="flex items-center gap-4 mb-4 text-sm">
@@ -346,14 +399,21 @@ export default function AdminCatalogPage() {
                         {cfg.showPriceUsd && (
                           <td className="py-2 px-3">
                             {isEditing ? (
-                              <input
-                                type="number"
-                                min={0}
-                                value={editValues.price_usd_cents ?? ''}
-                                onChange={(e) => setEditValues((v) => ({ ...v, price_usd_cents: e.target.value === '' ? null : Number(e.target.value) }))}
-                                className="w-20 bg-zinc-800 border border-zinc-600 rounded px-2 py-1 text-white text-sm"
-                                placeholder="cents"
-                              />
+                              <div className="flex items-center gap-1">
+                                <span className="text-zinc-400 text-sm">$</span>
+                                <input
+                                  type="number"
+                                  min={0}
+                                  step="0.01"
+                                  value={editValues.price_usd_cents != null ? (editValues.price_usd_cents / 100).toFixed(2) : ''}
+                                  onChange={(e) => setEditValues((v) => ({
+                                    ...v,
+                                    price_usd_cents: e.target.value === '' ? null : Math.round(parseFloat(e.target.value) * 100),
+                                  }))}
+                                  className="w-24 bg-zinc-800 border border-zinc-600 rounded px-2 py-1 text-white text-sm"
+                                  placeholder="0.00"
+                                />
+                              </div>
                             ) : (
                               <span className={item.price_usd_cents != null ? 'text-white' : 'text-gray-600'}>{formatUsd(item.price_usd_cents)}</span>
                             )}
@@ -396,6 +456,23 @@ export default function AdminCatalogPage() {
                                 Cancel
                               </button>
                             </div>
+                          ) : rowDim ? (
+                            <div className="flex gap-2 justify-end">
+                              <button
+                                onClick={() => handleReactivate(item)}
+                                disabled={saving}
+                                className="px-3 py-1 bg-green-900/40 border border-green-700 text-green-300 rounded text-xs hover:bg-green-900/60 disabled:opacity-50"
+                              >
+                                Reactivate
+                              </button>
+                              <button
+                                onClick={() => openEditDetails(item)}
+                                className="px-3 py-1 bg-zinc-800 border border-zinc-700 text-gray-300 rounded text-xs hover:bg-zinc-700"
+                                title="Open tabbed editor for all fields"
+                              >
+                                Details
+                              </button>
+                            </div>
                           ) : (
                             <div className="flex gap-2 justify-end">
                               <button
@@ -423,6 +500,14 @@ export default function AdminCatalogPage() {
           </div>
         )
       })}
+
+      {showValidatorModal && validatorResult && (
+        <ValidatorModal
+          result={validatorResult}
+          onClose={() => setShowValidatorModal(false)}
+          onRerun={() => runValidator()}
+        />
+      )}
 
       {modalMode && (
         <CatalogModal

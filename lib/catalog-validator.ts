@@ -24,6 +24,7 @@ import { validateSkuFormat } from '@/lib/sku-generator'
 export interface ValidationIssue {
   severity: 'error' | 'warning'
   sku: string | null
+  productId: string | null
   check: string
   message: string
 }
@@ -53,8 +54,14 @@ export async function runCatalogValidator(): Promise<ValidationResult> {
     .not('sku', 'is', null)
 
   if (loadErr || !rows) {
-    errors.push({ severity: 'error', sku: null, check: 'load', message: `Failed to load catalog: ${loadErr?.message}` })
+    errors.push({ severity: 'error', sku: null, productId: null, check: 'load', message: `Failed to load catalog: ${loadErr?.message}` })
     return packResult(errors, warnings)
+  }
+
+  // Map SKU → id for cross-row lookups (duplicate_sku, legacy_missing)
+  const idBySku = new Map<string, string>()
+  for (const row of rows) {
+    if (!idBySku.has(row.sku)) idBySku.set(row.sku, row.id)
   }
 
   // Check 5: duplicate SKUs
@@ -64,7 +71,7 @@ export async function runCatalogValidator(): Promise<ValidationResult> {
   }
   for (const [sku, count] of seen) {
     if (count > 1) {
-      errors.push({ severity: 'error', sku, check: 'duplicate_sku', message: `SKU "${sku}" appears ${count} times` })
+      errors.push({ severity: 'error', sku, productId: idBySku.get(sku) ?? null, check: 'duplicate_sku', message: `SKU "${sku}" appears ${count} times` })
     }
   }
 
@@ -72,7 +79,7 @@ export async function runCatalogValidator(): Promise<ValidationResult> {
   const presentSkus = new Set(rows.map((r) => r.sku))
   for (const legacy of LEGACY_SKUS) {
     if (!presentSkus.has(legacy)) {
-      errors.push({ severity: 'error', sku: legacy, check: 'legacy_missing', message: `Legacy SKU "${legacy}" is missing from catalog — code may reference it` })
+      errors.push({ severity: 'error', sku: legacy, productId: null, check: 'legacy_missing', message: `Legacy SKU "${legacy}" is missing from catalog — code may reference it` })
     }
   }
 
@@ -82,7 +89,7 @@ export async function runCatalogValidator(): Promise<ValidationResult> {
     if (!LEGACY_SKUS.includes(row.sku)) {
       const formatCheck = validateSkuFormat(row.sku)
       for (const w of formatCheck.warnings) {
-        warnings.push({ severity: 'warning', sku: row.sku, check: 'sku_format', message: w })
+        warnings.push({ severity: 'warning', sku: row.sku, productId: row.id, check: 'sku_format', message: w })
       }
     }
 
@@ -90,18 +97,18 @@ export async function runCatalogValidator(): Promise<ValidationResult> {
     if (row.active) {
       if (row.product_type === 'subscription_plan') {
         if (!row.stripe_price_id) {
-          errors.push({ severity: 'error', sku: row.sku, check: 'missing_stripe_price_id', message: `Active subscription "${row.sku}" has no stripe_price_id` })
+          errors.push({ severity: 'error', sku: row.sku, productId: row.id, check: 'missing_stripe_price_id', message: `Active subscription "${row.sku}" has no stripe_price_id` })
         }
         if (row.credits_granted == null) {
-          errors.push({ severity: 'error', sku: row.sku, check: 'missing_credits_granted', message: `Active subscription "${row.sku}" has no credits_granted` })
+          errors.push({ severity: 'error', sku: row.sku, productId: row.id, check: 'missing_credits_granted', message: `Active subscription "${row.sku}" has no credits_granted` })
         }
       }
       if (row.product_type === 'credit_pack') {
         if (row.price_usd_cents == null) {
-          errors.push({ severity: 'error', sku: row.sku, check: 'missing_price', message: `Active credit pack "${row.sku}" has no price_usd_cents` })
+          errors.push({ severity: 'error', sku: row.sku, productId: row.id, check: 'missing_price', message: `Active credit pack "${row.sku}" has no price_usd_cents` })
         }
         if (row.credits_granted == null) {
-          errors.push({ severity: 'error', sku: row.sku, check: 'missing_credits_granted', message: `Active credit pack "${row.sku}" has no credits_granted` })
+          errors.push({ severity: 'error', sku: row.sku, productId: row.id, check: 'missing_credits_granted', message: `Active credit pack "${row.sku}" has no credits_granted` })
         }
       }
     }
@@ -115,6 +122,7 @@ export async function runCatalogValidator(): Promise<ValidationResult> {
           errors.push({
             severity: 'error',
             sku: row.sku,
+            productId: row.id,
             check: 'price_mismatch',
             message: `Catalog $${(row.price_usd_cents / 100).toFixed(2)} ≠ Stripe $${(stripeCents / 100).toFixed(2)} (${row.stripe_price_id})`,
           })
@@ -123,6 +131,7 @@ export async function runCatalogValidator(): Promise<ValidationResult> {
           warnings.push({
             severity: 'warning',
             sku: row.sku,
+            productId: row.id,
             check: 'stripe_price_inactive',
             message: `Stripe Price ${row.stripe_price_id} is inactive — customers can't check out`,
           })
@@ -131,6 +140,7 @@ export async function runCatalogValidator(): Promise<ValidationResult> {
         errors.push({
           severity: 'error',
           sku: row.sku,
+          productId: row.id,
           check: 'stripe_price_missing',
           message: `Stripe Price ${row.stripe_price_id} not found: ${err instanceof Error ? err.message : 'unknown error'}`,
         })
