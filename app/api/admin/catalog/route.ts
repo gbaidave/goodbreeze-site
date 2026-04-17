@@ -51,15 +51,14 @@ export async function GET() {
   const svc = createServiceClient()
   const { data, error } = await svc
     .from('products')
-    .select(`
-      id, sku, name, product_type, price_credits, price_usd_cents, credits_granted,
-      stripe_price_id, active, display_order, metadata, description, tagline, features,
-      lifecycle_status, badge, sync_error_detail, last_sync_attempt_at, last_sync_success_at
-    `)
+    .select('id, sku, name, product_type, price_credits, price_usd_cents, credits_granted, stripe_price_id, active, display_order, metadata, description, tagline, features, lifecycle_status, badge, sync_error_detail, last_sync_attempt_at, last_sync_success_at')
     .not('sku', 'is', null)
     .order('display_order', { ascending: true })
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) {
+    console.error('[admin/catalog GET] Supabase error:', JSON.stringify(error))
+    return NextResponse.json({ error: error.message, code: error.code, hint: error.hint, detail: error.details }, { status: 500 })
+  }
   return NextResponse.json({ items: data })
 }
 
