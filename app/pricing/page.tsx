@@ -1,5 +1,5 @@
 import { Metadata } from 'next'
-import { getCatalogByType, type CatalogItem } from '@/lib/catalog'
+import { getActiveSubscriptionPlans, getActivePackProducts, type CatalogItem } from '@/lib/catalog'
 import PricingClient, { type PlanDisplay } from './PricingClient'
 
 export const metadata: Metadata = {
@@ -15,10 +15,11 @@ export const dynamic = 'force-dynamic'
 // Per catalog-integration decision #5: /pricing is a server component reading
 // catalog at request time. No client-side fetch, no loading state for prices.
 export default async function PricingPage() {
-  // Fetch both types (active + inactive) — inactive items render dimmed with "Unavailable" badge
+  // Only active plans and packs are customer-facing. Deactivated items are
+  // hidden entirely (not rendered grayed-out) — managed via /admin/catalog.
   const [subPlans, packItems] = await Promise.all([
-    getCatalogByType('subscription_plan'),
-    getCatalogByType('credit_pack'),
+    getActiveSubscriptionPlans(),
+    getActivePackProducts(),
   ])
 
   const plans: PlanDisplay[] = subPlans.map(toPlanDisplay)

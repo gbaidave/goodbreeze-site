@@ -14,8 +14,9 @@ export const dynamic = 'force-dynamic'
 
 // Server component: fetches catalog, interpolates into help articles, hands off to client.
 // Help articles used to have hardcoded pack/plan prices + credit counts. Now catalog-driven.
+// Deactivated products are excluded so help copy doesn't reference retired plans.
 export default async function HelpPage() {
-  const catalog = await getAllCatalogItems()
+  const catalog = (await getAllCatalogItems()).filter((i) => i.active)
   const articles = buildHelpArticles(toHelpArticlesCatalog(catalog))
   return <HelpCenter articles={articles} />
 }

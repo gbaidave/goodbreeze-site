@@ -37,10 +37,18 @@ export interface ValidationResult {
   checkedAt: string
 }
 
+// Full list of pre-Sprint-5 legacy SKUs. These are excluded from SKU format
+// warnings (check 6) and verified present in the catalog (check 7). After Sprint
+// 5 renames everything to the new {TYPE}-{SLUG} scheme this list empties out.
 const LEGACY_SKUS = [
+  // Subscription plans
   'starter', 'growth', 'pro',
-  'spark_pack', 'boost_pack',
+  // Credit packs (mega_pack is retired but still in DB)
+  'spark_pack', 'boost_pack', 'mega_pack',
+  // Analyzer reports
   'business_presence_report', 'h2h', 't3c', 'cp',
+  // Brand Visibility reports
+  'landing_page', 'ai_seo', 'keyword_research', 'seo_audit', 'seo_comprehensive',
 ]
 
 export async function runCatalogValidator(): Promise<ValidationResult> {

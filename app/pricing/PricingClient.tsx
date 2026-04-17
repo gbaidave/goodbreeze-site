@@ -240,26 +240,15 @@ export default function PricingClient({ plans, packs }: PricingClientProps) {
           </motion.div>
 
           {/* Credit pack cards */}
-          {packs.map((option, idx) => {
-            const isUnavailable = !option.active
-            return (
+          {packs.map((option, idx) => (
             <motion.div
               key={option.sku}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.15 + idx * 0.05 }}
-              className={`relative flex flex-col p-6 rounded-2xl bg-dark-700 border transition-all duration-300 ${
-                isUnavailable
-                  ? 'border-zinc-800 opacity-55 pointer-events-none'
-                  : 'border-primary/10 hover:border-primary/30'
-              }`}
+              className="relative flex flex-col p-6 rounded-2xl bg-dark-700 border border-primary/10 hover:border-primary/30 transition-all duration-300"
             >
-              {isUnavailable && (
-                <span className="absolute top-3 right-3 inline-block px-2 py-0.5 rounded-full bg-amber-900/40 text-amber-300 text-[10px] font-bold uppercase tracking-wider border border-amber-500/30">
-                  Unavailable
-                </span>
-              )}
-              <div className={`mb-4 ${isUnavailable ? 'grayscale' : ''}`}>
+              <div className="mb-4">
                 <p className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-1">
                   {option.name}
                 </p>
@@ -270,7 +259,7 @@ export default function PricingClient({ plans, packs }: PricingClientProps) {
                 {option.description && <p className="text-gray-400 text-sm mt-1">{option.description}</p>}
               </div>
 
-              <ul className={`space-y-2 mb-6 flex-grow ${isUnavailable ? 'grayscale' : ''}`}>
+              <ul className="space-y-2 mb-6 flex-grow">
                 {option.features.map((f, i) => (
                   <li key={i} className="flex items-start gap-2">
                     <Check />
@@ -281,28 +270,17 @@ export default function PricingClient({ plans, packs }: PricingClientProps) {
 
               <button
                 onClick={() => handleCheckout(option.sku)}
-                disabled={loading === option.sku || isUnavailable}
-                className={`w-full px-5 py-2.5 font-semibold rounded-full transition-all duration-300 text-sm disabled:opacity-60 disabled:cursor-not-allowed ${
-                  isUnavailable
-                    ? 'bg-zinc-800 text-zinc-500 border border-zinc-700 cursor-not-allowed'
-                    : 'border border-primary/50 text-primary hover:bg-primary/10'
-                }`}
+                disabled={loading === option.sku}
+                className="w-full px-5 py-2.5 font-semibold rounded-full transition-all duration-300 text-sm disabled:opacity-60 disabled:cursor-not-allowed border border-primary/50 text-primary hover:bg-primary/10"
               >
-                {isUnavailable
-                  ? 'Unavailable'
-                  : loading === option.sku
+                {loading === option.sku
                   ? 'Redirecting…'
                   : user
                   ? `Buy ${option.name}`
                   : 'Get Started'}
               </button>
-              {isUnavailable && (
-                <p className="mt-2 text-center text-xs text-gray-500 italic">
-                  Temporarily unavailable — please check back later.
-                </p>
-              )}
             </motion.div>
-          )})}
+          ))}
         </div>
 
         {/* ── Monthly Plans ─────────────────────────────────────────────── */}
@@ -318,28 +296,19 @@ export default function PricingClient({ plans, packs }: PricingClientProps) {
         </motion.div>
 
         <div className="grid md:grid-cols-3 gap-6 items-stretch mb-16">
-          {plans.map((plan, idx) => {
-            const isUnavailable = !plan.active
-            return (
+          {plans.map((plan, idx) => (
             <motion.div
               key={plan.sku}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 + idx * 0.05 }}
               className={`relative flex flex-col p-8 rounded-2xl transition-all duration-300 ${
-                isUnavailable
-                  ? 'bg-dark-700 border border-zinc-800 opacity-55 pointer-events-none'
-                  : plan.highlighted
+                plan.highlighted
                   ? 'bg-dark-700 border-2 border-primary shadow-xl shadow-primary/20'
                   : 'bg-dark-700 border border-primary/20 hover:border-primary/40'
               }`}
             >
-              {isUnavailable && (
-                <span className="absolute top-4 right-4 inline-block px-2 py-0.5 rounded-full bg-amber-900/40 text-amber-300 text-[10px] font-bold uppercase tracking-wider border border-amber-500/30 z-10">
-                  Unavailable
-                </span>
-              )}
-              {plan.badge && !isUnavailable && (
+              {plan.badge && (
                 <div className="absolute top-8 right-6">
                   <span className="inline-block px-3 py-1 rounded-full bg-gradient-to-r from-primary to-accent-blue text-white text-xs font-bold uppercase tracking-wide shadow-lg shadow-primary/30 whitespace-nowrap ring-1 ring-white/20">
                     {plan.badge}
@@ -347,7 +316,7 @@ export default function PricingClient({ plans, packs }: PricingClientProps) {
                 </div>
               )}
 
-              <div className={`mb-6 ${isUnavailable ? 'grayscale' : ''}`}>
+              <div className="mb-6">
                 <p className={`text-sm font-semibold uppercase tracking-wider mb-2 ${plan.highlighted ? "text-primary" : "text-gray-400"}`}>
                   {plan.name}
                 </p>
@@ -358,7 +327,7 @@ export default function PricingClient({ plans, packs }: PricingClientProps) {
                 <p className="text-primary text-sm font-medium">{plan.reports}</p>
               </div>
 
-              <ul className={`space-y-3 mb-8 flex-grow ${isUnavailable ? 'grayscale' : ''}`}>
+              <ul className="space-y-3 mb-8 flex-grow">
                 {plan.features.map((f, i) => (
                   <li key={i} className="flex items-start gap-3">
                     <Check />
@@ -374,8 +343,7 @@ export default function PricingClient({ plans, packs }: PricingClientProps) {
                 // Active subscribers changing plans go to the portal (handles proration natively)
                 const isChangingPlan = !isCurrentPlan && currentPrice !== undefined && thisPrice !== undefined
                 const btnLabel =
-                  isUnavailable ? 'Unavailable'
-                  : (loading === plan.sku || (isChangingPlan && portalLoading)) ? "Redirecting…"
+                  (loading === plan.sku || (isChangingPlan && portalLoading)) ? "Redirecting…"
                   : isCurrentPlan ? "Current Plan"
                   : !user ? "Start Subscription"
                   : isChangingPlan
@@ -384,11 +352,9 @@ export default function PricingClient({ plans, packs }: PricingClientProps) {
                 return (
                   <button
                     onClick={() => isChangingPlan ? openPortal() : requestCheckout(plan.sku)}
-                    disabled={loading === plan.sku || portalLoading || isCurrentPlan || isUnavailable}
+                    disabled={loading === plan.sku || portalLoading || isCurrentPlan}
                     className={`w-full px-6 py-3 font-semibold rounded-full transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed ${
-                      isUnavailable
-                        ? 'bg-zinc-800 text-zinc-500 border border-zinc-700 cursor-not-allowed'
-                        : isCurrentPlan
+                      isCurrentPlan
                         ? "border-2 border-gray-600 text-gray-500 cursor-default"
                         : plan.highlighted
                         ? "bg-gradient-to-r from-primary to-accent-blue text-white border-2 border-white/60 hover:shadow-lg hover:shadow-primary/50 disabled:transform-none"
@@ -400,17 +366,11 @@ export default function PricingClient({ plans, packs }: PricingClientProps) {
                 )
               })()}
 
-              {isUnavailable ? (
-                <p className="text-center text-xs text-gray-500 mt-3 italic">
-                  Temporarily unavailable — please check back later.
-                </p>
-              ) : (
-                <p className="text-center text-xs text-gray-500 mt-3">
-                  Access until billing period ends if cancelled. Credits reset each billing period.
-                </p>
-              )}
+              <p className="text-center text-xs text-gray-500 mt-3">
+                Access until billing period ends if cancelled. Credits reset each billing period.
+              </p>
             </motion.div>
-          )})}
+          ))}
         </div>
 
         {/* FAQ */}
