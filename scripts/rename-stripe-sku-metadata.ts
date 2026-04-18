@@ -1,122 +1,92 @@
 /**
- * Stripe metadata rename script — Sprint 5 SKU rename.
+ * Stripe metadata sync script — Sprint 5 SKU rename.
  *
- * For each of the 5 paid products (3 plans + 2 packs):
- *   - Find the Stripe Product by current metadata.sku
- *   - Update metadata.sku to the new value
- *   - Update metadata.sku on every Price under that Product (active + archived)
+ * For each paid SKU (5 total), looks up the Stripe Product via its known
+ * Stripe Price ID (hardcoded per environment), then sets metadata.sku to
+ * the new UPPERCASE-dashes value on both the Product and all its Prices.
  *
- * Usage (forward — legacy → new):
+ * Why hardcoded Price IDs instead of a Supabase read: this script needs to
+ * work regardless of Supabase env-var setup. The Price IDs are pinned in
+ * memory/reference_stripe_price_ids.md and are stable per Stripe account.
+ *
+ * Usage:
  *   STRIPE_SECRET_KEY=sk_test_... npx tsx scripts/rename-stripe-sku-metadata.ts
+ *   STRIPE_SECRET_KEY=sk_live_... npx tsx scripts/rename-stripe-sku-metadata.ts
  *
- * Usage (reverse — new → legacy, rollback):
- *   STRIPE_SECRET_KEY=sk_test_... DIRECTION=reverse npx tsx scripts/rename-stripe-sku-metadata.ts
+ * Mode auto-detected from the key prefix.
  *
- * Run against Stripe test mode first (staging env), then live mode (production).
- * Idempotent: if a Product already has the target SKU, the search misses it
- * and the script skips it with a warning. Safe to re-run.
- *
- * Does NOT touch Price IDs or prices themselves. Only metadata.sku on both
- * Product and every Price under it.
+ * Idempotent: compares current metadata and skips if already synced.
  */
 
 import Stripe from 'stripe'
 
-type Direction = 'forward' | 'reverse'
+// Target SKU → Stripe Price ID per environment.
+// Values from memory/reference_stripe_price_ids.md (locked 2026-04-16).
+const PRICE_IDS_TEST: Record<string, string> = {
+  'PCK-SPARK':    'price_1T3399IlkTC3VEz5mLd7Dg4g',
+  'PCK-BOOST':    'price_1T2FjnIlkTC3VEz5leDfyYrW',
+  'PLN-STARTER':  'price_1T2FiZIlkTC3VEz5NA3fdSL6',
+  'PLN-GROWTH':   'price_1T33AuIlkTC3VEz5pObIZXFD',
+  'PLN-PRO':      'price_1T33BlIlkTC3VEz5CmeVkF4t',
+}
 
-const FORWARD_MAPPING: Record<string, string> = {
-  starter:    'PLN-STARTER',
-  growth:     'PLN-GROWTH',
-  pro:        'PLN-PRO',
-  spark_pack: 'PCK-SPARK',
-  boost_pack: 'PCK-BOOST',
+const PRICE_IDS_LIVE: Record<string, string> = {
+  'PCK-SPARK':    'price_1TB0piIMI2iVRBKy6Xqq2Il5',
+  'PCK-BOOST':    'price_1TB0rqIMI2iVRBKy9hynd7fn',
+  'PLN-STARTER':  'price_1TB0sSIMI2iVRBKykCxndkB7',
+  'PLN-GROWTH':   'price_1TB0svIMI2iVRBKyz6jZUvXm',
+  'PLN-PRO':      'price_1TB0tEIMI2iVRBKyGfCkSN8L',
 }
 
 async function main() {
   const key = process.env.STRIPE_SECRET_KEY
-  if (!key) {
-    console.error('STRIPE_SECRET_KEY env var is required')
-    process.exit(2)
-  }
+  if (!key) { console.error('STRIPE_SECRET_KEY env var required'); process.exit(2) }
 
-  const direction: Direction = (process.env.DIRECTION as Direction) ?? 'forward'
-  if (direction !== 'forward' && direction !== 'reverse') {
-    console.error('DIRECTION must be "forward" or "reverse"')
-    process.exit(2)
-  }
+  const mode = key.startsWith('sk_test_') ? 'TEST' : key.startsWith('sk_live_') ? 'LIVE' : null
+  if (!mode) { console.error('STRIPE_SECRET_KEY must start with sk_test_ or sk_live_'); process.exit(2) }
 
-  const mapping = direction === 'forward'
-    ? FORWARD_MAPPING
-    : Object.fromEntries(Object.entries(FORWARD_MAPPING).map(([k, v]) => [v, k]))
-
-  const mode = key.startsWith('sk_test_') ? 'TEST' : key.startsWith('sk_live_') ? 'LIVE' : 'UNKNOWN'
-
-  console.log(`[rename-stripe-sku-metadata] direction=${direction} mode=${mode}`)
-  console.log(`[rename-stripe-sku-metadata] ${Object.keys(mapping).length} products to process`)
-  console.log('')
-
+  const mapping = mode === 'TEST' ? PRICE_IDS_TEST : PRICE_IDS_LIVE
   const stripe = new Stripe(key, { apiVersion: '2026-01-28.clover' })
 
-  const results: { from: string; to: string; ok: boolean; reason?: string; productId?: string; prices?: number }[] = []
+  console.log(`[rename-stripe-sku-metadata] mode=${mode}, ${Object.keys(mapping).length} products`)
+  console.log('')
 
-  for (const [oldSku, newSku] of Object.entries(mapping)) {
+  let ok = 0, fail = 0
+  for (const [newSku, priceId] of Object.entries(mapping)) {
     try {
-      // Find the Product by current metadata.sku (Stripe Search API)
-      const products = await stripe.products.search({
-        query: `metadata['sku']:'${oldSku}'`,
-      })
+      const price = await stripe.prices.retrieve(priceId)
+      const productId = typeof price.product === 'string' ? price.product : price.product.id
+      const product = await stripe.products.retrieve(productId)
 
-      if (products.data.length === 0) {
-        results.push({ from: oldSku, to: newSku, ok: false, reason: 'Not found in Stripe — may already have new SKU or never existed' })
-        console.log(`  ⚠ ${oldSku} → ${newSku}: not found (skipped; safe to ignore on re-runs or reverse after partial rollback)`)
-        continue
+      const productNeedsUpdate = (product.metadata ?? {}).sku !== newSku
+      if (productNeedsUpdate) {
+        await stripe.products.update(productId, { metadata: { ...product.metadata, sku: newSku } })
       }
 
-      if (products.data.length > 1) {
-        results.push({ from: oldSku, to: newSku, ok: false, reason: `Found ${products.data.length} Products with this SKU — ambiguous, manual review required` })
-        console.error(`  ✗ ${oldSku} → ${newSku}: AMBIGUOUS (${products.data.length} Products match). Skipping; manual fix required.`)
-        continue
+      let priceUpdates = 0
+      for await (const p of stripe.prices.list({ product: productId, limit: 100 })) {
+        if ((p.metadata ?? {}).sku !== newSku) {
+          await stripe.prices.update(p.id, { metadata: { ...p.metadata, sku: newSku } })
+          priceUpdates++
+        }
       }
 
-      const product = products.data[0]
-
-      // Update Product metadata
-      await stripe.products.update(product.id, {
-        metadata: { ...product.metadata, sku: newSku },
-      })
-
-      // Update every Price under this Product (active + archived)
-      let priceCount = 0
-      for await (const price of stripe.prices.list({ product: product.id, limit: 100 })) {
-        await stripe.prices.update(price.id, {
-          metadata: { ...price.metadata, sku: newSku },
-        })
-        priceCount++
+      if (!productNeedsUpdate && priceUpdates === 0) {
+        console.log(`  = ${newSku} (Product ${productId}) — already synced`)
+      } else {
+        console.log(`  ✓ ${newSku} (Product ${productId}) — ${productNeedsUpdate ? 'Product metadata updated, ' : ''}${priceUpdates} Price${priceUpdates === 1 ? '' : 's'} updated`)
       }
-
-      results.push({ from: oldSku, to: newSku, ok: true, productId: product.id, prices: priceCount })
-      console.log(`  ✓ ${oldSku} → ${newSku} (Product ${product.id}, ${priceCount} Price${priceCount === 1 ? '' : 's'})`)
+      ok++
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err)
-      results.push({ from: oldSku, to: newSku, ok: false, reason: msg })
-      console.error(`  ✗ ${oldSku} → ${newSku}: ${msg}`)
+      console.error(`  ✗ ${newSku} (${priceId}): ${msg}`)
+      fail++
     }
   }
 
   console.log('')
-  const okCount = results.filter((r) => r.ok).length
-  const failCount = results.filter((r) => !r.ok).length
-  console.log(`=== Summary: ${okCount}/${results.length} renamed, ${failCount} skipped/failed ===`)
-
-  if (failCount > 0) {
-    console.log('')
-    console.log('Failures:')
-    for (const r of results.filter((f) => !f.ok)) {
-      console.log(`  ${r.from} → ${r.to}: ${r.reason}`)
-    }
-  }
-
-  process.exit(failCount > 0 ? 1 : 0)
+  console.log(`=== Summary: ${ok}/${Object.keys(mapping).length} synced, ${fail} failed ===`)
+  process.exit(fail > 0 ? 1 : 0)
 }
 
 main().catch((err) => {
