@@ -33,7 +33,7 @@ import { logSystemError } from '@/lib/log-system-error'
 
 // ============================================================================
 // n8n webhook URLs
-// N8N_WEBHOOK_BASE_URL: set to https://n8n.goodbreeze.ai on Vercel (staging/prod)
+// N8N_WEBHOOK_BASE_URL: set to https://internal.goodbreeze.ai on Vercel (staging/prod)
 //                       leave unset on VPS to use localhost:5678 (bypasses Cloudflare)
 // ============================================================================
 

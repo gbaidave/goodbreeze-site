@@ -612,7 +612,7 @@ function FailureRow({
         </span>
         {f.n8n_execution_id && (
           <a
-            href={`https://n8n.goodbreeze.ai/executions/${f.n8n_execution_id}`}
+            href={`${process.env.NEXT_PUBLIC_N8N_UI_BASE_URL ?? 'https://internal.goodbreeze.ai'}/executions/${f.n8n_execution_id}`}
             target="_blank"
             rel="noopener noreferrer"
             className="block text-xs text-cyan-500 hover:text-cyan-400 mt-1"

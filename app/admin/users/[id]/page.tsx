@@ -202,7 +202,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
                             className="text-primary text-xs hover:underline">PDF →</a>
                         )}
                         {(r.status === 'failed' || r.status === 'failed_site_blocked') && r.n8n_execution_id && (
-                          <a href={`https://n8n.goodbreeze.ai/executions/${r.n8n_execution_id}`} target="_blank" rel="noopener noreferrer"
+                          <a href={`${process.env.NEXT_PUBLIC_N8N_UI_BASE_URL ?? 'https://internal.goodbreeze.ai'}/executions/${r.n8n_execution_id}`} target="_blank" rel="noopener noreferrer"
                             className="text-red-400 text-xs hover:underline">n8n →</a>
                         )}
                       </td>

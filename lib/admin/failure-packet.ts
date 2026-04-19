@@ -16,8 +16,9 @@ export function generateFailurePacket(report: FailureReport): string {
     ? JSON.stringify(report.input_data, null, 2)
     : '(not available)'
 
+  const n8nBase = process.env.NEXT_PUBLIC_N8N_UI_BASE_URL ?? 'https://internal.goodbreeze.ai'
   const n8nLink = report.n8n_execution_id
-    ? `https://n8n.goodbreeze.ai/executions/${report.n8n_execution_id}`
+    ? `${n8nBase}/executions/${report.n8n_execution_id}`
     : '(not available)'
 
   const failedAt = new Date(report.created_at).toLocaleString('en-US', {
