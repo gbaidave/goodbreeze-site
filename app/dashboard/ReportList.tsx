@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { REPORT_TYPE_LABELS, REPORT_TYPE_URLS } from '@/lib/report-labels'
 
 // ============================================================================
 // Types
@@ -25,31 +26,6 @@ interface ReportListProps {
 // ============================================================================
 // Constants
 // ============================================================================
-
-const REPORT_TYPE_LABELS: Record<string, string> = {
-  h2h:               'Head to Head Analysis',
-  t3c:               'Top 3 Competitors',
-  cp:                'Competitive Position',
-  ai_seo:            'AI SEO Optimizer',
-  landing_page:      'Landing Page Optimizer',
-  keyword_research:  'Keyword Research',
-  seo_audit:         'SEO Audit',
-  seo_comprehensive: 'SEO Comprehensive',
-  multi_page:        'Multi-Page Audit',
-  business_presence_report: 'Business Presence Report',
-}
-
-const REPORT_TYPE_URLS: Record<string, string> = {
-  landing_page:      '/reports/landing-page-optimizer',
-  seo_audit:         '/reports/seo-audit',
-  seo_comprehensive: '/reports/seo-comprehensive',
-  ai_seo:            '/reports/ai-seo',
-  keyword_research:  '/reports/keyword-research',
-  h2h:               '/reports/competitive-analyzer',
-  t3c:               '/reports/competitive-analyzer',
-  cp:                '/reports/competitive-analyzer',
-  business_presence_report: '/reports/business-presence',
-}
 
 const STATUS_STYLES: Record<string, string> = {
   pending:             'bg-yellow-900/40 text-yellow-400 border-yellow-800',

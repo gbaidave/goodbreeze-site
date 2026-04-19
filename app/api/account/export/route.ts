@@ -13,6 +13,7 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { createServiceClient } from '@/lib/supabase/service-client'
 import { zipSync, strToU8 } from 'fflate'
+import { labelFor } from '@/lib/report-labels'
 
 const EXPORT_LIMIT = 3
 
@@ -209,7 +210,7 @@ ${subs.length === 0 ? '<p class="section-note">No subscription history.</p>' : `
 ${packs.length === 0 ? '<p class="section-note">No credit pack purchases.</p>' : `<table><tr><th>Amount</th><th>Balance</th><th>Purchased</th></tr>${packs.map(p => `<tr><td>${esc(p.amount)}</td><td>${esc(p.balance)}</td><td>${esc(p.purchased_at)}</td></tr>`).join('')}</table>`}
 
 <h2>Reports (${reports.length})</h2>
-${reports.length === 0 ? '<p class="section-note">No reports.</p>' : `<table><tr><th>Type</th><th>Status</th><th>Created</th><th>Input</th></tr>${reports.map(r => `<tr><td>${esc(r.report_type)}</td><td>${esc(r.status)}</td><td>${esc(r.created_at)}</td><td>${esc((r.input_url as string) || (r.keyword as string) || (r.target_company as string))}</td></tr>`).join('')}</table>`}
+${reports.length === 0 ? '<p class="section-note">No reports.</p>' : `<table><tr><th>Type</th><th>Status</th><th>Created</th><th>Input</th></tr>${reports.map(r => `<tr><td>${esc(labelFor(r.report_type as string))}</td><td>${esc(r.status)}</td><td>${esc(r.created_at)}</td><td>${esc((r.input_url as string) || (r.keyword as string) || (r.target_company as string))}</td></tr>`).join('')}</table>`}
 
 <h2>Support Tickets (${tickets.length})</h2>
 ${tickets.length === 0 ? '<p class="section-note">No support tickets.</p>' : `<table><tr><th>Category</th><th>Subject</th><th>Status</th><th>Created</th></tr>${tickets.map(t => `<tr><td>${esc(t.category)}</td><td>${esc(t.subject)}</td><td>${esc(t.status)}</td><td>${esc(t.created_at)}</td></tr>`).join('')}</table>`}

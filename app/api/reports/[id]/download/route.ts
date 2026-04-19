@@ -13,19 +13,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { createServiceClient } from '@/lib/supabase/service-client'
-
-// Report type → human-readable label for the filename
-const REPORT_TYPE_LABELS: Record<string, string> = {
-  'RPT-H2H':   'Head to Head Analysis',
-  'RPT-T3C':   'Top 3 Competitors',
-  'RPT-CP':    'Competitive Position',
-  'RPT-AISEO': 'AI SEO Optimizer',
-  'RPT-LP':    'Landing Page Optimizer',
-  'RPT-KR':    'Keyword Research',
-  'RPT-AUDIT': 'SEO Audit',
-  'RPT-COMP':  'SEO Comprehensive',
-  'RPT-BPR':   'Business Presence Report',
-}
+import { REPORT_TYPE_LABELS } from '@/lib/report-labels'
 
 function extractDomain(url: string | undefined): string {
   if (!url) return ''

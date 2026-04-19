@@ -2,23 +2,7 @@ import { redirect, notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { ReportViewTracker } from './ReportViewTracker'
-
-// ============================================================================
-// Constants
-// ============================================================================
-
-const REPORT_TYPE_LABELS: Record<string, string> = {
-  h2h:               'Head to Head Analysis',
-  t3c:               'Top 3 Competitors',
-  cp:                'Competitive Position',
-  ai_seo:            'AI SEO Optimizer',
-  landing_page:      'Landing Page Optimizer',
-  keyword_research:  'Keyword Research',
-  seo_audit:         'SEO Audit',
-  seo_comprehensive: 'SEO Comprehensive',
-  multi_page:        'Multi-Page Audit',
-  business_presence_report: 'Business Presence Report',
-}
+import { REPORT_TYPE_LABELS } from '@/lib/report-labels'
 
 // ============================================================================
 // Expiry helpers

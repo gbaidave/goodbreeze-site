@@ -5,13 +5,8 @@ import { UserActionsPanel } from './UserActionsPanel'
 import { AdminNotesPanel } from './AdminNotesPanel'
 import { CreditRowsPanel } from './CreditRowsPanel'
 import { ResendConsentButton } from './ResendConsentButton'
+import { REPORT_TYPE_LABELS as REPORT_LABELS } from '@/lib/report-labels'
 
-const REPORT_LABELS: Record<string, string> = {
-  h2h: 'Head to Head', t3c: 'Top 3 Competitors', cp: 'Competitive Position',
-  ai_seo: 'AI SEO', landing_page: 'Landing Page Optimizer',
-  keyword_research: 'Keyword Research', seo_audit: 'SEO Audit',
-  seo_comprehensive: 'SEO Comprehensive', multi_page: 'Multi-Page Audit',
-}
 const STATUS_STYLES: Record<string, string> = {
   pending: 'bg-yellow-900/40 text-yellow-400 border-yellow-800',
   processing: 'bg-blue-900/40 text-blue-400 border-blue-800',

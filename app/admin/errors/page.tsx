@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { generateFailurePacket } from '@/lib/admin/failure-packet'
 import { CustomSelect } from '@/components/ui/CustomSelect'
+import { labelFor } from '@/lib/report-labels'
 
 // ─── System Error types ────────────────────────────────────────────────────────
 
@@ -598,7 +599,7 @@ function FailureRow({
 
       {/* Report type */}
       <td className="px-4 py-3 text-gray-300 whitespace-nowrap text-xs">
-        {f.report_type}
+        {labelFor(f.report_type)}
       </td>
 
       {/* Failure type */}

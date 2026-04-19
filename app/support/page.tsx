@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service-client'
 import SupportForm from './SupportForm'
+import { labelFor } from '@/lib/report-labels'
 
 export const metadata = {
   title: 'Get Help | Good Breeze AI',
@@ -57,7 +58,7 @@ export default async function SupportPage() {
   const userName = profile?.name || user.email!.split('@')[0]
   const userEmail = profile?.email || user.email!
   const lastReportContext = lastReport
-    ? `${lastReport.report_type} (${lastReport.status})`
+    ? `${labelFor(lastReport.report_type)} (${lastReport.status})`
     : null
 
   // Load user's existing tickets + messages
